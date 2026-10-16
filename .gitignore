@@ -13,3 +13,11 @@ CTestTestfile.cmake
 Makefile
 callgrind.out*
 cmake_install.cmake
+
+# local agent/tooling state -- never part of the project
+.omc/
+
+# scratch dir + download from the screen-capture howto in
+# docs/cloud-desktop-screen-capture-feasibility.md
+cimbar-recv/
+cimbar.wasm.tar.gz
