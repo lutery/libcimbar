@@ -24,3 +24,6 @@ cimbar.wasm.tar.gz
 
 # local Claude session memo (personal, not part of the project)
 .claude/
+
+# Playwright MCP scratch artifacts
+.playwright-mcp/
