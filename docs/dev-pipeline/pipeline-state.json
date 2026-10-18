@@ -215,7 +215,7 @@
       "test_status": "in_progress",
       "started_at": "2026-10-18T13:20:01+08:00",
       "completed_at": null,
-      "notes": "Batch A complete and APPROVED in round 2 (0 Blocking). Batch B started: T2.1.a done (1ad18b3) - runnable entry, capability gating, loopback launcher, UAT-L01/02 green; CMD-05 now 19 tests (contracts 7 + worker 6 + ui 6). Next: T2.1.b live frame scheduler and single-session vertical flow. Gates: native ctest 9/9, CMD-04 pass with 4 negatives rejected, CMD-07 IAT-01/02/03 green on wasm d1080cdc.",
+      "notes": "Batch A complete and APPROVED in round 2 (0 Blocking). Batch B complete: T2.1.a runnable entry (1ad18b3), T2.1.b coordinator+scheduler (89468d8), T2.1.c save controller (5d4c5a1). CMD-05 now 37 tests across 6 suites (video + evidence land with T3.1.b/T4.1.a), 0 todo/skip. Entry page verified clean after each task. Batch B checkpoint review requested. Next: batch C (T2.2.a stop/dedup/late-auth hardening, T2.2.b recovery UX), then D (video import).",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
