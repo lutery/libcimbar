@@ -18,6 +18,7 @@
     import { runNativePayload } from './native-payload.mjs';
     import { runWasmRoundtrip } from './wasm-roundtrip.mjs';
     import { runDigestMismatch } from './digest-mismatch.mjs';
+    import { runLifecycle } from './lifecycle.mjs';
 
     const results = [];
     function record(name, ok, detail) {
@@ -34,6 +35,7 @@
         ['IAT-02 native payload', runNativePayload],
         ['IAT-01 wasm roundtrip', runWasmRoundtrip],
         ['IAT-03 digest mismatch rejected', runDigestMismatch],
+        ['IAT-04 lifecycle', runLifecycle],
       ];
       for (const [name, fn] of cases) {
         try { await fn(record); }

@@ -183,7 +183,7 @@ export class SessionCoordinator {
         this._maybeStart(seq);
       })
       .catch((error) => {
-        if (this._isCurrent(seq)) this._onError(error && error.code ? error.code : 15001);
+        if (this._isCurrent(seq)) this._decoderFailed(seq, error);
       });
   }
 
@@ -196,8 +196,23 @@ export class SessionCoordinator {
 
   _captureRejected(seq, error) {
     if (!this._isCurrent(seq)) return;
+    // A rejection arriving after stop must not pull Stopping back to Idle.
+    if (this._isStopping()) return;
     this._onError(error && error.code ? error.code : 12002);
     this._emit({ state: 'Idle' });
+  }
+
+  // Decoder init failure is fatal for the session: it must converge to a
+  // terminal state instead of hanging in Preparing forever.
+  _decoderFailed(seq, error) {
+    if (!this._isCurrent(seq)) return;
+    this._onError(error && error.code ? error.code : 15001);
+    if (this._isStopping()) return;
+    this._emit({ state: 'Stopping' });
+    this.releaseInputs();
+    if (this._pending.size === 0) {
+      this._emit({ state: 'Stopped' });
+    }
   }
 
   // One frame from the live source. Drops are counted by the scheduler.

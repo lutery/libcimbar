@@ -358,3 +358,46 @@ test('TD-13 no session maps to null (IF-003)', () => {
   assert.equal(toContractSnapshot(null, {}), null);
   assert.equal(toContractSnapshot({ sessionId: null }, {}), null);
 });
+
+// --- T2.2.a acceptance items 1 and 2 (from review round 3, W-3) ---
+
+// Given the user stops while the capture picker is still pending
+// When the picker rejects afterwards
+// Then the session converges to Stopped and never returns to Idle
+test('T2.2.a-1 a rejection after stop never leaves Stopping', async () => {
+  let rejectPicker;
+  const errors = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve, reject) => { rejectPicker = reject; }),
+    createClient: () => Promise.resolve(fakeClient()),
+    onError: (code) => errors.push(code),
+  });
+
+  coordinator.startLive({ requestId: 'a' });
+  coordinator.stop();
+  assert.equal(coordinator.snapshot().state, 'Stopping');
+
+  rejectPicker(new Error('late cancel'));
+  await tick();
+
+  assert.equal(coordinator.snapshot().state, 'Stopped', 'converges to Stopped');
+  assert.equal(errors.includes(12002), false, 'no spurious 12002 after stop');
+});
+
+// Given the decoder cannot initialize
+// When init fails mid-session
+// Then the session reaches a terminal state instead of hanging in Preparing
+test('T2.2.a-2 decoder init failure converges to Stopped', async () => {
+  const errors = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => Promise.resolve(fakeStream()),
+    createClient: () => Promise.reject(Object.assign(new Error('boom'), { code: 15001 })),
+    onError: (code) => errors.push(code),
+  });
+
+  coordinator.startLive({ requestId: 'a' });
+  await tick();
+
+  assert.equal(coordinator.snapshot().state, 'Stopped');
+  assert.equal(errors.includes(15001), true);
+});
