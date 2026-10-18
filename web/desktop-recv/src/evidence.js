@@ -69,7 +69,7 @@ export function validateCaseRecord(record, context = {}) {
     violations.push(`executedBy ${record.executedBy} is not valid for scope ${scope}`);
   }
 
-  if (record.caseType === 'performance' && record.result === 'PASS' && !context.thresholdFrozen) {
+  if (record.caseType === 'measurement' && record.result === 'PASS' && !context.thresholdFrozen) {
     violations.push('performance cannot PASS without a frozen threshold');
   }
 
