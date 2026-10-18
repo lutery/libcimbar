@@ -1,0 +1,271 @@
+{
+  "project_name": "libcimbar 云桌面画面接收文件",
+  "requirement_source": "docs/cloud-desktop-screen-capture-feasibility.md",
+  "current_phase": "team-exec",
+  "tdd_mode": true,
+  "created_at": "2026-10-18T09:28:10.1666056+08:00",
+  "updated_at": "2026-10-18T12:02:55.0996906+08:00",
+  "phases": [
+    {
+      "name": "requirements-analysis",
+      "display": "需求分析",
+      "status": "completed",
+      "output_dir": "docs/requirements/",
+      "output_files": [
+        "requirements-spec.md",
+        "open-questions.md",
+        "decision-log.md",
+        "todo.md"
+      ],
+      "open_questions_resolved": true,
+      "started_at": "2026-10-18T09:28:10.1666056+08:00",
+      "completed_at": "2026-10-18T10:01:57.9134844+08:00",
+      "notes": "需求归并完成，用户确认无待答阻塞问题则进入下一阶段；已进入system-design。产品运行验证仍NOT RUN。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T09:28:10.1666056+08:00",
+          "summary": "阅读原始需求（docs），按 dev-pipeline 开展需求分析。"
+        },
+        {
+          "timestamp": "2026-10-18T09:51:40.5502574+08:00",
+          "summary": "Q-001文件答复全部都要；用户指出项目已提供发送端和接收端，据此使用自带cimbar工具作为需求基线。"
+        },
+        {
+          "timestamp": "2026-10-18T10:01:57.9134844+08:00",
+          "summary": "用户已填写全部问题：新增宿主机接收端，其余尽量不改；双输入；先本地同机全功能模拟再用户现场验收；外部SHA-256及可压缩/难压缩数据测量；环境、规模与性能先测后确认；按建议执行单文件会话和停止/重启、保存重试。"
+        }
+      ]
+    },
+    {
+      "name": "system-design",
+      "display": "系统设计",
+      "status": "completed",
+      "output_dir": "docs/design-catalog/",
+      "output_files": [
+        "architecture.md",
+        "big-picture.mmd",
+        "data/erd.mmd",
+        "data/state-artifact.mmd",
+        "data/state-session.mmd",
+        "flows/sequence-live.mmd",
+        "flows/sequence-save.mmd",
+        "flows/sequence-video.mmd",
+        "processes/process-acceptance.mmd",
+        "processes/process-live.mmd",
+        "processes/process-save.mmd",
+        "processes/process-video.mmd",
+        "qa.md",
+        "README.md",
+        "requirements.md",
+        "sources.md",
+        "todo.md"
+      ],
+      "started_at": "2026-10-18T10:07:16.3185875+08:00",
+      "completed_at": "2026-10-18T10:14:04.0444908+08:00",
+      "notes": "系统设计完成：独立本地浏览器宿主机接收应用，复用现有WASM与发送端/协议，双输入、单会话新实例、EOF排空、保存重试；4关键流程、2状态机、3序列图、全局图和ERD共11图，14AC全覆盖。Mermaid12.2.0语法、README全文嵌入、链接及追踪检查PASS；产品构建、WASM装配、本地E2E、现场验收和性能均NOT RUN。等待用户选择进入2.5模块契约或skip到任务规划。 用户已确认进入模块契约设计。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T10:07:16.3185875+08:00",
+          "summary": "用户授权：没有待确认问题则进入下一阶段；沿用双输入宿主机接收端、其余尽量不改、本地模拟先于用户现场测试等已确认约束。"
+        }
+      ]
+    },
+    {
+      "name": "design-module-contract-error-matrix",
+      "display": "模块契约与错误矩阵",
+      "status": "completed",
+      "output_dir": "docs/design-catalog/",
+      "output_files": [
+        "module-contract-error-matrix.md",
+        "contracts-todo.md",
+        "contracts-qa.md",
+        "contracts/README.md",
+        "contracts/receiver-v1.schema.json",
+        "contracts/examples.json",
+        "contracts/error-codes.json",
+        "contracts/profile-initial.json"
+      ],
+      "started_at": "2026-10-18T10:22:54.6484433+08:00",
+      "completed_at": "2026-10-18T10:35:36.8074363+08:00",
+      "skippable": true,
+      "notes": "阶段2.5完成：8模块、10接口（8请求响应+2事件）、53项独立号段、Draft2020-12元数据schema、73合成样例、33结构负向校验、14AC与12运行时规则。schema/样例/错误引用/链接/阶段范围检查PASS。初始安全预算与超时为待测配置；严格解压EOF装配门槛可能需要最小修正现有解压适配并重建，不改协议或发送端。产品实现、WASM装配、本地E2E与现场验收均NOT RUN。等待确认进入planning-roadmap。 用户已确认进入任务规划。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T10:22:54.6484433+08:00",
+          "summary": "用户明确回复进入，授权阶段2.5；沿用双输入、最小变更、本地模拟后用户现场、单文件会话及保存重试要求。"
+        }
+      ]
+    },
+    {
+      "name": "planning-roadmap",
+      "display": "任务规划",
+      "status": "completed",
+      "output_dir": "docs/plans/",
+      "output_files": [
+        "roadmap.md",
+        "README.md",
+        "todo.md",
+        "planning-qa.md",
+        "claude-handoff.md",
+        "test-acceptance-plan.md",
+        "acceptance-todo.md"
+      ],
+      "started_at": "2026-10-18T10:44:23.7980421+08:00",
+      "completed_at": "2026-10-18T10:50:42.760829+08:00",
+      "notes": "阶段3路线图及验收基线完成：5Epic、10Story、24Task，20基础实施+4跨节点/现场/条件任务，14AC/10接口/12运行时规则/4后测项/15验证组。原先按旧技能准备阶段4续接；本轮用户要求采用新版，Codex已继续完成4.x，当前交接改为阶段5。历史user_instructions保留，产品实现和运行验证均NOT RUN。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T10:44:23.7980421+08:00",
+          "summary": "用户回复进入，授权任务规划。沿用新增双输入宿主机接收端、其余尽量不改、本地全功能模拟后用户现场验收、SHA-256及后测策略。"
+        },
+        {
+          "timestamp": "2026-10-18T11:19:31.9409381+08:00",
+          "summary": "用户要求测试验收贴合真实操作，避免测试通过但用户操作有问题；若规划完整，用户让Claude从阶段4开始。补充逐步操作验收方案作为阶段4必读输入，准备通道A标准续接，不提前推进Claude节点。"
+        }
+      ]
+    },
+    {
+      "name": "writing-plans",
+      "display": "编写实施计划",
+      "status": "completed",
+      "output_dir": "docs/plans/",
+      "output_files": [
+        "2026-10-18-desktop-receiver-implementation.md",
+        "implementation-todo.md"
+      ],
+      "started_at": "2026-10-18T11:50:52.2603142+08:00",
+      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
+      "notes": "按更新版完成阶段4：24Task逐项确切文件/4个行动检查点/代码要点/验证命令与预期/AC，10命令契约，20基础实施与4跨节点/现场任务分开。新增工具尚待阶段5实现；严格EOF/真实抓屏/录像/系统保存及外部落盘SHA-256门槛不减。条件工时粗估90-150人时待执行方盘点校准。文档QA通过；产品构建和测试均NOT RUN。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T11:50:52.2603142+08:00",
+          "summary": "用户明确要求按更新版dev-pipeline继续阶段4。"
+        },
+        {
+          "timestamp": "2026-10-18T11:50:52.2603142+08:00",
+          "summary": "用户选择采用TDD：补测试方案与单元测试骨架；保留此前已要求的真实操作验收，4.x均由Codex完成后交Claude从阶段5执行。"
+        }
+      ]
+    },
+    {
+      "name": "tdd-test-planning",
+      "display": "TDD测试规划",
+      "status": "completed",
+      "output_dir": "docs/tests/",
+      "output_files": [
+        "README.md",
+        "test-plan.md",
+        "test-cases.md",
+        "acceptance-tests.md",
+        "planning-cases.json",
+        "unit-test-skeletons/README.md",
+        "unit-test-skeletons/contracts.test.mjs",
+        "unit-test-skeletons/session.test.mjs",
+        "unit-test-skeletons/scheduler.test.mjs",
+        "unit-test-skeletons/worker.test.mjs",
+        "unit-test-skeletons/save.test.mjs",
+        "unit-test-skeletons/video.test.mjs",
+        "unit-test-skeletons/ui.test.mjs",
+        "unit-test-skeletons/evidence.test.mjs",
+        "unit-test-skeletons/strict-eof.cpp.txt",
+        "planning-qa.md",
+        "planning-check.py"
+      ],
+      "started_at": "2026-10-18T12:02:55.0996906+08:00",
+      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
+      "skippable": true,
+      "notes": "用户已选择TDD。完成54个单元用例（48JS+6C++）、6集成组定义及8份JS TODO骨架/1份防误编译C++文本模板。8JS仅node --check语法检查；没有运行产品单测。模板和NOT_RUN计划记录不是测试通过。始末时间为统一QA后节点登记时间。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T12:02:55.0996906+08:00",
+          "summary": "用户通过异步问题明确选择采用TDD：补测试方案与单元测试骨架。阶段4.5由更新版Codex负责。"
+        }
+      ]
+    },
+    {
+      "name": "e2e-planning",
+      "display": "E2E用户操作测试计划",
+      "status": "completed",
+      "output_dir": "docs/tests/",
+      "output_files": [
+        "e2e-user-journey-plan.md"
+      ],
+      "skippable": true,
+      "started_at": "2026-10-18T12:02:55.0996906+08:00",
+      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
+      "notes": "依据用户此前明确要求贴合真实操作的测试验收，完成26真实用户旅程（20实施方本地+6用户云桌面现场），映射14AC；32组基线中的6组故障注入独立为IAT，不冒充真实E2E。每场景有前置/步骤/反馈/AC/任务/执行方式/证据；全为NOT_RUN。始末时间为统一QA后节点登记时间。",
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-18T12:02:55.0996906+08:00",
+          "summary": "沿用用户已确认：实施方先本地同机原发送端与新接收端全功能真实操作模拟；用户后真实云桌面；验收须贴合真实操作，避免测试通过但用户操作有问题。本轮授权继续新版阶段4（包括4.x）后补正式E2E计划。"
+        }
+      ]
+    },
+    {
+      "name": "team-exec",
+      "display": "团队实施与验证",
+      "status": "pending",
+      "output_dir": null,
+      "output_files": [],
+      "team_mode": null,
+      "omc_slug": "",
+      "contract_files": [],
+      "review_rounds": 0,
+      "max_rounds": 10,
+      "test_status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "notes": "",
+      "_managed_by": "claude-dev-pipeline",
+      "user_instructions": []
+    },
+    {
+      "name": "external-review",
+      "display": "独立外部审查",
+      "status": "pending",
+      "output_dir": "docs/dev-pipeline/ext-review/",
+      "output_files": [],
+      "ext_rounds": 0,
+      "verdict_files": [],
+      "materials": [],
+      "started_at": null,
+      "completed_at": null,
+      "notes": "",
+      "_managed_by": "claude-dev-pipeline",
+      "user_instructions": []
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "display": "分支合并交付",
+      "status": "pending",
+      "output_dir": null,
+      "output_files": [],
+      "started_at": null,
+      "completed_at": null,
+      "notes": "",
+      "_managed_by": "claude-dev-pipeline",
+      "user_instructions": []
+    },
+    {
+      "name": "release-packaging",
+      "display": "打包构建交付",
+      "status": "pending",
+      "output_dir": "product/",
+      "output_files": [],
+      "delivery_name": "",
+      "product_dir": "",
+      "artifacts": [],
+      "release_notes": "",
+      "started_at": null,
+      "completed_at": null,
+      "notes": "",
+      "_managed_by": "claude-dev-pipeline",
+      "user_instructions": []
+    }
+  ],
+  "team_mode": "auto",
+  "_orchestrator": "codex",
+  "_handoff": "节点5前全部完成后交Claude dev-pipeline从阶段5（team-exec）续接执行",
+  "pipeline_state": "in_progress",
+  "_handoff_mode": "standard"
+}

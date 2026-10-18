@@ -1,0 +1,19 @@
+stateDiagram-v2
+  [*] --> Absent
+  Absent --> Assembling: 获得完整重建标识
+  Assembling --> ReadyBlob: 解压正常结束且 Blob 已移交页面
+  Assembling --> Discarded: 解压错误或停止
+  ReadyBlob --> Writing: 用户显式保存
+  Writing --> SavedBlob: 写入和关闭均成功
+  Writing --> RetryableBlob: 选择取消或 IO 失败
+  RetryableBlob --> Writing: 使用同一 Blob 重试
+  ReadyBlob --> Discarded: 停止或重置或退出
+  RetryableBlob --> Discarded: 停止或重置或退出
+  SavedBlob --> Discarded: 结束当前会话
+  Writing --> Settling: 停止或退出请求
+  Settling --> Discarded: 写入已取消或已收敛
+  Discarded --> [*]
+  note right of SavedBlob
+    保存完成不等于 SHA-256 已核对
+    已保存文件不会因清理而被删除
+  end note

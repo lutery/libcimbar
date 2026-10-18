@@ -1,0 +1,25 @@
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Preparing: 开始并创建新会话
+  Preparing --> Receiving: 输入与全新解码实例就绪
+  Preparing --> Stopping: 取消或初始化失败或停止
+  Receiving --> Receiving: 有效或无效帧与进度状态
+  Receiving --> Draining: 录像输入已结束
+  Receiving --> Reconstructing: 重建完成标识已返回
+  Receiving --> Stopping: 源中断或用户停止或致命错误
+  Draining --> Reconstructing: 排空后已满足重建
+  Draining --> Incomplete: 排空且无完整文件
+  Incomplete --> Stopping: 报告未完成并清理
+  Reconstructing --> Ready: 正常解压结束且产物转交成功
+  Reconstructing --> Stopping: 解压失败或用户停止
+  Ready --> Saving: 显式点击保存
+  Saving --> Saved: 写入及关闭成功
+  Saving --> Retryable: 取消或保存失败
+  Retryable --> Saving: 同会话重试保存
+  Ready --> Stopping: 停止或重置
+  Retryable --> Stopping: 停止或重置
+  Saved --> Stopping: 结束或准备新会话
+  Saving --> Stopping: 停止请求并等待写入收敛
+  Stopping --> Stopped: 身份失效且所有资源已释放
+  Stopped --> Preparing: 再次开始且不继承旧状态
+  Stopped --> [*]: 页面关闭

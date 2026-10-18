@@ -1,0 +1,21 @@
+flowchart TD
+  classDef event fill:#ff9800,stroke:#e65100,color:#000
+  classDef command fill:#2196f3,stroke:#0d47a1,color:#fff
+  classDef actor fill:#ffeb3b,stroke:#f57f17,color:#000
+  classDef system fill:#9c27b0,stroke:#4a148c,color:#fff
+  classDef aggregate fill:#4caf50,stroke:#1b5e20,color:#fff
+  classDef hotspot fill:#f44336,stroke:#b71c1c,color:#fff
+  I["实施执行方"]:::actor --> Run["本地同机启动原发送端和新接收端"]:::command
+  Run --> Sim["本地实际窗口与其录像"]:::system
+  Sim --> Cases["双输入成功和异常及停止重启与保存重试"]
+  Cases --> Evidence["两类数据哈希与测量证据已记录"]:::event
+  Evidence --> Local{"本地适用功能用例通过？"}
+  Local -->|否| Fix["接收端内整改与复验"]
+  Fix --> Cases
+  Local -->|是| Report["本地模拟结果已交付"]:::event
+  Report --> User["用户现场验收人"]:::actor
+  User --> Field["真实云桌面执行双输入与哈希测试"]:::command
+  Field --> FieldResult["现场结果已单独记录"]:::event
+  Evidence --> Perf["容量性能先报告测量值再确认范围"]
+  Perf -.-> H["? H-PERF 阈值未冻结不得判性能 PASS"]:::hotspot
+  Report --> Pending["现场未执行时保持 NOT RUN"]:::event

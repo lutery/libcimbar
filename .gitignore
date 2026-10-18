@@ -21,3 +21,6 @@ cmake_install.cmake
 # docs/cloud-desktop-screen-capture-feasibility.md
 cimbar-recv/
 cimbar.wasm.tar.gz
+
+# local Claude session memo (personal, not part of the project)
+.claude/

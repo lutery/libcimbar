@@ -1,0 +1,35 @@
+sequenceDiagram
+  actor U as 接收操作者
+  participant UI as 新接收页面
+  participant S as 会话协调器
+  participant B as 浏览器捕获与媒体
+  participant W as 本会话解码 Worker
+  U->>UI: 点击开始实时接收
+  UI->>S: 建立新身份与固定模式
+  UI->>B: 同一用户动作直接发起捕获选择
+  S->>W: 创建全新 WASM 实例
+  alt 用户选择成功且当前会话有效
+    B-->>S: 捕获流
+    W-->>S: 初始化完成
+    S->>B: 绑定媒体并开始帧回调
+    loop 直到完成或停止且每次至多一帧在途
+      B-->>S: 自然尺寸呈现帧
+      S->>W: 带会话身份的 RGBA 帧
+      W-->>S: 进度或完整产物或错误
+      S-->>UI: 更新当前会话状态
+    end
+  else 取消授权或初始化失败或身份已过期
+    B-->>S: 失败或迟到的捕获流
+    S->>B: 停止已取得 tracks 并断开媒体
+    S->>W: 终止无效实例
+    S-->>UI: 显示取消或错误
+  end
+  opt 用户停止或捕获源中断
+    U->>UI: 停止
+    UI->>S: 先使身份失效
+    S->>B: 取消回调并停止流
+    S->>W: 终止实例
+    W-->>S: 迟到结果
+    Note over S: 旧身份结果只丢弃不改变新会话
+    S-->>UI: 已停止且可重新开始
+  end

@@ -1,0 +1,39 @@
+erDiagram
+  RECEIVE_SESSION ||--o| INPUT_SOURCE : owns
+  RECEIVE_SESSION ||--o| FILE_ARTIFACT : reconstructs
+  FILE_ARTIFACT ||--o{ SAVE_ATTEMPT : allows
+  VALIDATION_RUN ||--o{ CASE_EVIDENCE : records
+  RECEIVE_SESSION ||--o{ CASE_EVIDENCE : observed_by
+  RECEIVE_SESSION {
+    string session_identity
+    string input_kind
+    string fixed_mode
+    string lifecycle_state
+  }
+  INPUT_SOURCE {
+    string source_kind
+    string dimensions_and_timing
+    string input_lifecycle
+  }
+  FILE_ARTIFACT {
+    string suggested_basename
+    string immutable_bytes
+    string output_size
+    string artifact_state
+  }
+  SAVE_ATTEMPT {
+    string attempt_identity
+    string outcome
+    string write_close_result
+  }
+  VALIDATION_RUN {
+    string environment_versions
+    string local_or_real_cloud
+    string timestamps_and_scope
+  }
+  CASE_EVIDENCE {
+    string acceptance_id
+    string status
+    string sizes_and_frame_metrics
+    string source_and_saved_sha256
+  }

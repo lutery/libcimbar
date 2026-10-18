@@ -1,0 +1,2377 @@
+{
+  "version": 1,
+  "notice": "全部是元数据/原生载荷类型示例；占位版本、哈希、路径和PASS均不代表产品运行证据。 各项为独立示例，非同一会话的连续时间线。",
+  "examples": [
+    {
+      "id": "capabilities.inspect-request",
+      "interfaceId": "IF-001",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "capabilities.inspect",
+        "requestId": "req-capabilities-inspect",
+        "sessionId": null,
+        "data": {}
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "capabilities.inspect-success",
+      "interfaceId": "IF-001",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "capabilities.inspect",
+        "requestId": "req-capabilities-inspect",
+        "sessionId": null,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "secureContext": true,
+          "capture": true,
+          "savePicker": true,
+          "frameCallbacks": true,
+          "worker": true,
+          "wasm": true,
+          "modes": [
+            "B"
+          ],
+          "videoCandidates": [
+            "mp4-h264",
+            "webm-vp8"
+          ],
+          "assetSetId": "example-assets",
+          "profileId": "local-baseline-v1"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.start-request",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "session.start",
+        "requestId": "req-session-start",
+        "sessionId": null,
+        "data": {
+          "input": {
+            "kind": "live"
+          },
+          "mode": "B"
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.start-success",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-session-start",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "outcome": "accepted",
+          "snapshot": {
+            "sessionId": "session-1",
+            "inputKind": "live",
+            "mode": "B",
+            "state": "Preparing",
+            "revision": 1,
+            "inputEnded": false,
+            "cleanupComplete": false,
+            "pendingExternal": [
+              "capture_picker"
+            ],
+            "artifact": null,
+            "saveAttemptId": null,
+            "lastError": null,
+            "stats": {
+              "capturedFrames": 0,
+              "submittedFrames": 0,
+              "processedFrames": 0,
+              "droppedFrames": 0,
+              "inflight": 0,
+              "elapsedMs": 0
+            },
+            "saveStatus": "none"
+          }
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.read-request",
+      "interfaceId": "IF-003",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "session.read",
+        "requestId": "req-session-read",
+        "sessionId": "session-1",
+        "data": {}
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.read-success",
+      "interfaceId": "IF-003",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.read",
+        "requestId": "req-session-read",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "snapshot": {
+            "sessionId": "session-1",
+            "inputKind": "live",
+            "mode": "B",
+            "state": "Ready",
+            "revision": 4,
+            "inputEnded": false,
+            "cleanupComplete": false,
+            "pendingExternal": [],
+            "artifact": {
+              "artifactId": "artifact-1",
+              "fountainFileId": "01000001",
+              "suggestedName": "example.txt",
+              "byteCount": 3,
+              "compressedBytes": 64,
+              "mime": "application/octet-stream"
+            },
+            "saveAttemptId": null,
+            "lastError": null,
+            "stats": {
+              "capturedFrames": 1,
+              "submittedFrames": 1,
+              "processedFrames": 1,
+              "droppedFrames": 0,
+              "inflight": 0,
+              "elapsedMs": 1000
+            },
+            "saveStatus": "none"
+          }
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.stop-request",
+      "interfaceId": "IF-004",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "session.stop",
+        "requestId": "req-session-stop",
+        "sessionId": "session-1",
+        "data": {
+          "reason": "user"
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.stop-success",
+      "interfaceId": "IF-004",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.stop",
+        "requestId": "req-session-stop",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "outcome": "completed",
+          "snapshot": {
+            "sessionId": "session-1",
+            "inputKind": "live",
+            "mode": "B",
+            "state": "Stopped",
+            "revision": 7,
+            "inputEnded": false,
+            "cleanupComplete": true,
+            "pendingExternal": [],
+            "artifact": null,
+            "saveAttemptId": null,
+            "lastError": null,
+            "stats": {
+              "capturedFrames": 0,
+              "submittedFrames": 0,
+              "processedFrames": 0,
+              "droppedFrames": 0,
+              "inflight": 0,
+              "elapsedMs": 0
+            },
+            "saveStatus": "none"
+          }
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "decoder.init-request",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "decoder.init",
+        "requestId": "req-decoder-init",
+        "sessionId": "session-1",
+        "data": {
+          "mode": "B",
+          "assets": {
+            "assetSetId": "example-assets",
+            "sourceRevision": "84e7a1a",
+            "jsPath": "assets/cimbar_js.js",
+            "wasmPath": "assets/cimbar_js.wasm",
+            "jsSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "wasmSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+            "strictEofEvidenceRef": "evidence/strict-eof.json"
+          },
+          "limits": {
+            "profileId": "local-baseline-v1",
+            "maxFramePixels": 4194304,
+            "maxArtifactBytes": 16777216,
+            "inflightLimit": 1,
+            "initTimeoutMs": 30000,
+            "frameTimeoutMs": 30000,
+            "videoReadyTimeoutMs": 15000,
+            "saveIoNoticeMs": 30000,
+            "cleanupNoticeMs": 5000,
+            "noDataNoticeMs": 5000
+          }
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "decoder.init-success",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-decoder-init",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "outcome": "ready",
+          "mode": "B",
+          "assetSetId": "example-assets",
+          "strictEofVerified": true
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "decoder.frame-request",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "decoder.frame",
+        "requestId": "req-decoder-frame",
+        "sessionId": "session-1",
+        "data": {
+          "frameId": 1,
+          "width": 2,
+          "height": 2,
+          "pixelFormat": "RGBA",
+          "byteLength": 16,
+          "mediaTimeUs": 0,
+          "finalSample": false
+        }
+      },
+      "nativePayload": {
+        "kind": "ArrayBuffer",
+        "byteLength": 16
+      }
+    },
+    {
+      "id": "decoder.frame-success",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-decoder-frame",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "frameId": 1,
+          "outcome": "artifact",
+          "bytesDecoded": 625,
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          }
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "Blob",
+        "byteLength": 3
+      }
+    },
+    {
+      "id": "artifact.save-request",
+      "interfaceId": "IF-008",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "artifact.save",
+        "requestId": "req-artifact-save",
+        "sessionId": "session-1",
+        "data": {
+          "artifactId": "artifact-1"
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "artifact.save-success",
+      "interfaceId": "IF-008",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "artifact.save",
+        "requestId": "req-artifact-save",
+        "sessionId": "session-1",
+        "ok": true,
+        "code": 0,
+        "data": {
+          "outcome": "accepted",
+          "attemptId": "save-1",
+          "artifactId": "artifact-1"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "evidence.record-request",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "evidence.record",
+        "requestId": "req-evidence-record",
+        "sessionId": null,
+        "data": {
+          "runId": "example-run",
+          "caseId": "roundtrip-live",
+          "scope": "local_simulated",
+          "caseType": "file_roundtrip",
+          "executedBy": "executor",
+          "acceptanceIds": [
+            "AC-001",
+            "AC-004",
+            "AC-010"
+          ],
+          "result": "PASS",
+          "inputKind": "live",
+          "sourceKind": "real_window",
+          "referenceSha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+          "receivedSha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+          "rawBytes": 3,
+          "compressedBytes": 64,
+          "width": 1024,
+          "height": 1024,
+          "sourceFps": 15,
+          "processedFps": 10,
+          "elapsedMs": 1000,
+          "assetSetId": "example-assets",
+          "sourceRevision": "84e7a1a",
+          "environment": "SYNTHETIC EXAMPLE ONLY; not a real run",
+          "proofRefs": [
+            "example-only/not-real-evidence.json"
+          ],
+          "notes": "语法样例，不代表真实测试已执行或通过。"
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "evidence.record-success",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "evidence.record",
+        "requestId": "req-evidence-record",
+        "sessionId": null,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "runId": "example-run",
+          "caseId": "roundtrip-live",
+          "stored": true
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.start-video-request",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "session.start",
+        "requestId": "req-video-start",
+        "sessionId": null,
+        "data": {
+          "input": {
+            "kind": "video",
+            "name": "sample.webm",
+            "size": 1024,
+            "mime": "video/webm",
+            "lastModified": 0
+          },
+          "mode": "B"
+        }
+      },
+      "nativePayload": {
+        "kind": "File",
+        "name": "sample.webm",
+        "size": 1024,
+        "mime": "video/webm",
+        "lastModified": 0
+      }
+    },
+    {
+      "id": "source.ended-eof",
+      "interfaceId": "IF-007",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "source.ended",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 1,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "reason": "eof",
+          "lastSubmittedFrameId": 1,
+          "finalSampleSubmitted": true,
+          "error": null
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "session.changed-ready",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": "req-session-start",
+        "sessionId": "session-1",
+        "eventSeq": 4,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Ready",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": null,
+          "lastError": null,
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-10001",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-10001",
+        "sessionId": null,
+        "ok": false,
+        "code": 10001,
+        "data": null,
+        "error": {
+          "code": 10001,
+          "name": "INVALID_REQUEST",
+          "message": "输入参数无效",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-10002",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-10002",
+        "sessionId": null,
+        "ok": false,
+        "code": 10002,
+        "data": null,
+        "error": {
+          "code": 10002,
+          "name": "CONTRACT_VERSION_UNSUPPORTED",
+          "message": "接收组件版本不兼容",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-10003",
+      "interfaceId": "protocol",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "protocol.reject",
+        "requestId": "req-error-10003",
+        "sessionId": null,
+        "ok": false,
+        "code": 10003,
+        "data": null,
+        "error": {
+          "code": 10003,
+          "name": "UNSUPPORTED_OPERATION",
+          "message": "不支持该操作",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-10004",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-10004",
+        "sessionId": null,
+        "ok": false,
+        "code": 10004,
+        "data": null,
+        "error": {
+          "code": 10004,
+          "name": "USER_ACTIVATION_REQUIRED",
+          "message": "请点击按钮后重试",
+          "retryAction": "new_click",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-11001",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-11001",
+        "sessionId": null,
+        "ok": false,
+        "code": 11001,
+        "data": null,
+        "error": {
+          "code": 11001,
+          "name": "SESSION_NOT_FOUND",
+          "message": "接收会话不存在",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-11002",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-11002",
+        "sessionId": null,
+        "ok": false,
+        "code": 11002,
+        "data": null,
+        "error": {
+          "code": 11002,
+          "name": "SESSION_BUSY",
+          "message": "请先结束当前接收",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-11003",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-11003",
+        "sessionId": null,
+        "ok": false,
+        "code": 11003,
+        "data": null,
+        "error": {
+          "code": 11003,
+          "name": "ILLEGAL_STATE",
+          "message": "当前状态不能执行此操作",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-11004",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-11004",
+        "sessionId": null,
+        "ok": false,
+        "code": 11004,
+        "data": null,
+        "error": {
+          "code": 11004,
+          "name": "REQUEST_ID_CONFLICT",
+          "message": "操作标识冲突",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-11005",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-11005",
+        "sessionId": null,
+        "ok": false,
+        "code": 11005,
+        "data": null,
+        "error": {
+          "code": 11005,
+          "name": "SESSION_CHANGED",
+          "message": "接收会话已改变",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12001",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12001,
+            "name": "CAPTURE_UNSUPPORTED",
+            "message": "当前环境不支持抓屏",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12002",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12002,
+            "name": "CAPTURE_NOT_ALLOWED",
+            "message": "未获得抓屏权限",
+            "retryAction": "new_click",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12003",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12003,
+            "name": "CAPTURE_UNREADABLE",
+            "message": "无法读取所选画面",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12004",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12004,
+            "name": "CAPTURE_SOURCE_NOT_FOUND",
+            "message": "没有可用捕获来源",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12005",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12005,
+            "name": "CAPTURE_SOURCE_ENDED",
+            "message": "画面共享已结束",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-12006",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 12006,
+            "name": "CAPTURE_CONTEXT_INVALID",
+            "message": "抓屏窗口状态不可用",
+            "retryAction": "new_click",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-13001",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "video",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 13001,
+            "name": "VIDEO_UNSUPPORTED",
+            "message": "该录像格式暂不支持",
+            "retryAction": "fix_input",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-13002",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "video",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 13002,
+            "name": "VIDEO_DECODE_FAILED",
+            "message": "录像读取失败",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-13003",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "video",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 13003,
+            "name": "VIDEO_READY_TIMEOUT",
+            "message": "录像加载超时",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-13004",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "video",
+          "mode": "B",
+          "state": "Incomplete",
+          "revision": 7,
+          "inputEnded": true,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 13004,
+            "name": "VIDEO_INCOMPLETE",
+            "message": "录像结束但文件未收全",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-13005",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "video",
+          "mode": "B",
+          "state": "Stopped",
+          "revision": 7,
+          "inputEnded": false,
+          "cleanupComplete": true,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 13005,
+            "name": "VIDEO_METADATA_INVALID",
+            "message": "录像信息无效",
+            "retryAction": "fix_input",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 0,
+            "submittedFrames": 0,
+            "processedFrames": 0,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 0
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-14001",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-14001",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 14001,
+        "data": null,
+        "error": {
+          "code": 14001,
+          "name": "FRAME_LAYOUT_INVALID",
+          "message": "画面帧格式无效",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-14002",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-14002",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 14002,
+        "data": null,
+        "error": {
+          "code": 14002,
+          "name": "FRAME_BUDGET_EXCEEDED",
+          "message": "画面尺寸超过当前接收范围",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-14003",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-14003",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 14003,
+        "data": null,
+        "error": {
+          "code": 14003,
+          "name": "FRAME_PROCESS_TIMEOUT",
+          "message": "画面处理超时",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-14004",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-14004",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 14004,
+        "data": null,
+        "error": {
+          "code": 14004,
+          "name": "FRAME_COPY_FAILED",
+          "message": "无法读取画面像素",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-14005",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-14005",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 14005,
+        "data": null,
+        "error": {
+          "code": 14005,
+          "name": "FRAME_ORDER_VIOLATION",
+          "message": "帧处理顺序异常",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15001",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-15001",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15001,
+        "data": null,
+        "error": {
+          "code": 15001,
+          "name": "WASM_INIT_FAILED",
+          "message": "解码器初始化失败",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15002",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-15002",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15002,
+        "data": null,
+        "error": {
+          "code": 15002,
+          "name": "WASM_EXPORT_MISSING",
+          "message": "解码器组件不完整",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15003",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15003",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15003,
+        "data": null,
+        "error": {
+          "code": 15003,
+          "name": "WASM_RUNTIME_FAILED",
+          "message": "解码器运行失败",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15004",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15004",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15004,
+        "data": null,
+        "error": {
+          "code": 15004,
+          "name": "WASM_ALLOCATION_FAILED",
+          "message": "接收内存不足",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15005",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15005",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15005,
+        "data": null,
+        "error": {
+          "code": 15005,
+          "name": "FOUNTAIN_CHUNK_INVALID",
+          "message": "编码块不符合接收参数",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15006",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15006",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15006,
+        "data": null,
+        "error": {
+          "code": 15006,
+          "name": "RECOVERY_FAILED",
+          "message": "文件重建失败",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15007",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15007",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15007,
+        "data": null,
+        "error": {
+          "code": 15007,
+          "name": "DECOMPRESS_FAILED",
+          "message": "文件解压失败",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15008",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15008",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15008,
+        "data": null,
+        "error": {
+          "code": 15008,
+          "name": "ARTIFACT_BUDGET_EXCEEDED",
+          "message": "文件超过当前接收容量",
+          "retryAction": "fix_input",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15009",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-15009",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15009,
+        "data": null,
+        "error": {
+          "code": 15009,
+          "name": "WASM_ABI_MISMATCH",
+          "message": "解码器版本不匹配",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15010",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15010",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15010,
+        "data": null,
+        "error": {
+          "code": 15010,
+          "name": "WORKER_CHANNEL_FAILED",
+          "message": "解码通信中断",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15011",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-15011",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15011,
+        "data": null,
+        "error": {
+          "code": 15011,
+          "name": "WASM_INIT_TIMEOUT",
+          "message": "解码器加载超时",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-15012",
+      "interfaceId": "IF-006",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.frame",
+        "requestId": "req-error-15012",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 15012,
+        "data": null,
+        "error": {
+          "code": 15012,
+          "name": "DECOMPRESS_INCOMPLETE",
+          "message": "压缩数据不完整",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16001",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16001,
+            "name": "SAVE_UNSUPPORTED",
+            "message": "当前浏览器不支持此保存方式",
+            "retryAction": "new_session",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "failed"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16002",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16002,
+            "name": "SAVE_CANCELLED",
+            "message": "保存已取消，可再次保存",
+            "retryAction": "retry_save",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "cancelled"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16003",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16003,
+            "name": "SAVE_PERMISSION_DENIED",
+            "message": "没有所选位置的写入权限",
+            "retryAction": "retry_save",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "failed"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16004",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16004,
+            "name": "SAVE_FILE_LOCKED",
+            "message": "文件正被占用",
+            "retryAction": "retry_save",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "failed"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16005",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16005,
+            "name": "SAVE_WRITE_FAILED",
+            "message": "文件写入失败",
+            "retryAction": "retry_save",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "failed"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16006",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Retryable",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16006,
+            "name": "SAVE_CLOSE_FAILED",
+            "message": "保存尚未完成",
+            "retryAction": "retry_save",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "failed"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16007",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Receiving",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [],
+          "artifact": null,
+          "saveAttemptId": null,
+          "lastError": {
+            "code": 16007,
+            "name": "ARTIFACT_NOT_READY",
+            "message": "尚无可保存的完整文件",
+            "retryAction": "wait",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "none"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16008",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Saving",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [
+            "save_io"
+          ],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16008,
+            "name": "SAVE_BUSY",
+            "message": "当前保存仍在进行",
+            "retryAction": "wait",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "pending"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-16009",
+      "interfaceId": "IF-009",
+      "metadata": {
+        "version": 1,
+        "kind": "event",
+        "op": "session.changed",
+        "requestId": null,
+        "sessionId": "session-1",
+        "eventSeq": 8,
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionId": "session-1",
+          "inputKind": "live",
+          "mode": "B",
+          "state": "Saving",
+          "revision": 4,
+          "inputEnded": false,
+          "cleanupComplete": false,
+          "pendingExternal": [
+            "save_io"
+          ],
+          "artifact": {
+            "artifactId": "artifact-1",
+            "fountainFileId": "01000001",
+            "suggestedName": "example.txt",
+            "byteCount": 3,
+            "compressedBytes": 64,
+            "mime": "application/octet-stream"
+          },
+          "saveAttemptId": "save-1",
+          "lastError": {
+            "code": 16009,
+            "name": "SAVE_OUTCOME_PENDING",
+            "message": "保存结果尚未确认，请等待",
+            "retryAction": "wait",
+            "details": {}
+          },
+          "stats": {
+            "capturedFrames": 1,
+            "submittedFrames": 1,
+            "processedFrames": 1,
+            "droppedFrames": 0,
+            "inflight": 0,
+            "elapsedMs": 1000
+          },
+          "saveStatus": "pending"
+        },
+        "error": null
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-17001",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "evidence.record",
+        "requestId": "req-error-17001",
+        "sessionId": null,
+        "ok": false,
+        "code": 17001,
+        "data": null,
+        "error": {
+          "code": 17001,
+          "name": "HASH_MISMATCH",
+          "message": "文件一致性验证失败",
+          "retryAction": "revalidate",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-17002",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "evidence.record",
+        "requestId": "req-error-17002",
+        "sessionId": null,
+        "ok": false,
+        "code": 17002,
+        "data": null,
+        "error": {
+          "code": 17002,
+          "name": "EVIDENCE_MISSING",
+          "message": "验证证据不完整",
+          "retryAction": "revalidate",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-17003",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "evidence.record",
+        "requestId": "req-error-17003",
+        "sessionId": null,
+        "ok": false,
+        "code": 17003,
+        "data": null,
+        "error": {
+          "code": 17003,
+          "name": "VALIDATION_SCOPE_CONFLICT",
+          "message": "验证范围与证据不符",
+          "retryAction": "revalidate",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-18001",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-18001",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 18001,
+        "data": null,
+        "error": {
+          "code": 18001,
+          "name": "ASSET_MISSING",
+          "message": "缺少接收组件",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-18002",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-18002",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 18002,
+        "data": null,
+        "error": {
+          "code": 18002,
+          "name": "ASSET_DIGEST_MISMATCH",
+          "message": "接收组件校验不一致",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-18003",
+      "interfaceId": "IF-005",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "decoder.init",
+        "requestId": "req-error-18003",
+        "sessionId": "session-1",
+        "ok": false,
+        "code": 18003,
+        "data": null,
+        "error": {
+          "code": 18003,
+          "name": "ASSET_PAIR_INCOMPATIBLE",
+          "message": "接收组件不兼容",
+          "retryAction": "fix_assets",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "error-90001",
+      "interfaceId": "IF-002",
+      "metadata": {
+        "version": 1,
+        "kind": "response",
+        "op": "session.start",
+        "requestId": "req-error-90001",
+        "sessionId": null,
+        "ok": false,
+        "code": 90001,
+        "data": null,
+        "error": {
+          "code": 90001,
+          "name": "UNEXPECTED_INTERNAL",
+          "message": "操作未完成，请重新开始",
+          "retryAction": "new_session",
+          "details": {}
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "evidence.record-real-cloud-not-run",
+      "interfaceId": "IF-010",
+      "metadata": {
+        "version": 1,
+        "kind": "request",
+        "op": "evidence.record",
+        "requestId": "req-evidence-record",
+        "sessionId": null,
+        "data": {
+          "runId": "example-field",
+          "caseId": "field-not-run",
+          "scope": "real_cloud",
+          "caseType": "file_roundtrip",
+          "executedBy": null,
+          "acceptanceIds": [
+            "AC-001",
+            "AC-004",
+            "AC-010"
+          ],
+          "result": "NOT_RUN",
+          "inputKind": "live",
+          "sourceKind": "none",
+          "referenceSha256": null,
+          "receivedSha256": null,
+          "rawBytes": null,
+          "compressedBytes": null,
+          "width": null,
+          "height": null,
+          "sourceFps": null,
+          "processedFps": null,
+          "elapsedMs": null,
+          "assetSetId": "example-assets",
+          "sourceRevision": "84e7a1a",
+          "environment": "SYNTHETIC EXAMPLE ONLY; not a real run",
+          "proofRefs": [],
+          "notes": "合成的现场未执行记录，不代表产品通过。"
+        }
+      },
+      "nativePayload": {
+        "kind": "none"
+      }
+    }
+  ]
+}

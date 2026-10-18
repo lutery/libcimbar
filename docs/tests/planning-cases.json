@@ -1,0 +1,1774 @@
+{
+  "kind": "planning_only",
+  "version": 1,
+  "unitCases": [
+    {
+      "id": "UT-001",
+      "group": "contracts",
+      "title": "拒绝非原生帧载荷",
+      "given": "伪装ArrayBuffer的普通对象",
+      "when": "提交decoder.frame",
+      "then": "返回类型错误且不调用WASM",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-002",
+      "group": "contracts",
+      "title": "RGBA精确长度",
+      "given": "2×3帧配23/24/25字节",
+      "when": "校验并提交",
+      "then": "仅24字节通过；不截断或补零",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-003",
+      "group": "contracts",
+      "title": "像素预算边界",
+      "given": "上限和上限加一/整数乘积溢出",
+      "when": "分配前校验",
+      "then": "越界拒绝且不分配；边界内精确匹配",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-004",
+      "group": "contracts",
+      "title": "File对象身份去重",
+      "given": "同requestId同内容但不同File对象",
+      "when": "重复session.start",
+      "then": "相同对象幂等，不同对象返回冲突",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-005",
+      "group": "contracts",
+      "title": "原生Blob与元数据一致",
+      "given": "Blob长度和artifact.byteLength不同",
+      "when": "接收产物",
+      "then": "拒绝错配，不进入Ready",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-006",
+      "group": "contracts",
+      "title": "错误码登记一致",
+      "given": "53登记码及未知原生错误",
+      "when": "生成错误包",
+      "then": "外层code/name/retryAction一致；未知原因不编造",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-006"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/contracts.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-007",
+      "group": "session",
+      "title": "同步reserve并调用选择器",
+      "given": "fake同步调用顺序记录器",
+      "when": "点击startLiveFromClick",
+      "then": "picker调用前没有await Worker；仅一个会话",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-008",
+      "group": "session",
+      "title": "重复开始幂等",
+      "given": "相同requestId和参数",
+      "when": "快速调用两次start",
+      "then": "只有一次picker和Worker；返回同操作",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-009",
+      "group": "session",
+      "title": "旧Worker回复丢弃",
+      "given": "停止A后新B及A晚回复",
+      "when": "派发消息",
+      "then": "B进度/产物不变，A只清理",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-010",
+      "group": "session",
+      "title": "迟到授权流释放",
+      "given": "A选择器未决时内部stop",
+      "when": "让旧授权返回stream",
+      "then": "track立即stop，未收敛前不新开始",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-011",
+      "group": "session",
+      "title": "未决清理快照",
+      "given": "活动picker或写入尚未返回",
+      "when": "stop/read/重复stop",
+      "then": "Stopping且cleanupComplete=false，重复停止无副作用",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-012",
+      "group": "session",
+      "title": "新会话干净状态",
+      "given": "同名同大小内容不同A/B",
+      "when": "停止后启动B",
+      "then": "计数从零；无A Blob/File引用；eventSeq/身份一致",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/session.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-013",
+      "group": "scheduler",
+      "title": "实时忙时丢采样",
+      "given": "一帧在途，新实时帧",
+      "when": "submit",
+      "then": "不排队/不重发；drop计数+1",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-014",
+      "group": "scheduler",
+      "title": "录像背压",
+      "given": "一帧在途，新录像呈现帧",
+      "when": "等待后续提交",
+      "then": "媒体暂停/恢复配对，单槽不超过1",
+      "acceptanceIds": [
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-015",
+      "group": "scheduler",
+      "title": "终止和回复竞争",
+      "given": "同一frameId超时/停止/回复",
+      "when": "以所有顺序结算",
+      "then": "槽位仅释放一次，不变负数",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-016",
+      "group": "scheduler",
+      "title": "detach后不读取",
+      "given": "transfer列表中的真实ArrayBuffer",
+      "when": "postMessage后访问策略",
+      "then": "主线程不再消费原缓冲；Worker返回字节独立",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-017",
+      "group": "scheduler",
+      "title": "自然尺寸不缩放",
+      "given": "自然尺寸与CSS显示尺寸不同",
+      "when": "提取RGBA",
+      "then": "使用自然宽高；预算不够拒绝而非静默缩图",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-018",
+      "group": "scheduler",
+      "title": "EOF在途屏障",
+      "given": "EOF与最终帧回复竞争",
+      "when": "锁存并排空",
+      "then": "回复前不判不足；最多一次最终补采，无无限等待",
+      "acceptanceIds": [
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T2.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/scheduler.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-019",
+      "group": "worker",
+      "title": "初始化单次结算",
+      "given": "fake Module重复ready/abort",
+      "when": "初始化",
+      "then": "仅一个终态响应，失败不继续处理",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-020",
+      "group": "worker",
+      "title": "BigInt结果按符号解释",
+      "given": "0n/负值/大于32位正ID",
+      "when": "处理fountain返回",
+      "then": "不混Number/BigInt；正ID截uint32格式化不丢符号",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-021",
+      "group": "worker",
+      "title": "堆数据先复制",
+      "given": "fake堆在free后被改写",
+      "when": "取得输出并free",
+      "then": "Blob保持原字节；不引用已释放HEAP",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-022",
+      "group": "worker",
+      "title": "解压失败不Ready",
+      "given": "正输出后负错误或不完整",
+      "when": "读取解压结果",
+      "then": "不交付半文件，不用连续两个0自证完整",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-023",
+      "group": "worker",
+      "title": "输出预算精确边界",
+      "given": "累计产物上限及上限加一",
+      "when": "追加新块",
+      "then": "边界可接受；超限拒绝且无截断成功",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-024",
+      "group": "worker",
+      "title": "WASM路径与导出错误",
+      "given": "错配资产/缺导出/初始化超时",
+      "when": "init和恢复",
+      "then": "拒绝坏组合并终止实例，新会话才重试",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T1.2.c"
+      ],
+      "target": "web/desktop-recv/tests/unit/worker.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-025",
+      "group": "save",
+      "title": "显式用户点击才选目标",
+      "given": "已重建Blob及fake调用序列",
+      "when": "saveFromClick",
+      "then": "立即picker；不从Worker回调自动弹窗",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-026",
+      "group": "save",
+      "title": "write和close完成才Saved",
+      "given": "分别延迟write/close",
+      "when": "保存",
+      "then": "两者都成功才saved；拒绝时可重试",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-027",
+      "group": "save",
+      "title": "取消后同Blob重试",
+      "given": "第一次AbortError，第二次成功",
+      "when": "两次独立点击",
+      "then": "同一artifact，不再解压/接收，输出字节不变",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-028",
+      "group": "save",
+      "title": "pending不重复写",
+      "given": "延迟IO超过notice期限",
+      "when": "等提示并重复保存",
+      "then": "仍pending，只有一次写；不假成功或自动重试",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-029",
+      "group": "save",
+      "title": "停止后才选定目标",
+      "given": "picker未返回时内部停止",
+      "when": "返回handle",
+      "then": "不调用createWritable；旧清理收敛后可新会话",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-030",
+      "group": "save",
+      "title": "在途写晚提交不删除",
+      "given": "写已启动后stop，close晚成功",
+      "when": "结算旧attempt",
+      "then": "如实saveStatus=saved，文件不删除；新会话不被覆盖",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/save.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-031",
+      "group": "video",
+      "title": "取消选择无资源泄漏",
+      "given": "无File/取消事件",
+      "when": "选择后取消",
+      "then": "可重新导入，不创建空URL或假成功",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-032",
+      "group": "video",
+      "title": "损坏或不支持媒体",
+      "given": "实际失败的metadata/媒体错误",
+      "when": "open",
+      "then": "有限失败，URL回收，可导入正常文件",
+      "acceptanceIds": [
+        "AC-008"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-033",
+      "group": "video",
+      "title": "媒体时间去重",
+      "given": "同一呈现媒体时间重复回调",
+      "when": "采样",
+      "then": "不提交重复frameId，不保证源每帧必达",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-034",
+      "group": "video",
+      "title": "EOF最终帧完成优先",
+      "given": "ended先于最终Worker artifact",
+      "when": "锁存EOF后返回完整产物",
+      "then": "成功优先；不先报不足，不等待永不到的rVFC",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-035",
+      "group": "video",
+      "title": "不足录像有限结束",
+      "given": "合法视频EOF但数据不足",
+      "when": "有限补采/排空",
+      "then": "未完成而非Ready；无自动循环重播",
+      "acceptanceIds": [
+        "AC-008"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-036",
+      "group": "video",
+      "title": "停止回收媒体",
+      "given": "活动video/URL/回调",
+      "when": "stop后晚事件",
+      "then": "暂停并解绑、取消回调/撤URL一次，旧数据无影响",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T3.1.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/video.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-037",
+      "group": "ui",
+      "title": "能力检查无授权副作用",
+      "given": "缺抓屏/保存/安全上下文",
+      "when": "inspect",
+      "then": "仅报告实际能力，不弹系统授权",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-003"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-038",
+      "group": "ui",
+      "title": "no_data提示准确",
+      "given": "已捕获但长时间无有效帧",
+      "when": "等待notice",
+      "then": "显示检查来源/模式，不报完成/错误风暴/确定原因",
+      "acceptanceIds": [
+        "AC-006"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-039",
+      "group": "ui",
+      "title": "状态按钮一致",
+      "given": "Preparing/Receiving/Ready/Saving/Stopping",
+      "when": "应用snapshot",
+      "then": "状态可见，未收敛禁新开始，保存仅可用产物",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-040",
+      "group": "ui",
+      "title": "取消拒绝可恢复",
+      "given": "输入授权取消/拒绝",
+      "when": "错误后新点击",
+      "then": "可理解提示和恢复，不自动再弹授权",
+      "acceptanceIds": [
+        "AC-006"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-041",
+      "group": "ui",
+      "title": "旧事件不回写界面",
+      "given": "旧session/revision/eventSeq",
+      "when": "更新snapshot",
+      "then": "拒绝旧事件，当前进度不回退",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-042",
+      "group": "ui",
+      "title": "建议名安全与重名",
+      "given": "中文空格/路径分隔/缺名",
+      "when": "准备picker选项",
+      "then": "只给安全basename/回退名，不静默覆盖；系统确认另做E2E",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T2.2.b"
+      ],
+      "target": "web/desktop-recv/tests/unit/ui.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-043",
+      "group": "evidence",
+      "title": "文件往返不等hash拒绝",
+      "given": "声明PASS但两侧摘要不同",
+      "when": "verify-evidence",
+      "then": "非零失败，不能只改hash文本放行",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-005"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-044",
+      "group": "evidence",
+      "title": "实际证据缺失拒绝",
+      "given": "不存在路径或空proofRefs",
+      "when": "local gate",
+      "then": "非零，截图不能替代最终文件hash",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-005"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-045",
+      "group": "evidence",
+      "title": "scope不能升级",
+      "given": "mock声称local/field或历史当当前",
+      "when": "记录/验证",
+      "then": "拒绝跨范围PASS；不改变现场NOT_RUN",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-010",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-046",
+      "group": "evidence",
+      "title": "未执行者为空",
+      "given": "NOT_RUN却填executor/user",
+      "when": "校验记录",
+      "then": "拒绝；空现场模板保持未执行",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-047",
+      "group": "evidence",
+      "title": "TODO和零测试不放行",
+      "given": "runner得到0测试或todo/skip",
+      "when": "unit gate",
+      "then": "非零，不因Node退出0记全绿",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-010"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-048",
+      "group": "evidence",
+      "title": "性能无阈值不PASS",
+      "given": "有measurement但无确认阈值",
+      "when": "汇总报告",
+      "then": "功能/测量/性能目标/现场分列，目标未评定",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T4.1.a"
+      ],
+      "target": "web/desktop-recv/tests/unit/evidence.test.mjs",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "UT-049",
+      "group": "cpp",
+      "title": "正常压缩流精确还原",
+      "given": "已知原字节与真实压缩流",
+      "when": "逐块读取至严格EOF",
+      "then": "字节逐个一致且只有完整消费/刷新后0",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "UT-050",
+      "group": "cpp",
+      "title": "损坏流错误传播",
+      "given": "被破坏的真实压缩流",
+      "when": "write_once及C read",
+      "then": "返回错误，不把失败变0/Ready",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "UT-051",
+      "group": "cpp",
+      "title": "截断流不完整",
+      "given": "压缩头/块/尾部多处合法截断",
+      "when": "读取至无输入无进展",
+      "then": "负不完整；已有部分输出不得当成功",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "UT-052",
+      "group": "cpp",
+      "title": "尾部无输入刷新",
+      "given": "需要输出刷新的真实压缩流",
+      "when": "耗尽输入后继续读取",
+      "then": "排空所有字节，有限结束且完整状态正确",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "UT-053",
+      "group": "cpp",
+      "title": "重复读取和小输出缓冲",
+      "given": "完整流与比输出块小的调用方buffer",
+      "when": "多次read/完成后再read",
+      "then": "无丢字节；完成后稳定0；不无限循环",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "UT-054",
+      "group": "cpp",
+      "title": "共享分块写入回归",
+      "given": "原有流式write/decompress多块输入",
+      "when": "逐块write而非一次性整个输入",
+      "then": "分块末尾不误报整个流截断；已有测试与原发送兼容",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T1.2.a"
+      ],
+      "target": "src/lib/compression/test/zstd_decompressorTest.cpp; src/lib/cimbar_js/test/cimbar_recv_jsTest.cpp",
+      "scope": "unit_integration",
+      "result": "NOT_RUN",
+      "executedBy": null
+    }
+  ],
+  "integrationGroups": [
+    {
+      "id": "IAT-01",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "IAT-02",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "IAT-03",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "IAT-04",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "IAT-05",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    },
+    {
+      "id": "IAT-06",
+      "definition": "acceptance-tests.md",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "scope": "unit_integration"
+    }
+  ],
+  "e2eScenarios": [
+    {
+      "id": "E2E-1",
+      "title": "干净包首次启动",
+      "given": "候选/最终包和手册，正常Edge",
+      "steps": [
+        "解压中文空格目录",
+        "从其他cwd照手册启动",
+        "打开双输入入口并做实时/录像保存"
+      ],
+      "then": "无控制台/手改路径补救即可用；缺前置准确提示",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-003",
+        "AC-005",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.1.a",
+        "T5.1.a",
+        "T5.1.c"
+      ],
+      "sourceCase": "UAT-L01",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-2",
+      "title": "启动失败恢复",
+      "given": "专有端口占用/独立缺运行时环境",
+      "steps": [
+        "照手册启动观察提示",
+        "恢复依赖/端口",
+        "退出重启服务"
+      ],
+      "then": "不白屏/挂起/杀无关进程，恢复后可正常使用",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-006",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.1.a",
+        "T5.1.a"
+      ],
+      "sourceCase": "UAT-L02",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-3",
+      "title": "实时到磁盘往返",
+      "given": "B原发送窗口、D-C/D-N、干净会话",
+      "steps": [
+        "点击实时开始",
+        "真实选择独立发送窗口",
+        "等Ready",
+        "点保存选目标",
+        "外部算两侧hash"
+      ],
+      "then": "写close成功后Saved；两类数据各3会话hash相等",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-010"
+      ],
+      "taskIds": [
+        "T2.1.b",
+        "T2.1.c",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L03",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-4",
+      "title": "取消选源再开始",
+      "given": "无活动会话",
+      "steps": [
+        "点开始后取消系统选源",
+        "返回页再点击开始选正确窗口",
+        "保存校验"
+      ],
+      "then": "可重试无旧进度；拒绝路径只在实际存在时单记，不拿取消代替全部拒绝",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L04",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-5",
+      "title": "选错源与无数据恢复",
+      "given": "另有无编码窗口",
+      "steps": [
+        "选空白窗口等noData提示",
+        "停止",
+        "重选原发送窗口保存"
+      ],
+      "then": "不报成功或虚构确定原因，正常重选能恢复",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L05",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-6",
+      "title": "外部停止共享/关闭源",
+      "given": "尚未完成A、同名同大小B",
+      "steps": [
+        "系统停止共享",
+        "另轮关闭源",
+        "确认清理",
+        "新会话发送B保存"
+      ],
+      "then": "源结束准确；无A串入；输出hash为B",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L06",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-7",
+      "title": "应用停止重复点击",
+      "given": "A传输中、B已备",
+      "steps": [
+        "点停止并快速重复停止/开始",
+        "待清理",
+        "新B重复开始",
+        "保存"
+      ],
+      "then": "单源单Worker、清理前禁开始、B从零，B输出正确",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L07",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-8",
+      "title": "模式不匹配恢复",
+      "given": "原发送另一实际模式、接收B",
+      "steps": [
+        "发送非B画面实际接收",
+        "观察",
+        "停止改回B再接收保存"
+      ],
+      "then": "不匹配不假完整；不把候选模式写成支持，B能正常恢复",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L08",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-9",
+      "title": "DPI/缩放/尺寸",
+      "given": "当前日常桌面设置、已声明支持组合",
+      "steps": [
+        "先当前默认往返",
+        "调整窗口",
+        "测试宣称支持DPI/zoom",
+        "可实际制造时选超预算源"
+      ],
+      "then": "自然像素不静默缩图，主基线可用；限制明确且可恢复",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-006",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T2.1.b",
+        "T2.2.b",
+        "T4.2.a",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L09",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-10",
+      "title": "焦点/遮挡/最小化",
+      "given": "正常可捕获发送窗口",
+      "steps": [
+        "传输时切回接收页",
+        "另轮遮挡/最小化源再还原",
+        "保存或按提示重试"
+      ],
+      "then": "正常切回接收页可完成；不供帧时不假成功且恢复方法可用",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.1.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L10",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-11",
+      "title": "保存取消无需重传",
+      "given": "已重建Blob，停止发送但不重置接收会话",
+      "steps": [
+        "点保存取消",
+        "新点击选择目标保存",
+        "外部核对hash"
+      ],
+      "then": "同artifact新attempt，无源仍能保存，不再解压/重传",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L11",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-12",
+      "title": "中文名/重名确认",
+      "given": "中文空格样本、专有目录哨兵",
+      "steps": [
+        "核建议名",
+        "取消同名覆盖检查哨兵",
+        "换名保存",
+        "另一哨兵显式确认覆盖"
+      ],
+      "then": "无静默覆盖；取消哨兵不变；实际所选输出hash正确",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T2.1.c",
+        "T3.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L12",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-13",
+      "title": "保存模态与停止",
+      "given": "已重建文件",
+      "steps": [
+        "快速双击保存",
+        "模态取消返回后再停止",
+        "另轮保存成功后停止",
+        "重新接收"
+      ],
+      "then": "无重复保存；不能要求模态阻塞期间点页面Stop；已存文件不删除",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.a",
+        "T3.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L13",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-14",
+      "title": "真实录像成功",
+      "given": "实际窗口V-GOOD，已关闭发送端",
+      "steps": [
+        "选择录像入口并真实导入",
+        "等待完成",
+        "系统保存",
+        "两侧外部hash",
+        "按格式重复"
+      ],
+      "then": "不借后台实时输入；至少一种真实格式通过；双类样本各3轮",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-010",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.a",
+        "T4.1.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L14",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-15",
+      "title": "录像取消/坏文件恢复",
+      "given": "V-BAD、V-GOOD",
+      "steps": [
+        "取消选择后重选",
+        "分别导入空/非视频/损坏/实际不支持输入",
+        "每次恢复正常录像保存"
+      ],
+      "then": "有限结束、可理解提示和重选，无刷新/控制台补救",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L15",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-16",
+      "title": "录像EOF与最终帧",
+      "given": "真实V-SHORT、V-LAST有/无关键帧对照",
+      "steps": [
+        "导入短录像等EOF",
+        "导入缺关键帧版",
+        "再导入完整末帧版保存hash"
+      ],
+      "then": "不足不Ready；完整等最终帧结果后成功；有限补采/排空无无限重播",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L16",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-17",
+      "title": "双输入停止切换",
+      "given": "A录像与内容不同B",
+      "steps": [
+        "录像A中点停止后实时B保存",
+        "反向实时中停后导入B录像保存"
+      ],
+      "then": "旧媒体/URL/Worker清理，B无A晚结果污染，hash为B",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-008",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T3.1.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L17",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-18",
+      "title": "扩展规模和预算恢复",
+      "given": "已核实边界内1/4MiB两类数据",
+      "steps": [
+        "逐级双输入往返",
+        "真实可构造超预算样本拒绝后再传正常文件"
+      ],
+      "then": "支持内字节正确；越界不截断/挂死；精确边界不足由IAT补并说明",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-012",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.2.a",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L18",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-19",
+      "title": "刷新/关页/服务重启",
+      "given": "无未决模态/写入的活动接收",
+      "steps": [
+        "刷新后重试",
+        "另轮关页重开",
+        "按手册停服务重启并往返"
+      ],
+      "then": "无幽灵捕获/旧进度；新实例，已存文件保留",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T5.1.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L19",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-20",
+      "title": "连续使用与最终包",
+      "given": "基础路径通过，冻结包和摘要",
+      "steps": [
+        "10轮交替双输入并取消/停止/重试",
+        "最终包新目录重做启动/实时/录像/保存重试"
+      ],
+      "then": "资源归属/清理不累积；每次输出hash；最终双输入双类数据与证据字节绑定",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-005",
+        "AC-007",
+        "AC-010",
+        "AC-013",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T4.1.b",
+        "T4.2.b",
+        "T5.1.a",
+        "T5.1.c"
+      ],
+      "sourceCase": "UAT-L20",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-21",
+      "title": "真实云桌面实时",
+      "given": "用户客户端及云端原发送B，D-C/D-N",
+      "steps": [
+        "记录现场环境",
+        "选真实桌面客户端窗口",
+        "双类样本分别接收保存",
+        "对比云端原文与宿主输出hash"
+      ],
+      "then": "真实客户端范围内分别正确；不以本地源替换",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-004",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-01",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-22",
+      "title": "真实云桌面录像",
+      "given": "从实际客户端录的双类样本录像",
+      "steps": [
+        "停止实时输入/发送",
+        "导入录像",
+        "分别保存并核外部hash"
+      ],
+      "then": "至少一个公布支持格式实际往返；后台无实时输入",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-011",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-02",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-23",
+      "title": "现场日常显示布局",
+      "given": "用户日常DPI/缩放/窗口",
+      "steps": [
+        "正常接收切回页面",
+        "遮挡/最小化后还原",
+        "按手册恢复"
+      ],
+      "then": "日常支持路径可用；不供帧如实提示，未测配置不冒充通过",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-011",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-03",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-24",
+      "title": "现场取消停止重启",
+      "given": "真实客户端、A/B不同hash",
+      "steps": [
+        "取消选源重开",
+        "传输中停止换B",
+        "系统停止共享后重试"
+      ],
+      "then": "资源释放；B无A串入；记录操作和实际hash",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-011",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-04",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-25",
+      "title": "现场实际保存恢复",
+      "given": "真实接收Blob和专有哨兵目录",
+      "steps": [
+        "停止发送",
+        "保存取消后重试",
+        "验证中文名/重名确认",
+        "核实际目标hash"
+      ],
+      "then": "无需重传、无静默覆盖，真实磁盘文件正确",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-05",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    {
+      "id": "E2E-26",
+      "title": "现场测量回执与整改",
+      "given": "现场双输入实际结果和版本包",
+      "steps": [
+        "记录尺寸/fps/时点/重复",
+        "填现场回执",
+        "失败留复现材料",
+        "必要时按整套入口回退"
+      ],
+      "then": "功能/性能/现场分开；无阈值性能未评定；不删旧文件/证据；归因后最小整改",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-011",
+        "AC-012",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T5.2.a",
+        "T5.2.b",
+        "T5.2.c"
+      ],
+      "sourceCase": "FAT-06",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    }
+  ]
+}

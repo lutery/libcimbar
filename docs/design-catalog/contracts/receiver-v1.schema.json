@@ -1,0 +1,4004 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libcimbar Desktop Receiver Metadata v1",
+  "description": "Only serializable metadata. Native File/ArrayBuffer/Blob payload, user activation, ordering, equality and IO results require runtime checks. No network API is introduced.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Request_capabilities_inspect"
+    },
+    {
+      "$ref": "#/$defs/Request_session_start"
+    },
+    {
+      "$ref": "#/$defs/Request_session_read"
+    },
+    {
+      "$ref": "#/$defs/Request_session_stop"
+    },
+    {
+      "$ref": "#/$defs/Request_decoder_init"
+    },
+    {
+      "$ref": "#/$defs/Request_decoder_frame"
+    },
+    {
+      "$ref": "#/$defs/Request_artifact_save"
+    },
+    {
+      "$ref": "#/$defs/Request_evidence_record"
+    },
+    {
+      "$ref": "#/$defs/Success_capabilities_inspect"
+    },
+    {
+      "$ref": "#/$defs/Success_session_start"
+    },
+    {
+      "$ref": "#/$defs/Success_session_read"
+    },
+    {
+      "$ref": "#/$defs/Success_session_stop"
+    },
+    {
+      "$ref": "#/$defs/Success_decoder_init"
+    },
+    {
+      "$ref": "#/$defs/Success_decoder_frame"
+    },
+    {
+      "$ref": "#/$defs/Success_artifact_save"
+    },
+    {
+      "$ref": "#/$defs/Success_evidence_record"
+    },
+    {
+      "$ref": "#/$defs/Failure"
+    },
+    {
+      "$ref": "#/$defs/Event_source_ended"
+    },
+    {
+      "$ref": "#/$defs/Event_session_changed"
+    }
+  ],
+  "$defs": {
+    "Limits": {
+      "type": "object",
+      "properties": {
+        "profileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "maxFramePixels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "maxArtifactBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "inflightLimit": {
+          "const": 1
+        },
+        "initTimeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "frameTimeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "videoReadyTimeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "saveIoNoticeMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "cleanupNoticeMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "noDataNoticeMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "profileId",
+        "maxFramePixels",
+        "maxArtifactBytes",
+        "inflightLimit",
+        "initTimeoutMs",
+        "frameTimeoutMs",
+        "videoReadyTimeoutMs",
+        "saveIoNoticeMs",
+        "cleanupNoticeMs",
+        "noDataNoticeMs"
+      ],
+      "additionalProperties": false
+    },
+    "AssetSet": {
+      "type": "object",
+      "properties": {
+        "assetSetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sourceRevision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "jsPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "wasmPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "jsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "wasmSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "strictEofEvidenceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        }
+      },
+      "required": [
+        "assetSetId",
+        "sourceRevision",
+        "jsPath",
+        "wasmPath",
+        "jsSha256",
+        "wasmSha256",
+        "strictEofEvidenceRef"
+      ],
+      "additionalProperties": false
+    },
+    "ErrorDetails": {
+      "type": "object",
+      "properties": {
+        "nativeName": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "nativeSymbol": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "nativeCode": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "phase": {
+          "enum": [
+            "init",
+            "frame",
+            "recover",
+            "decompress",
+            "capture",
+            "video",
+            "picker",
+            "write",
+            "close",
+            "cleanup",
+            "validation",
+            "assets"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            10001,
+            10002,
+            10003,
+            10004,
+            11001,
+            11002,
+            11003,
+            11004,
+            11005,
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            14001,
+            14002,
+            14003,
+            14004,
+            14005,
+            15001,
+            15002,
+            15003,
+            15004,
+            15005,
+            15006,
+            15007,
+            15008,
+            15009,
+            15010,
+            15011,
+            15012,
+            16001,
+            16002,
+            16003,
+            16004,
+            16005,
+            16006,
+            16007,
+            16008,
+            16009,
+            17001,
+            17002,
+            17003,
+            18001,
+            18002,
+            18003,
+            90001
+          ]
+        },
+        "name": {
+          "enum": [
+            "INVALID_REQUEST",
+            "CONTRACT_VERSION_UNSUPPORTED",
+            "UNSUPPORTED_OPERATION",
+            "USER_ACTIVATION_REQUIRED",
+            "SESSION_NOT_FOUND",
+            "SESSION_BUSY",
+            "ILLEGAL_STATE",
+            "REQUEST_ID_CONFLICT",
+            "SESSION_CHANGED",
+            "CAPTURE_UNSUPPORTED",
+            "CAPTURE_NOT_ALLOWED",
+            "CAPTURE_UNREADABLE",
+            "CAPTURE_SOURCE_NOT_FOUND",
+            "CAPTURE_SOURCE_ENDED",
+            "CAPTURE_CONTEXT_INVALID",
+            "VIDEO_UNSUPPORTED",
+            "VIDEO_DECODE_FAILED",
+            "VIDEO_READY_TIMEOUT",
+            "VIDEO_INCOMPLETE",
+            "VIDEO_METADATA_INVALID",
+            "FRAME_LAYOUT_INVALID",
+            "FRAME_BUDGET_EXCEEDED",
+            "FRAME_PROCESS_TIMEOUT",
+            "FRAME_COPY_FAILED",
+            "FRAME_ORDER_VIOLATION",
+            "WASM_INIT_FAILED",
+            "WASM_EXPORT_MISSING",
+            "WASM_RUNTIME_FAILED",
+            "WASM_ALLOCATION_FAILED",
+            "FOUNTAIN_CHUNK_INVALID",
+            "RECOVERY_FAILED",
+            "DECOMPRESS_FAILED",
+            "ARTIFACT_BUDGET_EXCEEDED",
+            "WASM_ABI_MISMATCH",
+            "WORKER_CHANNEL_FAILED",
+            "WASM_INIT_TIMEOUT",
+            "DECOMPRESS_INCOMPLETE",
+            "SAVE_UNSUPPORTED",
+            "SAVE_CANCELLED",
+            "SAVE_PERMISSION_DENIED",
+            "SAVE_FILE_LOCKED",
+            "SAVE_WRITE_FAILED",
+            "SAVE_CLOSE_FAILED",
+            "ARTIFACT_NOT_READY",
+            "SAVE_BUSY",
+            "SAVE_OUTCOME_PENDING",
+            "HASH_MISMATCH",
+            "EVIDENCE_MISSING",
+            "VALIDATION_SCOPE_CONFLICT",
+            "ASSET_MISSING",
+            "ASSET_DIGEST_MISMATCH",
+            "ASSET_PAIR_INCOMPATIBLE",
+            "UNEXPECTED_INTERNAL"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "retryAction": {
+          "enum": [
+            "wait",
+            "retry_save",
+            "new_click",
+            "fix_assets",
+            "revalidate",
+            "fix_input",
+            "new_session"
+          ]
+        },
+        "details": {
+          "$ref": "#/$defs/ErrorDetails"
+        }
+      },
+      "required": [
+        "code",
+        "name",
+        "message",
+        "retryAction",
+        "details"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "code": {
+              "const": 10001
+            },
+            "name": {
+              "const": "INVALID_REQUEST"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10002
+            },
+            "name": {
+              "const": "CONTRACT_VERSION_UNSUPPORTED"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10003
+            },
+            "name": {
+              "const": "UNSUPPORTED_OPERATION"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10004
+            },
+            "name": {
+              "const": "USER_ACTIVATION_REQUIRED"
+            },
+            "retryAction": {
+              "const": "new_click"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11001
+            },
+            "name": {
+              "const": "SESSION_NOT_FOUND"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11002
+            },
+            "name": {
+              "const": "SESSION_BUSY"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11003
+            },
+            "name": {
+              "const": "ILLEGAL_STATE"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11004
+            },
+            "name": {
+              "const": "REQUEST_ID_CONFLICT"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11005
+            },
+            "name": {
+              "const": "SESSION_CHANGED"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12001
+            },
+            "name": {
+              "const": "CAPTURE_UNSUPPORTED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12002
+            },
+            "name": {
+              "const": "CAPTURE_NOT_ALLOWED"
+            },
+            "retryAction": {
+              "const": "new_click"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12003
+            },
+            "name": {
+              "const": "CAPTURE_UNREADABLE"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12004
+            },
+            "name": {
+              "const": "CAPTURE_SOURCE_NOT_FOUND"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12005
+            },
+            "name": {
+              "const": "CAPTURE_SOURCE_ENDED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12006
+            },
+            "name": {
+              "const": "CAPTURE_CONTEXT_INVALID"
+            },
+            "retryAction": {
+              "const": "new_click"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13001
+            },
+            "name": {
+              "const": "VIDEO_UNSUPPORTED"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13002
+            },
+            "name": {
+              "const": "VIDEO_DECODE_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13003
+            },
+            "name": {
+              "const": "VIDEO_READY_TIMEOUT"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13004
+            },
+            "name": {
+              "const": "VIDEO_INCOMPLETE"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13005
+            },
+            "name": {
+              "const": "VIDEO_METADATA_INVALID"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14001
+            },
+            "name": {
+              "const": "FRAME_LAYOUT_INVALID"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14002
+            },
+            "name": {
+              "const": "FRAME_BUDGET_EXCEEDED"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14003
+            },
+            "name": {
+              "const": "FRAME_PROCESS_TIMEOUT"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14004
+            },
+            "name": {
+              "const": "FRAME_COPY_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14005
+            },
+            "name": {
+              "const": "FRAME_ORDER_VIOLATION"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15001
+            },
+            "name": {
+              "const": "WASM_INIT_FAILED"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15002
+            },
+            "name": {
+              "const": "WASM_EXPORT_MISSING"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15003
+            },
+            "name": {
+              "const": "WASM_RUNTIME_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15004
+            },
+            "name": {
+              "const": "WASM_ALLOCATION_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15005
+            },
+            "name": {
+              "const": "FOUNTAIN_CHUNK_INVALID"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15006
+            },
+            "name": {
+              "const": "RECOVERY_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15007
+            },
+            "name": {
+              "const": "DECOMPRESS_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15008
+            },
+            "name": {
+              "const": "ARTIFACT_BUDGET_EXCEEDED"
+            },
+            "retryAction": {
+              "const": "fix_input"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15009
+            },
+            "name": {
+              "const": "WASM_ABI_MISMATCH"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15010
+            },
+            "name": {
+              "const": "WORKER_CHANNEL_FAILED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15011
+            },
+            "name": {
+              "const": "WASM_INIT_TIMEOUT"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15012
+            },
+            "name": {
+              "const": "DECOMPRESS_INCOMPLETE"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16001
+            },
+            "name": {
+              "const": "SAVE_UNSUPPORTED"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16002
+            },
+            "name": {
+              "const": "SAVE_CANCELLED"
+            },
+            "retryAction": {
+              "const": "retry_save"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16003
+            },
+            "name": {
+              "const": "SAVE_PERMISSION_DENIED"
+            },
+            "retryAction": {
+              "const": "retry_save"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16004
+            },
+            "name": {
+              "const": "SAVE_FILE_LOCKED"
+            },
+            "retryAction": {
+              "const": "retry_save"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16005
+            },
+            "name": {
+              "const": "SAVE_WRITE_FAILED"
+            },
+            "retryAction": {
+              "const": "retry_save"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16006
+            },
+            "name": {
+              "const": "SAVE_CLOSE_FAILED"
+            },
+            "retryAction": {
+              "const": "retry_save"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16007
+            },
+            "name": {
+              "const": "ARTIFACT_NOT_READY"
+            },
+            "retryAction": {
+              "const": "wait"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16008
+            },
+            "name": {
+              "const": "SAVE_BUSY"
+            },
+            "retryAction": {
+              "const": "wait"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16009
+            },
+            "name": {
+              "const": "SAVE_OUTCOME_PENDING"
+            },
+            "retryAction": {
+              "const": "wait"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17001
+            },
+            "name": {
+              "const": "HASH_MISMATCH"
+            },
+            "retryAction": {
+              "const": "revalidate"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17002
+            },
+            "name": {
+              "const": "EVIDENCE_MISSING"
+            },
+            "retryAction": {
+              "const": "revalidate"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17003
+            },
+            "name": {
+              "const": "VALIDATION_SCOPE_CONFLICT"
+            },
+            "retryAction": {
+              "const": "revalidate"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18001
+            },
+            "name": {
+              "const": "ASSET_MISSING"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18002
+            },
+            "name": {
+              "const": "ASSET_DIGEST_MISMATCH"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18003
+            },
+            "name": {
+              "const": "ASSET_PAIR_INCOMPATIBLE"
+            },
+            "retryAction": {
+              "const": "fix_assets"
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 90001
+            },
+            "name": {
+              "const": "UNEXPECTED_INTERNAL"
+            },
+            "retryAction": {
+              "const": "new_session"
+            }
+          }
+        }
+      ]
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "fountainFileId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}$"
+        },
+        "suggestedName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "byteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "compressedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554431
+        },
+        "mime": {
+          "const": "application/octet-stream"
+        }
+      },
+      "required": [
+        "artifactId",
+        "fountainFileId",
+        "suggestedName",
+        "byteCount",
+        "compressedBytes",
+        "mime"
+      ],
+      "additionalProperties": false
+    },
+    "Stats": {
+      "type": "object",
+      "properties": {
+        "capturedFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "submittedFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "processedFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "droppedFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "inflight": {
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "elapsedMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "capturedFrames",
+        "submittedFrames",
+        "processedFrames",
+        "droppedFrames",
+        "inflight",
+        "elapsedMs"
+      ],
+      "additionalProperties": false
+    },
+    "Snapshot": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "inputKind": {
+          "enum": [
+            "live",
+            "video"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "B",
+            "Bu",
+            "Bm",
+            "4C"
+          ]
+        },
+        "state": {
+          "enum": [
+            "Preparing",
+            "Receiving",
+            "Draining",
+            "Reconstructing",
+            "Ready",
+            "Saving",
+            "Saved",
+            "Retryable",
+            "Stopping",
+            "Stopped",
+            "Incomplete"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "inputEnded": {
+          "type": "boolean"
+        },
+        "cleanupComplete": {
+          "type": "boolean"
+        },
+        "pendingExternal": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "capture_picker",
+              "save_picker",
+              "save_io"
+            ]
+          }
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "saveAttemptId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastError": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stats": {
+          "$ref": "#/$defs/Stats"
+        },
+        "saveStatus": {
+          "enum": [
+            "none",
+            "selecting",
+            "writing",
+            "pending",
+            "saved",
+            "cancelled",
+            "failed",
+            "aborted"
+          ]
+        }
+      },
+      "required": [
+        "sessionId",
+        "inputKind",
+        "mode",
+        "state",
+        "revision",
+        "inputEnded",
+        "cleanupComplete",
+        "pendingExternal",
+        "artifact",
+        "saveAttemptId",
+        "lastError",
+        "stats",
+        "saveStatus"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "Saved"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "saveStatus": {
+                "const": "saved"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "Saving"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "saveStatus": {
+                "enum": [
+                  "selecting",
+                  "writing",
+                  "pending"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Input": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "live"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "video"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "mime": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "lastModified": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "kind",
+            "name",
+            "size",
+            "mime",
+            "lastModified"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Capabilities": {
+      "type": "object",
+      "properties": {
+        "secureContext": {
+          "type": "boolean"
+        },
+        "capture": {
+          "type": "boolean"
+        },
+        "savePicker": {
+          "type": "boolean"
+        },
+        "frameCallbacks": {
+          "type": "boolean"
+        },
+        "worker": {
+          "type": "boolean"
+        },
+        "wasm": {
+          "type": "boolean"
+        },
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "B",
+              "Bu",
+              "Bm",
+              "4C"
+            ]
+          }
+        },
+        "videoCandidates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "mp4-h264",
+              "webm-vp8"
+            ]
+          }
+        },
+        "assetSetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "secureContext",
+        "capture",
+        "savePicker",
+        "frameCallbacks",
+        "worker",
+        "wasm",
+        "modes",
+        "videoCandidates",
+        "assetSetId",
+        "profileId"
+      ],
+      "additionalProperties": false
+    },
+    "FrameRequest": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "pixelFormat": {
+          "const": "RGBA"
+        },
+        "byteLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "mediaTimeUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "finalSample": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "frameId",
+        "width",
+        "height",
+        "pixelFormat",
+        "byteLength",
+        "mediaTimeUs",
+        "finalSample"
+      ],
+      "additionalProperties": false
+    },
+    "FrameResult": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "outcome": {
+          "enum": [
+            "no_data",
+            "data",
+            "artifact"
+          ]
+        },
+        "bytesDecoded": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "frameId",
+        "outcome",
+        "bytesDecoded",
+        "artifact"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "artifact"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact": {
+                "$ref": "#/$defs/Artifact"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "enum": [
+                  "no_data",
+                  "data"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "no_data"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bytesDecoded": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "enum": [
+                  "data",
+                  "artifact"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bytesDecoded": {
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "SourceEnd": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "enum": [
+            "eof",
+            "capture_ended",
+            "media_error"
+          ]
+        },
+        "lastSubmittedFrameId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "finalSampleSubmitted": {
+          "type": "boolean"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "reason",
+        "lastSubmittedFrameId",
+        "finalSampleSubmitted",
+        "error"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "const": "media_error"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "$ref": "#/$defs/Error"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "enum": [
+                  "eof",
+                  "capture_ended"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "scope": {
+          "enum": [
+            "unit_integration",
+            "local_simulated",
+            "real_cloud",
+            "document_qa"
+          ]
+        },
+        "caseType": {
+          "enum": [
+            "file_roundtrip",
+            "negative_or_lifecycle",
+            "measurement"
+          ]
+        },
+        "executedBy": {
+          "enum": [
+            "executor",
+            "user",
+            null
+          ]
+        },
+        "acceptanceIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "AC-001",
+              "AC-002",
+              "AC-003",
+              "AC-004",
+              "AC-005",
+              "AC-006",
+              "AC-007",
+              "AC-008",
+              "AC-009",
+              "AC-010",
+              "AC-011",
+              "AC-012",
+              "AC-013",
+              "AC-014"
+            ]
+          }
+        },
+        "result": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "inputKind": {
+          "enum": [
+            "live",
+            "video"
+          ]
+        },
+        "sourceKind": {
+          "enum": [
+            "real_window",
+            "recorded_window",
+            "mock",
+            "none"
+          ]
+        },
+        "referenceSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivedSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rawBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "compressedBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceFps": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "processedFps": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "elapsedMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assetSetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sourceRevision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "proofRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9_./-]+$"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "runId",
+        "caseId",
+        "scope",
+        "caseType",
+        "executedBy",
+        "acceptanceIds",
+        "result",
+        "inputKind",
+        "sourceKind",
+        "referenceSha256",
+        "receivedSha256",
+        "rawBytes",
+        "compressedBytes",
+        "width",
+        "height",
+        "sourceFps",
+        "processedFps",
+        "elapsedMs",
+        "assetSetId",
+        "sourceRevision",
+        "environment",
+        "proofRefs",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "real_cloud"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sourceKind": {
+                "enum": [
+                  "real_window",
+                  "recorded_window",
+                  "none"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "local_simulated"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sourceKind": {
+                "enum": [
+                  "real_window",
+                  "recorded_window",
+                  "none"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "result": {
+                "const": "PASS"
+              },
+              "caseType": {
+                "const": "file_roundtrip"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "referenceSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "receivedSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "rawBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "elapsedMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "proofRefs": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "real_cloud"
+              },
+              "result": {
+                "enum": [
+                  "PASS",
+                  "FAIL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executedBy": {
+                "const": "user"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "result": {
+                "const": "NOT_RUN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executedBy": {
+                "type": "null"
+              },
+              "elapsedMs": {
+                "type": "null"
+              },
+              "processedFps": {
+                "type": "null"
+              },
+              "receivedSha256": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "result": {
+                "enum": [
+                  "PASS",
+                  "FAIL"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executedBy": {
+                "enum": [
+                  "executor",
+                  "user"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Request_capabilities_inspect": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "capabilities.inspect"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "null"
+        },
+        "data": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_capabilities_inspect": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "capabilities.inspect"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "$ref": "#/$defs/Capabilities"
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_session_start": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "session.start"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "null"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/Input"
+            },
+            "mode": {
+              "enum": [
+                "B",
+                "Bu",
+                "Bm",
+                "4C"
+              ]
+            }
+          },
+          "required": [
+            "input",
+            "mode"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_session_start": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "session.start"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "accepted"
+            },
+            "snapshot": {
+              "$ref": "#/$defs/Snapshot"
+            }
+          },
+          "required": [
+            "outcome",
+            "snapshot"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_session_read": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "session.read"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_session_read": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "session.read"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "snapshot": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Snapshot"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "snapshot"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_session_stop": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "session.stop"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "enum": [
+                "user",
+                "restart",
+                "page_exit",
+                "fatal"
+              ]
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_session_stop": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "session.stop"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "accepted",
+                "completed"
+              ]
+            },
+            "snapshot": {
+              "$ref": "#/$defs/Snapshot"
+            }
+          },
+          "required": [
+            "outcome",
+            "snapshot"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_decoder_init": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "decoder.init"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "B",
+                "Bu",
+                "Bm",
+                "4C"
+              ]
+            },
+            "assets": {
+              "$ref": "#/$defs/AssetSet"
+            },
+            "limits": {
+              "$ref": "#/$defs/Limits"
+            }
+          },
+          "required": [
+            "mode",
+            "assets",
+            "limits"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_decoder_init": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "decoder.init"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "ready"
+            },
+            "mode": {
+              "enum": [
+                "B",
+                "Bu",
+                "Bm",
+                "4C"
+              ]
+            },
+            "assetSetId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "strictEofVerified": {
+              "const": true
+            }
+          },
+          "required": [
+            "outcome",
+            "mode",
+            "assetSetId",
+            "strictEofVerified"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_decoder_frame": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "decoder.frame"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "data": {
+          "$ref": "#/$defs/FrameRequest"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_decoder_frame": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "decoder.frame"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "$ref": "#/$defs/FrameResult"
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_artifact_save": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "artifact.save"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "artifactId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          "required": [
+            "artifactId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_artifact_save": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "artifact.save"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "accepted",
+                "completed"
+              ]
+            },
+            "attemptId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          "required": [
+            "outcome",
+            "attemptId",
+            "artifactId"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Request_evidence_record": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "op": {
+          "const": "evidence.record"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "type": "null"
+        },
+        "data": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Success_evidence_record": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "const": "evidence.record"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "caseId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "stored": {
+              "const": true
+            }
+          },
+          "required": [
+            "runId",
+            "caseId",
+            "stored"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "response"
+        },
+        "op": {
+          "enum": [
+            "capabilities.inspect",
+            "session.start",
+            "session.read",
+            "session.stop",
+            "decoder.init",
+            "decoder.frame",
+            "artifact.save",
+            "evidence.record",
+            "protocol.reject"
+          ]
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "sessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            10001,
+            10002,
+            10003,
+            10004,
+            11001,
+            11002,
+            11003,
+            11004,
+            11005,
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            14001,
+            14002,
+            14003,
+            14004,
+            14005,
+            15001,
+            15002,
+            15003,
+            15004,
+            15005,
+            15006,
+            15007,
+            15008,
+            15009,
+            15010,
+            15011,
+            15012,
+            16001,
+            16002,
+            16003,
+            16004,
+            16005,
+            16006,
+            16007,
+            16008,
+            16009,
+            17001,
+            17002,
+            17003,
+            18001,
+            18002,
+            18003,
+            90001
+          ]
+        },
+        "data": {
+          "type": "null"
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "code": {
+              "const": 10001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 10001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 10002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 10003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 10004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 10004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 11001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 11002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 11003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 11004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 11005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 11005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 12006
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 12006
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 13001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 13002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 13003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 13004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 13005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 13005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 14001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 14002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 14003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 14004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 14005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 14005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15006
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15006
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15007
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15007
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15008
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15008
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15009
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15009
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15010
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15010
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15011
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15011
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 15012
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 15012
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16004
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16004
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16005
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16005
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16006
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16006
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16007
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16007
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16008
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16008
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 16009
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 16009
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 17001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 17002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 17003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 17003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 18001
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18002
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 18002
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 18003
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 18003
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": {
+              "const": 90001
+            },
+            "error": {
+              "properties": {
+                "code": {
+                  "const": 90001
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Event_source_ended": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "event"
+        },
+        "op": {
+          "const": "source.ended"
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "eventSeq": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "$ref": "#/$defs/SourceEnd"
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "eventSeq",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Event_session_changed": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "event"
+        },
+        "op": {
+          "const": "session.changed"
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "eventSeq": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "ok": {
+          "const": true
+        },
+        "code": {
+          "const": 0
+        },
+        "data": {
+          "$ref": "#/$defs/Snapshot"
+        },
+        "error": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "op",
+        "requestId",
+        "sessionId",
+        "eventSeq",
+        "ok",
+        "code",
+        "data",
+        "error"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
