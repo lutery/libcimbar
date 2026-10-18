@@ -4,6 +4,7 @@ import { inspectCapabilities } from './capabilities.js';
 import { deriveControls, describeRecovery, safeSuggestedName } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
 import { SessionCoordinator } from './session.js';
+import { SaveController } from './save-controller.js';
 import { captureFrame } from './live-source.js';
 
 const MODE_B = 68;
@@ -28,6 +29,7 @@ const el = {
 let capabilities = null;
 let assets = null;
 let errorRegistry = null;
+let saveController = null;
 let loopRunning = false;
 let startClicks = 0;
 
@@ -133,26 +135,32 @@ async function startLive() {
 }
 
 async function saveArtifact() {
-  const artifact = coordinator.snapshot().artifact;
+  const snapshot = coordinator.snapshot();
+  const artifact = snapshot.artifact;
   if (!artifact || !artifact.blob) return;
-
-  const fallback = coordinator.snapshot().sessionId || 'cimbar-recv';
-  const suggestedName = safeSuggestedName(artifact.suggestedName, fallback);
-  let handle;
-  try {
-    handle = await window.showSaveFilePicker({ suggestedName });
-  } catch (error) {
-    logLine('save cancelled');
+  if (!capabilities.savePicker) {
+    logLine('saving is unavailable without a secure context', true);
     return;
   }
 
-  try {
-    const writable = await handle.createWritable();
-    await writable.write(artifact.blob);
-    await writable.close();
-    logLine(`saved ${suggestedName}`);
-  } catch (error) {
-    logLine(`save failed: ${(error && error.message) || error}`, true);
+  const fallback = snapshot.sessionId || 'cimbar-recv';
+  saveController.start({
+    artifact: { blob: artifact.blob, suggestedName: artifact.suggestedName },
+    suggestedName: safeSuggestedName(artifact.suggestedName, fallback),
+    isCurrent: () => {
+      const state = coordinator.snapshot().state;
+      return state !== 'Stopping' && state !== 'Stopped';
+    },
+  });
+}
+
+function reportSave(event) {
+  if (event.saveStatus === 'saved') {
+    logLine(`saved (${event.attemptId ?? ''})`);
+  } else if (event.saveStatus === 'cancelled') {
+    logLine('save cancelled; the file is still ready to save');
+  } else if (event.saveStatus === 'failed') {
+    logLine(`save failed (${event.lastError}); you can try again`, true);
   }
 }
 
@@ -176,6 +184,13 @@ async function init() {
     errorRegistry = await loadJson('config/errors.json');
   } catch (error) {
     logLine(`configuration unavailable: ${(error && error.message) || error}`, true);
+  }
+
+  if (capabilities.savePicker && typeof window.showSaveFilePicker === 'function') {
+    saveController = new SaveController({
+      showSaveFilePicker: (options) => window.showSaveFilePicker(options),
+      onEvent: reportSave,
+    });
   }
 
   el.btnLive.addEventListener('click', () => { void startLive(); });
