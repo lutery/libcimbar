@@ -1,10 +1,13 @@
-// Desktop receiver entry. Single session at a time, one frame in flight.
-// The UI never opens a picker without a user click.
+// Desktop receiver entry. The coordinator owns session state and the single
+// in-flight frame; this file only wires DOM events to it and paints snapshots.
 import { inspectCapabilities } from './capabilities.js';
 import { deriveControls, describeRecovery, safeSuggestedName } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
+import { SessionCoordinator } from './session.js';
+import { captureFrame } from './live-source.js';
 
 const MODE_B = 68;
+const MAX_PIXELS = 4194304;
 
 const el = {
   caps: document.getElementById('caps'),
@@ -22,20 +25,35 @@ const el = {
   mode: document.getElementById('mode'),
 };
 
-const session = {
-  counter: 0,
-  snapshot: { sessionId: null, sessionSeq: 0, revision: 0, state: 'Idle', artifact: null },
-  client: null,
-  stream: null,
-  videoUrl: null,
-  inFlight: false,
-  frameCallback: null,
-};
-
 let capabilities = null;
 let assets = null;
 let errorRegistry = null;
-let framesSeen = 0;
+let loopRunning = false;
+let startClicks = 0;
+
+const coordinator = new SessionCoordinator({
+  // The picker wrapper is the single place a stream is obtained: the preview
+  // attaches here and the same stream goes to the coordinator.
+  getDisplayMedia: async (constraints) => {
+    const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+    el.preview.hidden = false;
+    el.preview.srcObject = stream;
+    try { await el.preview.play(); } catch (error) { /* autoplay guard */ }
+    return stream;
+  },
+  createClient: async () => {
+    const worker = new Worker(new URL('../worker/decoder-worker.js', import.meta.url));
+    const client = new DecoderClient(worker, {
+      maxFramePixels: MAX_PIXELS,
+      maxArtifactBytes: 16777216,
+    });
+    await client.init({ mode: MODE_B, assets, limits: {} });
+    return client;
+  },
+  maxPixels: MAX_PIXELS,
+  onSnapshot: () => render(),
+  onError: (code) => showError(code),
+});
 
 function logLine(text, isError = false) {
   const prefix = isError ? '[error] ' : '';
@@ -43,256 +61,105 @@ function logLine(text, isError = false) {
   el.log.scrollTop = el.log.scrollHeight;
 }
 
-function setSnapshot(patch) {
-  session.snapshot = Object.assign({}, session.snapshot, patch, {
-    revision: session.snapshot.revision + 1,
-  });
-  render();
-}
-
-function isCurrent(seq) {
-  return session.snapshot.sessionSeq === seq &&
-    !['Stopping', 'Stopped', 'Error'].includes(session.snapshot.state);
+function showError(code) {
+  const recovery = describeRecovery(code, errorRegistry);
+  logLine(`${code}: ${recovery.message} (${recovery.retryAction})`, true);
 }
 
 function render() {
-  const controls = deriveControls(session.snapshot, capabilities || {});
+  const snapshot = coordinator.snapshot();
+  const controls = deriveControls(snapshot, capabilities || {});
   el.status.textContent = controls.statusText;
   el.btnLive.disabled = !(controls.canStart && capabilities.realtime);
   el.btnVideo.disabled = !controls.canImportVideo;
   el.btnStop.disabled = !controls.canStop;
   el.btnSave.disabled = !controls.canSave;
 
-  const artifact = session.snapshot.artifact;
-  if (artifact && artifact.byteLength >= 0) {
+  const artifact = snapshot.artifact;
+  if (artifact) {
     el.artifact.hidden = false;
-    el.artifactName.textContent = artifact.name || 'file';
-    el.artifactSize.textContent = `${artifact.byteLength} bytes`;
+    el.artifactName.textContent = artifact.suggestedName || artifact.name || 'file';
+    el.artifactSize.textContent = `${artifact.byteCount ?? artifact.byteLength} bytes`;
   } else {
     el.artifact.hidden = true;
   }
   el.mode.textContent = 'Mode B';
+
+  const shouldRun = snapshot.state === 'Receiving';
+  if (shouldRun && !loopRunning) {
+    loopRunning = true;
+    runFrameLoop();
+  }
+  if (!shouldRun && loopRunning) {
+    loopRunning = false;
+    el.preview.hidden = true;
+  }
+  if (snapshot.state === 'Stopped') {
+    el.preview.hidden = true;
+    el.preview.srcObject = null;
+  }
 }
 
-function showError(code) {
-  const recovery = describeRecovery(code, errorRegistry);
-  logLine(`${code}: ${recovery.message} (${recovery.retryAction})`, true);
+function runFrameLoop() {
+  const step = () => {
+    if (!loopRunning) return;
+    if (coordinator.snapshot().state !== 'Receiving') {
+      loopRunning = false;
+      return;
+    }
+    const frame = captureFrame(el.preview, {
+      maxPixels: MAX_PIXELS,
+      onError: (code) => showError(code),
+    });
+    if (frame) coordinator.offerFrame(frame);
+
+    if (!loopRunning) return;
+    if (typeof el.preview.requestVideoFrameCallback === 'function') {
+      el.preview.requestVideoFrameCallback(step);
+    } else {
+      setTimeout(step, 66);
+    }
+  };
+  step();
+}
+
+async function startLive() {
+  if (!capabilities.realtime) return;
+  startClicks += 1;
+  const result = coordinator.startLive({ requestId: `live-${startClicks}` });
+  if (!result.accepted && result.reason === 'busy') {
+    logLine('a session is already active');
+  }
+}
+
+async function saveArtifact() {
+  const artifact = coordinator.snapshot().artifact;
+  if (!artifact || !artifact.blob) return;
+
+  const fallback = coordinator.snapshot().sessionId || 'cimbar-recv';
+  const suggestedName = safeSuggestedName(artifact.suggestedName, fallback);
+  let handle;
+  try {
+    handle = await window.showSaveFilePicker({ suggestedName });
+  } catch (error) {
+    logLine('save cancelled');
+    return;
+  }
+
+  try {
+    const writable = await handle.createWritable();
+    await writable.write(artifact.blob);
+    await writable.close();
+    logLine(`saved ${suggestedName}`);
+  } catch (error) {
+    logLine(`save failed: ${(error && error.message) || error}`, true);
+  }
 }
 
 async function loadJson(path) {
   const response = await fetch(path, { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   return response.json();
-}
-
-async function ensureClient() {
-  if (session.client) return session.client;
-  const worker = new Worker(new URL('../worker/decoder-worker.js', import.meta.url));
-
-  const client = new DecoderClient(worker, { maxFramePixels: 4194304, maxArtifactBytes: 16777216 });
-  await client.init({ mode: MODE_B, assets, limits: {} });
-  session.client = client;
-  return client;
-}
-
-function releaseSession() {
-  if (session.stream) {
-    for (const track of session.stream.getTracks()) track.stop();
-    session.stream = null;
-  }
-  if (session.videoUrl) {
-    URL.revokeObjectURL(session.videoUrl);
-    session.videoUrl = null;
-  }
-  el.preview.pause();
-  el.preview.srcObject = null;
-  el.preview.removeAttribute('src');
-  el.preview.hidden = true;
-  if (session.client) {
-    session.client.close();
-    session.client = null;
-  }
-  session.inFlight = false;
-  session.frameCallback = null;
-}
-
-function captureFrame(video) {
-  const width = video.videoWidth;
-  const height = video.videoHeight;
-  if (!width || !height) return null;
-  const pixels = width * height;
-  if (!Number.isSafeInteger(pixels) || pixels > 4194304) {
-    logLine(`frame too large (${width}x${height}); not resizing`, true);
-    return null;
-  }
-  const canvas = captureFrame.canvas || (captureFrame.canvas = new OffscreenCanvas(width, height));
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-  }
-  const context = canvas.getContext('2d');
-  context.drawImage(video, 0, 0, width, height);
-  return { width, height, pixels: context.getImageData(0, 0, width, height).data.buffer };
-}
-
-async function handleResult(result, seq) {
-  if (!isCurrent(seq)) return;
-  if (result.outcome === 'no_data') {
-    framesSeen += 1;
-    if (framesSeen % 30 === 0) logLine(`${framesSeen} frames seen, no data yet`);
-    return;
-  }
-  if (result.outcome === 'data') {
-    logLine(`decoded ${result.bytesDecoded} bytes`);
-    return;
-  }
-  if (result.outcome === 'artifact') {
-    framesSeen = 0;
-    setSnapshot({
-      state: 'Ready',
-      artifact: {
-        byteLength: result.artifact.byteCount,
-        name: result.artifact.suggestedName,
-        blob: result.artifact.blob,
-      },
-    });
-    logLine(`file rebuilt: ${result.artifact.byteCount} bytes`);
-    return;
-  }
-  showError(result.errorCode);
-}
-
-function scheduleFrames(seq, video) {
-  const step = async () => {
-    if (!isCurrent(seq) || session.snapshot.state !== 'Receiving') return;
-    if (session.client && !session.inFlight) {
-      session.inFlight = true;
-      try {
-        const frame = captureFrame(video);
-        if (frame) await handleResult(await session.client.submitFrame(frame), seq);
-      } catch (error) {
-        logLine(String((error && error.message) || error), true);
-      }
-      session.inFlight = false;
-    }
-    if (isCurrent(seq)) scheduleFrames(seq, video);
-  };
-
-  if (typeof video.requestVideoFrameCallback === 'function') {
-    session.frameCallback = video.requestVideoFrameCallback(step);
-  } else {
-    setTimeout(step, 66);
-  }
-}
-
-async function startLive() {
-  if (!capabilities.realtime) return;
-  const seq = ++session.counter;
-  framesSeen = 0;
-  setSnapshot({ sessionId: `s${seq}`, sessionSeq: seq, state: 'Preparing', artifact: null });
-
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
-  } catch (error) {
-    setSnapshot({ state: 'Idle' });
-    showError(12002);
-    return;
-  }
-
-  session.stream = stream;
-  el.preview.srcObject = stream;
-  el.preview.hidden = false;
-  await el.preview.play().catch(() => {});
-  const track = stream.getVideoTracks()[0];
-  if (track) {
-    track.addEventListener('ended', () => {
-      if (isCurrent(seq)) stopSession();
-    });
-  }
-
-  try {
-    await ensureClient();
-  } catch (error) {
-    logLine(`decoder unavailable: ${(error && error.message) || error}`, true);
-    releaseSession();
-    setSnapshot({ state: 'Idle' });
-    return;
-  }
-
-  if (!isCurrent(seq)) {
-    releaseSession();
-    return;
-  }
-  setSnapshot({ state: 'Receiving' });
-  scheduleFrames(seq, el.preview);
-}
-
-async function startVideo(file) {
-  if (!file) return;
-  const seq = ++session.counter;
-  framesSeen = 0;
-  setSnapshot({ sessionId: `s${seq}`, sessionSeq: seq, state: 'Preparing', artifact: null });
-
-  session.videoUrl = URL.createObjectURL(file);
-  el.preview.src = session.videoUrl;
-  el.preview.hidden = false;
-
-  el.preview.addEventListener('ended', () => {
-    if (!isCurrent(seq)) return;
-    if (session.snapshot.state === 'Ready') return;
-    setSnapshot({ state: 'Incomplete' });
-    logLine('the recording ended before the file was complete');
-  }, { once: true });
-
-  try {
-    await el.preview.play();
-    await ensureClient();
-  } catch (error) {
-    logLine(`video import failed: ${(error && error.message) || error}`, true);
-    releaseSession();
-    setSnapshot({ state: 'Idle' });
-    return;
-  }
-
-  if (!isCurrent(seq)) { releaseSession(); return; }
-  setSnapshot({ state: 'Receiving' });
-  scheduleFrames(seq, el.preview);
-}
-
-function stopSession() {
-  const seq = session.snapshot.sessionSeq;
-  if (!isCurrent(seq)) return;
-  setSnapshot({ state: 'Stopping' });
-  releaseSession();
-  setSnapshot({ state: 'Stopped' });
-  logLine('stopped');
-}
-
-async function saveArtifact() {
-  const artifact = session.snapshot.artifact;
-  if (!artifact || !artifact.blob) return;
-
-  const suggestedName = safeSuggestedName(artifact.name, session.snapshot.sessionId || 'cimbar-recv');
-  let handle;
-  try {
-    handle = await window.showSaveFilePicker({ suggestedName });
-  } catch (error) {
-    logLine('save cancelled', false);
-    return;
-  }
-
-  setSnapshot({ state: 'Saving' });
-  try {
-    const writable = await handle.createWritable();
-    await writable.write(artifact.blob);
-    await writable.close();
-    setSnapshot({ state: 'Saved' });
-    logLine(`saved ${suggestedName}`);
-  } catch (error) {
-    setSnapshot({ state: 'Retryable' });
-    logLine(`save failed: ${(error && error.message) || error}`, true);
-  }
 }
 
 async function init() {
@@ -311,15 +178,14 @@ async function init() {
     logLine(`configuration unavailable: ${(error && error.message) || error}`, true);
   }
 
-  el.btnLive.addEventListener('click', () => { startLive(); });
+  el.btnLive.addEventListener('click', () => { void startLive(); });
   el.btnVideo.addEventListener('click', () => { el.fileInput.click(); });
   el.fileInput.addEventListener('change', () => {
-    const file = el.fileInput.files && el.fileInput.files[0];
     el.fileInput.value = '';
-    startVideo(file);
+    logLine('importing a recording is not available in this build yet', true);
   });
-  el.btnStop.addEventListener('click', stopSession);
-  el.btnSave.addEventListener('click', saveArtifact);
+  el.btnStop.addEventListener('click', () => coordinator.stop());
+  el.btnSave.addEventListener('click', () => { void saveArtifact(); });
 
   render();
 }
