@@ -23,6 +23,7 @@ export class SessionCoordinator {
     this._videoSource = null;
     this._startRequests = new Map(); // requestId -> sessionId
     this._pending = new Set();
+    this._saveWhenSettled = null;
     this._cleanupToken = 0;
   }
 
@@ -46,6 +47,7 @@ export class SessionCoordinator {
       inputEnded: s.inputEnded,
       capturePending: s.capturePending === true,
       startedAt: s.startedAt,
+      saveAttemptId: s.saveAttemptId || null,
       cleanupComplete: this._pending.size === 0,
       eventSeq: this._eventSeq,
       stats: this._scheduler ? this._scheduler.stats()
@@ -302,6 +304,41 @@ export class SessionCoordinator {
     }
   }
 
+  // Save events flow through the coordinator so the session state machine
+  // stays the only writer: Ready -> Saving -> Saved | Retryable. During
+  // Stopping the state is frozen; the save still settles honestly.
+  attachSave(controller) {
+    this._saveWhenSettled = () => controller.whenSettled();
+  }
+
+  saveEvent(event) {
+    if (!this._session || !this._isCurrent(this._session.seq)) return;
+    if (this._isStopping()) return; // the state is frozen; the save settles honestly
+
+    switch (event.saveStatus) {
+      case 'selecting':
+      case 'writing':
+      case 'pending':
+        if (['Ready', 'Saving', 'Retryable'].includes(this._session.state)) {
+          this._emit({ state: 'Saving', saveAttemptId: event.attemptId || null });
+        }
+        break;
+      case 'saved':
+        if (['Saving', 'Ready'].includes(this._session.state)) {
+          this._emit({ state: 'Saved', saveAttemptId: event.attemptId || null });
+        }
+        break;
+      case 'failed':
+      case 'cancelled':
+        if (this._session.state === 'Saving') {
+          this._emit({ state: 'Retryable', saveAttemptId: event.attemptId || null });
+        }
+        break;
+      default:
+        break; // aborted and unknown statuses leave the state unchanged
+    }
+  }
+
   // EOF barrier: wait for the in-flight reply, allow at most one final sample.
   // A session that already reached Ready has nothing left to drain.
   async finishStream({ takeFinalSample } = {}) {
@@ -346,6 +383,12 @@ export class SessionCoordinator {
 
     this.releaseInputs();
 
+    // An in-flight save must settle before the session reports Stopped; the
+    // committed file is never rolled back.
+    if (this._saveWhenSettled) {
+      this._track(this._saveWhenSettled().then(() => {}));
+      if (this._pending.size > 0) return;
+    }
     if (this._pending.size === 0) {
       this._emit({ state: 'Stopped' });
     }

@@ -278,8 +278,12 @@ async function init() {
   if (capabilities.savePicker && typeof window.showSaveFilePicker === 'function') {
     saveController = new SaveController({
       showSaveFilePicker: (options) => window.showSaveFilePicker(options),
-      onEvent: reportSave,
+      onEvent: (event) => {
+        reportSave(event);
+        coordinator.saveEvent(event);
+      },
     });
+    coordinator.attachSave(saveController);
   }
 
   el.btnLive.addEventListener('click', () => { void startLive(); });

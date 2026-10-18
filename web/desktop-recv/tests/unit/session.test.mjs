@@ -425,3 +425,83 @@ test('T2.2.b-6 an Incomplete session releases its resources', async () => {
   assert.equal(coordinator.snapshot().state, 'Incomplete');
   assert.equal(clients[0].closed, true, 'the decoder is retired');
 });
+
+// --- T3.2: save attempts drive the session state machine ---
+
+function readyCoordinator() {
+  const clients = [];
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+  });
+  coordinator.startLive({ requestId: 's' });
+  pickers[0](fakeStream());
+  return { coordinator, clients, pickers };
+}
+
+test('T3.2.a save events drive Ready -> Saving -> Saved', async () => {
+  const { coordinator, clients } = readyCoordinator();
+  await tick();
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(5);
+  clients[0].deliver({ outcome: 'artifact', artifact: { byteCount: 5, name: 'a.bin' } });
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Ready');
+
+  coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 'a1' });
+  assert.equal(coordinator.snapshot().state, 'Saving');
+
+  coordinator.saveEvent({ saveStatus: 'writing', attemptId: 'a1' });
+  assert.equal(coordinator.snapshot().state, 'Saving');
+
+  coordinator.saveEvent({ saveStatus: 'saved', attemptId: 'a1' });
+  assert.equal(coordinator.snapshot().state, 'Saved');
+  assert.equal(coordinator.snapshot().saveAttemptId, 'a1');
+});
+
+test('T3.2.a a failed save lands Retryable and can retry', async () => {
+  const { coordinator, clients } = readyCoordinator();
+  await tick();
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(5);
+  clients[0].deliver({ outcome: 'artifact', artifact: { byteCount: 5, name: 'a.bin' } });
+  await tick();
+
+  coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 'a1' });
+  coordinator.saveEvent({ saveStatus: 'failed', attemptId: 'a1' });
+  assert.equal(coordinator.snapshot().state, 'Retryable');
+
+  // a retry (new attempt) goes back through Saving
+  coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 'a2' });
+  assert.equal(coordinator.snapshot().state, 'Saving');
+  coordinator.saveEvent({ saveStatus: 'cancelled', attemptId: 'a2' });
+  assert.equal(coordinator.snapshot().state, 'Retryable');
+
+  // and the artifact is still there to save again
+  assert.ok(coordinator.snapshot().artifact);
+});
+
+test('T3.2.b stop during a pending save converges after settlement', async () => {
+  const { coordinator, clients } = readyCoordinator();
+  await tick();
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(5);
+  clients[0].deliver({ outcome: 'artifact', artifact: { byteCount: 5, name: 'a.bin' } });
+  await tick();
+
+  coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 'a1' });
+  assert.equal(coordinator.snapshot().state, 'Saving');
+
+  let settleSave;
+  coordinator.attachSave({ whenSettled: () => new Promise((resolve) => { settleSave = resolve; }) });
+
+  coordinator.stop();
+  assert.equal(coordinator.snapshot().state, 'Stopping');
+
+  settleSave();
+  await tick();
+
+  assert.equal(coordinator.snapshot().state, 'Stopped');
+  assert.equal(coordinator.snapshot().cleanupComplete, true);
+});

@@ -9,6 +9,20 @@ export class SaveController {
     this._clearTimer = options.clearTimeout || clearTimeout;
     this._attempt = null;
     this._nextAttempt = 1;
+    this._settledWaiters = [];
+  }
+
+  // Resolves when the attempt that was current at call time reaches a
+  // terminal state (saved/failed/cancelled/aborted). Used by the session to
+  // keep Stopping converged until an in-flight write settles.
+  whenSettled() {
+    const attempt = this._attempt;
+    if (!attempt || ['saved', 'failed', 'cancelled', 'aborted'].includes(attempt.state)) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this._settledWaiters.push({ id: attempt.id, resolve });
+    });
   }
 
   snapshot() {
@@ -26,6 +40,10 @@ export class SaveController {
     if (this._attempt.pendingTimer) {
       this._clearTimer(this._attempt.pendingTimer);
       this._attempt.pendingTimer = null;
+    }
+    const waiters = this._settledWaiters.splice(0);
+    for (const waiter of waiters) {
+      if (waiter.id === this._attempt.id) waiter.resolve();
     }
     this._onEvent(this.snapshot());
   }
