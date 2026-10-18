@@ -1,9 +1,25 @@
 // UT-007..UT-012: session coordination. All dependencies are injected; no
 // real media API or Worker is touched here.
+//
+// The tests at the end also pin the receiver-v1 Snapshot mapping (TD-13):
+// the contract enums are read from the frozen schema file itself, so drift
+// fails here instead of at integration time.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 import { SessionCoordinator } from '../../src/session.js';
+import { toContractSnapshot } from '../../src/contract-snapshot.js';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SCHEMA = JSON.parse(
+  readFileSync(join(HERE, '../../../../docs/design-catalog/contracts/receiver-v1.schema.json'), 'utf8')
+);
+const SNAPSHOT_SCHEMA = SCHEMA.$defs.Snapshot;
+const ARTIFACT_SCHEMA = SCHEMA.$defs.Artifact;
+const STATS_SCHEMA = SCHEMA.$defs.Stats;
 
 const tick = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -202,4 +218,143 @@ test('UT-012 a new session starts clean', async () => {
     { submitted: 0, dropped: 0, completed: 0 }
   );
   assert.ok(snap.eventSeq > 0);
+});
+
+// --- TD-13: the internal snapshot maps onto the frozen Snapshot contract ---
+
+function assertConforms(snapshot) {
+  const required = SNAPSHOT_SCHEMA.required;
+  const actualKeys = Object.keys(snapshot).sort();
+  assert.deepEqual(actualKeys, [...required].sort(),
+    'mapped snapshot must have exactly the schema keys');
+
+  assert.ok(SNAPSHOT_SCHEMA.properties.state.enum.includes(snapshot.state),
+    `state ${snapshot.state} must be in the contract enum`);
+  assert.ok(SNAPSHOT_SCHEMA.properties.mode.enum.includes(snapshot.mode),
+    `mode ${snapshot.mode} must be in the contract enum`);
+  assert.ok(SNAPSHOT_SCHEMA.properties.inputKind.enum.includes(snapshot.inputKind));
+  assert.ok(SNAPSHOT_SCHEMA.properties.saveStatus.enum.includes(snapshot.saveStatus));
+
+  for (const item of snapshot.pendingExternal) {
+    assert.ok(SNAPSHOT_SCHEMA.properties.pendingExternal.items.enum.includes(item),
+      `pendingExternal item ${item} must be registered`);
+  }
+
+  const statsKeys = Object.keys(snapshot.stats).sort();
+  assert.deepEqual(statsKeys, [...STATS_SCHEMA.required].sort());
+  assert.ok(snapshot.stats.inflight === 0 || snapshot.stats.inflight === 1);
+  assert.equal(snapshot.stats.capturedFrames,
+    snapshot.stats.submittedFrames + snapshot.stats.droppedFrames);
+
+  if (snapshot.artifact) {
+    assert.deepEqual(Object.keys(snapshot.artifact).sort(),
+      [...ARTIFACT_SCHEMA.required].sort());
+    assert.equal('blob' in snapshot.artifact, false,
+      'the contract artifact never carries the Blob');
+  }
+}
+
+test('TD-13 a mapped snapshot conforms to receiver-v1 Snapshot', () => {
+  const internal = {
+    sessionId: 's1',
+    revision: 3,
+    state: 'Receiving',
+    artifact: null,
+    inputKind: 'live',
+    inputEnded: false,
+    capturePending: false,
+    cleanupComplete: true,
+    stats: { submitted: 5, dropped: 2, completed: 3, failed: 0, inFlight: false },
+  };
+  const mapped = toContractSnapshot(internal, {
+    mode: 68,
+    saveStatus: 'none',
+    saveAttemptId: null,
+    lastError: null,
+    elapsedMs: 1500,
+  });
+  assertConforms(mapped);
+  assert.equal(mapped.mode, 'B');
+  assert.equal(mapped.state, 'Receiving');
+  assert.deepEqual(mapped.pendingExternal, []);
+  assert.equal(mapped.stats.capturedFrames, 7);
+  assert.equal(mapped.stats.submittedFrames, 5);
+  assert.equal(mapped.stats.processedFrames, 3);
+  assert.equal(mapped.stats.droppedFrames, 2);
+  assert.equal(mapped.stats.inflight, 0);
+  assert.equal(mapped.stats.elapsedMs, 1500);
+  assert.equal(mapped.artifact, null);
+});
+
+test('TD-13 a Ready artifact drops the Blob and keeps the contract fields', () => {
+  const internal = {
+    sessionId: 's2',
+    revision: 9,
+    state: 'Ready',
+    inputKind: 'live',
+    inputEnded: true,
+    capturePending: true,
+    cleanupComplete: false,
+    artifact: {
+      artifactId: '42',
+      fountainFileId: '0000002a',
+      suggestedName: 'report.pdf',
+      byteCount: 1234,
+      compressedBytes: 1100,
+      mime: 'application/octet-stream',
+      blob: new Blob([new Uint8Array([1])]), // internal only
+    },
+    stats: { submitted: 1, dropped: 0, completed: 1, failed: 0, inFlight: true },
+  };
+  const mapped = toContractSnapshot(internal, {
+    mode: 'Bm',
+    saveStatus: 'selecting',
+    saveAttemptId: 'att-1',
+    savePending: ['save_picker'],
+    lastError: { code: 12002, name: 'CAPTURE_NOT_ALLOWED', message: 'x', retryAction: 'new_click', details: {} },
+    elapsedMs: 42,
+  });
+
+  assertConforms(mapped);
+  assert.equal(mapped.mode, 'Bm');
+  assert.equal(mapped.state, 'Ready');
+  assert.deepEqual(mapped.pendingExternal, ['capture_picker', 'save_picker']);
+  assert.equal(mapped.saveAttemptId, 'att-1');
+  assert.equal(mapped.saveStatus, 'selecting');
+  assert.equal(mapped.artifact.suggestedName, 'report.pdf');
+  assert.equal(mapped.artifact.byteCount, 1234);
+  assert.equal(mapped.lastError.code, 12002);
+
+  // schema conditional: Ready does not constrain saveStatus, but Saving would
+  const saving = toContractSnapshot(
+    Object.assign({}, internal, { state: 'Saving' }),
+    { mode: 'B', saveStatus: 'writing', elapsedMs: null }
+  );
+  assertConforms(saving);
+  assert.equal(saving.saveStatus, 'writing');
+});
+
+test('TD-13 unknown internal states fall back to Stopped, never invent', () => {
+  const internal = {
+    sessionId: 's3',
+    revision: 1,
+    state: 'SomethingNew',
+    artifact: null,
+    inputKind: 'video',
+    inputEnded: false,
+    capturePending: false,
+    cleanupComplete: true,
+    stats: {},
+  };
+  const mapped = toContractSnapshot(internal, {});
+  assertConforms(mapped);
+  assert.equal(mapped.state, 'Stopped');
+  assert.equal(mapped.inputKind, 'video');
+  assert.equal(mapped.stats.capturedFrames, 0);
+  assert.equal(mapped.stats.elapsedMs, null);
+});
+
+test('TD-13 no session maps to null (IF-003)', () => {
+  assert.equal(toContractSnapshot(null, {}), null);
+  assert.equal(toContractSnapshot({ sessionId: null }, {}), null);
 });

@@ -43,6 +43,8 @@ export class SessionCoordinator {
       artifact: s.artifact,
       inputKind: s.inputKind,
       inputEnded: s.inputEnded,
+      capturePending: s.capturePending === true,
+      startedAt: s.startedAt,
       cleanupComplete: this._pending.size === 0,
       eventSeq: this._eventSeq,
       stats: this._scheduler ? this._scheduler.stats()
@@ -90,6 +92,8 @@ export class SessionCoordinator {
       artifact: null,
       inputKind: kind,
       inputEnded: false,
+      capturePending: false,
+      startedAt: Date.now(),
     };
     this._client = null;
     this._scheduler = null;
@@ -124,13 +128,24 @@ export class SessionCoordinator {
       return { accepted: true, sessionId: this._session.id };
     }
 
+    this._capturePendingSet(seq, true);
     this._track(
       Promise.resolve(picker)
-        .then((stream) => this._attachCapture(seq, stream))
-        .catch((error) => this._captureRejected(seq, error))
+        .then((stream) => {
+          this._capturePendingSet(seq, false);
+          this._attachCapture(seq, stream);
+        })
+        .catch((error) => {
+          this._capturePendingSet(seq, false);
+          this._captureRejected(seq, error);
+        })
     );
     this._track(this._initializeDecoder(seq));
     return { accepted: true, sessionId: this._session.id };
+  }
+
+  _capturePendingSet(seq, value) {
+    if (this._isCurrent(seq) && this._session) this._session.capturePending = value;
   }
 
   _attachCapture(seq, stream) {
