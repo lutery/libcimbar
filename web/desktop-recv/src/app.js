@@ -108,7 +108,10 @@ function render() {
   if (snapshot.inputEnded && snapshot.state === 'Draining' && !drainRequested) {
     drainRequested = true;
     coordinator.finishStream({
-      takeFinalSample: () => captureFrame(el.preview, { maxPixels: MAX_PIXELS }),
+      takeFinalSample: () => captureFrame(el.preview, {
+        maxPixels: MAX_PIXELS,
+        onError: (code) => showError(code),
+      }),
     }).catch((error) => logLine(String((error && error.message) || error), true));
   }
   if (snapshot.state !== 'Draining') drainRequested = false;
