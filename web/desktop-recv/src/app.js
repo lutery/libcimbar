@@ -6,6 +6,7 @@ import { DecoderClient } from './decoder-client.js';
 import { SessionCoordinator } from './session.js';
 import { SaveController } from './save-controller.js';
 import { captureFrame } from './live-source.js';
+import { VideoSource } from './video-source.js';
 
 const MODE_B = 68;
 const MAX_PIXELS = 4194304;
@@ -36,6 +37,8 @@ let drainRequested = false;
 let releasedOnReady = false;
 let receivingSince = 0;
 let noDataNoticeShown = false;
+let activeVideoSource = null;
+let videoRunStarted = false;
 const NO_DATA_NOTICE_MS = 5000;
 
 const coordinator = new SessionCoordinator({
@@ -92,7 +95,7 @@ function render() {
   }
   el.mode.textContent = 'Mode B';
 
-  const shouldRun = snapshot.state === 'Receiving';
+  const shouldRun = snapshot.state === 'Receiving' && snapshot.inputKind === 'live';
   if (shouldRun && !loopRunning) {
     loopRunning = true;
     runFrameLoop();
@@ -101,6 +104,15 @@ function render() {
     loopRunning = false;
     el.preview.hidden = true;
   }
+
+  // Recorded input: the video source steps frames only after both the source
+  // and the decoder are ready (state Receiving).
+  if (snapshot.state === 'Receiving' && snapshot.inputKind === 'video' &&
+      activeVideoSource && !videoRunStarted) {
+    videoRunStarted = true;
+    activeVideoSource.run().catch((error) => logLine(String((error && error.message) || error), true));
+  }
+  if (snapshot.state !== 'Receiving') videoRunStarted = false;
 
   // No-data notice: name the source and the mode once the wait is long enough,
   // never claiming completion or failure.
@@ -181,6 +193,36 @@ async function startLive() {
   }
 }
 
+function startVideoImport(file) {
+  if (!capabilities.videoImport) return;
+  startClicks += 1;
+  videoRunStarted = false;
+  const result = coordinator.startVideo({
+    requestId: `video-${startClicks}`,
+    openSource: async () => {
+      // The shared preview element doubles as the video element; the source
+      // sets its src and reclaims the URL on stop.
+      const source = new VideoSource({
+        createElement: () => el.preview,
+        submit: (frame) => coordinator.submitVideoFrame(frame),
+        onEnded: () => {
+          void coordinator.finishStream({ takeFinalSample: () => null })
+            .catch((error) => logLine(String((error && error.message) || error), true));
+        },
+        onError: (code) => showError(code),
+        maxPixels: MAX_PIXELS,
+      });
+      const metadata = await source.open(file);
+      activeVideoSource = source;
+      logLine(`recording: ${metadata.width}x${metadata.height}, ${metadata.durationSeconds.toFixed(1)}s`);
+      return source;
+    },
+  });
+  if (!result.accepted && result.reason === 'busy') {
+    logLine('a session is already active');
+  }
+}
+
 async function saveArtifact() {
   const snapshot = coordinator.snapshot();
   const artifact = snapshot.artifact;
@@ -243,8 +285,9 @@ async function init() {
   el.btnLive.addEventListener('click', () => { void startLive(); });
   el.btnVideo.addEventListener('click', () => { el.fileInput.click(); });
   el.fileInput.addEventListener('change', () => {
+    const file = el.fileInput.files && el.fileInput.files[0];
     el.fileInput.value = '';
-    logLine('importing a recording is not available in this build yet', true);
+    if (file) startVideoImport(file);
   });
   el.btnStop.addEventListener('click', () => coordinator.stop());
   el.btnSave.addEventListener('click', () => { void saveArtifact(); });

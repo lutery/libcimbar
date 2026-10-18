@@ -77,6 +77,44 @@ export class FrameScheduler {
     if (this._inFlight) await this._inFlight.catch(() => {});
   }
 
+  // Paced submission for recorded media: resolves with the actual result.
+  // onResult/onError are NOT invoked for this frame - the awaiter owns the
+  // outcome, so the video source can pace one frame at a time.
+  submitAndWait(frame) {
+    if (this._inFlight) {
+      return Promise.reject(Object.assign(new Error('busy'), { code: 14005 }));
+    }
+    const invalid = this._validate(frame);
+    if (invalid) {
+      this._stats.dropped += 1;
+      return Promise.reject(Object.assign(new Error('invalid frame'), { code: invalid }));
+    }
+
+    this._stats.submitted += 1;
+    let submission;
+    try {
+      submission = this._submit(frame);
+    } catch (error) {
+      this._stats.failed += 1;
+      return Promise.reject(Object.assign(new Error('submit failed'), { code: 15003 }));
+    }
+
+    const tracked = Promise.resolve(submission)
+      .then((result) => {
+        this._stats.completed += 1;
+        return result;
+      })
+      .catch((error) => {
+        this._stats.failed += 1;
+        throw error;
+      })
+      .finally(() => {
+        this._inFlight = null;
+      });
+    this._inFlight = tracked.catch(() => {});
+    return tracked;
+  }
+
   // EOF barrier: wait for the in-flight reply first, take at most one final
   // sample, then wait again. Always resolves; never spins.
   async finish(options = {}) {

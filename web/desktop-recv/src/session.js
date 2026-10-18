@@ -20,6 +20,7 @@ export class SessionCoordinator {
     this._client = null;
     this._scheduler = null;
     this._stream = null;
+    this._videoSource = null;
     this._startRequests = new Map(); // requestId -> sessionId
     this._pending = new Set();
     this._cleanupToken = 0;
@@ -98,9 +99,63 @@ export class SessionCoordinator {
     this._client = null;
     this._scheduler = null;
     this._stream = null;
+    this._videoSource = null;
     this._eventSeq += 1;
     this._onSnapshot(this.snapshot());
     return seq;
+  }
+
+  // Recorded-video session. The file input's change event is the user
+  // activation; openSource runs the metadata/decode precheck and returns a
+  // VideoSource that has NOT started stepping yet.
+  startVideo({ requestId = 'video', openSource } = {}) {
+    const previousId = this._startRequests.get(requestId);
+    if (previousId && this._session && this._session.id === previousId &&
+        !IDLE_STATES.has(this._session.state)) {
+      return { accepted: true, duplicate: true, sessionId: previousId };
+    }
+    if (this._session && !IDLE_STATES.has(this._session.state)) {
+      return { accepted: false, reason: 'busy' };
+    }
+
+    const seq = this._newSession('video');
+    this._startRequests.set(requestId, this._session.id);
+    this._capturePendingSet(seq, true);
+
+    this._track(
+      Promise.resolve()
+        .then(() => openSource())
+        .then((source) => {
+          this._capturePendingSet(seq, false);
+          this._attachVideoSource(seq, source);
+        })
+        .catch((error) => {
+          this._capturePendingSet(seq, false);
+          this._captureRejected(seq, error);
+        })
+    );
+    this._track(this._initializeDecoder(seq));
+    return { accepted: true, sessionId: this._session.id };
+  }
+
+  _attachVideoSource(seq, source) {
+    if (!this._isCurrent(seq) || this._isStopping()) {
+      if (source && typeof source.stop === 'function') source.stop();
+      return;
+    }
+    this._videoSource = source;
+    this._maybeStart(seq);
+  }
+
+  _mediaReady() {
+    return !!(this._stream || this._videoSource);
+  }
+
+  _maybeStart(seq) {
+    if (!this._isCurrent(seq) || this._isStopping()) return;
+    if (this._mediaReady() && this._client && this._session.state === 'Preparing') {
+      this._emit({ state: 'Receiving' });
+    }
   }
 
   startLive({ requestId = 'live' } = {}) {
@@ -187,13 +242,6 @@ export class SessionCoordinator {
       });
   }
 
-  _maybeStart(seq) {
-    if (!this._isCurrent(seq) || this._isStopping()) return;
-    if (this._stream && this._client && this._session.state === 'Preparing') {
-      this._emit({ state: 'Receiving' });
-    }
-  }
-
   _captureRejected(seq, error) {
     if (!this._isCurrent(seq)) return;
     // A rejection arriving after stop must not pull Stopping back to Idle.
@@ -221,6 +269,25 @@ export class SessionCoordinator {
     return this._scheduler.submitFrame(frame);
   }
 
+  // Paced path for recorded media: resolves with the actual result so the
+  // source can step one frame at a time. The session still owns the state
+  // transitions (Ready on artifact, errors surfaced).
+  submitVideoFrame(frame) {
+    const session = this._session;
+    if (!session || session.state !== 'Receiving' || !this._scheduler) {
+      return Promise.resolve({ outcome: 'error', errorCode: 11003 });
+    }
+    const seq = session.seq;
+    return this._scheduler.submitAndWait(frame).then((result) => {
+      this._onFrameResult(seq, result);
+      return result;
+    }).catch((error) => {
+      const code = error && Number.isSafeInteger(error.code) ? error.code : 15003;
+      if (this._isCurrent(seq)) this._onError(code);
+      return { outcome: 'error', errorCode: code };
+    });
+  }
+
   _onFrameResult(seq, result) {
     if (!this._isCurrent(seq)) return;
     if (this._isStopping()) return;
@@ -236,8 +303,10 @@ export class SessionCoordinator {
   }
 
   // EOF barrier: wait for the in-flight reply, allow at most one final sample.
+  // A session that already reached Ready has nothing left to drain.
   async finishStream({ takeFinalSample } = {}) {
     if (!this._scheduler || !this._session) return;
+    if (!['Receiving', 'Draining'].includes(this._session.state)) return;
     const seq = this._session.seq;
     if (!this._isCurrent(seq)) return;
     this._emit({ state: 'Draining', inputEnded: true });
@@ -258,6 +327,10 @@ export class SessionCoordinator {
       for (const track of this._stream.getTracks()) track.stop();
     }
     this._stream = null;
+    if (this._videoSource && typeof this._videoSource.stop === 'function') {
+      this._videoSource.stop();
+    }
+    this._videoSource = null;
     if (this._client && typeof this._client.close === 'function') {
       this._client.close();
     }

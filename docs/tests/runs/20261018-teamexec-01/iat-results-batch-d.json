@@ -1,0 +1,32 @@
+{
+  "runId": "20261018-teamexec-01",
+  "case": "IAT-04 / IAT-05",
+  "executedAt": "2026-10-18T19:5x+08:00 (window.__meta of the browser run)",
+  "page": "http://127.0.0.1:8766/tests/browser/index.html",
+  "browser": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "engine": "Chromium (Playwright), headful"
+  },
+  "assetSet": {
+    "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+    "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b"
+  },
+  "results": [
+    {
+      "name": "IAT-04 lifecycle",
+      "ok": true,
+      "detail": "states=Receiving,Stopped cleanup=true lateStreamStopped=true",
+      "proves": "the real coordinator drives the real worker with a synthetic MediaStream: start converges to Receiving, stop converges to Stopped with cleanupComplete, and a stream authorized after stop has its tracks stopped immediately"
+    },
+    {
+      "name": "IAT-05 video import",
+      "ok": true,
+      "detail": "codec=video/webm;codecs=vp9 file=1546417B state=Ready artifactBytes=7538 expected=7538",
+      "proves": "a REAL MediaRecorder-encoded WebM/VP9 recording of the sample image survives the codec and rebuilds the exact artifact through VideoSource -> paced frames -> the real worker. This is the real-recording-format evidence the handoff requires (WebM/VP8 class); MP4/H.264 stays on the support matrix for the field round."
+    }
+  ],
+  "notes": [
+    "The recording runs at 50 Mbps to isolate pipeline correctness from codec loss; realistic-bitrate behavior is measured in T4.2.",
+    "VideoSource handles the MediaRecorder unknown-duration header by forcing duration calculation before the precheck."
+  ]
+}

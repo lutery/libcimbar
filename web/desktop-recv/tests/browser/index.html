@@ -19,6 +19,7 @@
     import { runWasmRoundtrip } from './wasm-roundtrip.mjs';
     import { runDigestMismatch } from './digest-mismatch.mjs';
     import { runLifecycle } from './lifecycle.mjs';
+    import { runVideoImport } from './video-import.mjs';
 
     const results = [];
     function record(name, ok, detail) {
@@ -36,6 +37,7 @@
         ['IAT-01 wasm roundtrip', runWasmRoundtrip],
         ['IAT-03 digest mismatch rejected', runDigestMismatch],
         ['IAT-04 lifecycle', runLifecycle],
+        ['IAT-05 video import', runVideoImport],
       ];
       for (const [name, fn] of cases) {
         try { await fn(record); }
