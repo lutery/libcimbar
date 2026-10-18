@@ -12,6 +12,11 @@
 | TD-06 | S5（已部分处理） | worker 现校验 mode ∈ {4,8,66,67,68}；但 `cimbar::Config::update` 的完整合法集合未在 JS 侧声明 | 新增 mode 时需同步两处 | T2.1.a 从 `config/profile.json` 读取支持列表 |
 | TD-07 | — | dev 环境使用 `tools/desktop-recv/dev-server.py`；产品入口服务器 `server.py` 在 T2.1.a | 两套服务器需保持 MIME/回环语义一致 | T2.1.a 的 `server.py` 落地后，dev-server 仅保留为测试工具 |
 
+| TD-08 | W-B（round 2） | `_frameEnded` 的复位覆盖了"块内跨帧"，但**帧结束恰好落在块边界**（`input.pos == input.size`）时，外层 `while` 的下一轮没有入口复位，第二帧截断仍可能在 `flush_once` 短路下误报完成 | cimbar 发送端是单帧协议，当前不可达；与严格 EOF 的契约表述冲突 | 触碰 `zstd_decompressor.h` 时：把复位移到外层 `while` 每轮开头，并补一条"双帧完整 + 第二帧截断"的 C++ 用例 |
+| TD-09 | S-B（round 2） | `handle_init` 的异步摘要校验窗口内可重入：第二个 init 会覆盖 `_initTimer`（旧定时器泄漏但被 `settle` 守卫压制），并可能二次 `importScripts` | 客户端常规流程已阻止；风险低 | 在 `handle_init` 增加 `_verifying` 早退，并让重复 init 返回 11003 |
+| TD-10 | S-C/S-D（round 2） | `%` 路径拒绝只在 worker 与 `contracts.js` 实现，`verify-assets.mjs`/`stage.ps1` 未同步（fs 语义下 fail-safe）；`crypto.subtle` 仅在安全上下文可用，未来非回环 http 会统一 18001 | 无穿越向量；故障方向安全 | 并入 TD-05 的镜像一致性测试；README 已注明安全上下文要求 |
+| TD-11 | W-E（round 2） | 证据 `sourceRevision` 记录的是提交而非构建树；15:43 的门禁跑在含未提交修复的工作树上 | 来源标注与实际构建可能存在偏差 | 与 TD-04 同批关闭：stage.ps1 接受 `-SourceRevision` 或从构建树读取 |
+
 ## 已在本轮关闭（记录备查）
 
 - B1 运行期摘要校验（C-07/M06）：worker 在 `importScripts` 前 fetch + SHA-256 比对 JS/WASM，失配 18002、取字节失败 18001。
