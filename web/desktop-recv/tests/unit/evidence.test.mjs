@@ -13,7 +13,7 @@ const roundtripPass = {
   caseType: 'file_roundtrip',
   result: 'PASS',
   executedBy: 'executor',
-  originalSha256: HASH,
+  referenceSha256: HASH,
   receivedSha256: HASH,
   proofRefs: ['proof/roundtrip/hashes.txt'],
 };
@@ -36,7 +36,7 @@ test('UT-043 unequal hashes cannot pass a roundtrip', () => {
 test('UT-044 missing hashes or proof references are refused', () => {
   const noHash = validateCaseRecord({
     ...roundtripPass,
-    originalSha256: undefined,
+    referenceSha256: undefined,
     receivedSha256: undefined,
   });
   assert.equal(noHash.ok, false);

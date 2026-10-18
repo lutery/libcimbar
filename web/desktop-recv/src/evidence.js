@@ -47,14 +47,14 @@ export function validateCaseRecord(record, context = {}) {
   }
 
   if (terminal && record.caseType === 'file_roundtrip') {
-    const { originalSha256, receivedSha256 } = record;
-    if (typeof originalSha256 !== 'string' || !/^[0-9a-f]{64}$/.test(originalSha256 || '')) {
-      violations.push('file_roundtrip PASS/FAIL needs the original SHA-256');
+    const { referenceSha256, receivedSha256 } = record;
+    if (typeof referenceSha256 !== 'string' || !/^[0-9a-f]{64}$/.test(referenceSha256 || '')) {
+      violations.push('file_roundtrip PASS/FAIL needs the reference SHA-256');
     }
     if (typeof receivedSha256 !== 'string' || !/^[0-9a-f]{64}$/.test(receivedSha256 || '')) {
       violations.push('file_roundtrip PASS/FAIL needs the received SHA-256');
     }
-    if (originalSha256 && receivedSha256 && originalSha256 !== receivedSha256 && record.result === 'PASS') {
+    if (referenceSha256 && receivedSha256 && referenceSha256 !== receivedSha256 && record.result === 'PASS') {
       violations.push('hashes differ: the roundtrip cannot be PASS');
     }
   }

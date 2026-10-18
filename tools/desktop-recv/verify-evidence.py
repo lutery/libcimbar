@@ -27,7 +27,6 @@ SCOPES = {"unit_integration", "local_simulated", "real_cloud", "document_qa"}
 RESULTS = {"PASS", "FAIL", "NOT_RUN"}
 TERMINAL = {"PASS", "FAIL"}
 # Frozen receiver-v1 Evidence vocabulary.
-EXECUTED_BY = {"executor", "user"}
 EXECUTORS = {
     "unit_integration": {"executor"},
     "local_simulated": {"executor"},
@@ -70,13 +69,13 @@ def validate_record(record, context):
         if not proof_refs:
             violations.append("a terminal result needs at least one proof reference")
         if record.get("caseType") == "file_roundtrip":
-            original = record.get("originalSha256") or ""
+            reference = record.get("referenceSha256") or ""
             received = record.get("receivedSha256") or ""
-            if not re.fullmatch(r"[0-9a-f]{64}", original):
-                violations.append("file_roundtrip needs the original SHA-256")
+            if not re.fullmatch(r"[0-9a-f]{64}", reference):
+                violations.append("file_roundtrip needs the reference SHA-256")
             if not re.fullmatch(r"[0-9a-f]{64}", received):
                 violations.append("file_roundtrip needs the received SHA-256")
-            if (original and received and original != received
+            if (reference and received and reference != received
                     and result == "PASS"):
                 violations.append("hashes differ: the roundtrip cannot be PASS")
 

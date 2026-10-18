@@ -102,11 +102,11 @@
     "result": "PASS",
     "executedBy": "executor",
     "proofRefs": [
-      "iat-results.json"
+      "iat-results-batch-d.json"
     ],
     "notes": "direct frame: 7500 fountain bytes, 7538-byte artifact",
-    "originalSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
-    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
+    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "referenceSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
   },
   {
     "caseId": "IAT-02",
@@ -151,8 +151,8 @@
       "iat-results-batch-d.json"
     ],
     "notes": "real WebM/VP9 recording rebuilt the same 7538-byte artifact",
-    "originalSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
-    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
+    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "referenceSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
   },
   {
     "caseId": "E2E-1",
