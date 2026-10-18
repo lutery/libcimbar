@@ -13,7 +13,8 @@
   "assetSet": {
     "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
     "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
-    "sourceRevision": "117a9afa6b1f053e797c3e30e9aab4b1b86c3e9c"
+    "sourceRevision": "971c0c280de66bbc35e3decf981a7eaedc34fe9d",
+    "sourceRevisionNote": "revision of the staged manifest used for this run (see config/asset-set.json)"
   },
   "proof": {
     "screenshot": "proof/iat-results-final.png"
