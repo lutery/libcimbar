@@ -1,0 +1,323 @@
+'use strict';
+// Classic worker (importScripts), one WASM instance per session.
+// Module must exist before the Emscripten loader runs, so it is declared at
+// top level. The policy is unit-tested through a VM fake (UT-019..024); real
+// bytes are proven in the browser tests.
+//
+// Note: this file cannot import src/contracts.js (classic worker), so the two
+// small validators below mirror it deliberately.
+
+var Module = {
+  locateFile: function (path) {
+    if (!path.endsWith('.wasm')) throw new Error('unexpected loader resource');
+    return _assets ? resolve_asset(_assets.wasmUrl) : path;
+  },
+  onRuntimeInitialized: function () { on_wasm_ready(); },
+  onAbort: function (reason) { settle_init(false, 15003, String(reason || 'abort')); },
+};
+
+// Asset paths are relative to the receiver root, not to this worker's URL.
+// worker/decoder-worker.js -> ../../ = receiver root. In the VM harness there
+// is no location; paths are passed through unchanged.
+function resolve_asset(path) {
+  if (self.location && self.location.href) {
+    return new URL(path, new URL('../', self.location.href)).href;
+  }
+  return path;
+}
+
+var REQUIRED_EXPORTS = [
+  '_cimbard_configure_decode',
+  '_cimbard_get_bufsize',
+  '_cimbard_scan_extract_decode',
+  '_cimbard_fountain_decode',
+  '_cimbard_get_filename',
+  '_cimbard_get_filesize',
+  '_cimbard_decompress_read',
+  '_cimbard_get_decompress_bufsize',
+];
+
+var DEFAULT_LIMITS = {
+  maxFramePixels: 4194304,
+  maxArtifactBytes: 16777216,
+  initTimeoutMs: 30000,
+  frameTimeoutMs: 30000,
+};
+
+var _assets = null;
+var _limits = DEFAULT_LIMITS;
+var _mode = 68;
+var _settled = false;
+var _ready = false;
+var _initTimer = null;
+var _lastFrameId = 0;
+var _inFlight = false;
+var _buffers = { img: null, fountain: null, dec: null, name: null };
+
+function post(msg, transfer) { self.postMessage(msg, transfer || []); }
+
+function settle_init(ok, code, detail) {
+  if (_settled) return;
+  _settled = true;
+  _ready = ok;
+  if (_initTimer) { clearTimeout(_initTimer); _initTimer = null; }
+  if (ok) post({ type: 'ready', mode: _mode });
+  else post({ type: 'init-failed', code: code, detail: detail });
+}
+
+function is_safe_relative_path(value) {
+  if (!value || typeof value !== 'string') return false;
+  if (/^[A-Za-z]:/.test(value)) return false;
+  if (value.charAt(0) === '/' || value.charAt(0) === '\\') return false;
+  if (value.indexOf('://') >= 0) return false;
+  if (value.split(/[\\/]/).indexOf('..') >= 0) return false;
+  return true;
+}
+
+function rgba_bytes(width, height, maxPixels) {
+  var pixels = width * height;
+  var bytes = pixels * 4;
+  if (!Number.isSafeInteger(width) || width <= 0 ||
+      !Number.isSafeInteger(height) || height <= 0 ||
+      !Number.isSafeInteger(pixels) || pixels > maxPixels ||
+      !Number.isSafeInteger(bytes)) {
+    return -1;
+  }
+  return bytes;
+}
+
+function ensure_buffer(name, size) {
+  var buff = _buffers[name];
+  if (!buff || buff.length < size) {
+    if (buff) {
+      try { Module._free(buff.byteOffset); } catch (e) { /* already freed */ }
+    }
+    var ptr = Module._malloc(size);
+    if (!ptr) throw new Error('malloc failed: ' + name);
+    buff = new Uint8Array(Module.HEAPU8.buffer, ptr, size);
+    _buffers[name] = buff;
+  } else if (buff.buffer !== Module.HEAPU8.buffer) {
+    buff = new Uint8Array(Module.HEAPU8.buffer, buff.byteOffset, buff.length);
+    _buffers[name] = buff;
+  }
+  return buff;
+}
+
+function on_wasm_ready() {
+  try {
+    if (!_assets) {
+      settle_init(false, 15011, 'init never received');
+      return;
+    }
+    for (var i = 0; i < REQUIRED_EXPORTS.length; i++) {
+      if (typeof Module[REQUIRED_EXPORTS[i]] !== 'function') {
+        settle_init(false, 15002, 'missing export ' + REQUIRED_EXPORTS[i]);
+        return;
+      }
+    }
+    Module._cimbard_configure_decode(_mode);
+    var bufsize = Module._cimbard_get_bufsize();
+    if (!Number.isSafeInteger(bufsize) || bufsize <= 0) {
+      settle_init(false, 15004, 'bad fountain bufsize');
+      return;
+    }
+    ensure_buffer('fountain', bufsize);
+    settle_init(true);
+  } catch (e) {
+    settle_init(false, 15001, String((e && e.message) || e));
+  }
+}
+
+function handle_init(msg) {
+  if (_settled) {
+    post({ type: 'init-failed', code: 11003, detail: 'init already settled' });
+    return;
+  }
+
+  _mode = Number.isSafeInteger(msg.mode) ? msg.mode : 68;
+  _limits = Object.assign({}, DEFAULT_LIMITS, msg.limits || {});
+
+  var assets = msg.assets || {};
+  if (!is_safe_relative_path(assets.jsPath) || !is_safe_relative_path(assets.wasmPath)) {
+    settle_init(false, 18001, 'unsafe asset path');
+    return;
+  }
+  if (!/^[0-9a-f]{64}$/.test(assets.jsSha256 || '') ||
+      !/^[0-9a-f]{64}$/.test(assets.wasmSha256 || '')) {
+    settle_init(false, 18003, 'asset digests missing or malformed');
+    return;
+  }
+
+  _assets = { jsUrl: assets.jsPath, wasmUrl: assets.wasmPath };
+  _initTimer = setTimeout(function () {
+    settle_init(false, 15011, 'init timeout');
+  }, _limits.initTimeoutMs);
+
+  try {
+    importScripts(resolve_asset(assets.jsPath));
+  } catch (e) {
+    settle_init(false, 15001, String((e && e.message) || e));
+  }
+}
+
+function build_artifact(fileId) {
+  var compressedBytes = Module._cimbard_get_filesize(fileId);
+  if (!Number.isSafeInteger(compressedBytes) || compressedBytes < 0) {
+    return { error: 15006 };
+  }
+  if (compressedBytes > _limits.maxArtifactBytes) {
+    return { error: 15008 };
+  }
+
+  var nameBuff = ensure_buffer('name', 512);
+  var nameLen = Module._cimbard_get_filename(fileId, nameBuff.byteOffset, nameBuff.length);
+  if (!Number.isSafeInteger(nameLen)) return { error: 15006 };
+  if (nameLen < 0) return { error: 15006 };
+
+  var suggestedName = '';
+  if (nameLen > 0) {
+    var nameBytes = new Uint8Array(Module.HEAPU8.buffer, nameBuff.byteOffset, nameLen).slice();
+    suggestedName = new TextDecoder('utf-8').decode(nameBytes);
+  }
+
+  var decSize = Module._cimbard_get_decompress_bufsize();
+  if (!Number.isSafeInteger(decSize) || decSize <= 0) return { error: 15004 };
+  var dec = ensure_buffer('dec', decSize);
+
+  var parts = [];
+  var total = 0;
+  for (var guard = 0; guard < 1000000; guard++) {
+    var n;
+    try {
+      n = Module._cimbard_decompress_read(fileId, dec.byteOffset, dec.length);
+    } catch (e) {
+      return { error: 15003 };
+    }
+    if (!Number.isSafeInteger(n)) return { error: 15003 };
+    if (n === 0) break; // strict end of frame
+    if (n < 0) return { error: n === -16 ? 15012 : 15007 };
+    if (total + n > _limits.maxArtifactBytes) return { error: 15008 };
+    // copy out of the heap before any further WASM call can move or free it
+    parts.push(new Uint8Array(Module.HEAPU8.buffer, dec.byteOffset, n).slice());
+    total += n;
+  }
+
+  var blob = new Blob(parts, { type: 'application/octet-stream' });
+  return {
+    value: {
+      artifactId: String(fileId),
+      fountainFileId: fileId.toString(16).padStart(8, '0'),
+      suggestedName: suggestedName || (fileId + '.' + compressedBytes),
+      byteCount: blob.size,
+      compressedBytes: compressedBytes,
+      mime: 'application/octet-stream',
+      blob: blob,
+    },
+  };
+}
+
+function frame_error(frameId, code) {
+  post({ type: 'frame-result', frameId: frameId, outcome: 'error', errorCode: code });
+}
+
+function handle_frame(msg) {
+  if (!_ready) {
+    frame_error(msg && msg.frameId, 11003);
+    return;
+  }
+
+  var frameId = msg.frameId;
+  if (!Number.isSafeInteger(frameId) || frameId <= _lastFrameId || _inFlight) {
+    frame_error(frameId, 14005);
+    return;
+  }
+  _lastFrameId = frameId;
+
+  var img = null;
+  _inFlight = true;
+  try {
+    var pixels = msg.pixels;
+    if (!(pixels instanceof ArrayBuffer)) {
+      frame_error(frameId, 14001);
+      return;
+    }
+    var expected = rgba_bytes(msg.width, msg.height, _limits.maxFramePixels);
+    if (expected < 0 || pixels.byteLength !== expected) {
+      frame_error(frameId, 14001);
+      return;
+    }
+
+    img = ensure_buffer('img', pixels.byteLength);
+    img.set(new Uint8Array(pixels));
+
+    var fountain = ensure_buffer('fountain', 1);
+    var len = Module._cimbard_scan_extract_decode(
+      img.byteOffset, msg.width, msg.height, 4, fountain.byteOffset, fountain.length
+    );
+    if (!Number.isSafeInteger(len)) { frame_error(frameId, 15003); return; }
+    if (len <= 0) {
+      // -3 / 0 are normal no-data, not failures
+      post({ type: 'frame-result', frameId: frameId, outcome: 'no_data', bytesDecoded: 0 });
+      return;
+    }
+
+    var fountainResult;
+    try {
+      fountainResult = Module._cimbard_fountain_decode(fountain.byteOffset, len);
+    } catch (e) {
+      frame_error(frameId, 15003);
+      return;
+    }
+    if (typeof fountainResult !== 'bigint') {
+      frame_error(frameId, 15009); // WASM_BIGINT ABI mismatch
+      return;
+    }
+    if (fountainResult < 0n) {
+      frame_error(frameId, 15005);
+      return;
+    }
+    if (fountainResult === 0n) {
+      post({ type: 'frame-result', frameId: frameId, outcome: 'data', bytesDecoded: len });
+      return;
+    }
+
+    var fileId = Number(BigInt.asUintN(32, fountainResult));
+    var artifact = build_artifact(fileId);
+    if (artifact.error) {
+      frame_error(frameId, artifact.error);
+      return;
+    }
+    post({
+      type: 'frame-result',
+      frameId: frameId,
+      outcome: 'artifact',
+      bytesDecoded: len,
+      artifact: artifact.value,
+    });
+  } catch (e) {
+    frame_error(frameId, 15001);
+  } finally {
+    _inFlight = false;
+    void img;
+  }
+}
+
+function handle_close() {
+  for (var name in _buffers) {
+    var buff = _buffers[name];
+    if (buff) {
+      try { Module._free(buff.byteOffset); } catch (e) { /* ignore */ }
+      _buffers[name] = null;
+    }
+  }
+  _ready = false;
+  if (typeof self.close === 'function') self.close();
+}
+
+self.onmessage = function (event) {
+  var msg = event && event.data;
+  if (!msg || typeof msg.type !== 'string') return;
+  if (msg.type === 'init') { handle_init(msg); return; }
+  if (msg.type === 'frame') { handle_frame(msg); return; }
+  if (msg.type === 'close') { handle_close(); return; }
+};

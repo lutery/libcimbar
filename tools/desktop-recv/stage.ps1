@@ -168,7 +168,9 @@ switch ($Mode) {
       exit 3
     }
     New-Item -ItemType Directory -Force -Path $staging | Out-Null
-    Copy-Item -Recurse -Force -Path $src -Destination $staging
+    # copy the CONTENTS, not the directory: Copy-Item -Recurse src -Destination staging
+    # would nest it as staging/desktop-recv.
+    Copy-Item -Path (Join-Path $src '*') -Destination $staging -Recurse -Force
     Write-Output "copied development source into $staging"
   }
 

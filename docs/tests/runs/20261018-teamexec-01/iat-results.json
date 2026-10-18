@@ -1,0 +1,35 @@
+{
+  "runId": "20261018-teamexec-01",
+  "case": "IAT-01 / IAT-02",
+  "executedAt": "2026-10-18T15:02:00+08:00",
+  "page": "http://127.0.0.1:8766/tests/browser/index.html",
+  "browser": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "platform": "Win32",
+    "engine": "Chromium (Playwright), headful"
+  },
+  "assetSet": {
+    "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+    "wasmSha256": "775e33848669f7fbf72552f50160594dadb8e5dee166730202fb63586b9568ca",
+    "sourceRevision": "513526f76f164a72c32890b4e30a0a9f6e5f881f"
+  },
+  "results": [
+    {
+      "name": "IAT-02 native payload",
+      "ok": true,
+      "detail": "mode=68 outcome=no_data",
+      "proves": "real classic Worker loads the final WASM; a native ArrayBuffer crosses structured clone and the scan path answers"
+    },
+    {
+      "name": "IAT-01 wasm roundtrip",
+      "ok": true,
+      "detail": "outcome=artifact bytesDecoded=7500 artifactBytes=7538 expected=7500/7538",
+      "proves": "a real cimbar sample frame decodes to 7500 fountain bytes and reconstructs a 7538-byte artifact inside the final WASM worker - the same numbers the native C++ test asserts"
+    }
+  ],
+  "notes": [
+    "VM fake Module proves worker policy only (UT-019..024); these browser results carry the real bytes.",
+    "The receiver page in this run is the integration test page, not the user entry point (T2.1.a).",
+    "Python stdlib http.server maps .mjs to text/plain on this machine; tools/desktop-recv/dev-server.py fixes MIME and caching."
+  ]
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>desktop-recv integration</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    pre { background: #111; color: #eee; padding: 1rem; border-radius: 6px; }
+    .pass { color: #7f7; }
+    .fail { color: #f77; }
+  </style>
+</head>
+<body>
+  <h1>desktop-recv integration tests</h1>
+  <p>Runs the real classic Worker with the final WASM asset set.</p>
+  <pre id="results">running...</pre>
+  <script type="module">
+    import { runNativePayload } from './native-payload.mjs';
+    import { runWasmRoundtrip } from './wasm-roundtrip.mjs';
+
+    const results = [];
+    function record(name, ok, detail) {
+      results.push({ name, ok: !!ok, detail: detail || '' });
+      document.getElementById('results').textContent = JSON.stringify(results, null, 2);
+      window.__results = results;
+    }
+
+    (async () => {
+      window.__results = results;
+      const cases = [
+        ['IAT-02 native payload', runNativePayload],
+        ['IAT-01 wasm roundtrip', runWasmRoundtrip],
+      ];
+      for (const [name, fn] of cases) {
+        try { await fn(record); }
+        catch (e) { record(name, false, String((e && e.stack) || e)); }
+      }
+      window.__done = true;
+    })();
+  </script>
+</body>
+</html>
