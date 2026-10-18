@@ -186,6 +186,24 @@ switch ($Mode) {
     # copy the CONTENTS, not the directory: Copy-Item -Recurse src -Destination staging
     # would nest it as staging/desktop-recv.
     Copy-Item -Path (Join-Path $src '*') -Destination $staging -Recurse -Force
+
+    # the app config is a copy of the frozen contracts; refuse to drift
+    $pairs = @(
+      @{ local = 'config/profile.json'; contract = 'docs/design-catalog/contracts/profile-initial.json' },
+      @{ local = 'config/errors.json'; contract = 'docs/design-catalog/contracts/error-codes.json' }
+    )
+    foreach ($pair in $pairs) {
+      $localPath = Join-Path $src $pair.local
+      $contractPath = Join-Path $repoRoot $pair.contract
+      if (-not (Test-Path $localPath)) {
+        Write-Error "missing app config: $($pair.local)"
+        exit 4
+      }
+      if ((Get-Sha256 $localPath) -ne (Get-Sha256 $contractPath)) {
+        Write-Error "$($pair.local) does not match $($pair.contract); copy the frozen contract"
+        exit 4
+      }
+    }
     Write-Output "copied development source into $staging"
   }
 
