@@ -157,7 +157,7 @@ switch ($Mode) {
       jsSha256          = $jsSha
       wasmSha256        = $wasmSha
       gate              = 'CMD-02'
-      gateCommand       = "ctest --test-dir <build> -R '^(compression_test|cimbar_js_test)$' --output-on-failure; compression_test -s; cimbar_js_test -s; ctest --test-dir <build> --output-on-failure"
+      gateCommand       = "ctest --test-dir <build> -R '^(compression_test|cimbar_js_test)$' --output-on-failure; <compression_test> --list-tests; <cimbar_js_test> --list-tests; ctest --test-dir <build> --output-on-failure"
       gateResult        = 'PASS'
       gateLogPath       = (Resolve-Path -Relative $gateLogPath).Replace('\', '/')
       gateLogSha256     = $gateSha

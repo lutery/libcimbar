@@ -1,8 +1,8 @@
 {
   "runId": "20261018-teamexec-01",
-  "case": "IAT-01 / IAT-02",
-  "executedAt": "2026-10-18T15:44:16.766+08:00",
-  "finishedAt": "2026-10-18T15:44:17.069+08:00",
+  "case": "IAT-01 / IAT-02 / IAT-03",
+  "executedAt": "2026-10-18T15:56:07.458+08:00",
+  "finishedAt": "2026-10-18T15:56:07.857+08:00",
   "timestampSource": "window.__meta recorded by the browser page during execution (not hand-written)",
   "page": "http://127.0.0.1:8766/tests/browser/index.html",
   "browser": {
@@ -13,8 +13,7 @@
   "assetSet": {
     "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
     "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
-    "sourceRevision": "117a9afa6b1f053e797c3e30e9aab4b1b86c3e9c",
-    "runtimeDigestVerified": true
+    "sourceRevision": "117a9afa6b1f053e797c3e30e9aab4b1b86c3e9c"
   },
   "proof": {
     "screenshot": "proof/iat-results-final.png"
@@ -24,13 +23,19 @@
       "name": "IAT-02 native payload",
       "ok": true,
       "detail": "mode=68 outcome=no_data",
-      "proves": "the real classic Worker verified the staged JS/WASM digests at runtime (C-07), loaded the final WASM, received a native ArrayBuffer through structured clone and answered from the scan path"
+      "proves": "the real classic Worker loaded the final WASM, received a native ArrayBuffer through structured clone and answered from the scan path"
     },
     {
       "name": "IAT-01 wasm roundtrip",
       "ok": true,
       "detail": "outcome=artifact bytesDecoded=7500 artifactBytes=7538 expected=7500/7538",
       "proves": "a real cimbar sample frame decodes to 7500 fountain bytes and reconstructs a 7538-byte artifact inside the final WASM worker - the same numbers the native C++ test asserts"
+    },
+    {
+      "name": "IAT-03 digest mismatch rejected",
+      "ok": true,
+      "detail": "code=18002",
+      "proves": "the running worker actually hashes the assets: a manifest whose wasmSha256 does not match the served bytes is rejected at init with ASSET_DIGEST_MISMATCH (C-07/M06). This is machine-derived, not a self-reported boolean."
     }
   ],
   "notes": [

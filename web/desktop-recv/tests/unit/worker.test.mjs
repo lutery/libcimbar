@@ -35,7 +35,6 @@ function harnessWithReads(reads, limits = {}, extraExports = {}) {
       },
     }, extraExports)),
   });
-  h.limitsOverride = limits;
   return h;
 }
 

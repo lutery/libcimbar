@@ -1,7 +1,7 @@
 # RED evidence — run 20261018-teamexec-01
 
 Test-plan.md:38 requires RED, fix and GREEN to be recorded with the run, not
-only the final green output. These are the two behaviour reds the fixes came
+only the final green output. These are the three behaviour reds the fixes came
 from, transcribed from the actual runs.
 
 ## RED-1 — strict EOF: truncation reported as completion (before 513526f)
@@ -33,10 +33,11 @@ UT-054 chunked write, and the C-ABI export guard.
 
 ## RED-2 — export small buffer lost bytes (before the pending guard)
 
-Command:
+Command (WSL2, clean copy, same CMD-02 build):
 
 ```
-node --test web/desktop-recv/tests/unit/worker.test.mjs
+cmake --build build-native --target cimbar_js_test -j4
+./build-native/build/src/lib/cimbar_js/test/cimbar_js_test
 ```
 
 Observed:
