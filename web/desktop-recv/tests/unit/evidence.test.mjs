@@ -12,7 +12,7 @@ const roundtripPass = {
   scope: 'local_simulated',
   caseType: 'file_roundtrip',
   result: 'PASS',
-  executedBy: 'implementer',
+  executedBy: 'executor',
   originalSha256: HASH,
   receivedSha256: HASH,
   proofRefs: ['proof/roundtrip/hashes.txt'],
@@ -56,7 +56,7 @@ test('UT-045 scope cannot be upgraded', () => {
   assert.ok(fakeLocal.violations.some((v) => v.includes('not valid for scope')));
 
   const gate = validateRunGate(
-    [{ ...roundtripPass, caseId: 'E2E-21', scope: 'real_cloud', executedBy: 'implementer', result: 'PASS' }],
+    [{ ...roundtripPass, caseId: 'E2E-21', scope: 'real_cloud', executedBy: 'executor', result: 'PASS' }],
     { gate: 'local', requiredIds: [] }
   );
   assert.equal(gate.ok, false);
@@ -96,9 +96,9 @@ test('UT-047 todo, skip and zero-test runs never pass', () => {
   const withTodo = validateCaseRecord({
     caseId: 'UT-x',
     scope: 'unit_integration',
-    caseType: 'suite',
+    caseType: 'negative_or_lifecycle',
     result: 'PASS',
-    executedBy: 'ci',
+    executedBy: 'executor',
     proofRefs: ['unit-output.txt'],
     notes: '3 test.todo cases remain',
   });
@@ -115,7 +115,7 @@ test('UT-048 performance without a threshold is not a pass', () => {
     scope: 'local_simulated',
     caseType: 'performance',
     result: 'PASS',
-    executedBy: 'implementer',
+    executedBy: 'executor',
     proofRefs: ['measurements.json'],
   };
   const refused = validateCaseRecord(record, { thresholdFrozen: false });
