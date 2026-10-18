@@ -144,7 +144,8 @@ export class SessionCoordinator {
     const track = stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
     if (track) {
       track.addEventListener('ended', () => {
-        if (this._isCurrent(seq)) this._emit({ inputEnded: true, state: 'Draining' });
+        if (!this._isCurrent(seq) || this._isStopping()) return;
+        this._emit({ inputEnded: true, state: 'Draining' });
       });
     }
     this._maybeStart(seq);
@@ -217,12 +218,10 @@ export class SessionCoordinator {
     }
   }
 
-  stop() {
-    if (!this._session) return;
-    if (['Stopping', 'Stopped'].includes(this._session.state)) return; // idempotent
-    this._emit({ state: 'Stopping' });
-    this._cleanupToken += 1;
-
+  // Release the capture tracks and the decoder without changing the session
+  // state: used once the artifact has been delivered (the Worker's job is
+  // done) and by stop().
+  releaseInputs() {
     if (this._stream && typeof this._stream.getTracks === 'function') {
       for (const track of this._stream.getTracks()) track.stop();
     }
@@ -232,6 +231,15 @@ export class SessionCoordinator {
     }
     this._client = null;
     this._scheduler = null;
+  }
+
+  stop() {
+    if (!this._session) return;
+    if (['Stopping', 'Stopped'].includes(this._session.state)) return; // idempotent
+    this._emit({ state: 'Stopping' });
+    this._cleanupToken += 1;
+
+    this.releaseInputs();
 
     if (this._pending.size === 0) {
       this._emit({ state: 'Stopped' });

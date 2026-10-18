@@ -32,6 +32,8 @@ let errorRegistry = null;
 let saveController = null;
 let loopRunning = false;
 let startClicks = 0;
+let drainRequested = false;
+let releasedOnReady = false;
 
 const coordinator = new SessionCoordinator({
   // The picker wrapper is the single place a stream is obtained: the preview
@@ -96,10 +98,28 @@ function render() {
     loopRunning = false;
     el.preview.hidden = true;
   }
-  if (snapshot.state === 'Stopped') {
+  if (snapshot.state === 'Stopped' || snapshot.state === 'Idle') {
     el.preview.hidden = true;
-    el.preview.srcObject = null;
+    if (snapshot.state === 'Stopped') el.preview.srcObject = null;
   }
+
+  // The capture stream has ended: drain the in-flight frame, then either the
+  // artifact arrives or the session ends incomplete.
+  if (snapshot.inputEnded && snapshot.state === 'Draining' && !drainRequested) {
+    drainRequested = true;
+    coordinator.finishStream({
+      takeFinalSample: () => captureFrame(el.preview, { maxPixels: MAX_PIXELS }),
+    }).catch((error) => logLine(String((error && error.message) || error), true));
+  }
+  if (snapshot.state !== 'Draining') drainRequested = false;
+
+  // The artifact has been delivered: stop sharing and retire the decoder.
+  if (snapshot.state === 'Ready' && !releasedOnReady) {
+    releasedOnReady = true;
+    coordinator.releaseInputs();
+    logLine('capture stopped; the file is ready to save');
+  }
+  if (snapshot.state === 'Preparing') releasedOnReady = false;
 }
 
 function runFrameLoop() {

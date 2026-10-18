@@ -42,14 +42,16 @@ export class FrameScheduler {
 
     this._stats.submitted += 1;
 
-    // enter the submission synchronously (this is where postMessage happens)
+    // enter the submission synchronously (this is where postMessage happens).
+    // A synchronous throw means the frame never went in flight: report it as
+    // refused, not accepted.
     let submission;
     try {
       submission = this._submit(frame);
     } catch (error) {
       this._stats.failed += 1;
       this._onError(error && Number.isSafeInteger(error.code) ? error.code : 15003);
-      return true;
+      return false;
     }
 
     this._inFlight = Promise.resolve(submission)

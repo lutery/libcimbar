@@ -17,6 +17,15 @@
 | TD-10 | S-C/S-D（round 2） | `%` 路径拒绝只在 worker 与 `contracts.js` 实现，`verify-assets.mjs`/`stage.ps1` 未同步（fs 语义下 fail-safe）；`crypto.subtle` 仅在安全上下文可用，未来非回环 http 会统一 18001 | 无穿越向量；故障方向安全 | 并入 TD-05 的镜像一致性测试；README 已注明安全上下文要求 |
 | TD-11 | W-E（round 2） | 证据 `sourceRevision` 记录的是提交而非构建树；15:43 的门禁跑在含未提交修复的工作树上 | 来源标注与实际构建可能存在偏差 | 与 TD-04 同批关闭：stage.ps1 接受 `-SourceRevision` 或从构建树读取 |
 
+| TD-12 | B-1（round 3） | **批次 B 的定义性真实验证被推迟**：UAT-L03（真实发送窗口 + 系统保存对话框 + 双侧 `Get-FileHash` 相等）与 T2.1.b 第 4 步（实际选窗口取得进度/Ready）都需要真人在系统对话框中操作，无法自动化。`proof/roundtrip/` 尚不存在 | 在 TD-12 关闭前，**不得声称"本地全功能通过"**（test-plan.md:40） | **批次 F 的 T4.1.b 之前必须补跑**：用户配合一次真实 roundtrip，证据落 `docs/tests/runs/<runId>/proof/roundtrip/`；或安排人工操作会话并留证 |
+| TD-13 | W-2（round 3） | 内部 Snapshot 形状与 receiver-v1.schema 有偏差（缺 mode/pendingExternal/saveAttemptId/lastError/saveStatus；多 sessionSeq；stats 字段名不同；状态枚举含 schema 外值） | 无消费方校验所以暂不炸，但 T3/T4 会在偏离形状上叠加 | 批次 C 首个提交引入边界映射层（或对齐命名），并让 snapshot 过一次 schema 校验测试 |
+| TD-14 | S-1/S-4/S-5/S-6/S-7（round 3） | S-1 `_cleanupToken` 死字段、`_startRequests` 无界；S-4 uat 文档时间戳为约值；S-5 ui.js 存在协调器不会发出的状态；S-6 保存时丢弃 artifactId 等字段；S-7 `attachStream` 导出未用 | 均为小项 | 随批次 C 的映射层（TD-13）与 T3.1 接线一并清理 |
+
+### round 3 分派（W-3/W-4 写入对应任务验收清单）
+
+- **T2.2.a 验收清单追加**：① 停止后迟到的 picker 拒绝不得把 Stopping 拉回 Idle（`_captureRejected` 需 `_isStopping` 检查）；② decoder init 失败必须落到终态（当前永久 Preparing）；③ track ended 监听的 `_isStopping` 对称检查（本轮已顺手修复）。
+- **T2.2.b 验收清单追加**：④ track ended → Draining → `finishStream` 排空 → Ready/Incomplete（本轮已在 app.js 接线，任务化后需 E2E 覆盖）；⑤ 12005 输入源结束必须出现在 Snapshot。
+
 ## 已在本轮关闭（记录备查）
 
 - B1 运行期摘要校验（C-07/M06）：worker 在 `importScripts` 前 fetch + SHA-256 比对 JS/WASM，失配 18002、取字节失败 18001。

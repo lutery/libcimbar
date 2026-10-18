@@ -134,6 +134,7 @@ test('UT-029 a target chosen after stop is not written', async () => {
   await tick();
 
   assert.equal(controller.snapshot().saveStatus, 'aborted');
+  assert.equal(controller.snapshot().lastError, 11005, 'SESSION_CHANGED, from the registry');
   assert.equal(createWritableCalls, 0, 'no write starts after stop');
 });
 

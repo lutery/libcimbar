@@ -69,7 +69,7 @@ export class SaveController {
         // The user may have stopped the session while the dialog was open.
         // A target chosen after the stop must not start a write.
         if (!isCurrent()) {
-          this._settle('aborted', 16010);
+          this._settle('aborted', 11005); // SESSION_CHANGED, from the registry
           return undefined;
         }
         return this._write(attempt, handle);
@@ -106,10 +106,15 @@ export class SaveController {
       .then(() => { attempt.stage = 'close'; return writable.close(); })
       .then(() => { this._settle('saved', null); })
       .catch((error) => {
-        // the artifact stays in memory; a new click may retry it
-        const code = error && error.name === 'AbortError' ? 16002
-          : (attempt.stage === 'close' ? 16006 : 16005);
-        this._settle(error && error.name === 'AbortError' ? 'cancelled' : 'failed', code);
+        if (error && error.name === 'AbortError') {
+          this._settle('cancelled', 16002);
+          return;
+        }
+        // permission and lock failures have their own registered codes
+        let code = attempt.stage === 'close' ? 16006 : 16005;
+        if (error && error.name === 'NotAllowedError') code = 16003;
+        else if (error && (error.name === 'NoModificationAllowedError' || error.name === 'InvalidStateError')) code = 16004;
+        this._settle('failed', code);
       });
   }
 }
