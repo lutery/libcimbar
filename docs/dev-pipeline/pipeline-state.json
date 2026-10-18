@@ -215,7 +215,7 @@
       "test_status": "in_progress",
       "started_at": "2026-10-18T13:20:01+08:00",
       "completed_at": null,
-      "notes": "Batch A APPROVED (round 2). Batch B APPROVED in round 4 (conditional on TD-12): the UAT-L03 real-window roundtrip and the T2.1.b live-window check need a human in the system dialogs; the catch-up is required with proof/roundtrip/ before T4.1.b, and the local full-function-pass claim stays withheld until then. CMD-05 37/37 across 6 suites. Next: batch C (T2.2.a stop/dedup/late-auth hardening with acceptance items 1-3, T2.2.b recovery UX with items 4-6), first commit carries the TD-13 Snapshot mapping layer.",
+      "notes": "All 20 base tasks IMPLEMENTED (batches A-G, commits 26f710a..5233062). Gates: CMD-05 --all 8 suites / 50+ tests 0 todo-skip; CMD-02 native 9/9; CMD-04 asset verify pass with negatives rejected; CMD-07 IAT-01..05 green incl. the REAL WebM/VP9 recording roundtrip (IAT-05, artifact 7538); CMD-06 0/3/4; candidate package assembled with DELIVERY-MANIFEST (24 files); fixtures, results.json (40 records, 15 PASS / 25 NOT_RUN), measurements.json, support-matrix.md, field-guide, empty field-receipt all landed. CMD-09 local gate FAILS with exactly the 18 human-in-the-dialog journeys (E2E-3..20, TD-12) - the honest state until the user-assisted roundtrip closes them. Final checkpoint review round 5 requested for batches C-G.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
