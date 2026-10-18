@@ -1,0 +1,401 @@
+[
+  {
+    "caseId": "UTS-contracts",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 7,
+    "notes": "7 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-session",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 16,
+    "notes": "16 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-scheduler",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 6,
+    "notes": "6 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-worker",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 6,
+    "notes": "6 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-save",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 6,
+    "notes": "6 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-video",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 6,
+    "notes": "6 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-ui",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 6,
+    "notes": "6 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "UTS-evidence",
+    "scope": "unit_integration",
+    "caseType": "suite",
+    "result": "PASS",
+    "executedBy": "ci",
+    "proofRefs": [
+      "cmd-05-all.log"
+    ],
+    "testCount": 7,
+    "notes": "7 tests, 0 todo, 0 skipped"
+  },
+  {
+    "caseId": "IAT-01",
+    "scope": "local_simulated",
+    "caseType": "integration",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "iat-results.json"
+    ],
+    "notes": "7500 fountain bytes, 7538-byte artifact"
+  },
+  {
+    "caseId": "IAT-02",
+    "scope": "local_simulated",
+    "caseType": "integration",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "iat-results.json"
+    ],
+    "notes": "native ArrayBuffer through structured clone"
+  },
+  {
+    "caseId": "IAT-03",
+    "scope": "local_simulated",
+    "caseType": "integration",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "iat-results.json"
+    ],
+    "notes": "digest mismatch rejected with 18002"
+  },
+  {
+    "caseId": "IAT-04",
+    "scope": "local_simulated",
+    "caseType": "integration",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "iat-results-batch-d.json"
+    ],
+    "notes": "lifecycle: Receiving->Stopped, late stream stopped"
+  },
+  {
+    "caseId": "IAT-05",
+    "scope": "local_simulated",
+    "caseType": "integration",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "iat-results-batch-d.json"
+    ],
+    "notes": "real WebM/VP9 recording rebuilt the 7538-byte artifact"
+  },
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "startup",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "uat-l01-l02.md",
+      "proof/uat-l01-entry.png"
+    ],
+    "notes": "clean first start"
+  },
+  {
+    "caseId": "E2E-2",
+    "scope": "local_simulated",
+    "caseType": "startup",
+    "result": "PASS",
+    "executedBy": "implementer",
+    "proofRefs": [
+      "uat-l01-l02.md"
+    ],
+    "notes": "startup failure recovery"
+  },
+  {
+    "caseId": "E2E-3",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-4",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-5",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-6",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-7",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-8",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-9",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-10",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-11",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-12",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-13",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-14",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-15",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-16",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-17",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-18",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-19",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-20",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "requires the user-assisted roundtrip (TD-12)"
+  },
+  {
+    "caseId": "E2E-21",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "E2E-22",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "E2E-23",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "E2E-24",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "E2E-25",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "E2E-26",
+    "scope": "real_cloud",
+    "caseType": "manual",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "field journey; executed by the user at the cloud desktop"
+  },
+  {
+    "caseId": "PERF-1",
+    "scope": "local_simulated",
+    "caseType": "performance",
+    "result": "NOT_RUN",
+    "executedBy": null,
+    "proofRefs": [],
+    "notes": "measurements recorded; thresholds not frozen (V-002/V-003)"
+  }
+]
