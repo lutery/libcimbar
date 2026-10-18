@@ -208,12 +208,39 @@ switch ($Mode) {
   }
 
   'candidate' {
-    $entry = Join-Path $staging 'index.html'
-    if (-not (Test-Path $entry)) {
-      Write-Error "candidate staging requires a complete user entry point at $entry"
-      exit 3
+    # A candidate package must be a complete user entry: everything the
+    # launcher needs, plus the delivery manifest. Nothing may be missing.
+    $required = @(
+      'index.html', 'styles.css', 'launch.ps1', 'server.py', 'README.md',
+      'config/asset-set.json', 'config/profile.json', 'config/errors.json',
+      'vendor/cimbar_js.js', 'vendor/cimbar_js.wasm',
+      'worker/decoder-worker.js',
+      'src/app.js', 'src/session.js', 'src/frame-scheduler.js',
+      'src/save-controller.js', 'src/video-source.js', 'src/live-source.js',
+      'src/decoder-client.js', 'src/contracts.js', 'src/evidence.js',
+      'src/contract-snapshot.js', 'src/capabilities.js', 'src/ui.js'
+    )
+    foreach ($relative in $required) {
+      if (-not (Test-Path (Join-Path $staging $relative))) {
+        [Console]::Error.WriteLine("candidate package missing required file: $relative")
+        exit 4
+      }
     }
-    Write-Output "candidate staging present at $staging"
+
+    # delivery manifest: every delivered file with its real digest
+    $files = Get-ChildItem -Recurse -File $staging |
+      Where-Object { $_.FullName -notmatch '\\tests\\' } |
+      Sort-Object FullName
+    $lines = @('# Cimbar Desktop Receiver candidate manifest', "# generated $(Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')", '')
+    foreach ($file in $files) {
+      $relative = $file.FullName.Substring($staging.Length + 1).Replace('\', '/')
+      $digest = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash.ToLower()
+      $lines += "$digest  $($file.Length)  $relative"
+    }
+    $manifestPath = Join-Path $staging 'DELIVERY-MANIFEST.txt'
+    [IO.File]::WriteAllLines($manifestPath, $lines)
+    Write-Output "candidate package verified: $($files.Count) files"
+    Write-Output "manifest: $manifestPath"
   }
 }
 
