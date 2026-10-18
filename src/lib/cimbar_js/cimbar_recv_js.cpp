@@ -248,6 +248,9 @@ int cimbard_get_filename(uint32_t id, char* filename, unsigned fnsize)
 
 int cimbard_decompress_read(uint32_t id, unsigned char* buffer, unsigned size)
 {
+	if (size == 0 or buffer == nullptr)
+		return -17; // a zero-size read is a caller bug, never "done"
+
 	int	res = recover_contents(id);
 	if (res < 0)
 		return res;

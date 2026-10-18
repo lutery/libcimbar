@@ -27,6 +27,8 @@
 
     (async () => {
       window.__results = results;
+      // timestamps come from this browser run, not from a hand-written file
+      window.__meta = { startedAt: new Date().toISOString(), userAgent: navigator.userAgent };
       const cases = [
         ['IAT-02 native payload', runNativePayload],
         ['IAT-01 wasm roundtrip', runWasmRoundtrip],
@@ -35,6 +37,7 @@
         try { await fn(record); }
         catch (e) { record(name, false, String((e && e.stack) || e)); }
       }
+      window.__meta.finishedAt = new Date().toISOString();
       window.__done = true;
     })();
   </script>

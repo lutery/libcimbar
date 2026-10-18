@@ -122,6 +122,21 @@ switch ($Mode) {
     $jsSha = Get-Sha256 (Join-Path $vendor 'cimbar_js.js')
     $wasmSha = Get-Sha256 (Join-Path $vendor 'cimbar_js.wasm')
     $gateSha = Get-Sha256 $gateLogPath
+
+    # The log must be a real run, not a hand-written green file: require the
+    # suite result line and every strict-EOF case name to appear in it.
+    $gateText = Get-Content -Raw -LiteralPath $gateLogPath
+    $gateMarkers = @(
+      '100% tests passed', 'compression_test', 'cimbar_js_test',
+      'UT-049', 'UT-050', 'UT-051', 'UT-052', 'UT-053', 'UT-054', 'testStrictEof'
+    )
+    foreach ($marker in $gateMarkers) {
+      if ($gateText -notmatch [regex]::Escape($marker)) {
+        Write-Error "gate log does not contain '$marker'; refusing to bind evidence"
+        exit 4
+      }
+    }
+
     $revision = (git -C $repoRoot rev-parse HEAD).Trim()
 
     $assetSet = [ordered]@{
@@ -142,7 +157,7 @@ switch ($Mode) {
       jsSha256          = $jsSha
       wasmSha256        = $wasmSha
       gate              = 'CMD-02'
-      gateCommand       = "cmake --build <build> --target compression_test cimbar_js_test; ctest --test-dir <build> -R '^(compression_test|cimbar_js_test)$' --output-on-failure"
+      gateCommand       = "ctest --test-dir <build> -R '^(compression_test|cimbar_js_test)$' --output-on-failure; compression_test -s; cimbar_js_test -s; ctest --test-dir <build> --output-on-failure"
       gateResult        = 'PASS'
       gateLogPath       = (Resolve-Path -Relative $gateLogPath).Replace('\', '/')
       gateLogSha256     = $gateSha

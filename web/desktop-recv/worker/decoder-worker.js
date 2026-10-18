@@ -26,6 +26,42 @@ function resolve_asset(path) {
   return path;
 }
 
+// C-07 (装配/M06): the running worker must hash the bytes it is about to load
+// and compare them with the AssetSet. Checking only at staging time lets a
+// swapped or stale file pass silently.
+function digest_of_fetch(url) {
+  return fetch(url, { cache: 'no-store' }).then(function (res) {
+    if (!res.ok) throw new Error('fetch ' + url + ' -> ' + res.status);
+    return res.arrayBuffer();
+  }).then(function (bytes) {
+    return crypto.subtle.digest('SHA-256', bytes);
+  }).then(function (digest) {
+    var view = new Uint8Array(digest);
+    var hex = '';
+    for (var i = 0; i < view.length; i++) hex += ('0' + view[i].toString(16)).slice(-2);
+    return hex;
+  });
+}
+
+function verify_assets(assets) {
+  return digest_of_fetch(resolve_asset(assets.jsPath)).then(function (hex) {
+    if (hex !== assets.jsSha256) {
+      settle_init(false, 18002, 'js digest mismatch');
+      return false;
+    }
+    return digest_of_fetch(resolve_asset(assets.wasmPath)).then(function (wasmHex) {
+      if (wasmHex !== assets.wasmSha256) {
+        settle_init(false, 18002, 'wasm digest mismatch');
+        return false;
+      }
+      return true;
+    });
+  }).catch(function (e) {
+    settle_init(false, 18001, String((e && e.message) || e));
+    return false;
+  });
+}
+
 var REQUIRED_EXPORTS = [
   '_cimbard_configure_decode',
   '_cimbard_get_bufsize',
@@ -70,6 +106,7 @@ function is_safe_relative_path(value) {
   if (/^[A-Za-z]:/.test(value)) return false;
   if (value.charAt(0) === '/' || value.charAt(0) === '\\') return false;
   if (value.indexOf('://') >= 0) return false;
+  if (value.indexOf('%') >= 0) return false; // %2e%2e normalizes to '..' in URL
   if (value.split(/[\\/]/).indexOf('..') >= 0) return false;
   return true;
 }
@@ -128,13 +165,19 @@ function on_wasm_ready() {
   }
 }
 
+var SUPPORTED_MODES = [4, 8, 66, 67, 68];
+
 function handle_init(msg) {
   if (_settled) {
     post({ type: 'init-failed', code: 11003, detail: 'init already settled' });
     return;
   }
 
-  _mode = Number.isSafeInteger(msg.mode) ? msg.mode : 68;
+  if (SUPPORTED_MODES.indexOf(msg.mode) < 0) {
+    settle_init(false, 10001, 'unsupported mode ' + msg.mode);
+    return;
+  }
+  _mode = msg.mode;
   _limits = Object.assign({}, DEFAULT_LIMITS, msg.limits || {});
 
   var assets = msg.assets || {};
@@ -153,11 +196,14 @@ function handle_init(msg) {
     settle_init(false, 15011, 'init timeout');
   }, _limits.initTimeoutMs);
 
-  try {
-    importScripts(resolve_asset(assets.jsPath));
-  } catch (e) {
-    settle_init(false, 15001, String((e && e.message) || e));
-  }
+  verify_assets(assets).then(function (ok) {
+    if (!ok) return; // settle_init already reported the reason
+    try {
+      importScripts(resolve_asset(assets.jsPath));
+    } catch (e) {
+      settle_init(false, 15001, String((e && e.message) || e));
+    }
+  });
 }
 
 function build_artifact(fileId) {
@@ -186,6 +232,7 @@ function build_artifact(fileId) {
 
   var parts = [];
   var total = 0;
+  var completed = false;
   for (var guard = 0; guard < 1000000; guard++) {
     var n;
     try {
@@ -194,13 +241,15 @@ function build_artifact(fileId) {
       return { error: 15003 };
     }
     if (!Number.isSafeInteger(n)) return { error: 15003 };
-    if (n === 0) break; // strict end of frame
+    if (n === 0) { completed = true; break; } // strict end of frame
     if (n < 0) return { error: n === -16 ? 15012 : 15007 };
     if (total + n > _limits.maxArtifactBytes) return { error: 15008 };
     // copy out of the heap before any further WASM call can move or free it
     parts.push(new Uint8Array(Module.HEAPU8.buffer, dec.byteOffset, n).slice());
     total += n;
   }
+  // the loop guard is a safety net, not a success path: never ship a partial file
+  if (!completed) return { error: 15003 };
 
   var blob = new Blob(parts, { type: 'application/octet-stream' });
   return {
@@ -295,7 +344,8 @@ function handle_frame(msg) {
       artifact: artifact.value,
     });
   } catch (e) {
-    frame_error(frameId, 15001);
+    // frame-stage unexpected failure is a runtime failure, not an init failure
+    frame_error(frameId, 15003);
   } finally {
     _inFlight = false;
     void img;

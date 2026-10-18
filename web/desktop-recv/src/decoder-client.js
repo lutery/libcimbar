@@ -14,6 +14,7 @@ export class DecoderClient {
     this._onInitFailed = null;
     worker.onmessage = (event) => this._onMessage(event.data);
     worker.onerror = (event) => this._failAll(new Error(`worker error: ${event.message || 'unknown'}`));
+    worker.onmessageerror = () => this._failAll(new Error('worker message could not be deserialized (15010)'));
   }
 
   init({ mode, assets, limits }) {

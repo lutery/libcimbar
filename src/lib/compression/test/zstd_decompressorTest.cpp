@@ -172,7 +172,7 @@ namespace {
 
 // UT-049: a valid compressed stream decodes byte-exactly and only reports
 // completion after the frame is really finished.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.RoundTrip", "[unit][desktop-recv]" )
+TEST_CASE( "UT-049 zstd_decompressorTest/testStrictEof.RoundTrip", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(300000);
 	std::vector<char> compressed = make_zstd_stream(payload);
@@ -189,7 +189,7 @@ TEST_CASE( "zstd_decompressorTest/testStrictEof.RoundTrip", "[unit][desktop-recv
 }
 
 // UT-050: a corrupted stream surfaces an error instead of looking complete.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.Corrupt", "[unit][desktop-recv]" )
+TEST_CASE( "UT-050 zstd_decompressorTest/testStrictEof.Corrupt", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(50000);
 	std::vector<char> compressed = make_zstd_stream(payload);
@@ -204,7 +204,7 @@ TEST_CASE( "zstd_decompressorTest/testStrictEof.Corrupt", "[unit][desktop-recv]"
 }
 
 // UT-051: legal truncations are incomplete, not silently complete.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.Truncated", "[unit][desktop-recv]" )
+TEST_CASE( "UT-051 zstd_decompressorTest/testStrictEof.Truncated", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(300000);
 	std::vector<char> compressed = make_zstd_stream(payload);
@@ -220,7 +220,7 @@ TEST_CASE( "zstd_decompressorTest/testStrictEof.Truncated", "[unit][desktop-recv
 }
 
 // UT-052: output still buffered inside zstd is flushed after input is exhausted.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.FlushAfterInput", "[unit][desktop-recv]" )
+TEST_CASE( "UT-052 zstd_decompressorTest/testStrictEof.FlushAfterInput", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(300000);
 	std::vector<char> compressed = make_zstd_stream(payload);
@@ -239,7 +239,7 @@ TEST_CASE( "zstd_decompressorTest/testStrictEof.FlushAfterInput", "[unit][deskto
 }
 
 // UT-053: repeated reads never lose bytes and stay stable after completion.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.RepeatedRead", "[unit][desktop-recv]" )
+TEST_CASE( "UT-053 zstd_decompressorTest/testStrictEof.RepeatedRead", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(200000);
 	std::vector<char> compressed = make_zstd_stream(payload);
@@ -269,7 +269,7 @@ TEST_CASE( "zstd_decompressorTest/testStrictEof.RepeatedRead", "[unit][desktop-r
 
 // UT-054: chunked writes must not report a whole-stream truncation at chunk
 // boundaries; existing send paths stay compatible.
-TEST_CASE( "zstd_decompressorTest/testStrictEof.ChunkedWrite", "[unit][desktop-recv]" )
+TEST_CASE( "UT-054 zstd_decompressorTest/testStrictEof.ChunkedWrite", "[unit][desktop-recv]" )
 {
 	std::string payload = patterned_bytes(200000);
 	std::vector<char> compressed = make_zstd_stream(payload);

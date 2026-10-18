@@ -19,6 +19,11 @@ public:
 public:
 	bool write_once()
 	{
+		// pending input means the stream is not finished, even if the previous
+		// frame already reported its end (concatenated frames).
+		if (!_inBuff.empty())
+			_frameEnded = false;
+
 		if (_inBuff.empty())
 			return flush_once();
 
@@ -41,8 +46,11 @@ public:
 					return false; // we're not making progress, mayday mayday
 				}
 				if (res == 0)
+				{
 					_frameEnded = true;
-
+					if (input.pos < input.size)
+						_frameEnded = false; // a new frame starts in this same call
+				}
 				if (output.pos > 0)
 				{
 					STREAM::write(_outBuff.data(), output.pos);

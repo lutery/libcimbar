@@ -93,6 +93,8 @@ export function createRequestRegistry() {
 
 // Errors are registry-driven: the contract's error-codes.json is the single
 // source of truth. An unknown code is never given an invented name.
+// The produced Error object matches receiver-v1.schema (required: code, name,
+// message, retryAction, details; additionalProperties: false).
 export function makeErrorEnvelope(code, registry, detail) {
   const lookup = (c) => {
     if (registry instanceof Map) return registry.get(c);
@@ -105,23 +107,41 @@ export function makeErrorEnvelope(code, registry, detail) {
   if (!entry) {
     entry = lookup(90001);
     if (!entry) {
-      return { ok: false, code: 90001, error: { code: 90001, name: 'UNEXPECTED_INTERNAL', retryAction: 'new_session' } };
+      return {
+        ok: false,
+        code: 90001,
+        error: {
+          code: 90001,
+          name: 'UNEXPECTED_INTERNAL',
+          message: 'internal error',
+          retryAction: 'new_session',
+          details: {},
+        },
+      };
     }
     code = 90001;
   }
 
-  const error = { code, name: entry.name, retryAction: entry.retryAction };
-  if (typeof detail === 'string' && detail.length) error.detail = detail;
+  const text = (typeof detail === 'string' && detail.length ? detail : entry.message) || entry.name;
+  const error = {
+    code,
+    name: entry.name,
+    message: text.slice(0, 256),
+    retryAction: entry.retryAction,
+    details: {},
+  };
   return { ok: false, code, error };
 }
 
 // Asset paths must stay inside the receiver root: no scheme, no absolute path,
-// no drive letter, no parent traversal.
+// no drive letter, no parent traversal, and no percent-encoding (WHATWG URL
+// treats %2e%2e as '..', which would bypass a literal check).
 export function isSafeRelativePath(value) {
   if (!value || typeof value !== 'string') return false;
   if (/^[A-Za-z]:/.test(value)) return false;
   if (value.startsWith('/') || value.startsWith('\\')) return false;
   if (value.includes('://')) return false;
+  if (value.includes('%')) return false;
   if (value.split(/[\\/]/).includes('..')) return false;
   return true;
 }

@@ -91,12 +91,21 @@ test('UT-006 error registration stays consistent', () => {
     assert.equal(env.code, entry.code);
     assert.equal(env.error.name, entry.name);
     assert.equal(env.error.retryAction, entry.retryAction);
+    // receiver-v1.schema Error: code, name, message, retryAction, details
+    assert.ok(env.error.message.length > 0 && env.error.message.length <= 256);
+    assert.deepEqual(env.error.details, {});
+    assert.deepEqual(
+      Object.keys(env.error).sort(),
+      ['code', 'details', 'message', 'name', 'retryAction']
+    );
   }
 
   const unknown = makeErrorEnvelope(12345, CODES);
   assert.equal(unknown.code, 90001);
   assert.equal(unknown.error.name, 'UNEXPECTED_INTERNAL');
   assert.equal(unknown.error.retryAction, 'new_session');
+  assert.deepEqual(Object.keys(unknown.error).sort(),
+    ['code', 'details', 'message', 'name', 'retryAction']);
 });
 
 // Guard the BigInt ABI helper here as well: it is the reason UT-020 exists.

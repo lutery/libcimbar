@@ -1,7 +1,9 @@
 {
   "runId": "20261018-teamexec-01",
   "case": "IAT-01 / IAT-02",
-  "executedAt": "2026-10-18T15:02:00+08:00",
+  "executedAt": "2026-10-18T15:44:16.766+08:00",
+  "finishedAt": "2026-10-18T15:44:17.069+08:00",
+  "timestampSource": "window.__meta recorded by the browser page during execution (not hand-written)",
   "page": "http://127.0.0.1:8766/tests/browser/index.html",
   "browser": {
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
@@ -10,15 +12,19 @@
   },
   "assetSet": {
     "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
-    "wasmSha256": "775e33848669f7fbf72552f50160594dadb8e5dee166730202fb63586b9568ca",
-    "sourceRevision": "513526f76f164a72c32890b4e30a0a9f6e5f881f"
+    "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+    "sourceRevision": "117a9afa6b1f053e797c3e30e9aab4b1b86c3e9c",
+    "runtimeDigestVerified": true
+  },
+  "proof": {
+    "screenshot": "proof/iat-results-final.png"
   },
   "results": [
     {
       "name": "IAT-02 native payload",
       "ok": true,
       "detail": "mode=68 outcome=no_data",
-      "proves": "real classic Worker loads the final WASM; a native ArrayBuffer crosses structured clone and the scan path answers"
+      "proves": "the real classic Worker verified the staged JS/WASM digests at runtime (C-07), loaded the final WASM, received a native ArrayBuffer through structured clone and answered from the scan path"
     },
     {
       "name": "IAT-01 wasm roundtrip",

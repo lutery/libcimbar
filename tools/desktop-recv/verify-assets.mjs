@@ -141,6 +141,14 @@ function main() {
             add(`strict-EOF gate log missing: ${ev.gateLogPath}`);
           } else if (sha256File(logPath) !== ev.gateLogSha256) {
             add('strict-EOF gate log digest does not match the evidence');
+          } else {
+            // re-derive the gate from the log itself, not from evidence fields
+            const logText = readFileSync(logPath, 'utf8');
+            const markers = ['100% tests passed', 'compression_test', 'cimbar_js_test',
+              'UT-049', 'UT-050', 'UT-051', 'UT-052', 'UT-053', 'UT-054', 'testStrictEof'];
+            for (const marker of markers) {
+              if (!logText.includes(marker)) add(`gate log missing marker: ${marker}`);
+            }
           }
         }
       }
