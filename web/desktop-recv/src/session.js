@@ -245,6 +245,8 @@ export class SessionCoordinator {
     if (!this._isCurrent(seq)) return;
     if (this._session.state === 'Draining') {
       this._emit({ state: 'Incomplete' });
+      // nothing was delivered: retire the capture and the decoder now
+      this.releaseInputs();
     }
   }
 

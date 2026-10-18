@@ -401,3 +401,27 @@ test('T2.2.a-2 decoder init failure converges to Stopped', async () => {
   assert.equal(coordinator.snapshot().state, 'Stopped');
   assert.equal(errors.includes(15001), true);
 });
+
+// --- T2.2.b acceptance item 6 (round 4 note): Incomplete retires resources ---
+
+// Given the input ends and no artifact could be rebuilt
+// When the session lands on Incomplete
+// Then the capture tracks and the decoder are released at once
+test('T2.2.b-6 an Incomplete session releases its resources', async () => {
+  const clients = [];
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+  });
+
+  coordinator.startLive({ requestId: 'a' });
+  pickers[0](fakeStream());
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+
+  await coordinator.finishStream({ takeFinalSample: () => null });
+
+  assert.equal(coordinator.snapshot().state, 'Incomplete');
+  assert.equal(clients[0].closed, true, 'the decoder is retired');
+});

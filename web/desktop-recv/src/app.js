@@ -1,7 +1,7 @@
 // Desktop receiver entry. The coordinator owns session state and the single
 // in-flight frame; this file only wires DOM events to it and paints snapshots.
 import { inspectCapabilities } from './capabilities.js';
-import { deriveControls, describeRecovery, safeSuggestedName } from './ui.js';
+import { deriveControls, describeRecovery, safeSuggestedName, noDataHint } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
 import { SessionCoordinator } from './session.js';
 import { SaveController } from './save-controller.js';
@@ -34,6 +34,9 @@ let loopRunning = false;
 let startClicks = 0;
 let drainRequested = false;
 let releasedOnReady = false;
+let receivingSince = 0;
+let noDataNoticeShown = false;
+const NO_DATA_NOTICE_MS = 5000;
 
 const coordinator = new SessionCoordinator({
   // The picker wrapper is the single place a stream is obtained: the preview
@@ -97,6 +100,27 @@ function render() {
   if (!shouldRun && loopRunning) {
     loopRunning = false;
     el.preview.hidden = true;
+  }
+
+  // No-data notice: name the source and the mode once the wait is long enough,
+  // never claiming completion or failure.
+  if (shouldRun) {
+    if (!receivingSince) receivingSince = Date.now();
+    if (!noDataNoticeShown && Date.now() - receivingSince >= NO_DATA_NOTICE_MS) {
+      const hint = noDataHint({
+        elapsedMs: Date.now() - receivingSince,
+        thresholdMs: NO_DATA_NOTICE_MS,
+        sourceLabel: 'the shared window',
+        mode: 'B',
+      });
+      if (hint) {
+        logLine(hint.text);
+        noDataNoticeShown = true;
+      }
+    }
+  } else {
+    receivingSince = 0;
+    noDataNoticeShown = false;
   }
   if (snapshot.state === 'Stopped' || snapshot.state === 'Idle') {
     el.preview.hidden = true;

@@ -7,7 +7,7 @@ export const STATES = [
   'Incomplete', 'Error',
 ];
 
-const IDLE_LIKE = new Set(['Idle', 'Stopped', 'Saved']);
+const IDLE_LIKE = new Set(['Idle', 'Stopped', 'Saved', 'Incomplete', 'Error']);
 const STOPPABLE = new Set([
   'Preparing', 'Receiving', 'Draining', 'Reconstructing',
   'Ready', 'Saving', 'Retryable',

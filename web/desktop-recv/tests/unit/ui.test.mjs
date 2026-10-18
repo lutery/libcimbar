@@ -89,6 +89,10 @@ test('UT-039 controls are consistent with the session state', () => {
   assert.equal(retryable.canRetrySave, true);
   assert.equal(retryable.canSave, true);
 
+  const incomplete = deriveControls({ state: 'Incomplete', artifact: null }, caps);
+  assert.equal(incomplete.canStart, true, 'a finished-without-data session can restart');
+  assert.equal(incomplete.canSave, false);
+
   const noCaps = deriveControls({ state: 'Idle', artifact: null }, { realtime: false, videoImport: false });
   assert.equal(noCaps.canStart, false, 'no input capability');
 });
