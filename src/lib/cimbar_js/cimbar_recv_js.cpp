@@ -27,6 +27,7 @@ namespace {
 	uint32_t _decId = 0;
 	std::vector<uchar> _reassembled;
 	std::unique_ptr<cimbar::zstd_decompressor<std::stringstream>> _dec;
+	std::string _pendingOutput; // bytes produced but not yet consumed by the caller
 
 	std::string _reporting;
 	cv::Mat _debugFrame;
@@ -49,6 +50,7 @@ namespace {
 		_dec = std::make_unique<cimbar::zstd_decompressor<std::stringstream>>();
 		if (!_dec)
 			return -12;
+		_pendingOutput.clear();
 		_dec->init_decompress(reinterpret_cast<char*>(_reassembled.data()), _reassembled.size());
 		return 0;
 	}
@@ -255,13 +257,27 @@ int cimbard_decompress_read(uint32_t id, unsigned char* buffer, unsigned size)
 	if (!_dec->good())
 		return -14;
 
-	_dec->str(std::string());
-	_dec->write_once();
-	std::string temp = _dec->str();
-	if (size > temp.size())
-		size = temp.size();
-	std::copy(temp.data(), temp.data()+size, buffer);
-	return size;
+	// serve bytes produced by an earlier call but left over from a short read
+	if (_pendingOutput.empty())
+	{
+		_dec->str(std::string());
+		if (!_dec->write_once())
+			return -15;
+		_pendingOutput = _dec->str();
+	}
+
+	if (!_pendingOutput.empty())
+	{
+		unsigned n = std::min<unsigned>(size, _pendingOutput.size());
+		std::copy(_pendingOutput.data(), _pendingOutput.data() + n, buffer);
+		_pendingOutput.erase(0, n);
+		return n;
+	}
+
+	// no bytes this call: distinguish strict end of frame from truncated input
+	if (_dec->frame_ended())
+		return 0;
+	return -16; // input exhausted before the frame completed: truncated, not done
 }
 
 int cimbard_get_decompress_bufsize()

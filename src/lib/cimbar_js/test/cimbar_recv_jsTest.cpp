@@ -138,3 +138,54 @@ TEST_CASE( "cimbar_recv_jsTest/testFullDecode", "[unit]" )
 
 }
 
+// UT-049 at the C-ABI level: a completed reassembly decodes byte-exactly, the
+// read loop ends with strict EOF (0), and stays stable on repeated reads.
+// NOTE: file size differs from testWirehairReassemble on purpose - the sink is
+// a process-global and encode_id defaults to 0, so equal sizes would collide
+// on is_done() and decode_frame would return -1.
+TEST_CASE( "cimbar_recv_jsTest/testStrictEof.Export", "[unit][desktop-recv]" )
+{
+	std::vector<unsigned char> buff;
+	buff.resize(cimbard_get_bufsize());
+
+	const int SIZE = 150000;
+	std::string contents = random_string(SIZE);
+
+	fountain_encoder_stream::ptr fes = simp_wirehair_encode_init(
+				reinterpret_cast<unsigned char*>(contents.data()), contents.size(),
+				nullptr, 0, 16); // compressed, like the real pipeline (level <= 0 means raw)
+	assertTrue( fes );
+
+	int64_t dec = 0;
+	for (int i = 0; i < 2000 && dec <= 0; ++i)
+	{
+		assertEquals(buff.size(), simp_wirehair_write(*fes, buff.data(), buff.size()));
+		dec = cimbard_fountain_decode(buff.data(), buff.size());
+		assertTrue(dec >= 0);
+	}
+	assertTrue( dec > 0 );
+
+	uint32_t fileId = dec;
+	unsigned size = cimbard_get_decompress_bufsize();
+	std::vector<unsigned char> data;
+	data.resize(size);
+
+	// drain through a deliberately small caller buffer: no bytes may be lost
+	std::stringstream out;
+	unsigned char smallbuf[777];
+	int res = 1;
+	while (res > 0)
+	{
+		res = cimbard_decompress_read(fileId, smallbuf, sizeof(smallbuf));
+		if (res > 0)
+			out.write(reinterpret_cast<const char*>(smallbuf), res);
+	}
+
+	assertEquals( 0, res ); // strict end, not a negative incomplete
+	assertEquals( contents, out.str() );
+
+	// stable after completion: repeated reads keep returning strict EOF
+	assertEquals( 0, cimbard_decompress_read(fileId, data.data(), data.size()) );
+	assertEquals( 0, cimbard_decompress_read(fileId, data.data(), data.size()) );
+}
+
