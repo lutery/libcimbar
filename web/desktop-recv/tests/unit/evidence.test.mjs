@@ -70,7 +70,7 @@ test('UT-046 NOT_RUN keeps the executor null', () => {
   const bad = validateCaseRecord({
     caseId: 'E2E-21',
     scope: 'real_cloud',
-    caseType: 'manual',
+    caseType: 'negative_or_lifecycle',
     result: 'NOT_RUN',
     executedBy: 'user',
     proofRefs: [],
@@ -81,7 +81,7 @@ test('UT-046 NOT_RUN keeps the executor null', () => {
   const good = validateCaseRecord({
     caseId: 'E2E-21',
     scope: 'real_cloud',
-    caseType: 'manual',
+    caseType: 'negative_or_lifecycle',
     result: 'NOT_RUN',
     executedBy: null,
     proofRefs: [],
@@ -113,7 +113,7 @@ test('UT-048 performance without a threshold is not a pass', () => {
   const record = {
     caseId: 'PERF-1',
     scope: 'local_simulated',
-    caseType: 'performance',
+    caseType: 'measurement',
     result: 'PASS',
     executedBy: 'executor',
     proofRefs: ['measurements.json'],
