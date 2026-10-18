@@ -31,10 +31,16 @@ export async function runWasmRoundtrip(record) {
     // 7500 fountain bytes and a 7538-byte artifact match the native C++ test.
     const decoded = result.outcome === 'data' || result.outcome === 'artifact';
     const artifactOk = result.outcome !== 'artifact' || result.artifact.byteCount === 7538;
+    let sha256 = null;
+    if (result.outcome === 'artifact') {
+      const digest = await crypto.subtle.digest('SHA-256', await result.artifact.blob.arrayBuffer());
+      sha256 = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      window.__artifactSha256 = sha256;
+    }
     record('IAT-01 wasm roundtrip', decoded && result.bytesDecoded === 7500 && artifactOk,
       `outcome=${result.outcome} bytesDecoded=${result.bytesDecoded} ` +
       `artifactBytes=${result.artifact ? result.artifact.byteCount : 'n/a'} ` +
-      `expected=7500/7538`);
+      `sha256=${sha256 || 'n/a'} expected=7500/7538`);
   } finally {
     client.close();
   }

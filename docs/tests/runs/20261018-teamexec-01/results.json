@@ -2,9 +2,9 @@
   {
     "caseId": "UTS-contracts",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -14,9 +14,9 @@
   {
     "caseId": "UTS-session",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -26,9 +26,9 @@
   {
     "caseId": "UTS-scheduler",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -38,9 +38,9 @@
   {
     "caseId": "UTS-worker",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -50,9 +50,9 @@
   {
     "caseId": "UTS-save",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -62,9 +62,9 @@
   {
     "caseId": "UTS-video",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -74,9 +74,9 @@
   {
     "caseId": "UTS-ui",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -86,9 +86,9 @@
   {
     "caseId": "UTS-evidence",
     "scope": "unit_integration",
-    "caseType": "suite",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "ci",
+    "executedBy": "executor",
     "proofRefs": [
       "cmd-05-all.log"
     ],
@@ -98,20 +98,22 @@
   {
     "caseId": "IAT-01",
     "scope": "local_simulated",
-    "caseType": "integration",
+    "caseType": "file_roundtrip",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "iat-results.json"
     ],
-    "notes": "7500 fountain bytes, 7538-byte artifact"
+    "notes": "direct frame: 7500 fountain bytes, 7538-byte artifact",
+    "originalSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
   },
   {
     "caseId": "IAT-02",
     "scope": "local_simulated",
-    "caseType": "integration",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "iat-results.json"
     ],
@@ -120,9 +122,9 @@
   {
     "caseId": "IAT-03",
     "scope": "local_simulated",
-    "caseType": "integration",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "iat-results.json"
     ],
@@ -131,9 +133,9 @@
   {
     "caseId": "IAT-04",
     "scope": "local_simulated",
-    "caseType": "integration",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "iat-results-batch-d.json"
     ],
@@ -142,20 +144,22 @@
   {
     "caseId": "IAT-05",
     "scope": "local_simulated",
-    "caseType": "integration",
+    "caseType": "file_roundtrip",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "iat-results-batch-d.json"
     ],
-    "notes": "real WebM/VP9 recording rebuilt the 7538-byte artifact"
+    "notes": "real WebM/VP9 recording rebuilt the same 7538-byte artifact",
+    "originalSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "receivedSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5"
   },
   {
     "caseId": "E2E-1",
     "scope": "local_simulated",
-    "caseType": "startup",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "uat-l01-l02.md",
       "proof/uat-l01-entry.png"
@@ -165,9 +169,9 @@
   {
     "caseId": "E2E-2",
     "scope": "local_simulated",
-    "caseType": "startup",
+    "caseType": "negative_or_lifecycle",
     "result": "PASS",
-    "executedBy": "implementer",
+    "executedBy": "executor",
     "proofRefs": [
       "uat-l01-l02.md"
     ],
@@ -338,7 +342,7 @@
   {
     "caseId": "E2E-21",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -347,7 +351,7 @@
   {
     "caseId": "E2E-22",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -356,7 +360,7 @@
   {
     "caseId": "E2E-23",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -365,7 +369,7 @@
   {
     "caseId": "E2E-24",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -374,7 +378,7 @@
   {
     "caseId": "E2E-25",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -383,7 +387,7 @@
   {
     "caseId": "E2E-26",
     "scope": "real_cloud",
-    "caseType": "manual",
+    "caseType": "negative_or_lifecycle",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],
@@ -392,7 +396,7 @@
   {
     "caseId": "PERF-1",
     "scope": "local_simulated",
-    "caseType": "performance",
+    "caseType": "measurement",
     "result": "NOT_RUN",
     "executedBy": null,
     "proofRefs": [],

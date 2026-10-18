@@ -26,12 +26,15 @@ import sys
 SCOPES = {"unit_integration", "local_simulated", "real_cloud", "document_qa"}
 RESULTS = {"PASS", "FAIL", "NOT_RUN"}
 TERMINAL = {"PASS", "FAIL"}
+# Frozen receiver-v1 Evidence vocabulary.
+EXECUTED_BY = {"executor", "user"}
 EXECUTORS = {
-    "unit_integration": {"implementer", "ci"},
-    "local_simulated": {"implementer"},
+    "unit_integration": {"executor"},
+    "local_simulated": {"executor"},
     "real_cloud": {"user"},
-    "document_qa": {"tool"},
+    "document_qa": {"executor"},
 }
+CASE_TYPES = {"file_roundtrip", "negative_or_lifecycle", "measurement"}
 
 
 def file_sha256(path):
@@ -54,6 +57,9 @@ def validate_record(record, context):
 
     terminal = result in TERMINAL
     proof_refs = record.get("proofRefs") or []
+
+    if record.get("caseType") not in CASE_TYPES:
+        violations.append(f"caseType {record.get('caseType')} is outside the frozen vocabulary")
 
     if result == "NOT_RUN":
         for field in ("executedBy", "elapsedMs", "processedFps", "receivedSha256"):
@@ -139,7 +145,12 @@ def main():
         if args.gate == "local" and record.get("result") == "NOT_RUN":
             violations.append(f"{case_id}: the local gate requires an executed result")
 
-        # proof references resolve against the run directory and must exist
+    # every EXECUTED record's proof references must exist on disk (not just
+    # the required journey ids)
+    for record in records:
+        if record.get("executedBy") is None:
+            continue
+        case_id = record.get("caseId")
         for ref in record.get("proofRefs") or []:
             ref_path = os.path.join(run_dir, ref)
             if not os.path.isfile(ref_path):

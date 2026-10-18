@@ -1,7 +1,9 @@
 {
   "runId": "20261018-teamexec-01",
   "case": "IAT-04 / IAT-05",
-  "executedAt": "2026-10-18T19:5x+08:00 (window.__meta of the browser run)",
+  "executedAt": "2026-10-18T20:46:30.235+08:00",
+  "finishedAt": "2026-10-18T20:46:33.627+08:00",
+  "timestampSource": "window.__meta recorded by the browser page during execution",
   "page": "http://127.0.0.1:8766/tests/browser/index.html",
   "browser": {
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
@@ -21,10 +23,15 @@
     {
       "name": "IAT-05 video import",
       "ok": true,
-      "detail": "codec=video/webm;codecs=vp9 file=1546417B state=Ready artifactBytes=7538 expected=7538",
-      "proves": "a REAL MediaRecorder-encoded WebM/VP9 recording of the sample image survives the codec and rebuilds the exact artifact through VideoSource -> paced frames -> the real worker. This is the real-recording-format evidence the handoff requires (WebM/VP8 class); MP4/H.264 stays on the support matrix for the field round."
+      "detail": "codec=video/webm;codecs=vp9 file=1546417B state=Ready artifactBytes=7538 expected=7538 sha256=a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5 matchesWasm=true",
+      "proves": "a REAL MediaRecorder-encoded WebM/VP9 recording rebuilds an artifact whose SHA-256 is byte-identical to the artifact from the direct-frame path (IAT-01) - two independent paths agree on every byte of the 7538-byte file. This is the real-recording-format evidence the handoff requires (WebM/VP8 class); MP4/H.264 stays on the support matrix for the field round."
     }
   ],
+  "crossPathByteEquality": {
+    "directFrameSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "recordedVideoSha256": "a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5",
+    "equal": true
+  },
   "notes": [
     "The recording runs at 50 Mbps to isolate pipeline correctness from codec loss; realistic-bitrate behavior is measured in T4.2.",
     "VideoSource handles the MediaRecorder unknown-duration header by forcing duration calculation before the precheck."

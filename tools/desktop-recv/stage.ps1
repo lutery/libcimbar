@@ -227,7 +227,11 @@ switch ($Mode) {
       }
     }
 
-    # delivery manifest: every delivered file with its real digest
+    # delivery manifest: every delivered file with its real digest. A stale
+    # manifest from a previous run is removed first so it never enumerates
+    # itself.
+    $manifestPath = Join-Path $staging 'DELIVERY-MANIFEST.txt'
+    if (Test-Path $manifestPath) { Remove-Item -LiteralPath $manifestPath -Force }
     $files = Get-ChildItem -Recurse -File $staging |
       Where-Object { $_.FullName -notmatch '\\tests\\' } |
       Sort-Object FullName
@@ -237,7 +241,6 @@ switch ($Mode) {
       $digest = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash.ToLower()
       $lines += "$digest  $($file.Length)  $relative"
     }
-    $manifestPath = Join-Path $staging 'DELIVERY-MANIFEST.txt'
     [IO.File]::WriteAllLines($manifestPath, $lines)
     Write-Output "candidate package verified: $($files.Count) files"
     Write-Output "manifest: $manifestPath"

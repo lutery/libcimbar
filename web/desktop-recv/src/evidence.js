@@ -6,11 +6,12 @@ export const RESULTS = ['PASS', 'FAIL', 'NOT_RUN'];
 export const TERMINAL_RESULTS = ['PASS', 'FAIL'];
 
 const EXECUTORS = {
-  unit_integration: ['implementer', 'ci'],
-  local_simulated: ['implementer'],
+  unit_integration: ['executor'],
+  local_simulated: ['executor'],
   real_cloud: ['user'],
-  document_qa: ['tool'],
+  document_qa: ['executor'],
 };
+const CASE_TYPES = ['file_roundtrip', 'negative_or_lifecycle', 'measurement'];
 
 // A record for one planned case. The rules mirror test-plan.md:
 // - PASS with a file_roundtrip caseType requires both hashes, equal, and at
@@ -27,6 +28,9 @@ export function validateCaseRecord(record, context = {}) {
   const scope = record.scope;
   if (!SCOPES.includes(scope)) violations.push(`unknown scope: ${scope}`);
   if (!RESULTS.includes(record.result)) violations.push(`unknown result: ${record.result}`);
+  if (record.caseType && !CASE_TYPES.includes(record.caseType)) {
+    violations.push(`caseType ${record.caseType} is outside the frozen vocabulary`);
+  }
 
   const terminal = TERMINAL_RESULTS.includes(record.result);
 

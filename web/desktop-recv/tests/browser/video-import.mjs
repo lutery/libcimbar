@@ -116,9 +116,15 @@ export async function runVideoImport(record) {
   }
 
   const artifact = final.artifact;
+  let sha256 = null;
+  if (artifact && artifact.blob) {
+    const digest = await crypto.subtle.digest('SHA-256', await artifact.blob.arrayBuffer());
+    sha256 = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
   const ok = final.state === 'Ready' && artifact && artifact.byteCount === 7538;
   record('IAT-05 video import', ok,
     `codec=${mimeType} file=${bytes}B state=${final.state} ` +
     `artifactBytes=${artifact ? artifact.byteCount : 'n/a'} expected=7538 ` +
+    `sha256=${sha256 || 'n/a'} matchesWasm=${sha256 && sha256 === (window.__artifactSha256 || '')} ` +
     (openError ? `error=${openError}` : ''));
 }

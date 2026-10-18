@@ -35,5 +35,25 @@ runId: `20261018-teamexec-01`（随批次 F 生成；后续运行追加行，不
 |---|---|---|
 | IAT-05 录像文件 | 1,546,417 B（1.5s @50Mbps，1024×1024） | `iat-results-batch-d.json` |
 | 产物还原 | 7,538 B，与原生 C++ 断言一致 | 同上 |
+| **跨路径字节一致性** | 直接帧（IAT-01）与真实录像（IAT-05）产物 SHA-256 **相同**：`a0310e43fc6560dd6701fcb474d89244a0ce8b3730fb06dbd35e2566b250c3e5` | `iat-results-batch-d.json` |
 | 单帧解码（C++ 基线） | compression_test 0.39s / cimbar_js_test 0.36s（全量套件） | `cmd-02-gate.log` |
 | 吞吐/帧率阈值 | **NOT_EVALUATED**（V-002/V-003 已记录，阈值待冻结） | `measurements.json` |
+
+## 复现命令
+
+```powershell
+# 单元全量（8 套件）
+node tools\desktop-recv\run-unit.mjs --all
+
+# 资产 + 证据门禁
+node tools\desktop-recv\verify-assets.mjs
+python tools\desktop-recv\verify-evidence.py --run docs\tests\runs\20261018-teamexec-01 --gate local
+#   （当前 gate local = FAIL，18 条 E2E-3..20 待真人往返，见 TD-12）
+
+# 浏览器集成（IAT-01..05）：起服务后打开测试页
+pwsh -NoProfile -File build-desktop-recv\staging\receiver\launch.ps1 -Port 8766 -NoBrowser
+#   打开 http://127.0.0.1:8766/tests/browser/index.html，等待全部用例出现
+
+# 录像导入单测（无需浏览器）
+node --test web\desktop-recv\tests\unit\video.test.mjs
+```

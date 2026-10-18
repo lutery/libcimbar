@@ -4,12 +4,12 @@
 
 | ID | 来源 | 内容 | 影响 | 关闭条件 |
 |---|---|---|---|---|
-| TD-01 | W3 | `frameTimeoutMs` 只存在于 `DEFAULT_LIMITS`；worker 与 `decoder-client.js` 均未实现帧看门狗 | 若 WASM 帧处理卡死，主线程 Promise 永不结算（目前靠 `worker.onerror` 兜底） | T2.2.a 帧调度器中实现单在途超时与终止；补 UT-013/015 对应断言 |
-| TD-02 | W5 | 第二次 `init` 一律返回 11003；IF-005 要求相同 requestId/清单幂等重放 | M02 层尚未有 requestId 通道；当前无调用方会重放 init | T2.1.b 会话协调器引入 requestId 后，在 worker 侧按 requestId 缓存 init 结果 |
+| TD-01 | W3 | **[2026-10-18 round5 修订：T2.2.a 已交付但本项未随之完成——显式推迟至现场阶段之前]** `frameTimeoutMs` 看门狗仍未实现（worker 与 `decoder-client.js` 均无帧超时）；录像导入已是真实特性（IAT-05），WASM 单帧死循环 → `submitAndWait` 永不结算 → run() 协程挂死 → 会话永久 Receiving | 现场录像会话可能永久卡死无提示 | **硬性关闭点：现场阶段（T5.2.b 用户执行）之前必须实现**——scheduler 或 worker 侧帧看门狗 + UT-013/015 对应断言；关闭前不得向用户交付候选包 |
+| TD-02 | W5 | **[2026-10-18 round5 修订：T2.1.b 已交付但 worker 幂等重放未实现——偏差保持并显式记录]** 二次 init 仍返回 11003，不按 IF-002 字面重放原结果；客户端常规流程已防重入 | 与 IF-002 字面语义不同；无当前调用方受影响 | 关闭点：阶段 6 外审对 IF-002 语义裁决时一并处理（实现按 requestId 重放或修订 IF-002 文字）；期间 README 保持偏差声明 |
 | TD-03 | S1 | `stage.ps1` 用 `Resolve-Path -Relative`（相对 `$PWD`）生成 `gateLogPath` | 从其他目录调用会产出含 `..` 的路径，verify 阶段才失败（失败安全，报因费解） | 改用 `[IO.Path]::GetRelativePath($repoRoot, $path)` |
 | TD-04 | S6 | `sourceRevision` 取当前 HEAD，而非 `-WasmBuildDir` 实际源码版本 | 跨树构建时来源标注可能错误 | stage.ps1 接受 `-SourceRevision`，或从构建目录的 `SOURCE_DATE_EPOCH`/git 读取 |
 | TD-05 | S7 | `DEFAULT_LIMITS`/`is_safe_relative_path`/`rgba_bytes` 在 `contracts.js`、`decoder-worker.js`（classic worker 无法 import）、`verify-assets.mjs` 三处镜像 | 修改一处可能漂移 | 增加跨文件字面比对测试，或在构建期生成共享片段 |
-| TD-06 | S5（已部分处理） | worker 现校验 mode ∈ {4,8,66,67,68}；但 `cimbar::Config::update` 的完整合法集合未在 JS 侧声明 | 新增 mode 时需同步两处 | T2.1.a 从 `config/profile.json` 读取支持列表 |
+| TD-06 | S5（已部分处理） | **[2026-10-18 round5 修订：T2.1.a 已交付但 profile.json 读取未实现——约束改为文档化]** mode 白名单仍硬编码于 worker（{4,8,66,67,68}），`config/profile.json` 无读取路径；8 在契约边界被显式拒绝（contract-snapshot 抛错）而非错标 | 新增 mode 时需同步两处 | 关闭点：阶段 6 外审契约意见或 field 回执实测出 8C 需求时实现；README/field-guide 已明示"仅模式 B" |
 | TD-07 | — | dev 环境使用 `tools/desktop-recv/dev-server.py`；产品入口服务器 `server.py` 在 T2.1.a | 两套服务器需保持 MIME/回环语义一致 | T2.1.a 的 `server.py` 落地后，dev-server 仅保留为测试工具 |
 
 | TD-08 | W-B（round 2） | `_frameEnded` 的复位覆盖了"块内跨帧"，但**帧结束恰好落在块边界**（`input.pos == input.size`）时，外层 `while` 的下一轮没有入口复位，第二帧截断仍可能在 `flush_once` 短路下误报完成 | cimbar 发送端是单帧协议，当前不可达；与严格 EOF 的契约表述冲突 | 触碰 `zstd_decompressor.h` 时：把复位移到外层 `while` 每轮开头，并补一条"双帧完整 + 第二帧截断"的 C++ 用例 |
@@ -30,6 +30,19 @@
 - Incomplete 终态未调 `releaseInputs()` —— 并入上面 ⑥；
 - `TD-12..14` 表格前有空行导致 Markdown 渲染断表 —— 已在提交中修复格式；
 - app.js 最终补采的 `captureFrame` 已补 `onError` 日志（本轮已修）。
+
+### round 5 备注（B-1 登记修订与 S 级处置）
+
+- **TD-01/TD-02/TD-06 已按本轮复审修订**：关闭条件不再指向已完成任务，改为前瞻关闭点并显式标注推迟（TD-01 为现场阶段前的硬性关闭点）。
+- S-1：`seenTimes` 去重为不可达死代码——已删除，UT-033 改为断言"媒体时间严格递增 + seek 不越界"（真断言）。
+- S-2：`_seek` 在 stop() 后永不结算——stop() 现解析挂起的 seek，run() 协程不再悬挂。
+- S-3：`MODE_NAMES` 无 8 —— 契约边界现显式拒绝不可表示的 mode（抛错），不再错标为 'B'。
+- S-4：candidate 清单自包含陈旧 manifest —— 生成前先删除旧清单。
+- S-5：session.js 的 'Error' 死状态已移除（ui 视图仍保留以支持重启语义）。
+- S-6：IAT-04/05 的可复现命令已写入 `support-matrix.md`。
+- W-A：results.json 词汇已对齐冻结 Evidence 枚举（executedBy=executor|user|null；caseType=file_roundtrip|negative_or_lifecycle|measurement），IAT-01/05 记为 file_roundtrip 并带**机器推导的相同 SHA-256**。
+- W-B：verify-evidence 现校验**全部**已执行记录的 proofRefs 磁盘存在性。
+- W-C：新证据文件时间戳取自浏览器 `window.__meta` 真实值。
 
 ## 已在本轮关闭（记录备查）
 

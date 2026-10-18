@@ -1,6 +1,6 @@
 {
   "runId": "20261018-teamexec-01",
-  "sourceRevision": "971c0c280de66bbc35e3decf981a7eaedc34fe9d",
+  "sourceRevision": "a515922d2106af0cab5f350e0af469b6f4d93ca4",
   "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
   "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
   "gate": "CMD-02",
@@ -17,6 +17,6 @@
     "UT-054",
     "cimbar_recv_jsTest/testStrictEof.Export"
   ],
-  "executedAt": "2026-10-18T15:55:23+08:00",
+  "executedAt": "2026-10-18T20:20:30+08:00",
   "platform": "WSL2 Ubuntu-22.04 (Linux GCC); Windows MSVC toolchain unavailable"
 }

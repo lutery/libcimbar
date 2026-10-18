@@ -21,7 +21,7 @@ export class VideoSource {
     this._duration = 0;
     this._nextTime = 0;
     this._playing = false;
-    this._seenTimes = new Set();
+    this._pendingSeek = null;
     this._listeners = [];
   }
 
@@ -30,7 +30,6 @@ export class VideoSource {
       open: !!this._video,
       durationSeconds: this._duration,
       positionSeconds: this._video ? this._video.currentTime : 0,
-      seenFrames: this._seenTimes.size,
     };
   }
 
@@ -123,10 +122,11 @@ export class VideoSource {
 
       const mediaTime = this._nextTime;
       this._nextTime += FRAME_INTERVAL_S;
-      if (this._seenTimes.has(mediaTime)) continue; // dedup on media time
-      this._seenTimes.add(mediaTime);
 
-      await this._seek(Math.min(mediaTime, Math.max(this._duration - 0.001, 0)));
+      // the seek target is bounded by the container duration
+      const target = Math.min(mediaTime, Math.max(this._duration - 0.001, 0));
+
+      await this._seek(target);
       if (!this._playing) return;
 
       const frame = this._capture(this._video, {
@@ -150,6 +150,12 @@ export class VideoSource {
     const wasPlaying = this._playing;
     this._playing = false;
     this._removeListeners();
+    // a seek that can no longer complete must not hang the run() coroutine
+    if (this._pendingSeek) {
+      const resolveSeek = this._pendingSeek;
+      this._pendingSeek = null;
+      resolveSeek();
+    }
     if (this._video) {
       try { this._video.pause(); } catch (e) { /* detached */ }
       this._video.removeAttribute('src');
@@ -193,11 +199,13 @@ export class VideoSource {
   _seek(timeSeconds) {
     return new Promise((resolve) => {
       const onSeeked = () => {
+        this._pendingSeek = null;
         cleanup();
         resolve();
       };
       const cleanup = () => this._video.removeEventListener('seeked', onSeeked);
       this._listeners.push(cleanup);
+      this._pendingSeek = resolve;
       this._video.addEventListener('seeked', onSeeked, { once: true });
       this._video.currentTime = timeSeconds;
     });

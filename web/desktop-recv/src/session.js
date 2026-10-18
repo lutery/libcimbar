@@ -4,7 +4,7 @@
 // cleaned up against the token of the session that created them.
 import { FrameScheduler } from './frame-scheduler.js';
 
-const IDLE_STATES = new Set(['Idle', 'Stopped', 'Saved', 'Error']);
+const IDLE_STATES = new Set(['Idle', 'Stopped', 'Saved']);
 
 export class SessionCoordinator {
   constructor(options = {}) {

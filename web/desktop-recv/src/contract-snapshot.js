@@ -47,6 +47,14 @@ export function toContractSnapshot(internal, context = {}) {
 
   const state = CONTRACT_STATES.has(internal.state) ? internal.state : 'Stopped';
 
+  let mode = context.mode || 'B';
+  if (typeof mode === 'number') {
+    if (!MODE_NAMES[mode]) {
+      throw new Error(`mode ${mode} is not representable in the receiver-v1 contract`);
+    }
+    mode = MODE_NAMES[mode];
+  }
+
   const pendingExternal = [];
   if (internal.capturePending) pendingExternal.push('capture_picker');
   for (const item of context.savePending || []) pendingExternal.push(item);
@@ -58,7 +66,7 @@ export function toContractSnapshot(internal, context = {}) {
   return {
     sessionId: internal.sessionId,
     inputKind: internal.inputKind === 'video' ? 'video' : 'live',
-    mode: typeof context.mode === 'number' ? (MODE_NAMES[context.mode] || 'B') : (context.mode || 'B'),
+    mode,
     state,
     revision: internal.revision,
     inputEnded: internal.inputEnded === true,

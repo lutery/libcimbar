@@ -117,24 +117,31 @@ test('UT-032 unreadable media fails finitely', async () => {
   });
 });
 
-// Given seek targets that clamp to the same frame near the end
+// Given a short recording whose seek targets collapse near the end
 // When stepping
-// Then the same media time is never submitted twice
-test('UT-033 media time is deduplicated', async () => {
+// Then every submitted media time is strictly increasing and the position
+// never leaves the container bounds
+test('UT-033 stepping stays in bounds with increasing media times', async () => {
   await withFakeUrls(async () => {
-    const element = fakeVideoElement({ duration: 0.05 }); // two intervals clamp together
+    const element = fakeVideoElement({ duration: 0.05 });
     const { source, submits } = harness({ element });
 
     await source.open(file());
     const runPromise = source.run();
     await tick(60);
 
-    const frameSubmits = submits.filter((entry) => entry.frame);
-    const times = frameSubmits.map((entry) => entry.meta.mediaTimeUs);
-    assert.equal(new Set(times).size, times.length, 'no duplicate media times');
-
-    for (const entry of frameSubmits) entry.release({ outcome: 'no_data' });
+    for (const entry of submits) {
+      if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+    }
     await runPromise;
+
+    const times = submits.filter((entry) => entry.frame).map((entry) => entry.meta.mediaTimeUs);
+    assert.ok(times.length >= 1, 'at least one frame was submitted');
+    for (let i = 1; i < times.length; i += 1) {
+      assert.ok(times[i] > times[i - 1], 'media times strictly increase');
+    }
+    assert.ok(source.snapshot().positionSeconds <= element.duration + 0.001,
+      'the seek target never leaves the container');
   });
 });
 
