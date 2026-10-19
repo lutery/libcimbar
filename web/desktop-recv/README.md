@@ -25,5 +25,8 @@ camera.
 - This build supports **mode B**. If the sender uses another mode, the frame
   counter stays at zero — check that the sender matches.
 - If the port is busy, start with another one: `launch.ps1 -Port 8767`.
+- If the server cannot start, the launcher waits for the loopback port, then
+  exits non-zero (code 5) and prints the child process error plus the path of
+  its diagnostic logs; it never reports success without a listening server.
 - If no frames are decoded, make sure the sender window is fully visible and
   not scaled down by the remote-desktop client.
