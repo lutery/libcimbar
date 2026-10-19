@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 云桌面画面接收文件",
   "requirement_source": "docs/cloud-desktop-screen-capture-feasibility.md",
-  "current_phase": "external-review",
+  "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-19T11:01:00+08:00",
+  "updated_at": "2026-10-19T13:24:52+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -204,7 +204,7 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": null,
       "output_files": [],
       "team_mode": "omc",
@@ -212,21 +212,21 @@
       "contract_files": [],
       "review_rounds": 6,
       "max_rounds": 10,
-      "test_status": "passed",
+      "test_status": "failed",
       "started_at": "2026-10-18T13:20:01+08:00",
-      "completed_at": "2026-10-19T11:01:00+08:00",
-      "notes": "IMPLEMENTATION COMPLETE - round 6 APPROVE (0 Blocking). All 20 base tasks delivered (batches A-G, commits 26f710a..0c0f27a). Final gates: CMD-05 --all 8 suites / 60 tests green; CMD-02 native 9/9; CMD-04 pass with negatives rejected; CMD-07 IAT-01..05 green incl. the REAL WebM/VP9 recording roundtrip whose artifact is byte-identical (a0310e43) to the direct-frame path; CMD-06 0/3/4; candidate package 24 files + DELIVERY-MANIFEST. The evidence gate (CMD-09) honestly FAILs with exactly the 18 human-in-the-dialog journeys (E2E-3..20, TD-12) - the local full-function-pass claim stays withheld until the user-assisted roundtrip closes them. Delivery-before hard gates: TD-01 frame watchdog, TD-12 catch-up. Field phase (E2E-21..26) and stage-6 external review follow per plan.",
+      "completed_at": null,
+      "notes": "RE-ENTERED from external review round 1 (verdict 2026-10-19: FAIL, 7 independent blocking themes: A-01 local E2E-3..20 not executed + missing stage5-dev-summary/autonomous-decisions, A-02 Incomplete restart dead-end, A-03 worker init/frame failure convergence + watchdogs, A-04 evidence gates false-green, B-S04 video seek hang + EOF final-frame miss, C-01 launcher fails in spaced/CJK paths but exits 0, C-02 capture-cancel leaves worker unreleased). Previous close (round 6 APPROVE) was premature: CMD-09 local gate honestly FAILs 18 journeys. Rectification batches H (session/worker), I (video seek/EOF), J (gates), K (launcher), L (real local E2E-3..20 with external SHA-256), M (docs/state/resubmit). test_status=failed reflects the real local gate until E2E lands.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "failed",
       "output_dir": "docs/dev-pipeline/ext-review/",
-      "output_files": ["round-1-package.md", "round-1-template.md"],
-      "ext_rounds": 0,
-      "verdict_files": [],
+      "output_files": ["round-1-package.md", "round-1-template.md", "round-1-verdict.md"],
+      "ext_rounds": 1,
+      "verdict_files": ["docs/dev-pipeline/ext-review/round-1-verdict.md"],
       "materials": [
         "docs/dev-pipeline/ext-review/round-1-package.md",
         "docs/requirements/requirements-spec.md",
@@ -256,7 +256,7 @@
       ],
       "started_at": "2026-10-19T11:01:00+08:00",
       "completed_at": null,
-      "notes": "Round-1 external review package and template generated; waiting for the independent verdict at docs/dev-pipeline/ext-review/round-1-verdict.md. Scope: master..HEAD = 34 commits, 149 files, +22547/-9. Suggested tools: production-code-audit / security-review / agnix (reviewer's choice).",
+      "notes": "Round 1 verdict (2026-10-19, reviewer codex-gpt-6 + spec/standards axes): FAIL - both axes failed, 7 independent blocking themes (3 cross-confirmed). Fixed range bfb0c8e..d61fa74 = 35 commits/157 files. Verdict archived; pipeline returned to team-exec for rectification; resubmission becomes round 2. Blocking registry: A-01 (18 local journeys E2E-3..20 unexecuted while stage-5 claimed completed/passed; missing stage5-dev-summary.md + autonomous-decisions.md), A-02 (Incomplete state restart dead-end), A-03 (worker init/frame failure never settles; no effective watchdogs), A-04/B-S01 (evidence gates pass NOT_RUN/FAIL/wrong-scope/mock), B-S04 (video seek can hang forever; EOF misses final frames), C-01 (launcher exits 0 from spaced/CJK paths without listening), C-02 (capture cancel leaves parallel-initialized worker unreleased).",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
