@@ -23,13 +23,14 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
 const UNIT = join(REPO, 'web', 'desktop-recv', 'tests', 'unit');
 
-// The eight suites promised by the test plan. `--all` requires all of them;
-// partial runs use --suite until the later tasks land.
-const ALL_SUITES = ['contracts', 'session', 'scheduler', 'worker', 'save', 'video', 'ui', 'evidence'];
+// The suites promised by the test plan plus the client suite added by the
+// round-1 external-review rectification (A-03 watchdog convergence).
+// `--all` requires all of them; partial runs use --suite until later tasks land.
+const ALL_SUITES = ['contracts', 'session', 'scheduler', 'worker', 'client', 'save', 'video', 'ui', 'evidence'];
 
 const HELP = `usage: node tools/desktop-recv/run-unit.mjs (--all | --suite <name>...) [--help]
 
-  --all             require and run all 8 suites
+  --all             require and run all ${ALL_SUITES.length} suites
   --suite <name>    run one suite (repeatable); one of:
                     ${ALL_SUITES.join(', ')}
   --help            this text

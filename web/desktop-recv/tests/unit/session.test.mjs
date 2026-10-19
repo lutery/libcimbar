@@ -426,6 +426,197 @@ test('T2.2.b-6 an Incomplete session releases its resources', async () => {
   assert.equal(clients[0].closed, true, 'the decoder is retired');
 });
 
+// --- Round-1 external review A-02: Incomplete must be restartable ---
+
+// Given a session ended Incomplete
+// When the user starts again through either entry
+// Then a fresh session is accepted with no old progress or artifact
+test('UT-063 an Incomplete session restarts through both entries', async () => {
+  const clients = [fakeClient(), fakeClient(), fakeClient()];
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => Promise.resolve(clients.shift()),
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  pickers[0](fakeStream());
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+
+  await coordinator.finishStream({ takeFinalSample: () => null });
+  const incomplete = coordinator.snapshot();
+  assert.equal(incomplete.state, 'Incomplete');
+  assert.equal(incomplete.cleanupComplete, true, 'nothing stays pending');
+
+  // restart through the live entry
+  const live = coordinator.startLive({ requestId: 'live-2' });
+  assert.equal(live.accepted, true, 'startLive accepted after Incomplete');
+  assert.notEqual(live.sessionId, incomplete.sessionId);
+  const fresh = coordinator.snapshot();
+  assert.equal(fresh.state, 'Preparing');
+  assert.equal(fresh.artifact, null, 'no old artifact');
+  assert.equal(fresh.inputEnded, false);
+  assert.equal(fresh.stats.submitted, 0, 'stats start from zero');
+
+  // converge this one and restart through the video entry
+  pickers[1](fakeStream());
+  await tick();
+  await coordinator.finishStream({ takeFinalSample: () => null });
+  assert.equal(coordinator.snapshot().state, 'Incomplete');
+
+  const video = coordinator.startVideo({
+    requestId: 'video-1',
+    openSource: () => Promise.resolve({ stop() {} }),
+  });
+  assert.equal(video.accepted, true, 'startVideo accepted after Incomplete');
+  assert.notEqual(video.sessionId, incomplete.sessionId);
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+});
+
+// --- Round-1 external review C-02: capture rejection must release workers ---
+
+// Given the parallel decoder init already produced a ready client
+// When the capture picker is then rejected
+// Then that client is closed immediately and the next session builds a new one
+test('UT-064 picker rejection closes the already-ready client', async () => {
+  const clients = [];
+  let rejectPicker;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve, reject) => { rejectPicker = reject; }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  await tick(); // the client finishes init while the picker is still open
+  assert.equal(clients.length, 1);
+
+  rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
+  await tick();
+
+  assert.equal(coordinator.snapshot().state, 'Idle');
+  assert.equal(clients[0].closed, true, 'the parallel-initialized client is released');
+});
+
+// Given the capture is rejected before the decoder init settles
+// When the client arrives late
+// Then the invalidated session's cleanup token closes it instead of leaking
+test('UT-065 a late client after rejection is closed by the cleanup token', async () => {
+  const clients = [];
+  let resolvePicker; let rejectPicker;
+  let resolveClient;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve, reject) => { resolvePicker = resolve; rejectPicker = reject; }),
+    createClient: () => new Promise((resolve) => { resolveClient = (client) => { clients.push(client); resolve(client); }; }),
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Idle');
+
+  const late = fakeClient();
+  resolveClient(late);
+  await tick();
+  assert.equal(late.closed, true, 'the late client is closed, not adopted');
+});
+
+// Given the user cancels the picker three times in a row
+// When each parallel init eventually returns
+// Then every client is closed and no resource survives
+test('UT-066 repeated cancellations release every late client', async () => {
+  const clients = [];
+  const resolvers = [];
+  let rejectPicker;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve, reject) => { rejectPicker = reject; }),
+    createClient: () => new Promise((resolve) => { resolvers.push(resolve); }),
+  });
+
+  for (let round = 1; round <= 3; round += 1) {
+    coordinator.startLive({ requestId: `live-${round}` });
+    rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
+    await tick(); // the rejection settles in a microtask before the next start
+  }
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Idle');
+
+  for (const resolve of resolvers) {
+    const client = fakeClient();
+    clients.push(client);
+    resolve(client);
+  }
+  await tick();
+  assert.equal(clients.length, 3);
+  assert.equal(clients.filter((client) => client.closed).length, 3,
+    'every late client was closed');
+});
+
+// --- Round-1 external review A-03: init failure must converge under stop ---
+
+// Given the user stops while the decoder init promise is still pending
+// When the client finally resolves (or the watchdog rejects it)
+// Then the session converges to Stopped, the late client is closed, and no
+// error is surfaced for a stop the user requested themselves
+test('UT-067 stop during pending init converges to Stopped silently', async () => {
+  const errors = [];
+  let resolveClient;
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => new Promise((resolve) => { resolveClient = resolve; }),
+    onError: (code) => errors.push(code),
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  pickers[0](fakeStream());
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Preparing');
+
+  coordinator.stop();
+  assert.equal(coordinator.snapshot().state, 'Stopping');
+
+  const late = fakeClient();
+  resolveClient(late);
+  await tick();
+
+  const snapshot = coordinator.snapshot();
+  assert.equal(snapshot.state, 'Stopped', 'converges after the late init settles');
+  assert.equal(snapshot.cleanupComplete, true);
+  assert.equal(late.closed, true);
+  assert.deepEqual(errors, [], 'no error surfaced for a user-initiated stop');
+});
+
+// Given the decoder worker dies after it was ready and receiving
+// When the client reports the channel failure
+// Then the session enters a recoverable terminal state with the inputs released
+test('UT-068 a post-ready channel failure lands in Stopped', async () => {
+  const errors = [];
+  const clients = [];
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+    onError: (code) => errors.push(code),
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  pickers[0](fakeStream());
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  assert.equal(typeof clients[0].onFailure, 'function',
+    'the coordinator wires the client failure hook');
+
+  clients[0].onFailure(Object.assign(new Error('worker died'), { code: 15010 }));
+  await tick();
+
+  assert.equal(coordinator.snapshot().state, 'Stopped');
+  assert.equal(clients[0].closed, true, 'inputs are released');
+  assert.equal(errors.includes(15010), true);
+});
+
+
 // --- T3.2: save attempts drive the session state machine ---
 
 function readyCoordinator() {

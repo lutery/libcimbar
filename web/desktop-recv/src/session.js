@@ -4,7 +4,10 @@
 // cleaned up against the token of the session that created them.
 import { FrameScheduler } from './frame-scheduler.js';
 
-const IDLE_STATES = new Set(['Idle', 'Stopped', 'Saved']);
+// Restartable terminal states. Kept in lockstep with the UI's IDLE_LIKE set
+// (ui.js): a session that ended Incomplete must accept a fresh start through
+// both entries instead of dead-ending the user (round-1 review A-02).
+const IDLE_STATES = new Set(['Idle', 'Stopped', 'Saved', 'Incomplete']);
 
 export class SessionCoordinator {
   constructor(options = {}) {
@@ -141,7 +144,7 @@ export class SessionCoordinator {
   }
 
   _attachVideoSource(seq, source) {
-    if (!this._isCurrent(seq) || this._isStopping()) {
+    if (!this._isCurrent(seq) || this._isStopping() || this._session.captureRejected) {
       if (source && typeof source.stop === 'function') source.stop();
       return;
     }
@@ -206,7 +209,7 @@ export class SessionCoordinator {
   }
 
   _attachCapture(seq, stream) {
-    if (!this._isCurrent(seq) || this._isStopping()) {
+    if (!this._isCurrent(seq) || this._isStopping() || this._session.captureRejected) {
       if (stream && typeof stream.getTracks === 'function') {
         for (const track of stream.getTracks()) track.stop();
       }
@@ -226,11 +229,21 @@ export class SessionCoordinator {
   _initializeDecoder(seq) {
     return Promise.resolve(this._createClient())
       .then((client) => {
-        if (!this._isCurrent(seq) || this._isStopping()) {
+        if (!this._isCurrent(seq) || this._isStopping() ||
+            (this._session && this._session.captureRejected)) {
+          // A dead session (stopped, superseded, or capture-rejected) must
+          // not adopt the client: close it instead of leaking the worker.
           if (client && typeof client.close === 'function') client.close();
           return;
         }
         this._client = client;
+        if (client && typeof client === 'object') {
+          // A channel that dies after ready ends the session (A-03): the
+          // client guarantees this fires at most once.
+          client.onFailure = (error) => {
+            if (this._isCurrent(seq)) this._decoderFailed(seq, error);
+          };
+        }
         this._scheduler = new FrameScheduler({
           submit: (frame) => client.submitFrame(frame),
           maxPixels: this._maxPixels,
@@ -244,20 +257,24 @@ export class SessionCoordinator {
       });
   }
 
+  // The picker/openSource was cancelled or failed: this session's data
+  // identity is void. Retire whatever the parallel decoder init already
+  // created and forbid late arrivals from attaching (round-1 review C-02).
   _captureRejected(seq, error) {
     if (!this._isCurrent(seq)) return;
     // A rejection arriving after stop must not pull Stopping back to Idle.
     if (this._isStopping()) return;
     this._onError(error && error.code ? error.code : 12002);
-    this._emit({ state: 'Idle' });
+    this._emit({ state: 'Idle', captureRejected: true });
+    this.releaseInputs();
   }
 
   // Decoder init failure is fatal for the session: it must converge to a
   // terminal state instead of hanging in Preparing forever.
   _decoderFailed(seq, error) {
     if (!this._isCurrent(seq)) return;
+    if (this._isStopping()) return; // a user-initiated stop settles silently
     this._onError(error && error.code ? error.code : 15001);
-    if (this._isStopping()) return;
     this._emit({ state: 'Stopping' });
     this.releaseInputs();
     if (this._pending.size === 0) {

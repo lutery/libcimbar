@@ -3,6 +3,7 @@
 import { inspectCapabilities } from './capabilities.js';
 import { deriveControls, describeRecovery, safeSuggestedName, noDataHint } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
+import { LIMITS_DEFAULT } from './contracts.js';
 import { SessionCoordinator } from './session.js';
 import { SaveController } from './save-controller.js';
 import { captureFrame } from './live-source.js';
@@ -56,6 +57,11 @@ const coordinator = new SessionCoordinator({
     const client = new DecoderClient(worker, {
       maxFramePixels: MAX_PIXELS,
       maxArtifactBytes: 16777216,
+      // Main-thread watchdogs (A-03): the worker cannot rescue a wedged
+      // thread itself. Limits come from the same frozen defaults as the
+      // worker side (profile.json mirrors contracts.js).
+      initTimeoutMs: LIMITS_DEFAULT.initTimeoutMs,
+      frameTimeoutMs: LIMITS_DEFAULT.frameTimeoutMs,
     });
     await client.init({ mode: MODE_B, assets, limits: {} });
     return client;
