@@ -15,6 +15,7 @@ export class VideoSource {
     this._onEnded = options.onEnded || (() => {});
     this._onError = options.onError || (() => {});
     this._onMetadata = options.onMetadata || (() => {});
+    this._seekTimeoutMs = options.seekTimeoutMs || 5000;
 
     this._url = null;
     this._video = null;
@@ -80,7 +81,7 @@ export class VideoSource {
       }
 
       // decode precheck: a seek must actually produce a frame
-      await this._seek(0.01);
+      await this._seek(0.01, 'open');
       const probe = this._capture(this._video, {
         maxPixels: this._maxPixels,
         onError: (code) => { throw Object.assign(new Error('capture failed'), { code }); },
@@ -108,14 +109,47 @@ export class VideoSource {
   }
 
   // Controlled extraction. Resolves when the stream ends (eof) or stop() is
-  // called. Exactly one frame is in flight at any time; the media time is
-  // deduplicated so a seek that lands on the same frame never resubmits.
+  // called; rejects finitely with a registered code when the media breaks
+  // mid-read (round-1 review B-S04: a corrupt container must never hang the
+  // session — the caller drives it to a recoverable terminal state).
   async run() {
     if (!this._video) throw Object.assign(new Error('not open'), { code: 13005 });
     this._playing = true;
+    try {
+      await this._runLoop();
+    } catch (error) {
+      this._playing = false;
+      this.stop();
+      this._onError(error && Number.isSafeInteger(error.code) ? error.code : 13002);
+      throw error;
+    }
+  }
 
+  async _runLoop() {
+    let lastTarget = -1;
     while (this._playing) {
       if (this._nextTime >= this._duration) {
+        // The interval between the last sample and the real end was never
+        // covered: give the final key frame one bounded capture chance
+        // before declaring eof.
+        const tail = Math.max(this._duration - 0.001, 0);
+        if (lastTarget < tail - 0.001) {
+          lastTarget = tail;
+          await this._seek(tail);
+          if (!this._playing) return;
+          const frame = this._capture(this._video, {
+            maxPixels: this._maxPixels,
+            onError: (code) => this._onError(code),
+          });
+          if (frame) {
+            const result = await this._submit(frame, { mediaTimeUs: Math.round(tail * 1e6) });
+            if (!this._playing) return;
+            if (result && result.outcome === 'artifact') {
+              this._finish('eof');
+              return;
+            }
+          }
+        }
         this._finish('eof');
         return;
       }
@@ -125,6 +159,7 @@ export class VideoSource {
 
       // the seek target is bounded by the container duration
       const target = Math.min(mediaTime, Math.max(this._duration - 0.001, 0));
+      lastTarget = target;
 
       await this._seek(target);
       if (!this._playing) return;
@@ -155,8 +190,7 @@ export class VideoSource {
       const resolveSeek = this._pendingSeek;
       this._pendingSeek = null;
       resolveSeek();
-    }
-    if (this._video) {
+    }    if (this._video) {
       try { this._video.pause(); } catch (e) { /* detached */ }
       this._video.removeAttribute('src');
       this._video.load();
@@ -196,17 +230,42 @@ export class VideoSource {
     });
   }
 
-  _seek(timeSeconds) {
-    return new Promise((resolve) => {
-      const onSeeked = () => {
+  // A seek must always conclude. Besides 'seeked', a media error, an abort,
+  // or the watchdog timeout settles it with a registered code; stop() still
+  // resolves it immediately and silently (round-1 review B-S04).
+  //   - phase 'open' (metadata/first-frame precheck): 13003
+  //   - phase 'run' (mid-read stepping): 13002
+  _seek(timeSeconds, phase = 'run') {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (error) => {
+        if (settled) return;
+        settled = true;
         this._pendingSeek = null;
+        clearTimeout(timer);
         cleanup();
-        resolve();
+        if (error) reject(error);
+        else resolve();
       };
-      const cleanup = () => this._video.removeEventListener('seeked', onSeeked);
+      const onSeeked = () => finish();
+      const onBroken = () => finish(Object.assign(new Error('media error during seek'), {
+        code: phase === 'open' ? 13003 : 13002,
+      }));
+      const timer = setTimeout(() => {
+        finish(Object.assign(new Error('seek timed out'), {
+          code: phase === 'open' ? 13003 : 13002,
+        }));
+      }, this._seekTimeoutMs);
+      const cleanup = () => {
+        this._video.removeEventListener('seeked', onSeeked);
+        this._video.removeEventListener('error', onBroken);
+        this._video.removeEventListener('abort', onBroken);
+      };
       this._listeners.push(cleanup);
-      this._pendingSeek = resolve;
+      this._pendingSeek = () => finish(); // stop() settles without an error
       this._video.addEventListener('seeked', onSeeked, { once: true });
+      this._video.addEventListener('error', onBroken);
+      this._video.addEventListener('abort', onBroken);
       this._video.currentTime = timeSeconds;
     });
   }

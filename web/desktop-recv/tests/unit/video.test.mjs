@@ -7,8 +7,10 @@ import { VideoSource } from '../../src/video-source.js';
 
 const tick = (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetadata = false } = {}) {
+function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetadata = false,
+  neverSeek = false, failSeekAfter = Infinity } = {}) {
   let time = 0;
+  let seekCount = 0;
   const listeners = {};
   const element = {
     src: null,
@@ -29,7 +31,9 @@ function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetad
     get currentTime() { return time; },
     set currentTime(value) {
       time = value;
-      queueMicrotask(() => this.dispatch('seeked'));
+      seekCount += 1;
+      if (neverSeek) return; // a broken container: no event ever fires
+      queueMicrotask(() => this.dispatch(seekCount > failSeekAfter ? 'error' : 'seeked'));
     },
   };
   Object.defineProperty(element, 'src', {
@@ -56,10 +60,11 @@ function withFakeUrls(run) {
 const file = (name = 'clip.webm') => ({ name, size: 12345 });
 
 // The shared harness: submits queue up entries that the test releases.
-function harness({ element, failCapture = false, onEnded, onError }) {
+function harness({ element, failCapture = false, seekTimeoutMs, onEnded, onError }) {
   const submits = [];
   const source = new VideoSource({
     createElement: () => element,
+    seekTimeoutMs,
     captureFrame: failCapture ? () => null : () => (
       { width: element.videoWidth, height: element.videoHeight, pixels: new ArrayBuffer(16) }
     ),
@@ -128,10 +133,14 @@ test('UT-033 stepping stays in bounds with increasing media times', async () => 
 
     await source.open(file());
     const runPromise = source.run();
-    await tick(60);
-
-    for (const entry of submits) {
-      if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+    for (let i = 0; i < 100; i += 1) {
+      await tick(5);
+      for (const entry of submits) {
+        if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+      }
+      // stop polling once the run has settled to avoid an unawaited promise
+      const settled = await Promise.race([runPromise.then(() => true), Promise.resolve(false)]);
+      if (settled) break;
     }
     await runPromise;
 
@@ -193,9 +202,14 @@ test('UT-035 a short recording ends without looping', async () => {
 
     await source.open(file());
     const runPromise = source.run();
-    await tick(60);
-
-    for (const entry of submits) if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+    for (let i = 0; i < 100; i += 1) {
+      await tick(5);
+      for (const entry of submits) {
+        if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+      }
+      const settled = await Promise.race([runPromise.then(() => true), Promise.resolve(false)]);
+      if (settled) break;
+    }
     await runPromise;
 
     const times = submits.filter((e) => e.frame).map((e) => e.meta.mediaTimeUs);
@@ -232,5 +246,92 @@ test('UT-036 stop mid-run submits nothing further', async () => {
 
     assert.equal(after, before, 'no frames submitted after stop');
     assert.equal(revoked.length, 1, 'URL reclaimed exactly once');
+  });
+});
+
+// --- Round-1 external review B-S04: bounded seeks and the final tail frame ---
+
+// Given a container that acknowledges metadata but never completes a seek
+// When opening
+// Then the seek watchdog ends the attempt finitely with 13003 and the URL
+// is reclaimed, instead of hanging the session forever
+test('UT-069 a never-completing first seek fails finitely', { timeout: 3000 }, async () => {
+  await withFakeUrls(async ({ revoked }) => {
+    const errors = [];
+    const element = fakeVideoElement({ neverSeek: true });
+    const { source } = harness({
+      element, seekTimeoutMs: 30, onError: (code) => errors.push(code),
+    });
+
+    await assert.rejects(source.open(file()), (error) => error.code === 13003);
+    assert.equal(revoked.length, 1, 'URL reclaimed after the bounded failure');
+    assert.deepEqual(errors, [13003]);
+    assert.equal(source.snapshot().open, false);
+  });
+});
+
+// Given the media errors out mid-read
+// When stepping
+// Then run() rejects with 13002, the element is torn down finitely, and the
+// error is surfaced once for the recoverable re-import path
+test('UT-070 a media error during run ends finitely', { timeout: 3000 }, async () => {
+  await withFakeUrls(async ({ revoked }) => {
+    const errors = [];
+    const element = fakeVideoElement({ duration: 1, failSeekAfter: 1 });
+    const { source } = harness({
+      element, seekTimeoutMs: 1000, onError: (code) => errors.push(code),
+    });
+
+    await source.open(file()); // the open precheck seek is the only good one
+    await assert.rejects(source.run(), (error) => error.code === 13002);
+    assert.equal(revoked.length, 1, 'torn down exactly once');
+    assert.deepEqual(errors, [13002]);
+    assert.equal(source.snapshot().open, false);
+  });
+});
+
+// Given the final frame interval of the recording
+// When stepping reaches the end of the container
+// Then the tail position is sampled once before eof, so the last key frame
+// gets a bounded capture chance
+test('UT-071 the final tail frame is sampled before eof', { timeout: 5000 }, async () => {
+  await withFakeUrls(async () => {
+    const element = fakeVideoElement({ duration: 0.1 });
+    const events = [];
+    const { source, submits } = harness({
+      element, onEnded: (reason) => events.push(reason),
+    });
+
+    await source.open(file());
+    const runPromise = source.run();
+    for (let i = 0; i < 100 && !events.includes('eof'); i += 1) {
+      await tick(5);
+      for (const entry of submits) {
+        if (entry.frame && !entry.resolved) entry.release({ outcome: 'no_data' });
+      }
+    }
+    await runPromise;
+
+    assert.equal(events.includes('eof'), true);
+    const times = submits.filter((e) => e.frame).map((e) => e.meta.mediaTimeUs);
+    assert.equal(times[times.length - 1], Math.round(0.099 * 1e6),
+      'the last sample covers the container tail');
+    for (let i = 1; i < times.length; i += 1) {
+      assert.ok(times[i] > times[i - 1], 'media times strictly increase');
+    }
+  });
+});
+
+// Given a source failed finitely
+// When the user picks a healthy recording next
+// Then a fresh source opens normally: failure does not poison re-import
+test('UT-072 a failed source is discarded and a fresh import succeeds', { timeout: 3000 }, async () => {
+  await withFakeUrls(async () => {
+    const broken = harness({ element: fakeVideoElement({ neverSeek: true }), seekTimeoutMs: 30 });
+    await assert.rejects(broken.source.open(file('bad.webm')), (error) => error.code === 13003);
+
+    const good = harness({ element: fakeVideoElement() });
+    const meta = await good.source.open(file('good.webm'));
+    assert.equal(meta.durationSeconds, 1);
   });
 });

@@ -116,7 +116,13 @@ function render() {
   if (snapshot.state === 'Receiving' && snapshot.inputKind === 'video' &&
       activeVideoSource && !videoRunStarted) {
     videoRunStarted = true;
-    activeVideoSource.run().catch((error) => logLine(String((error && error.message) || error), true));
+    activeVideoSource.run().catch((error) => {
+      // B-S04: a broken recording must end finitely. The source already
+      // surfaced its code and tore itself down; drive the session to a
+      // recoverable terminal state instead of hanging in Receiving.
+      logLine(String((error && error.message) || error), true);
+      void coordinator.finishStream({ takeFinalSample: () => null }).catch(() => {});
+    });
   }
   if (snapshot.state !== 'Receiving') videoRunStarted = false;
 
@@ -212,8 +218,14 @@ function startVideoImport(file) {
         createElement: () => el.preview,
         submit: (frame) => coordinator.submitVideoFrame(frame),
         onEnded: () => {
-          void coordinator.finishStream({ takeFinalSample: () => null })
-            .catch((error) => logLine(String((error && error.message) || error), true));
+          // EOF drain takes one real final capture (B-S04): the recorded
+          // path must not skip the last usable frame like the live path.
+          void coordinator.finishStream({
+            takeFinalSample: () => captureFrame(el.preview, {
+              maxPixels: MAX_PIXELS,
+              onError: (code) => showError(code),
+            }),
+          }).catch((error) => logLine(String((error && error.message) || error), true));
         },
         onError: (code) => showError(code),
         maxPixels: MAX_PIXELS,
