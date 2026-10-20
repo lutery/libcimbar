@@ -263,6 +263,19 @@ test('UT-036 stop mid-run submits nothing further', async () => {
 
 // --- TD-15: per-frame playback import (rVFC) ---
 
+// Given the element still carries a capture stream from a previous session
+// When a recording is opened
+// Then the previous stream is detached first (srcObject wins over src)
+test('UT-082 open detaches a previous capture stream', async () => {
+  await withFakeUrls(async () => {
+    const element = fakeVideoElement();
+    element.srcObject = { id: 'old-stream' };
+    const { source } = harness({ element });
+    await source.open(file());
+    assert.equal(element.srcObject, null, 'the old stream is detached');
+  });
+});
+
 // Given a recording played through the video element
 // When requestVideoFrameCallback is available
 // Then every presented frame is captured and submitted one at a time

@@ -46,6 +46,11 @@ export class VideoSource {
     if ('playsInline' in this._video || this._video.playsInline === undefined) {
       this._video.playsInline = true;
     }
+    // The shared preview element may still carry the previous session's
+    // capture stream; srcObject takes precedence over src, so the file's
+    // metadata would never load (observed as a spurious 13005 when a
+    // recording was imported after a live round).
+    try { this._video.srcObject = null; } catch (error) { /* detached */ }
     this._video.src = this._url;
 
     try {
