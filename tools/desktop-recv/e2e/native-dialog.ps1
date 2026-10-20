@@ -416,6 +416,10 @@ if ($Action -eq 'save') {
     if ($no -ne [IntPtr]::Zero) {
       [NativeMouse]::PostMessage($no, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
     }
+    Start-Sleep -Milliseconds 300
+    # Make sure no modal is left blocking the page.
+    [NativeMouse]::ForceForeground($confirm) | Out-Null
+    [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
     [Console]::Error.WriteLine('an unexpected overwrite confirmation appeared; refused it')
     exit 1
   }

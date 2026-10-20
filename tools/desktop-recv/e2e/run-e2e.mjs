@@ -1022,10 +1022,12 @@ const SCENARIOS = {
     mkdirSync(dirname(target), { recursive: true });
     const helperPromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'],
       stack.receiver.pid);
-    // Two rapid clicks: the second must be refused while the first is
-    // selecting (SAVE_BUSY 16008), not open a second dialog.
+    // First click opens the modal; while it is selecting the app disables the
+    // Save button, so a second rapid click is impossible in the UI (that is
+    // the defensive behaviour under test).
     await clickButton(stack.receiver.page, '#btn-save', 'save first');
-    await clickButton(stack.receiver.page, '#btn-save', 'save second');
+    const during = await pageState(stack.receiver.page);
+    const secondBlocked = during.saveDisabled === true;
     const helper = await helperPromise;
     if (helper.code !== 0) throw new Error(`save helper failed: ${helper.out}`);
     await waitFor(stack.receiver.page, (s) => s.status === 'Saved', 20000, 'saved');
@@ -1035,11 +1037,11 @@ const SCENARIOS = {
       ...roundtripRecord({
         caseId: 'E2E-13', originalPath: join(FIXTURES, 'compressible', 'sample-text-2.bin'),
         receivedPath: target, runDir: RUN,
-        notes: `double-click save -> single attempt, saved equal=${equal}; status=${state.status}`,
+        notes: `save button disabled during selection=${secondBlocked}; single save equal=${equal}; status=${state.status}`,
       }),
-      result: equal ? 'PASS' : 'FAIL',
+      result: secondBlocked && equal ? 'PASS' : 'FAIL',
     });
-    return equal;
+    return secondBlocked && equal;
   },
   // E2E-7: stop spam converges once; a fresh session for another file
   // starts from zero and produces the correct output.
