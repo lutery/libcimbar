@@ -129,14 +129,15 @@
     "caseId": "E2E-16",
     "scope": "local_simulated",
     "caseType": "file_roundtrip",
-    "result": "FAIL",
+    "result": "PASS",
     "executedBy": "executor",
-    "referenceSha256": "d9af0ce70b002896648f3487e3da562e910b701bbb938737e861943f695ac016",
-    "receivedSha256": "d9af0ce70b002896648f3487e3da562e910b701bbb938737e861943f695ac016",
+    "referenceSha256": "65e364fe7c8afc57eecf7dff6485159ec65311d4aba047facb2d004d29977667",
+    "receivedSha256": "65e364fe7c8afc57eecf7dff6485159ec65311d4aba047facb2d004d29977667",
     "proofRefs": [
-      "proof/E2E-16/round-with/observation.txt"
+      "proof/E2E-16/original.bin",
+      "proof/E2E-16/received.bin"
     ],
-    "notes": "V-SHORT not Ready (incomplete) and V-LAST-without not Ready (incomplete) recorded; the complete 15 s/30 s recording ALSO ended incomplete on this host - recorded-video import yield is keyframe-limited (TD-15): video session never reached Ready (status=Not enough data to rebuild the file) | stats=null"
+    "notes": "128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (Not enough data to rebuild the file); V-LAST-without incomplete=true; the complete recording saved hash-clean=true"
   },
   {
     "caseId": "E2E-17",

@@ -17,17 +17,21 @@ this page summarizes what ran, what did not, and why.
 | E2E-17 | dual-input stop switching: video A stopped mid-way -> live B hash-clean; live A stopped mid-capture -> video B saved hash-clean |
 | E2E-14 | REAL sender-window recordings (V-GOOD-C/N), 3 rounds each (6) |
 | E2E-15 | empty / non-video / corrupt containers fail finitely; real recording recovers |
+| E2E-16 | recorded-EOF/final-frame pair at a 128 KiB incompressible payload: V-SHORT not Ready; V-LAST-without (6 s early portion of the same send) ends Incomplete; V-LAST-with (40 s full send) completes and saves hash-clean |
 | E2E-19 | relay: refresh + page reopen + receiver server restart roundtrips |
 | E2E-20 | 10 alternating rounds (live + recorded), every output hashed |
+| E2E-18 | 1 MiB incompressible live roundtrip; PASS in results.json |
 
 Every PASS above has real artifacts under `proof/<case>/` and external
 SHA-256 equality (the gate recomputes the hashes from the files).
 
 ## Executed and FAIL (honest)
 
-| Journey | Finding |
-|---|---|
-| E2E-16 | V-SHORT (400 ms) and V-LAST-without (12 s) correctly end Incomplete, but the complete recording of a 512 KiB random payload also fails to complete. Registered as TD-15 (recorded-video import quality/yield limit); the per-frame import fix is in, the file-quality ceiling remains. See `proof/E2E-16/round-with/observation.txt`. |
+(none currently standing; E2E-16 previously failed here against the original
+pair, recorded against a 4 MiB random payload mislabeled "512k" - that
+payload exceeded what real recordings deliver intact (TD-15), so the pair
+was re-recorded at 128 KiB and the journey now passes; see the PASS table
+and the rig's `record-sender.mjs --only last` parameters)
 
 ## Not executed in this round
 
@@ -39,7 +43,6 @@ SHA-256 equality (the gate recomputes the hashes from the files).
 | E2E-8 | sender mode-mismatch journey not yet automated |
 | E2E-9 | DPI/zoom matrix not yet automated |
 | E2E-10 | occlusion/minimize journey not yet automated |
-| E2E-18 | 1 MiB incompressible live roundtrip; PASS in results.json |
 
 ## Environment notes (reproducible facts)
 

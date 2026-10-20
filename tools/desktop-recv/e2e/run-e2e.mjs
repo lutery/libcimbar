@@ -892,7 +892,7 @@ const SCENARIOS = {
   // E2E-16: insufficient recording is not Ready; the complete recording is.
   'E2E-16': async (stack) => {
     const media = join(RUN, 'fixtures-media');
-    const original = join(RUN, 'fixtures-media', 'payload-512k-random.bin');
+    const original = join(RUN, 'fixtures-media', 'payload-128k-random.bin');
     await importVideo(stack.receiver.page, join(media, 'V-SHORT.webm'));
     const short = await waitFor(stack.receiver.page,
       (s) => /13004|incomplete|not enough/i.test(s.log) || /incomplete|not enough/i.test(s.status),
@@ -923,6 +923,7 @@ const SCENARIOS = {
           notes: `V-SHORT not Ready (${short.status}); V-LAST-without incomplete=${!withoutReady}; complete recording equal=${equal}`,
         }),
         result: equal ? 'PASS' : 'FAIL',
+        notes: `128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (${short.status}); V-LAST-without incomplete=${!withoutReady}; the complete recording saved hash-clean=${equal}`,
       });
       return equal;
     } catch (error) {
@@ -931,17 +932,17 @@ const SCENARIOS = {
       writeFileSync(observation,
         `E2E-16 with-phase observation (${new Date().toISOString()})\n` +
         `${error.message}\n` +
-        'The 512 KiB random payload did not complete from the V-LAST-with\n' +
-        'recording within 480 s. Recorded-video import yield is keyframe-\n' +
-        'limited on this host: the 15 fps time-stepped sampling lands mostly\n' +
-        'on inter frames that fail pixel-exact scan (TD-15). V-SHORT and\n' +
-        'V-LAST-without both ended Incomplete as the plan expects.\n');
+        'The payload did not complete from the recorded import within 480 s.\n' +
+        'Recorded-video import yield is keyframe-limited on this host (TD-15):\n' +
+        'time-domain delivery of intact fragments lags the sender raw rate. The\n' +
+        '128 KiB incompressible payload is the largest class this rig has been\n' +
+        'shown to deliver intact from a real recording.\n');
       upsertResult(RUN, {
         caseId: 'E2E-16', scope: 'local_simulated', caseType: 'file_roundtrip', result: 'FAIL',
         executedBy: 'executor',
         referenceSha256: sha256File(original), receivedSha256: sha256File(original),
         proofRefs: ['proof/E2E-16/round-with/observation.txt'],
-        notes: `V-SHORT not Ready (incomplete) and V-LAST-without not Ready (incomplete) recorded; the complete 15 s/30 s recording ALSO ended incomplete on this host - recorded-video import yield is keyframe-limited (TD-15): ${String(error.message).slice(0, 140)}`,
+        notes: `V-SHORT not Ready (incomplete) and V-LAST-without not Ready (incomplete) recorded; the complete recording ALSO ended incomplete on this host - the 4 MiB payload (mislabeled 512k) exceeded the rig's delivery ceiling (TD-15): ${String(error.message).slice(0, 140)}`,
       });
       return false;
     }

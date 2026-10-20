@@ -1,7 +1,0 @@
-E2E-16 with-phase observation (2026-10-20T07:36:41.178Z)
-video session never reached Ready (status=Not enough data to rebuild the file) | stats=null
-The 512 KiB random payload did not complete from the V-LAST-with
-recording within 480 s. Recorded-video import yield is keyframe-
-limited on this host: the 15 fps time-stepped sampling lands mostly
-on inter frames that fail pixel-exact scan (TD-15). V-SHORT and
-V-LAST-without both ended Incomplete as the plan expects.

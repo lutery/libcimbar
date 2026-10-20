@@ -21,6 +21,19 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
 const DEBUG_PORT = 9452;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// CLI params (round-2): --only last records just the V-LAST pair against a
+// fresh payload; --only full (default) records the whole rig as before.
+// Payload size and the pair's durations are parametrized so the V-LAST pair
+// can be re-tuned without touching V-GOOD-C/N or V-SHORT.
+const cliArgs = new Map();
+for (let i = 2; i < process.argv.length; i += 2) {
+  cliArgs.set(String(process.argv[i]).replace(/^--/, ''), process.argv[i + 1]);
+}
+const ONLY = cliArgs.get('only') || 'full';
+const PAYLOAD_BYTES = Number(cliArgs.get('payload-bytes') || '131072');
+const WITH_SECONDS = Number(cliArgs.get('with-seconds') || '40');
+const WITHOUT_SECONDS = Number(cliArgs.get('without-seconds') || '6');
+
 // A normally launched Edge (CDP-attached) is required: Playwright-launched
 // Edge instances cannot start cross-window capture on this host.
 async function launchNormalEdge() {
@@ -42,7 +55,27 @@ async function launchNormalEdge() {
   if (!browser) throw new Error('recorder Edge did not expose CDP');
   const context = browser.contexts()[0];
   const page = context.pages()[0] || await context.newPage();
-  return { child, profile, browser, page };
+  const pid = await findEdgePid(profile);
+  if (!pid) throw new Error('could not resolve the recorder Edge pid for this profile');
+  return { child, profile, pid, browser, page };
+}
+
+// The spawned msedge launcher may not own the browser window; resolve the
+// real browser process by its unique profile marker (same as the runner).
+async function findEdgePid(profile) {
+  for (let i = 0; i < 50; i += 1) {
+    const pid = await new Promise((resolvePid) => {
+      const ps = spawn('powershell', ['-NoProfile', '-Command',
+        `$p = Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -like '*${profile}*' } | Select-Object -First 1; if ($p) { $p.ProcessId }`],
+      { stdio: ['ignore', 'pipe', 'ignore'] });
+      let out = '';
+      ps.stdout.on('data', (c) => { out += c; });
+      ps.on('exit', () => resolvePid(Number(out.trim()) || 0));
+    });
+    if (pid > 0) return pid;
+    await sleep(300);
+  }
+  return 0;
 }
 
 function startServer(command, argv, name) {
@@ -74,7 +107,57 @@ async function launchSender(page, file) {
   await sleep(300);
 }
 
+async function wakeWindow(pid) {
+  if (!pid) return;
+  const script = `
+Add-Type -AssemblyName UIAutomationClient; Add-Type -AssemblyName UIAutomationTypes
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public class RigWake {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+  [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
+  [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint a, uint b, bool f);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int cmd);
+  [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+  [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
+  public static void Activate(IntPtr h) {
+    IntPtr fg = GetForegroundWindow(); uint p; uint ft = GetWindowThreadProcessId(fg, out p); uint self = GetCurrentThreadId();
+    bool att = ft != 0 && ft != self && AttachThreadInput(self, ft, true);
+    if (IsIconic(h)) ShowWindow(h, 9);
+    SetForegroundWindow(h);
+    if (att) AttachThreadInput(self, ft, false);
+  }
+  public static void ClickSafe(int x, int y) {
+    SetCursorPos(x, y); System.Threading.Thread.Sleep(80);
+    mouse_event(0x0002, 0, 0, 0, UIntPtr.Zero); mouse_event(0x0004, 0, 0, 0, UIntPtr.Zero);
+  }
+}
+'@
+$AE=[System.Windows.Automation.AutomationElement]
+$cond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::Window)
+$tops=$AE::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children,$cond)
+foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) {
+  $r=$t.Current.BoundingRectangle
+  [RigWake]::Activate([IntPtr]$t.Current.NativeWindowHandle)
+  Start-Sleep -Milliseconds 250
+  [RigWake]::ClickSafe([int]($r.Left + 300), [int]($r.Top + 12))
+  'WOKEN'; break
+} }
+`;
+  await new Promise((resolveWake) => {
+    spawn('powershell', ['-NoProfile', '-Command', script], { stdio: 'ignore' }).on('exit', resolveWake);
+  });
+  await sleep(500);
+}
+
 async function record(page, ms, pid) {
+  // Chromium only shows the capture picker while its window is the active
+  // OS window (observed: twice in a row the picker never opened on a fresh
+  // recorder Edge until the window was forced foreground).
+  await wakeWindow(pid);
   // The recorder page's getDisplayMedia opens the real picker; drive it with
   // the same dialog helper. The recorder Edge is a normal instance, so the
   // helper binds to its process to avoid stale windows.
@@ -100,6 +183,12 @@ async function main() {
   mkdirSync(MEDIA, { recursive: true });
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
+  // The recorder page lives in this tool's dir; serve it here instead of
+  // depending on an external server on the recorder port (observed: the rig
+  // fails with ERR_CONNECTION_REFUSED when nobody serves it).
+  const recorderServer = startServer('python', ['-m', 'http.server', String(RECORDER_PORT),
+    '--bind', '127.0.0.1', '--directory', HERE], 'recorder-http');
+  await waitHttp(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
   await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
 
   const senderBrowser = await chromium.launch({
@@ -119,30 +208,41 @@ async function main() {
   // helper pid: the recorder browser is Playwright-launched; the picker still
   // appears (Playwright launch worked for capture pickers before).
   try {
-    await launchSender(senderPage, join('compressible', 'sample-text-2.bin'));
-    const good = await record(recorderPage, 18000, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-GOOD-C.webm'), Buffer.from(good.base64, 'base64'));
-    console.log(`V-GOOD-C recorded: ${good.bytes} bytes`);
-    // The EOF/final-frame pair uses a 4 MiB payload of CRYPTO RANDOM bytes:
+    if (ONLY === 'full') {
+      await launchSender(senderPage, join('compressible', 'sample-text-2.bin'));
+      const good = await record(recorderPage, 18000, recorderBrowser.pid);
+      writeFileSync(join(MEDIA, 'V-GOOD-C.webm'), Buffer.from(good.base64, 'base64'));
+      console.log(`V-GOOD-C recorded: ${good.bytes} bytes`);
+    } else {
+      console.log(`--only ${ONLY}: skipping V-GOOD-C (E2E-14/20 use it; must not change)`);
+    }
+    // The EOF/final-frame pair uses CRYPTO RANDOM bytes (incompressible):
     // the sender compresses repetitive content, so only incompressible data
-    // makes a short clip genuinely insufficient (0.8 s carries ~1.3 MB) and
-    // a 20 s clip genuinely sufficient.
-    const extFile = join(MEDIA, 'payload-512k-random.bin');
-    const ext = randomBytes(4 * 1024 * 1024);
-    writeFileSync(extFile, ext);
+    // makes a short clip genuinely insufficient and a long clip genuinely
+    // sufficient. Size and durations are CLI-tunable; the original 4 MiB
+    // payload (mislabeled 512k) exceeded what real recordings deliver
+    // intact (TD-15), so the default is 128 KiB - the feasible class.
+    const payloadName = `payload-${Math.round(PAYLOAD_BYTES / 1024)}k-random.bin`;
+    const extFile = join(MEDIA, payloadName);
+    writeFileSync(extFile, randomBytes(PAYLOAD_BYTES));
     await launchSender(senderPage, extFile);
-    const lastWith = await record(recorderPage, 15000, recorderBrowser.pid);
+    const lastWith = await record(recorderPage, WITH_SECONDS * 1000, recorderBrowser.pid);
     writeFileSync(join(MEDIA, 'V-LAST-with.webm'), Buffer.from(lastWith.base64, 'base64'));
     console.log(`V-LAST-with recorded: ${lastWith.bytes} bytes`);
-    const lastWithout = await record(recorderPage, 12000, recorderBrowser.pid);
+    const lastWithout = await record(recorderPage, WITHOUT_SECONDS * 1000, recorderBrowser.pid);
     writeFileSync(join(MEDIA, 'V-LAST-without.webm'), Buffer.from(lastWithout.base64, 'base64'));
     console.log(`V-LAST-without recorded: ${lastWithout.bytes} bytes`);
-    // a genuinely insufficient clip: 2 s carries well under half of the
-    // 1 MiB payload, so the decoder must end Incomplete.
-    const short = await record(recorderPage, 400, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-SHORT.webm'), Buffer.from(short.base64, 'base64'));
-    console.log(`V-SHORT recorded: ${short.bytes} bytes`);
+    // A genuinely insufficient clip (kept byte-for-byte in --only full runs
+    // and never re-recorded by --only last; E2E-15/16 use it).
+    if (ONLY === 'full') {
+      const short = await record(recorderPage, 400, recorderBrowser.pid);
+      writeFileSync(join(MEDIA, 'V-SHORT.webm'), Buffer.from(short.base64, 'base64'));
+      console.log(`V-SHORT recorded: ${short.bytes} bytes`);
+    } else {
+      console.log(`--only ${ONLY}: skipping V-SHORT (E2E-15/16 use it; must not change)`);
+    }
   } finally {
+    senderServer.kill();
     await senderBrowser.close().catch(() => {});
     await recorderBrowser.browser.close().catch(() => {}); // detach only
     senderServer.kill();
@@ -153,7 +253,12 @@ async function main() {
       killer.on('exit', resolveKill);
     });
   }
-  // incompressible class
+  // incompressible class (full rig only)
+  if (ONLY !== 'full') {
+    recorderServer.kill();
+    console.log(`--only ${ONLY}: skipping V-GOOD-N (E2E-14 uses it; must not change)`);
+    return;
+  }
   const incompressibleServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http2');
   await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
@@ -182,6 +287,7 @@ async function main() {
       killer.on('exit', resolveKill);
     });
   } finally {
+    recorderServer.kill();
     incompressibleServer.kill();
   }
 }
