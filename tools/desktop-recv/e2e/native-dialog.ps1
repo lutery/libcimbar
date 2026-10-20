@@ -437,6 +437,29 @@ if ($Action -in @('share-cancel', 'save-cancel', 'stop-share')) {
     Start-Sleep -Milliseconds 300
   }
   [Console]::Error.WriteLine("no cancellable dialog found for '$Action' within $TimeoutSec s")
+  if ($Action -eq 'stop-share') {
+    # Diagnostics: name every UIA element of the receiver's tree whose name
+    # mentions sharing, plus the nested window names, so the real indicator
+    # is visible when the selector misses it.
+    $targetPids = Get-TargetPids
+    $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
+      $AE::ControlTypeProperty, $CT::Window)
+    $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
+    foreach ($top in $tops) {
+      if ($targetPids -and ($targetPids -notcontains $top.Current.ProcessId)) { continue }
+      [Console]::Error.WriteLine("top: '$($top.Current.Name)' class=$($top.Current.ClassName)")
+      $named = $top.FindAll($TS::Descendants, [System.Windows.Automation.Condition]::TrueCondition)
+      $shown = 0
+      foreach ($n in $named) {
+        $nm = "$($n.Current.Name)"
+        if ($nm -match '共享|shar' -or "$($n.Current.ClassName)" -match ' shar') {
+          [Console]::Error.WriteLine("  [$($n.Current.ControlType.ProgrammaticName)] '$nm' class=$($n.Current.ClassName)")
+          $shown += 1
+          if ($shown -ge 12) { break }
+        }
+      }
+    }
+  }
   exit 1
 }
 

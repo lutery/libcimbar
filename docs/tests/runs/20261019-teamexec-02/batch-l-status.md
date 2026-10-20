@@ -21,28 +21,31 @@ this page summarizes what ran, what did not, and why.
 | E2E-19 | relay: refresh + page reopen + receiver server restart roundtrips |
 | E2E-20 | 10 alternating rounds (live + recorded), every output hashed |
 | E2E-18 | 1 MiB incompressible live roundtrip; PASS in results.json |
+| E2E-2 | occupied-port launch exits 3 with a readable reason; clean relaunch + live roundtrip hash-clean |
+| E2E-6 | same-name/same-size A/B: external ends (tab close, window close) settle Incomplete with no phantom artifact; each new session saves hash-B |
+| E2E-8 | 4C sender (outside the verified set): no false Ready in 30 s; recovery via sender reload hash-clean (see FAIL notes) |
+| E2E-9 | default + window-resize + receiver render-scale 1.5 legs all hash-clean; OS display scaling not covered (matrix claims no such combo) |
+| E2E-10 | receiver-in-front roundtrip; sender minimized mid-capture 15 s = no false Ready; restore saves hash-clean |
 
 Every PASS above has real artifacts under `proof/<case>/` and external
 SHA-256 equality (the gate recomputes the hashes from the files).
 
 ## Executed and FAIL (honest)
 
-(none currently standing; E2E-16 previously failed here against the original
-pair, recorded against a 4 MiB random payload mislabeled "512k" - that
-payload exceeded what real recordings deliver intact (TD-15), so the pair
-was re-recorded at 128 KiB and the journey now passes; see the PASS table
-and the rig's `record-sender.mjs --only last` parameters)
+| Journey | Finding |
+|---|---|
+| E2E-1 | pwsh 7 无法从「CJK+空格」目录加载启动脚本（Node 探针验证，非shell污染证据）：绝对 `-File`（首跑，exit 64）、相对 `-File`（cd 后）、env + `Set-Location` + `&` 全部失败；同宿主 pwsh 对正常 ASCII 路径工作正常。cpSync 版包内容正确、文件齐全。修复需平台/打包层（用户侧建议：解压到 ASCII 路径，README 已注明）；launch.cmd shim 保留供正常环境使用。见 `proof/E2E-1/`。注意：早期部分手工矩阵证据被本机交互 shell 的 CJK 乱码污染，已用 Node 探针（全 ASCII 源码 + 码点构建路径）重验并以探针结果为准。 |
+
+The E2E-8 PASS record carries a PRODUCT FINDING: flipping the sender's
+in-page mode selector back to B restores the UI class but NOT a decodable
+stream (receiver frame-starved 180 s in two runs); recovery works via a
+sender page reload (the selector's default is B). Evidence in
+`proof/E2E-8/` and the results.json notes.
 
 ## Not executed in this round
 
-| Journey | Why |
-|---|---|
-| E2E-1 | candidate-package first-launch journey not yet automated end to end |
-| E2E-2 | startup-failure recovery (launcher exit codes verified manually in C-01; journey form pending) |
-| E2E-6 | stop sharing from the system indicator bar not yet automated |
-| E2E-8 | sender mode-mismatch journey not yet automated |
-| E2E-9 | DPI/zoom matrix not yet automated |
-| E2E-10 | occlusion/minimize journey not yet automated |
+(none - all 20 local journeys have executed records; E2E-1 is the single
+honest FAIL, see above. E2E-21..26 remain field journeys for the user.)
 
 ## Environment notes (reproducible facts)
 

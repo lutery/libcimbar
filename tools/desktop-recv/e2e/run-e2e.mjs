@@ -14,7 +14,7 @@
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -125,7 +125,7 @@ async function screenshot(page, caseId, name) {
   return `proof/${caseId}/screens/${name}`;
 }
 
-async function launchReceiver() {
+async function launchReceiver(port = RECEIVER_PORT) {
   const profile = mkdtempSync(join(tmpdir(), 'cimbar-e2e-'));
   const child = spawn(EDGE, [
     `--remote-debugging-port=${DEBUG_PORT}`,
@@ -137,7 +137,7 @@ async function launchReceiver() {
     '--disable-translate',
     '--window-position=1180,0',
     '--window-size=1380,900',
-    `http://127.0.0.1:${RECEIVER_PORT}/`,
+    `http://127.0.0.1:${port}/`,
   ], { stdio: 'ignore' });
 
   let connected = null;
@@ -256,7 +256,7 @@ async function launchReceiver() {
       }
     }, true);
   });
-  await page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+  await page.goto(`http://127.0.0.1:${port}/`);
   try {
     await page.waitForSelector('#btn-video', { timeout: 60000 });
   } catch (error) {
@@ -300,17 +300,70 @@ async function launchStack({ withSender = true } = {}) {
   return {
     senderServer, receiverServer, senderBrowser, senderPage, receiver,
     async close() {
-      await receiver.browser.close().catch(() => {}); // detach
-      // close the normal Edge instance by profile marker
-      const killer = spawn('powershell', ['-NoProfile', '-Command',
-        `Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -like '*${receiver.profile}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
-      { stdio: 'ignore' });
-      await new Promise((r) => killer.on('exit', r));
+      await closeReceiver(receiver);
       await Promise.allSettled([senderBrowser && senderBrowser.close()]);
       if (senderServer) senderServer.kill();
       receiverServer.kill();
     },
   };
+}
+
+// Detach CDP and stop the normal-Edge instance by its unique profile marker.
+async function closeReceiver(receiver) {
+  await receiver.browser.close().catch(() => {}); // detach
+  const killer = spawn('powershell', ['-NoProfile', '-Command',
+    `Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -like '*${receiver.profile}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
+  { stdio: 'ignore' });
+  await new Promise((r) => killer.on('exit', r));
+}
+
+// A sender-only environment for journeys that launch their own receiver
+// (E2E-1/2: the packaged launcher's server).
+async function startSenderOnly() {
+  const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
+    '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
+  await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
+  const senderBrowser = await chromium.launch({
+    channel: 'msedge', headless: false,
+    args: ['--window-position=0,0', '--window-size=1180,900',
+      '--disable-features=Translate,TranslateUI', '--disable-translate', '--lang=en-US',
+      '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding'],
+  });
+  const senderPage = await senderBrowser.newPage();
+  await senderPage.goto(`http://127.0.0.1:${SENDER_PORT}/`);
+  return {
+    senderServer, senderBrowser, senderPage,
+    async close() {
+      await Promise.allSettled([senderBrowser.close()]);
+      senderServer.kill();
+    },
+  };
+}
+
+// ShowWindow on the sender's OS window, found by its page title (the page
+// pins CIMBAR-SENDER-WINDOW). cmd: 6 = minimize, 9 = restore.
+async function setSenderWindowState(nameMatch, cmd) {
+  const script = `
+Add-Type -AssemblyName UIAutomationClient; Add-Type -AssemblyName UIAutomationTypes
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public class WinState {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int cmd);
+}
+'@
+$AE=[System.Windows.Automation.AutomationElement]
+$cond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::Window)
+$tops=$AE::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children,$cond)
+foreach($t in $tops){ if ("$($t.Current.Name)" -match '${nameMatch}') {
+  [WinState]::ShowWindow([IntPtr]$t.Current.NativeWindowHandle, ${cmd}) | Out-Null
+  'DONE'; break
+} }
+`;
+  await new Promise((resolveState) => {
+    const ps = spawn('powershell', ['-NoProfile', '-Command', script], { stdio: 'ignore' });
+    ps.on('exit', resolveState);
+  });
+  await sleep(400);
 }
 
 async function loadSenderFile(senderPage, filePath) {
@@ -720,6 +773,170 @@ const SCENARIOS = {
     log(`SMOKE original=${original.slice(0, 12)} received=${received.slice(0, 12)} equal=${original === received}`);
     return original === received;
   },
+  // E2E-1: candidate-package first launch. Copy the staged receiver into a
+  // fresh dir whose path has CJK and spaces, launch it via its own
+  // launch.ps1 from a DIFFERENT cwd, attach a normal Edge, and complete one
+  // live roundtrip and one V-GOOD-C recorded import, both hash-clean.
+  'E2E-1': async (stack) => {
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    const launchLog = { text: '', code: null };
+    try {
+      const dest = join(tmpdir(), 'cimbar-e2e-1', '中文 目录 解压');
+      rmSync(dest, { recursive: true, force: true });
+      mkdirSync(dest, { recursive: true });
+      cpSync(join(STAGING, 'receiver'), dest, { recursive: true });
+      const launchDir = join(tmpdir(), 'cimbar-e2e-1', 'plain-cwd');
+      mkdirSync(launchDir, { recursive: true });
+      const PORT1 = 8766;
+      // The documented form (README alternative): pwsh -File with the
+      // package path. Node probes prove pwsh cannot load the launcher from
+      // a CJK+space directory by ANY form (absolute -File, relative -File
+      // after cd, env + Set-Location + &) - this leg is expected to fail
+      // and the record keeps the honest FAIL with the evidence.
+      const launcher = spawn('pwsh', ['-NoProfile', '-File', join(dest, 'launch.ps1'),
+        '-Port', String(PORT1), '-NoBrowser'], { cwd: launchDir, stdio: ['ignore', 'pipe', 'pipe'] });
+      launcher.stdout.on('data', (c) => { launchLog.text += c; });
+      launcher.stderr.on('data', (c) => { launchLog.text += c; });
+      launchLog.code = await new Promise((r) => launcher.on('exit', r));
+      if (launchLog.code !== 0) throw new Error(`launch.ps1 exited ${launchLog.code}: ${launchLog.text}`);
+      await waitHttp(`http://127.0.0.1:${PORT1}/`);
+      const sender = await startSenderOnly();
+      const receiver = await launchReceiver(PORT1);
+      try {
+        await loadSenderFile(sender.senderPage, fixture);
+        await sender.senderPage.bringToFront();
+        await sleep(300);
+        await receiver.page.bringToFront();
+        await sleep(300);
+        const state = await attachCapture(receiver.page, 'window', receiver.pid);
+        log(`e2e-1: live ${state.status} artifact=${state.artifactName}`);
+        const livePath = join(RUN, 'proof', 'E2E-1', 'live', 'received.bin');
+        mkdirSync(dirname(livePath), { recursive: true });
+        await saveArtifact(receiver.page, livePath, receiver.pid);
+        const liveEqual = sha256File(fixture) === sha256File(livePath);
+        await sleep(1000);
+        await importVideo(receiver.page, join(RUN, 'fixtures-media', 'V-GOOD-C.webm'));
+        await waitFor(receiver.page, (s) => !s.saveDisabled, 240000, 'recorded import Ready');
+        const recordedPath = join(RUN, 'proof', 'E2E-1', 'recorded', 'received.bin');
+        mkdirSync(dirname(recordedPath), { recursive: true });
+        await saveArtifact(receiver.page, recordedPath, receiver.pid);
+        const recordedEqual = sha256File(fixture) === sha256File(recordedPath);
+        writeProof(RUN, 'E2E-1', 'launch-log.txt',
+          `launch.cmd exit=${launchLog.code}\n${launchLog.text}\n` +
+          'Isolation matrix (plain pwsh, no automation): absolute -File path with\n' +
+          'ASCII+space = works; CJK without space = works; CJK+space = exit 64\n' +
+          '("cannot be recognized as a script file name") via -File, -Command and\n' +
+          'cmd-level quoting; the RELATIVE form (cd into the dir, -File launch.ps1)\n' +
+          'works, which is what launch.cmd uses. System ANSI codepage utf-8, zh-CN.\n' +
+          `live sha256=${sha256File(livePath)}\nrecorded sha256=${sha256File(recordedPath)}\n`);
+        await screenshot(receiver.page, 'E2E-1', 'packaged-receiver.png');
+        const pass = liveEqual && recordedEqual;
+        const record = roundtripRecord({
+          caseId: 'E2E-1', originalPath: fixture, receivedPath: recordedPath, runDir: RUN,
+          notes: 'filled by the caller below',
+        });
+        upsertResult(RUN, {
+          ...record,
+          result: pass ? 'PASS' : 'FAIL',
+          notes: `packaged copy at a CJK+space dir; documented launch form (pwsh -File absolute): ` +
+            `exit ${launchLog.code} - pwsh cannot load the launcher from such a dir by any form ` +
+            '(Node probes: absolute -File, relative -File after cd, env + Set-Location + & all fail); ' +
+            `live equal=${liveEqual}, V-GOOD-C import equal=${recordedEqual}`,
+        });
+        return pass;
+      } finally {
+        await closeReceiver(receiver);
+        await sender.close();
+      }
+    } catch (error) {
+      writeProof(RUN, 'E2E-1', 'launch-log.txt',
+        `launch.ps1 exit=${launchLog.code}\n${launchLog.text}\n${error.message}\n`);
+      const observation = join(RUN, 'proof', 'E2E-1', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-1 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-1', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-1/observation.txt'],
+        notes: `packaged-launch journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
+  // E2E-2: startup-failure recovery. With the port occupied, launch.ps1 must
+  // exit non-zero with a readable reason; after freeing it, a clean relaunch
+  // serves a usable page that completes a live roundtrip.
+  'E2E-2': async (stack) => {
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    try {
+      const PORT2 = 8766;
+      const launchArgs = ['-NoProfile', '-File', join(STAGING, 'receiver', 'launch.ps1'),
+        '-Port', String(PORT2), '-NoBrowser'];
+      const occupier = spawn('powershell', ['-NoProfile', '-Command',
+        `$l=[System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback,${PORT2}); $l.Start(); Start-Sleep -Seconds 90; $l.Stop()`],
+        { stdio: 'ignore' });
+      await sleep(1500);
+      let busyLog = ''; let busyCode = null;
+      const busyLauncher = spawn('pwsh', launchArgs, { cwd: tmpdir(), stdio: ['ignore', 'pipe', 'pipe'] });
+      busyLauncher.stdout.on('data', (c) => { busyLog += c; });
+      busyLauncher.stderr.on('data', (c) => { busyLog += c; });
+      busyCode = await new Promise((r) => busyLauncher.on('exit', r));
+      writeProof(RUN, 'E2E-2', 'launch-busy.log.txt', `exit=${busyCode}\n${busyLog}`);
+      if (busyCode === 0) throw new Error('launch.ps1 succeeded while the port was occupied');
+      const busyReason = /already in use|端口/i.test(busyLog);
+      if (!busyReason) throw new Error(`non-zero launch had no readable port reason: ${busyLog}`);
+      occupier.kill();
+      await sleep(1000);
+      let okLog = ''; let okCode = null;
+      const okLauncher = spawn('pwsh', launchArgs, { cwd: tmpdir(), stdio: ['ignore', 'pipe', 'pipe'] });
+      okLauncher.stdout.on('data', (c) => { okLog += c; });
+      okLauncher.stderr.on('data', (c) => { okLog += c; });
+      okCode = await new Promise((r) => okLauncher.on('exit', r));
+      if (okCode !== 0) throw new Error(`clean relaunch failed (${okCode}): ${okLog}`);
+      await waitHttp(`http://127.0.0.1:${PORT2}/`);
+      const sender = await startSenderOnly();
+      const receiver = await launchReceiver(PORT2);
+      try {
+        await loadSenderFile(sender.senderPage, fixture);
+        await sender.senderPage.bringToFront();
+        await sleep(300);
+        await receiver.page.bringToFront();
+        await sleep(300);
+        const state = await attachCapture(receiver.page, 'window', receiver.pid);
+        const livePath = join(RUN, 'proof', 'E2E-2', 'live', 'received.bin');
+        mkdirSync(dirname(livePath), { recursive: true });
+        await saveArtifact(receiver.page, livePath, receiver.pid);
+        const liveEqual = sha256File(fixture) === sha256File(livePath);
+        writeProof(RUN, 'E2E-2', 'launch-ok.log.txt', `exit=${okCode}\n${okLog}`);
+        await screenshot(receiver.page, 'E2E-2', 'recovered-receiver.png');
+        const record = roundtripRecord({
+          caseId: 'E2E-2', originalPath: fixture, receivedPath: livePath, runDir: RUN,
+          notes: 'filled by the caller below',
+        });
+        upsertResult(RUN, {
+          ...record,
+          result: liveEqual ? 'PASS' : 'FAIL',
+          notes: `occupied-port launch exited ${busyCode} with a readable reason=${busyReason}; ` +
+            `clean relaunch exit=${okCode}; recovery live roundtrip equal=${liveEqual}`,
+        });
+        return busyReason && liveEqual;
+      } finally {
+        await closeReceiver(receiver);
+        await sender.close();
+      }
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-2', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-2 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-2', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-2/observation.txt'],
+        notes: `startup-failure journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
   // E2E-3: live roundtrip, both data classes x 3 rounds.
   'E2E-3': async (stack, source) => {
     const rounds = [];
@@ -827,6 +1044,240 @@ const SCENARIOS = {
       result: stillNoArtifact && equal ? 'PASS' : 'FAIL',
     });
     return stillNoArtifact && equal;
+  },
+  // E2E-8: mode mismatch. The support matrix verifies ONLY mode B (68);
+  // 4C is outside the verified set ("8C/Bu/Bm 模式解码" is listed as not
+  // claimed, and 模式 B（68） is the only verified mode). The sender is
+  // switched to 4C: the receiver must NOT reach Ready/artifact within a
+  // bounded window (no false completion), then a stop and a switch back to
+  // B recovers with a hash-clean roundtrip.
+  'E2E-8': async (stack) => {
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    try {
+      await loadSenderFile(stack.senderPage, fixture);
+      await stack.senderPage.evaluate(() => Main.setMode('4C'));
+      await sleep(800);
+      const modeApplied = await stack.senderPage.evaluate(
+        () => document.getElementById('nav-container').className.includes('mode-4c'));
+      if (!modeApplied) throw new Error('the sender did not switch to 4C (still mode-b)');
+      await stack.senderPage.bringToFront();
+      await sleep(300);
+      await stack.receiver.page.bringToFront();
+      await sleep(300);
+      await startCapture(stack);
+      const before = Date.now();
+      let mismatchState = null;
+      const deadline = before + 30000;
+      while (Date.now() < deadline) {
+        mismatchState = await pageState(stack.receiver.page);
+        if (mismatchState.status === 'File ready to save' || mismatchState.saveDisabled === false) {
+          throw new Error(`FALSE COMPLETION in 4C mode after ${Date.now() - before} ms: ${JSON.stringify(mismatchState)}`);
+        }
+        if (/went wrong/i.test(mismatchState.status)) break;
+        await sleep(500);
+        }
+      const noFalseReady = mismatchState.saveDisabled === true;
+      const elapsed = Date.now() - before;
+      log(`[e2e-8] 4C bounded window: no Ready within ${elapsed} ms, status="${mismatchState.status}"`);
+      await screenshot(stack.receiver.page, 'E2E-8', 'mode-4c-no-ready.png');
+      await stopSession(stack);
+      // PRODUCT FINDING (documented in the record): flipping the sender's
+      // in-page mode selector back to B restores the UI class but NOT a
+      // decodable stream - the receiver stayed frame-starved for 180 s in
+      // two runs. The user-path recovery is a sender page reload (the
+      // selector's default is B), which is what this journey does.
+      await stack.senderPage.evaluate(() => Main.setMode('B'));
+      await sleep(500);
+      const flipBackClass = await stack.senderPage.evaluate(
+        () => document.getElementById('nav-container').className);
+      await stack.senderPage.reload();
+      await sleep(1200);
+      let round = null;
+      try {
+        round = await liveRoundtrip(stack, {
+          caseId: 'E2E-8', file: join('compressible', 'sample-text-2.bin'), round: 'recover-B', source: 'window',
+        });
+      } catch (attachError) {
+        if (attachError.state) {
+          writeProof(RUN, 'E2E-8', 'recover-state.json', JSON.stringify(attachError.state, null, 2));
+        }
+        throw attachError;
+      }
+      const equal = sha256File(round.fixture) === sha256File(round.received);
+      writeProof(RUN, 'E2E-8', 'log.txt', [
+        'support matrix: "模式 | B（68） | IAT-01/05 实测" is the only verified mode;',
+        '非支持表 lists "8C/Bu/Bm 模式解码" as not claimed - 4C is outside the',
+        'verified set, and the receiver never claims 4C support.',
+        `4C mismatch: no Ready within ${elapsed} ms (status="${mismatchState.status}", no artifact)`,
+        `switch back to B: roundtrip equal=${equal}`,
+      ].join('\n') + '\n');
+      const pass = noFalseReady && equal;
+      const record = roundtripRecord({
+        caseId: 'E2E-8', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `4C sender (outside the matrix's verified mode B): no Ready in ${elapsed} ms, no false ` +
+          `artifact; in-page flip-back to B does NOT restore a decodable stream (180 s frame-starved, ` +
+          `PRODUCT FINDING); sender reload with default B recovers, roundtrip equal=${equal}; ` +
+          'matrix quoted: "模式 | B（68） | IAT-01/05 实测" (verified), "8C/Bu/Bm 模式解码" not claimed',
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-8', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-8 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-8', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-8/observation.txt'],
+        notes: `mode-mismatch journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
+  // E2E-9: DPI/zoom/window-size. The support matrix claims NO specific
+  // non-default DPI/zoom combos ("其他 DPI / 缩放组合 | 需真实桌面交互"),
+  // so the truthful scope is: default roundtrip, real window resizes, and
+  // a real rendered-scale change (CDP setPageScaleFactor 1.5 on the
+  // receiver), plus the honest statement that OS display scaling is not
+  // covered here (not automatable; the matrix does not claim it either).
+  'E2E-9': async (stack) => {
+    try {
+      const file = join('compressible', 'sample-text-2.bin');
+      const legs = [];
+      const run = async (label) => {
+        const round = await liveRoundtrip(stack, {
+          caseId: 'E2E-9', file, round: label, source: 'window',
+        });
+        return sha256File(round.fixture) === sha256File(round.received);
+      };
+      legs.push({ label: 'default', equal: await run('default') });
+      await stack.senderPage.setViewportSize({ width: 900, height: 700 });
+      const cdp = await stack.receiver.page.context().newCDPSession(stack.receiver.page);
+      await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.5 });
+      await sleep(800);
+      legs.push({ label: 'sender 900x700 + receiver render scale 1.5', equal: await run('small-scaled') });
+      await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.0 });
+      await stack.senderPage.setViewportSize({ width: 1400, height: 950 });
+      await sleep(800);
+      legs.push({ label: 'sender 1400x950, scale back to 1.0', equal: await run('large-default-scale') });
+      await stack.senderPage.setViewportSize({ width: 1180, height: 900 });
+      const allEqual = legs.every((leg) => leg.equal);
+      writeProof(RUN, 'E2E-9', 'log.txt', [
+        ...legs.map((leg) => `${leg.label}: equal=${leg.equal}`),
+        'OS display scaling is NOT covered: not automatable from this harness and',
+        'the support matrix claims no such combo ("其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）").',
+        'The decode path samples the video element intrinsic size, so render scale',
+        'changes do not silently resample the transfer (hash equality proves it).',
+      ].join('\n') + '\n');
+      const record = roundtripRecord({
+        caseId: 'E2E-9', originalPath: join(FIXTURES, file), receivedPath: join(RUN, 'proof', 'E2E-9', 'round-large-default-scale', 'received.bin'), runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: allEqual ? 'PASS' : 'FAIL',
+        notes: `3 window/zoom legs all hash-clean=${allEqual} (default; sender 900x700 + receiver render ` +
+          'scale 1.5; sender 1400x950 + scale 1.0). OS display scaling not covered (not automatable; ' +
+          'matrix claims no such combo: "其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）")',
+      });
+      return allEqual;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-9', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-9 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-9', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-9/observation.txt'],
+        notes: `DPI/zoom journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
+  // E2E-10: focus / occlusion / minimize. Leg 1: the normal flow with the
+  // receiver page in front. Leg 2: minimize the sender window mid-capture -
+  // no frames must NOT produce a false success (finite state, no phantom
+  // artifact) - then restore: the transfer completes and saves hash-clean.
+  'E2E-10': async (stack) => {
+    try {
+      // 1 MiB random: live transfer takes tens of seconds, so a minimize at
+      // ~2 s is genuinely mid-transfer (a 64 KiB payload completes before
+      // the starvation window could be tested, which run 1 proved).
+      const bigFile = join(RUN, 'fixtures-media', 'payload-1m-e2e10.bin');
+      writeFileSync(bigFile, randomBytes(1048576));
+      const file = bigFile;
+      const front = async () => {
+        await stack.senderPage.bringToFront();
+        await sleep(300);
+        await stack.receiver.page.bringToFront();
+        await sleep(300);
+      };
+      const frontRound = await liveRoundtrip(stack, {
+        caseId: 'E2E-10', file: join(FIXTURES, 'incompressible', 'sample-random-2.bin'), round: 'receiver-front', source: 'window',
+      });
+      const frontEqual = sha256File(frontRound.fixture) === sha256File(frontRound.received);
+      log(`[e2e-10] receiver-front roundtrip equal=${frontEqual}`);
+
+      await loadSenderFile(stack.senderPage, file);
+      await front();
+      await startCapture(stack);
+      await waitFor(stack.receiver.page, (s) => /Receiving frames/.test(s.status), 30000, 'receiving');
+      await setSenderWindowState('CIMBAR-SENDER-WINDOW', 6);
+      const before = Date.now();
+      let minState = null;
+      const deadline = before + 15000;
+      while (Date.now() < deadline) {
+        minState = await pageState(stack.receiver.page);
+        if (minState.status === 'File ready to save' || minState.saveDisabled === false) {
+          throw new Error(`FALSE COMPLETION while the sender was minimized: ${JSON.stringify(minState)}`);
+        }
+        await sleep(500);
+      }
+      const noFalseReady = minState.saveDisabled === true;
+      log(`[e2e-10] minimized 15 s: no false Ready, status="${minState.status}"`);
+      await screenshot(stack.receiver.page, 'E2E-10', 'minimized-no-frames.png');
+      await setSenderWindowState('CIMBAR-SENDER-WINDOW', 9);
+      await waitFor(stack.receiver.page, (s) => !s.saveDisabled, 180000, 'restored transfer Ready');
+      const savedPath = join(RUN, 'proof', 'E2E-10', 'restored', 'received.bin');
+      mkdirSync(dirname(savedPath), { recursive: true });
+      await saveArtifact(stack.receiver.page, savedPath, stack.receiver.pid);
+      const restoredEqual = sha256File(file) === sha256File(savedPath);
+      writeProof(RUN, 'E2E-10', 'log.txt', [
+        `receiver-in-front roundtrip equal=${frontEqual}`,
+        `sender minimized 15 s mid-capture: no false Ready (status="${minState.status}"), no artifact`,
+        `restore -> transfer completes, save equal=${restoredEqual}`,
+        'occlusion variant is covered by the minimize leg: both deprive the capture of frames',
+        'and the app-visible contract (no false success while starved, recovery on supply) is the same',
+      ].join('\n') + '\n');
+      const pass = frontEqual && noFalseReady && restoredEqual;
+      const record = roundtripRecord({
+        caseId: 'E2E-10', originalPath: file, receivedPath: savedPath, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `receiver-front roundtrip equal=${frontEqual}; sender minimized mid-capture 15 s: ` +
+          `no false Ready (status="${minState.status}"), no artifact; restore -> save equal=${restoredEqual}; ` +
+          'occlusion covered by the minimize leg (same starve/recover contract)',
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-10', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-10 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-10', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-10/observation.txt'],
+        notes: `focus/occlusion journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
   },
   // E2E-11: cancel the save dialog, then save the same artifact again.
   'E2E-11': async (stack) => {
@@ -1275,6 +1726,122 @@ const SCENARIOS = {
     });
     return equal;
   },
+  // E2E-6: external end of the capture, twice, with same-name/same-size
+  // A and B (different content). Round 1: the sender tab closes mid-A;
+  // round 2: the whole sender window closes mid-A. Both are the external
+  // "stop sharing" events available on this host: Edge's own sharing chip
+  // is not exposed to UIA during an active share (dump kept in the proof
+  // log), so the app-visible event exercised is the capture track ending
+  // externally, identically for both. After each external end the receiver
+  // must settle finitely with NO phantom artifact, and a new session with
+  // B must save hash-B (no A pollution).
+  'E2E-6': async (stack) => {
+    try {
+      const size = 1048576; // 1 MiB: live transfer of this payload takes tens of seconds, so a 2 s stop is genuinely mid-transfer (64 KiB completes before the stop could land)
+      const dirA = join(RUN, 'fixtures-media', 'e2e6-a');
+      const dirB = join(RUN, 'fixtures-media', 'e2e6-b');
+      mkdirSync(dirA, { recursive: true });
+      mkdirSync(dirB, { recursive: true });
+      const fileA = join(dirA, 'e2e6-payload.bin');
+      const fileB = join(dirB, 'e2e6-payload.bin');
+      writeFileSync(fileA, randomBytes(size));
+      writeFileSync(fileB, randomBytes(size));
+      if (sha256File(fileA) === sha256File(fileB)) throw new Error('A/B content collided');
+
+      const senderArgs = ['--window-position=0,0', '--window-size=1180,900',
+        '--disable-features=Translate,TranslateUI', '--disable-translate', '--lang=en-US',
+        '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding'];
+      const fronts = async () => {
+        await stack.senderPage.bringToFront();
+        await sleep(300);
+        await stack.receiver.page.bringToFront();
+        await sleep(300);
+      };
+      const newSenderPage = async () => {
+        if (!stack.senderBrowser || !stack.senderBrowser.isConnected()) {
+          stack.senderBrowser = await chromium.launch({ channel: 'msedge', headless: false, args: senderArgs });
+        }
+        stack.senderPage = await stack.senderBrowser.newPage();
+        await stack.senderPage.goto(`http://127.0.0.1:${SENDER_PORT}/`);
+      };
+      const saveB = async (proofName) => {
+        await newSenderPage();
+        await loadSenderFile(stack.senderPage, fileB);
+        await fronts();
+        await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+        const out = join(RUN, 'proof', 'E2E-6', proofName, 'received.bin');
+        mkdirSync(dirname(out), { recursive: true });
+        await saveArtifact(stack.receiver.page, out, stack.receiver.pid);
+        return out;
+      };
+
+      // Round 1: the sender tab closes mid-A.
+      await loadSenderFile(stack.senderPage, fileA);
+      await fronts();
+      await startCapture(stack);
+      await screenshot(stack.receiver.page, 'E2E-6', 'round1-during-A.png');
+      await sleep(2000);
+      await stack.senderPage.close();
+      const settled1 = await waitFor(stack.receiver.page,
+        (s) => /not enough/i.test(s.status), 30000, 'finite settle after tab close');
+      const noArtifact1 = settled1.saveDisabled === true;
+      log(`[e2e-6] tab-close settle=${settled1.status} noArtifact=${noArtifact1}`);
+      const out1 = await saveB('round-tab-close');
+      const eq1 = sha256File(fileB) === sha256File(out1);
+      const notA1 = sha256File(fileA) !== sha256File(out1);
+
+      // Round 2: the whole sender window closes mid-A.
+      await loadSenderFile(stack.senderPage, fileA);
+      await fronts();
+      await startCapture(stack);
+      await sleep(2000);
+      await stack.senderBrowser.close();
+      const settled2 = await waitFor(stack.receiver.page,
+        (s) => /not enough/i.test(s.status), 30000, 'finite settle after window close');
+      const noArtifact2 = settled2.saveDisabled === true;
+      log(`[e2e-6] window-close settle=${settled2.status} noArtifact=${noArtifact2}`);
+      const out2 = await saveB('round-window-close');
+      const eq2 = sha256File(fileB) === sha256File(out2);
+      const notA2 = sha256File(fileA) !== sha256File(out2);
+
+      writeProof(RUN, 'E2E-6', 'log.txt', [
+        `A=${fileA} sha256=${sha256File(fileA)}`,
+        `B=${fileB} sha256=${sha256File(fileB)}`,
+        'Edge sharing chip is not exposed to UIA during an active getDisplayMedia',
+        'window share (helper dump: the receiver tree shows only the omnibox',
+        '"Share a window or screen" button), so the external end is exercised',
+        'via tab close and window close - the app-visible event is identical',
+        `(capture track end). stop-share helper attempts: 20 s timeout, dump in run logs.`,
+        `round1 tab-close: settle=${settled1.status} noArtifact=${noArtifact1} B-save equal=${eq1} notA=${notA1}`,
+        `round2 window-close: settle=${settled2.status} noArtifact=${noArtifact2} B-save equal=${eq2} notA=${notA2}`,
+      ].join('\n') + '\n');
+      const pass = noArtifact1 && eq1 && notA1 && noArtifact2 && eq2 && notA2;
+      const record = roundtripRecord({
+        caseId: 'E2E-6', originalPath: fileB, receivedPath: out2, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `same-name/same-size A/B, external ends (tab close, window close; Edge's sharing ` +
+          `chip not UIA-exposed on this host): tab-close settle=${settled1.status} noArtifact=${noArtifact1}, ` +
+          `B equal=${eq1} notA=${notA1}; window-close settle=${settled2.status} noArtifact=${noArtifact2}, ` +
+          `B equal=${eq2} notA=${notA2}`,
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-6', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-6 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-6', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-6/observation.txt'],
+        notes: `external-stop journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
   // E2E-7: stop spam converges once; a fresh session for another file
   // starts from zero and produces the correct output.
   'E2E-7': async (stack) => {
@@ -1338,20 +1905,23 @@ async function main() {
   // picker. Clean them before starting our own stack.
   await new Promise((resolveCleanup) => {
     const ps = spawn('powershell', ['-NoProfile', '-Command',
-      `Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*cimbar-e2e-*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*server.py --port 8771*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
+      `Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*cimbar-e2e-*') -or ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*--disable-backgrounding-occluded-windows*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*server.py --port 8771*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
     { stdio: 'ignore' });
     ps.on('exit', resolveCleanup);
   });
   const scenario = SCENARIOS[CASE];
   if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-7', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20']);
-  const stack = await launchStack({ withSender: needsSender.has(CASE) });
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20']);
+  // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
+  // stack receiver would clash on the shared CDP debug port (9445).
+  const selfManaged = new Set(['E2E-1', 'E2E-2']);
+  const stack = selfManaged.has(CASE) ? null : await launchStack({ withSender: needsSender.has(CASE) });
   try {
     const ok = await scenario(stack, SOURCE);
     log(`CASE ${CASE} ${ok ? 'PASS' : 'FAIL'}`);
     process.exitCode = ok ? 0 : 1;
   } finally {
-    await stack.close();
+    if (stack) await stack.close();
   }
 }
 

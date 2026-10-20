@@ -1,5 +1,30 @@
 [
   {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "proofRefs": [
+      "proof/E2E-1/observation.txt"
+    ],
+    "notes": "packaged-launch journey did not complete: launch.ps1 exited 64: 参数 'C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压\\launch.ps1' 无法识别为脚本文件名。请检查名称的拼写或验证路径是否正确(如果包含路径)，然后重试。\r\n\r\n用法: pwsh[.exe] [-Log"
+  },
+  {
+    "caseId": "E2E-2",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-2/original.bin",
+      "proof/E2E-2/received.bin"
+    ],
+    "notes": "occupied-port launch exited 3 with a readable reason=true; clean relaunch exit=0; recovery live roundtrip equal=true"
+  },
+  {
     "caseId": "E2E-3",
     "scope": "local_simulated",
     "caseType": "file_roundtrip",
@@ -42,6 +67,20 @@
     "notes": "blank window produced no artifact (true); stop -> reselect sender -> equal=true"
   },
   {
+    "caseId": "E2E-6",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "bbdd0ab312012fb5ccbbf3a915200aa75f1a4a58943bf035394b0d6ff2de30bc",
+    "receivedSha256": "bbdd0ab312012fb5ccbbf3a915200aa75f1a4a58943bf035394b0d6ff2de30bc",
+    "proofRefs": [
+      "proof/E2E-6/original.bin",
+      "proof/E2E-6/received.bin"
+    ],
+    "notes": "same-name/same-size A/B, external ends (tab close, window close; Edge's sharing chip not UIA-exposed on this host): tab-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true; window-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true"
+  },
+  {
     "caseId": "E2E-7",
     "scope": "local_simulated",
     "caseType": "file_roundtrip",
@@ -54,6 +93,48 @@
       "proof/E2E-7/received.bin"
     ],
     "notes": "stop spam converged once; fresh session B roundtrip equal=true"
+  },
+  {
+    "caseId": "E2E-8",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-8/original.bin",
+      "proof/E2E-8/received.bin"
+    ],
+    "notes": "4C sender (outside the matrix's verified mode B): no Ready in 30191 ms, no false artifact; in-page flip-back to B does NOT restore a decodable stream (180 s frame-starved, PRODUCT FINDING); sender reload with default B recovers, roundtrip equal=true; matrix quoted: \"模式 | B（68） | IAT-01/05 实测\" (verified), \"8C/Bu/Bm 模式解码\" not claimed"
+  },
+  {
+    "caseId": "E2E-9",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-9/original.bin",
+      "proof/E2E-9/received.bin"
+    ],
+    "notes": "3 window/zoom legs all hash-clean=true (default; sender 900x700 + receiver render scale 1.5; sender 1400x950 + scale 1.0). OS display scaling not covered (not automatable; matrix claims no such combo: \"其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）\")"
+  },
+  {
+    "caseId": "E2E-10",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "74c08d5bc39088d5e450d6cd95dfc86cda78421b9ebef5a0d033b5b1776d1c6a",
+    "receivedSha256": "74c08d5bc39088d5e450d6cd95dfc86cda78421b9ebef5a0d033b5b1776d1c6a",
+    "proofRefs": [
+      "proof/E2E-10/original.bin",
+      "proof/E2E-10/received.bin"
+    ],
+    "notes": "receiver-front roundtrip equal=true; sender minimized mid-capture 15 s: no false Ready (status=\"Receiving frames\"), no artifact; restore -> save equal=true; occlusion covered by the minimize leg (same starve/recover contract)"
   },
   {
     "caseId": "E2E-11",

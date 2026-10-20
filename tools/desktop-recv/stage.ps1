@@ -211,7 +211,7 @@ switch ($Mode) {
     # A candidate package must be a complete user entry: everything the
     # launcher needs, plus the delivery manifest. Nothing may be missing.
     $required = @(
-      'index.html', 'styles.css', 'launch.ps1', 'server.py', 'README.md',
+      'index.html', 'styles.css', 'launch.ps1', 'launch.cmd', 'server.py', 'README.md',
       'config/asset-set.json', 'config/profile.json', 'config/errors.json',
       'vendor/cimbar_js.js', 'vendor/cimbar_js.wasm',
       'worker/decoder-worker.js',
