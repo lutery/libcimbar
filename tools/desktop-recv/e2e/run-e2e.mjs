@@ -111,6 +111,9 @@ async function pageState(page) {
       saveClicks: window.__saveClicks || 0,
       lastCaughtError: window.__lastCaughtError || null,
       stats: (window.__lastStats) || null,
+      mediaError: window.__mediaError || null,
+      mediaEnded: window.__mediaEnded || null,
+      playError: window.__playError || null,
     };
   });
 }
@@ -223,6 +226,35 @@ async function launchReceiver() {
         return onRejected(error);
       });
     };
+    // Recorded-video diagnostics (harness-side only): media element errors,
+    // play() rejections and ended events name why a video session dies.
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...playArgs) {
+      const result = originalPlay.apply(this, playArgs);
+      if (result && typeof result.catch === 'function') {
+        result.catch((error) => {
+          window.__playError = { name: error.name, message: error.message, at: Date.now() };
+        });
+      }
+      return result;
+    };
+    document.addEventListener('error', (event) => {
+      const target = event.target;
+      if (target && (target.tagName === 'VIDEO' || target.tagName === 'AUDIO')) {
+        window.__mediaError = {
+          tag: target.tagName,
+          code: target.error ? target.error.code : null,
+          message: target.error ? target.error.message : null,
+          at: Date.now(),
+        };
+      }
+    }, true);
+    document.addEventListener('ended', (event) => {
+      const target = event.target;
+      if (target && target.tagName === 'VIDEO') {
+        window.__mediaEnded = { at: Date.now(), duration: target.duration, currentTime: target.currentTime };
+      }
+    }, true);
   });
   await page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
   try {
@@ -914,28 +946,130 @@ const SCENARIOS = {
       return false;
     }
   },
-  // E2E-17: stop a recorded session midway, then complete a live session.
+  // E2E-17: dual-input stop switching (both journey legs). Leg 1: stop
+  // video A genuinely mid-way, then a live B roundtrip must be hash-clean
+  // (no A pollution). Leg 2: stop a live session mid-capture, then import
+  // video B and save hash-clean. V-LAST-with is the only fixture that can
+  // be stopped mid-way: its payload never completes (TD-15), playback runs
+  // ~31 s wall for 14.9 s of metadata, and open() itself takes ~20 s, so
+  // the stop ~1.5 s after the recording line is far from either end.
+  // V-GOOD-C completes its artifact 0.2 s into playback (compressible
+  // payload, few frames) and is therefore unusable for a mid-stop.
   'E2E-17': async (stack) => {
     const media = join(RUN, 'fixtures-media');
-    // Stop shortly after the recording starts decoding: the import of the
-    // 18 s clip runs far longer than this, so the stop is genuinely midway.
-    await importVideo(stack.receiver.page, join(media, 'V-GOOD-C.webm'));
-    await waitFor(stack.receiver.page, (s) => /recording:/.test(s.log), 30000, 'video started');
-    await sleep(200);
-    await stopSession(stack);
-    await stopSession(stack);
-    const round = await liveRoundtrip(stack, {
-      caseId: 'E2E-17', file: join('incompressible', 'sample-random-2.bin'), round: 'live-B', source: 'window',
-    });
-    const equal = sha256File(round.fixture) === sha256File(round.received);
-    upsertResult(RUN, {
-      ...roundtripRecord({
-        caseId: 'E2E-17', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
-        notes: `video A stopped midway -> live B roundtrip equal=${equal} (no A bleed)`,
-      }),
-      result: equal ? 'PASS' : 'FAIL',
-    });
-    return equal;
+    try {
+      // Leg 1: video A mid-stop -> live B.
+      await importVideo(stack.receiver.page, join(media, 'V-LAST-with.webm'));
+      await waitFor(stack.receiver.page, (s) => /recording:/.test(s.log), 60000, 'video A started');
+      await sleep(1500);
+      await stopSession(stack);
+      await screenshot(stack.receiver.page, 'E2E-17', 'leg1-stopped.png');
+      const round = await liveRoundtrip(stack, {
+        caseId: 'E2E-17', file: join('incompressible', 'sample-random-2.bin'), round: 'live-B', source: 'window',
+      });
+      const leg1Equal = sha256File(round.fixture) === sha256File(round.received);
+      log(`[e2e-17] leg1 stop-video -> live-B equal=${leg1Equal}`);
+
+      // Leg 2: live A mid-stop -> video B. The sender still carries
+      // sample-random-2 from leg 1, which is exactly the content B must not
+      // be polluted with (B is the compressible text payload). startCapture
+      // waits only for the stream: attachCapture would run the session all
+      // the way to Ready and the mid-capture stop would never be midway.
+      await stack.senderPage.bringToFront();
+      await sleep(300);
+      await stack.receiver.page.bringToFront();
+      await sleep(300);
+      await startCapture(stack);
+      await waitFor(stack.receiver.page, (s) => /Receiving frames/.test(s.status), 30000, 'live A receiving');
+      await sleep(1500);
+      await stopSession(stack);
+      await screenshot(stack.receiver.page, 'E2E-17', 'leg2-live-stopped.png');
+      await importVideo(stack.receiver.page, join(media, 'V-GOOD-C.webm'));
+      await waitFor(stack.receiver.page, (s) => s.status === 'File ready to save', 120000, 'video B ready');
+      const target = join(RUN, 'proof', 'E2E-17', 'video-B', 'received.bin');
+      mkdirSync(dirname(target), { recursive: true });
+      await saveArtifact(stack.receiver.page, target, stack.receiver.pid);
+      const videoB = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+      const leg2Equal = sha256File(videoB) === sha256File(target);
+      await screenshot(stack.receiver.page, 'E2E-17', 'leg2-saved.png');
+      log(`[e2e-17] leg2 stop-live -> video-B equal=${leg2Equal}`);
+
+      writeProof(RUN, 'E2E-17', 'log.txt', [
+        `leg1: video A (V-LAST-with, never completes) stopped mid-way -> live B (sample-random-2) equal=${leg1Equal}`,
+        `leg1 received sha256=${sha256File(round.received)}`,
+        `leg2: live A (sample-random-2) stopped mid-capture -> video B (V-GOOD-C) equal=${leg2Equal}`,
+        `leg2 received sha256=${sha256File(target)}; expected ${sha256File(videoB)}`,
+      ].join('\n') + '\n');
+      const original = join(FIXTURES, 'incompressible', 'sample-random-2.bin');
+      const record = roundtripRecord({
+        caseId: 'E2E-17', originalPath: original, receivedPath: round.received, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      const pass = leg1Equal && leg2Equal;
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `leg1 stop-video A -> live B equal=${leg1Equal}; ` +
+          `leg2 stop-live A -> video B equal=${leg2Equal} (V-GOOD-C output hash=${sha256File(target).slice(0, 12)}…); ` +
+          'A contents never pollute B in either direction',
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-17', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-17 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-17', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-17/observation.txt'],
+        notes: `dual-input stop-switch journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
+  },
+  // DIAG-17 (diagnostic): import one recording and print every state/log
+  // transition with timestamps. --video selects the file, --stopms clicks
+  // stop that many ms after the import begins (unused by default; kept for
+  // reproducing the E2E-17 stop-timing diagnosis).
+  'DIAG-17': async (stack) => {
+    const video = args.get('video') || 'V-GOOD-C.webm';
+    const stopMs = Number(args.get('stopms') || '-1');
+    const started = Date.now();
+    await importVideo(stack.receiver.page, join(RUN, 'fixtures-media', video));
+    let lastStatus = null; let lastLogLen = 0; let stopClicked = stopMs < 0;
+    const deadline = Date.now() + 45000;
+    while (Date.now() < deadline) {
+      const s = await pageState(stack.receiver.page);
+      if (s.status !== lastStatus) {
+        log(`[diag] t=${Date.now() - started}ms status="${s.status}" saveDisabled=${s.saveDisabled}`);
+        lastStatus = s.status;
+      }
+      const text = s.log || '';
+      if (text.length > lastLogLen) {
+        const added = text.slice(lastLogLen).trim();
+        if (added) log(`[diag] t=${Date.now() - started}ms log+: ${added.split('\n').join(' | ')}`);
+        lastLogLen = text.length;
+      }
+      if (s.mediaError || s.playError || s.mediaEnded) {
+        log(`[diag] t=${Date.now() - started}ms media: err=${JSON.stringify(s.mediaError)} play=${JSON.stringify(s.playError)} ended=${JSON.stringify(s.mediaEnded)}`);
+        await stack.receiver.page.evaluate(() => {
+          window.__mediaError = null; window.__playError = null; window.__mediaEnded = null;
+        }).catch(() => {});
+      }
+      if (!stopClicked && Date.now() - started >= stopMs) {
+        const before = s.status;
+        await stack.receiver.page.click('#btn-stop', { timeout: 5000 })
+          .catch((error) => log(`[diag] stop click failed: ${error.message}`));
+        log(`[diag] t=${Date.now() - started}ms stop clicked (state before: "${before}")`);
+        stopClicked = true;
+      }
+      if (s.status === 'Saved' || s.status === 'Stopped' ||
+          /not enough|went wrong|ready to save/i.test(s.status)) break;
+      await sleep(100);
+    }
+    const final = await pageState(stack.receiver.page);
+    log(`[diag] final status="${final.status}" saveDisabled=${final.saveDisabled} log=${JSON.stringify(final.log)}`);
+    return true;
   },
   // E2E-19: refresh, page close/reopen, and a server restart keep working.
   'E2E-19': async (stack) => {

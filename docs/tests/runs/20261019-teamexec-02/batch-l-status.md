@@ -14,6 +14,7 @@ this page summarizes what ran, what did not, and why.
 | E2E-11 | save dialog cancelled, same artifact saved on retry |
 | E2E-12 | CJK/space name: cancel + sentinel intact; overwrite refused in-dialog, then saved under the renamed CJK name (one dialog session) |
 | E2E-13 | save disabled while the picker is open; one real save; recorded PASS |
+| E2E-17 | dual-input stop switching: video A stopped mid-way -> live B hash-clean; live A stopped mid-capture -> video B saved hash-clean |
 | E2E-14 | REAL sender-window recordings (V-GOOD-C/N), 3 rounds each (6) |
 | E2E-15 | empty / non-video / corrupt containers fail finitely; real recording recovers |
 | E2E-19 | relay: refresh + page reopen + receiver server restart roundtrips |
@@ -38,7 +39,6 @@ SHA-256 equality (the gate recomputes the hashes from the files).
 | E2E-8 | sender mode-mismatch journey not yet automated |
 | E2E-9 | DPI/zoom matrix not yet automated |
 | E2E-10 | occlusion/minimize journey not yet automated |
-| E2E-17 | long-recording midway stop: the large recording session dies before the stop point |
 | E2E-18 | 1 MiB incompressible live roundtrip; PASS in results.json |
 
 ## Environment notes (reproducible facts)
