@@ -171,6 +171,15 @@ function render() {
     logLine('capture stopped; the file is ready to save');
   }
   if (snapshot.state === 'Preparing') releasedOnReady = false;
+
+  // Recorded input is decoded frame-by-frame from the preview element while
+  // it plays; a hidden video element does not present frames, so the frame
+  // callback (and therefore the whole import) would stall. Keep it visible
+  // for the lifetime of the video session.
+  if (snapshot.inputKind === 'video' &&
+      ['Receiving', 'Draining', 'Reconstructing'].includes(snapshot.state)) {
+    el.preview.hidden = false;
+  }
 }
 
 function runFrameLoop() {
