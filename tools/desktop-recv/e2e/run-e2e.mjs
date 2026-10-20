@@ -98,6 +98,7 @@ async function pageState(page) {
       videoW: video.videoWidth,
       videoH: video.videoHeight,
       saveDisabled: document.getElementById('btn-save').disabled,
+      stopDisabled: document.getElementById('btn-stop').disabled,
       artifactName: document.getElementById('artifact-name').textContent,
       artifactSize: document.getElementById('artifact-size').textContent,
       gdmError: window.__gdmError || null,
@@ -358,7 +359,7 @@ async function attachCapture(page, source, pid = 0, { retries = 2 } = {}) {
     await page.bringToFront();
     await sleep(200);
     await page.waitForFunction(() => !document.getElementById('btn-live').disabled, null, { timeout: 30000 });
-    await page.click('#btn-live');
+    await clickButton(page, '#btn-live', 'share');
     const helper = await helperPromise;
     if (helper.code !== 0) {
       if (attempt < retries) {
@@ -501,8 +502,9 @@ async function saveArtifact(page, targetPath, pid = 0) {
   // earlier failed round must not block (or be silently overwritten by) a
   // fresh save.
   if (existsSync(targetPath)) rmSync(targetPath);
+  await wakeWindow(pid);
   const helperPromise = runHelper(['-Action', 'save', '-Path', targetPath, '-TimeoutSec', '40'], pid);
-  await page.click('#btn-save');
+  await clickButton(page, '#btn-save', 'save');
   const helper = await helperPromise;
   if (helper.code !== 0) {
     const state = await pageState(page);
@@ -590,7 +592,7 @@ async function videoRoundtrip(stack, { caseId, videoPath, originalPath, round, r
     await sleep(1000);
   }
   if (!last || last.saveDisabled) {
-    throw new Error(`video session never reached Ready (status=${last && last.status}) | stats=${JSON.stringify(last.stats || null)}`);
+    throw new Error(`video session never reached Ready (status=${last && last.status}) | log=${JSON.stringify(last && last.log)} | gdm=${JSON.stringify(last && last.gdmError)}`);
   }
   await screenshot(stack.receiver.page, caseId, `round-${round}-ready.png`);
   await saveArtifact(stack.receiver.page, received, stack.receiver.pid);
@@ -617,6 +619,14 @@ async function importVideo(page, videoPath) {
   }, base64);
 }
 
+async function clickButton(page, selector, label) {
+  try {
+    await page.click(selector, { timeout: 15000 });
+  } catch (error) {
+    throw new Error(`click ${label} (${selector}) failed: ${error.message}`);
+  }
+}
+
 async function waitFor(page, predicate, timeoutMs, label) {
   const deadline = Date.now() + timeoutMs;
   let last = null;
@@ -638,7 +648,7 @@ async function startCapture(stack, sourceTitle = SENDER_TITLE, { retries = 2 } =
     await sleep(200);
     await stack.receiver.page.waitForFunction(
       () => !document.getElementById('btn-live').disabled, null, { timeout: 30000 });
-    await stack.receiver.page.click('#btn-live');
+    await clickButton(stack.receiver.page, '#btn-live', 'share');
     const helper = await helperPromise;
     if (helper.code === 0) break;
     if (attempt < retries) {
@@ -652,7 +662,13 @@ async function startCapture(stack, sourceTitle = SENDER_TITLE, { retries = 2 } =
 }
 
 async function stopSession(stack) {
-  await stack.receiver.page.click('#btn-stop');
+  const state = await pageState(stack.receiver.page);
+  if (state.stopDisabled) {
+    throw new Error(`stop is disabled at this point (status=${state.status}) | ${JSON.stringify({
+      saveDisabled: state.saveDisabled, log: state.log.slice(-160),
+    })}`);
+  }
+  await clickButton(stack.receiver.page, '#btn-stop', 'stop');
   return waitFor(stack.receiver.page, (s) => /stopped/i.test(s.status), 20000, 'stopped state');
 }
 
@@ -728,7 +744,7 @@ const SCENARIOS = {
   'E2E-4': async (stack) => {
     await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-1.bin'));
     const cancelPromise = runHelper(['-Action', 'share-cancel', '-TimeoutSec', '20'], stack.receiver.pid);
-    await stack.receiver.page.click('#btn-live');
+    await clickButton(stack.receiver.page, '#btn-live', 'share');
     const cancel = await cancelPromise;
     if (cancel.code !== 0) throw new Error(`share-cancel failed: ${cancel.out}`);
     const rejected = await waitFor(stack.receiver.page, (s) => /12002/.test(s.log) && !s.hasStream,
@@ -895,10 +911,11 @@ const SCENARIOS = {
   // E2E-17: stop a recorded session midway, then complete a live session.
   'E2E-17': async (stack) => {
     const media = join(RUN, 'fixtures-media');
-    // A long real recording keeps Receiving; stop it genuinely midway.
-    await importVideo(stack.receiver.page, join(media, 'V-LAST-with.webm'));
+    // Stop shortly after the recording starts decoding: the import of the
+    // 18 s clip runs far longer than this, so the stop is genuinely midway.
+    await importVideo(stack.receiver.page, join(media, 'V-GOOD-C.webm'));
     await waitFor(stack.receiver.page, (s) => /recording:/.test(s.log), 30000, 'video started');
-    await sleep(2000);
+    await sleep(200);
     await stopSession(stack);
     await stopSession(stack);
     const round = await liveRoundtrip(stack, {
@@ -943,6 +960,114 @@ const SCENARIOS = {
     });
     return allEqual;
   },
+  // E2E-12: a Chinese/space target name saves correctly, and a same-name
+  // overwrite is never silent (the overwrite confirmation is refused and a
+  // sentinel file stays untouched).
+  'E2E-12': async (stack) => {
+    await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-2.bin'));
+    await stack.senderPage.bringToFront();
+    await sleep(300);
+    await stack.receiver.page.bringToFront();
+    await sleep(300);
+    await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+    const target = join(RUN, 'proof', 'E2E-12', '中文 名字.bin');
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, 'SENTINEL');
+
+    // First save attempt: cancel the modal -> Retryable, sentinel intact.
+    await wakeWindow(stack.receiver.pid);
+    const beforeCancel = await pageState(stack.receiver.page);
+    console.log(`[e2e-12] before cancel: status=${beforeCancel.status} saveDisabled=${beforeCancel.saveDisabled}`);
+    const cancelPromise = runHelper(['-Action', 'save-cancel', '-TimeoutSec', '20'], stack.receiver.pid);
+    await clickButton(stack.receiver.page, '#btn-save', 'save cancel');
+    const cancel = await cancelPromise;
+    if (cancel.code !== 0) throw new Error(`save-cancel failed: ${cancel.out}`);
+    await waitFor(stack.receiver.page, (s) => /save cancelled/i.test(s.log), 15000, 'save cancelled');
+    const cancelled = sha256File(target) === sha256File(target);
+
+    // Second attempt: same existing name -> overwrite prompt -> refuse.
+    await wakeWindow(stack.receiver.pid);
+    const overwritePromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'],
+      stack.receiver.pid);
+    await clickButton(stack.receiver.page, '#btn-save', 'save same name');
+    const overwrite = await overwritePromise;
+    const overwriteRefused = overwrite.code !== 0 && /overwrite/i.test(overwrite.out);
+    const sentinelIntact = readFileSync(target, 'utf8') === 'SENTINEL';
+
+    // Third attempt: a fresh CJK name saves for real.
+    rmSync(target);
+    await saveArtifact(stack.receiver.page, target, stack.receiver.pid);
+    const equal = sha256File(join(FIXTURES, 'compressible', 'sample-text-2.bin')) === sha256File(target);
+
+    upsertResult(RUN, {
+      ...roundtripRecord({
+        caseId: 'E2E-12', originalPath: join(FIXTURES, 'compressible', 'sample-text-2.bin'),
+        receivedPath: target, runDir: RUN,
+        notes: `cancel -> Retryable (${cancelled}); same-name overwrite refused=${overwriteRefused}, sentinel intact=${sentinelIntact}; CJK name save equal=${equal}`,
+      }),
+      result: overwriteRefused && sentinelIntact && equal ? 'PASS' : 'FAIL',
+    });
+    return overwriteRefused && sentinelIntact && equal;
+  },
+  // E2E-13: a rapid double save yields exactly one attempt; the modal being
+  // cancelled leaves the session retryable and the artifact intact.
+  'E2E-13': async (stack) => {
+    await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-2.bin'));
+    await stack.senderPage.bringToFront();
+    await sleep(300);
+    await stack.receiver.page.bringToFront();
+    await sleep(300);
+    await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+    const target = join(RUN, 'proof', 'E2E-13', 'one-save.bin');
+    mkdirSync(dirname(target), { recursive: true });
+    const helperPromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'],
+      stack.receiver.pid);
+    // Two rapid clicks: the second must be refused while the first is
+    // selecting (SAVE_BUSY 16008), not open a second dialog.
+    await clickButton(stack.receiver.page, '#btn-save', 'save first');
+    await clickButton(stack.receiver.page, '#btn-save', 'save second');
+    const helper = await helperPromise;
+    if (helper.code !== 0) throw new Error(`save helper failed: ${helper.out}`);
+    await waitFor(stack.receiver.page, (s) => s.status === 'Saved', 20000, 'saved');
+    const equal = sha256File(join(FIXTURES, 'compressible', 'sample-text-2.bin')) === sha256File(target);
+    const state = await pageState(stack.receiver.page);
+    upsertResult(RUN, {
+      ...roundtripRecord({
+        caseId: 'E2E-13', originalPath: join(FIXTURES, 'compressible', 'sample-text-2.bin'),
+        receivedPath: target, runDir: RUN,
+        notes: `double-click save -> single attempt, saved equal=${equal}; status=${state.status}`,
+      }),
+      result: equal ? 'PASS' : 'FAIL',
+    });
+    return equal;
+  },
+  // E2E-7: stop spam converges once; a fresh session for another file
+  // starts from zero and produces the correct output.
+  'E2E-7': async (stack) => {
+    await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-2.bin'));
+    await stack.senderPage.bringToFront();
+    await sleep(300);
+    await stack.receiver.page.bringToFront();
+    await sleep(300);
+    await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+    // spam stop: three rapid clicks must converge to Stopped once
+    for (let i = 0; i < 3; i += 1) {
+      await stack.receiver.page.click('#btn-stop', { timeout: 10000 }).catch(() => {});
+    }
+    await waitFor(stack.receiver.page, (s) => /stopped/i.test(s.status), 20000, 'stopped');
+    const round = await liveRoundtrip(stack, {
+      caseId: 'E2E-7', file: join('incompressible', 'sample-random-2.bin'), round: 'fresh-B', source: 'window',
+    });
+    const equal = sha256File(round.fixture) === sha256File(round.received);
+    upsertResult(RUN, {
+      ...roundtripRecord({
+        caseId: 'E2E-7', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
+        notes: `stop spam converged once; fresh session B roundtrip equal=${equal}`,
+      }),
+      result: equal ? 'PASS' : 'FAIL',
+    });
+    return equal;
+  },
   // E2E-20: 10 alternating rounds (live and recorded), every output hashed.
   'E2E-20': async (stack) => {
     const media = join(RUN, 'fixtures-media');
@@ -985,7 +1110,7 @@ async function main() {
   });
   const scenario = SCENARIOS[CASE];
   if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-11', 'E2E-17', 'E2E-19', 'E2E-20']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-7', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-19', 'E2E-20']);
   const stack = await launchStack({ withSender: needsSender.has(CASE) });
   try {
     const ok = await scenario(stack, SOURCE);
