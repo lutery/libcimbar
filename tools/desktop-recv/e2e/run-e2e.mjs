@@ -13,9 +13,10 @@
 //   node run-e2e.mjs --case E2E-14
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   sha256File, upsertResult, roundtripRecord, writeProof,
@@ -558,7 +559,7 @@ async function saveArtifact(page, targetPath, pid = 0) {
 }
 
 async function liveRoundtrip(stack, { caseId, file, round, source }) {
-  const fixture = join(FIXTURES, file);
+  const fixture = isAbsolute(file) ? file : join(FIXTURES, file);
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
   mkdirSync(dirname(received), { recursive: true });
 
@@ -623,7 +624,12 @@ async function clickButton(page, selector, label) {
   try {
     await page.click(selector, { timeout: 15000 });
   } catch (error) {
-    throw new Error(`click ${label} (${selector}) failed: ${error.message}`);
+    const state = await page.evaluate(() => ({
+      status: document.getElementById('status') ? document.getElementById('status').textContent : null,
+      saveDisabled: document.getElementById('btn-save') ? document.getElementById('btn-save').disabled : null,
+      stopDisabled: document.getElementById('btn-stop') ? document.getElementById('btn-stop').disabled : null,
+    })).catch(() => null);
+    throw new Error(`click ${label} (${selector}) failed: ${error.message} | state=${JSON.stringify(state)}`);
   }
 }
 
@@ -1043,6 +1049,26 @@ const SCENARIOS = {
     });
     return secondBlocked && equal;
   },
+  // E2E-18: the supported scale range really roundtrips end to end.
+  'E2E-18': async (stack) => {
+    const scaleFile = join(RUN, 'fixtures-media', 'payload-1m-scale.bin');
+    mkdirSync(dirname(scaleFile), { recursive: true });
+    writeFileSync(scaleFile, randomBytes(1024 * 1024));
+    const round = await liveRoundtrip(stack, {
+      caseId: 'E2E-18', file: scaleFile, round: '1MiB', source: 'window',
+    }).catch(async (error) => {
+      throw new Error(`1 MiB live roundtrip failed: ${error.message}`);
+    });
+    const equal = sha256File(round.fixture) === sha256File(round.received);
+    upsertResult(RUN, {
+      ...roundtripRecord({
+        caseId: 'E2E-18', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
+        notes: `1 MiB incompressible live roundtrip equal=${equal}; over-budget rejection is covered by IAT/14002 unit coverage (support-matrix)`,
+      }),
+      result: equal ? 'PASS' : 'FAIL',
+    });
+    return equal;
+  },
   // E2E-7: stop spam converges once; a fresh session for another file
   // starts from zero and produces the correct output.
   'E2E-7': async (stack) => {
@@ -1112,7 +1138,7 @@ async function main() {
   });
   const scenario = SCENARIOS[CASE];
   if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-7', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-19', 'E2E-20']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-7', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20']);
   const stack = await launchStack({ withSender: needsSender.has(CASE) });
   try {
     const ok = await scenario(stack, SOURCE);

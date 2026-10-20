@@ -417,9 +417,23 @@ if ($Action -eq 'save') {
       [NativeMouse]::PostMessage($no, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
     }
     Start-Sleep -Milliseconds 300
-    # Make sure no modal is left blocking the page.
+    # Make sure nothing is left blocking the page: close the confirm prompt,
+    # then cancel the still-open save dialog via its own Cancel button so the
+    # app's picker promise settles (state back to Retryable).
     [NativeMouse]::ForceForeground($confirm) | Out-Null
     [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+    Start-Sleep -Milliseconds 300
+    $saveDialog = [NativeMouse]::FindSaveDialog()
+    if ($saveDialog -ne [IntPtr]::Zero) {
+      $cancelButton = [NativeMouse]::GetDlgItem($saveDialog, 2)
+      if ($cancelButton -ne [IntPtr]::Zero) {
+        [NativeMouse]::PostMessage($cancelButton, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+      } else {
+        [NativeMouse]::ForceForeground($saveDialog) | Out-Null
+        [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+      }
+      Start-Sleep -Milliseconds 300
+    }
     [Console]::Error.WriteLine('an unexpected overwrite confirmation appeared; refused it')
     exit 1
   }
