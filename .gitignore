@@ -5,6 +5,7 @@ build*/
 dist/
 opencv4/
 web/test/node_modules/
+tools/desktop-recv/e2e/node_modules/
 web/cimbar_js.js
 web/cimbar_js.wasm
 CMakeCache.txt
@@ -27,3 +28,5 @@ cimbar.wasm.tar.gz
 
 # Playwright MCP scratch artifacts
 .playwright-mcp/
+
+docs/tests/runs/*/fixtures-media/

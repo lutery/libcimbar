@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>Window capture check</title>
+<style>body{font-family:system-ui,sans-serif;margin:2rem;max-width:52rem}button{font-size:1.1rem;padding:.6rem 1.2rem}#out{white-space:pre-wrap;background:#f4f4f4;padding:1rem;margin-top:1rem;min-height:4rem}video{max-width:100%;margin-top:1rem;background:#000}</style>
+</head>
+<body>
+<h1>窗口抓屏人工检查</h1>
+<p>这是 dev-pipeline 外审整改的 E2E 环境诊断页（不是产品功能）。</p>
+<ol>
+  <li>点下面的按钮；</li>
+  <li>在系统选择器里选一个<strong>其它窗口</strong>（例如记事本、或另一个浏览器窗口），点“共享”；</li>
+  <li>把结果框里的文字告诉我。</li>
+</ol>
+<button id="go">开始抓屏</button>
+<button id="save">测试保存对话框</button>
+<button id="save-zip">测试保存 .zip</button>
+<button id="save-bin">测试保存 .bin</button>
+<div id="out">not run</div>
+<video id="preview" autoplay muted playsinline hidden></video>
+<script>
+async function trySave(suggestedName) {
+  const out = document.getElementById('out');
+  out.textContent = 'save picker requesting… (' + suggestedName + ')';
+  try {
+    const handle = await window.showSaveFilePicker({ suggestedName });
+    const writable = await handle.createWritable();
+    await writable.write(new TextEncoder().encode('probe'));
+    await writable.close();
+    out.textContent = 'SAVE OK: ' + suggestedName;
+  } catch (error) {
+    out.textContent = 'SAVE FAILED: ' + error.name + ': ' + error.message;
+  }
+}
+document.getElementById('save').addEventListener('click', () => trySave('probe.txt'));
+document.getElementById('save-zip').addEventListener('click', () => trySave('probe.zip'));
+document.getElementById('save-bin').addEventListener('click', () => trySave('probe.bin'));
+document.getElementById('go').addEventListener('click', async () => {
+  const out = document.getElementById('out');
+  out.textContent = 'requesting…';
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const track = stream.getVideoTracks()[0];
+    const settings = track.getSettings();
+    out.textContent = 'OK: tracks=' + stream.getTracks().length +
+      ' width=' + (settings.width || '?') + ' height=' + (settings.height || '?');
+    const video = document.getElementById('preview');
+    video.hidden = false;
+    video.srcObject = stream;
+  } catch (error) {
+    out.textContent = 'FAILED: ' + error.name + ': ' + error.message;
+  }
+});
+</script>
+</body>
+</html>

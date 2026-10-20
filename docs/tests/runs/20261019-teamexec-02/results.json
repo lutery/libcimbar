@@ -1,0 +1,113 @@
+[
+  {
+    "caseId": "E2E-3",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-3/original.bin",
+      "proof/E2E-3/received.bin"
+    ],
+    "notes": "live x 6 rounds (2 classes x 3); all 6 pairs equal=true; per-round proof under proof/E2E-3/round-*"
+  },
+  {
+    "caseId": "E2E-4",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "receivedSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "proofRefs": [
+      "proof/E2E-4/original.bin",
+      "proof/E2E-4/received.bin"
+    ],
+    "notes": "picker cancel -> Ready to receive (12002) -> restart -> roundtrip equal=true"
+  },
+  {
+    "caseId": "E2E-5",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-5/original.bin",
+      "proof/E2E-5/received.bin"
+    ],
+    "notes": "blank window produced no artifact (true); stop -> reselect sender -> equal=true"
+  },
+  {
+    "caseId": "E2E-11",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-11/original.bin",
+      "proof/E2E-11/received.bin"
+    ],
+    "notes": "save cancelled (Save failed — you can retry) -> same artifact saved on retry -> equal=true"
+  },
+  {
+    "caseId": "E2E-14",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-14/original.bin",
+      "proof/E2E-14/received.bin"
+    ],
+    "notes": "real sender-window recordings (V-GOOD-C/N) x 6 rounds; all pairs equal=true; video sha256 e85d22c7d232…"
+  },
+  {
+    "caseId": "E2E-15",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-15/original.bin",
+      "proof/E2E-15/received.bin"
+    ],
+    "notes": "bad inputs rejected finitely=true (empty.webm, text.webm, corrupt.webm); recovery equal=true"
+  },
+  {
+    "caseId": "E2E-16",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "referenceSha256": "d9af0ce70b002896648f3487e3da562e910b701bbb938737e861943f695ac016",
+    "receivedSha256": "d9af0ce70b002896648f3487e3da562e910b701bbb938737e861943f695ac016",
+    "proofRefs": [
+      "proof/E2E-16/round-with/observation.txt"
+    ],
+    "notes": "V-SHORT not Ready (incomplete) and V-LAST-without not Ready (incomplete) recorded; the complete 15 s/30 s recording ALSO ended incomplete on this host - recorded-video import yield is keyframe-limited (TD-15): video session never reached Ready (status=Not enough data to rebuild the file) | stats=null"
+  },
+  {
+    "caseId": "E2E-19",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-19/original.bin",
+      "proof/E2E-19/received.bin"
+    ],
+    "notes": "reload + close/reopen + server restart: 3 roundtrips, all equal=true"
+  }
+]

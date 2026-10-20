@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>CIMBAR-RECORDER</title>
+<style>body{font-family:system-ui;margin:2rem}button{font-size:1.1rem;padding:.6rem 1.2rem}</style>
+</head>
+<body>
+<h1>cimbar E2E recording rig</h1>
+<button id="rec">record</button>
+<div id="out">idle</div>
+<script>
+window.__startRecording = (ms) => new Promise((resolve) => {
+  const out = document.getElementById('out');
+  navigator.mediaDevices.getDisplayMedia({ video: { frameRate: window.__FPS || 30 } }).then((stream) => {
+    const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    const mimeType = types.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    const recorder = new MediaRecorder(stream, { videoBitsPerSecond: 16_000_000, mimeType });
+    const chunks = [];
+    recorder.ondataavailable = (event) => { if (event.data && event.data.size) chunks.push(event.data); };
+    recorder.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(chunks, { type: mimeType });
+      const buffer = await blob.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      out.textContent = 'recorded ' + blob.size + ' bytes';
+      resolve({ ok: true, bytes: blob.size, base64: btoa(binary) });
+    };
+    recorder.start(500);
+    setTimeout(() => recorder.stop(), ms);
+  }).catch((error) => resolve({ ok: false, name: error.name, message: error.message }));
+});
+</script>
+</body>
+</html>
+
