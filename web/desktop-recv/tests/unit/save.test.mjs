@@ -165,3 +165,47 @@ test('UT-030 an in-flight write settles honestly', async () => {
   assert.equal(writable.closed, true);
   assert.equal(writable.written, 4, 'bytes were committed; nothing rolls them back');
 });
+
+// --- Real-path regression (batch L): the un-injected save path ---
+
+// Given a real browser save (no timer fakes injected)
+// When the attempt runs
+// Then it reaches saved: the default timer fallback must be bound, because
+// calling an unbound setTimeout as a method throws "Illegal invocation" in
+// Chromium (WebIDL operations reject a foreign this), and every real save
+// was surfaced as failed (16003).
+test('UT-080 the un-injected real save path reaches saved', async () => {
+  const original = globalThis.setTimeout;
+  const originalClear = globalThis.clearTimeout;
+  // Chromium semantics: a WebIDL operation throws when `this` is not the
+  // global object. Node is lenient, so the regression is simulated here.
+  globalThis.setTimeout = function (fn, ms) {
+    // A method call (this = the controller object) is exactly the crash;
+    // bare calls in module code have this === undefined and must pass.
+    if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+    return original.call(globalThis, fn, ms);
+  };
+  globalThis.clearTimeout = function (id) {
+    if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+    return originalClear.call(globalThis, id);
+  };
+  try {
+    const events = [];
+    const handle = handleFor(writableStub());
+    const controller = new SaveController({
+      showSaveFilePicker: () => Promise.resolve(handle),
+      onEvent: (event) => events.push(event),
+    });
+
+    controller.start({ artifact: artifact(4), suggestedName: 'file.bin' });
+    await controller.whenSettled();
+    await tick();
+
+    const terminal = events[events.length - 1];
+    assert.equal(terminal.saveStatus, 'saved',
+      `terminal was ${terminal.saveStatus} (${terminal.lastError})`);
+  } finally {
+    globalThis.setTimeout = original;
+    globalThis.clearTimeout = originalClear;
+  }
+});

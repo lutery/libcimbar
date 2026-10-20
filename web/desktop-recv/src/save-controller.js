@@ -5,8 +5,12 @@ export class SaveController {
     this._picker = options.showSaveFilePicker;
     this._onEvent = options.onEvent || (() => {});
     this._pendingMs = options.pendingMs || 30000;
-    this._setTimer = options.setTimeout || setTimeout;
-    this._clearTimer = options.clearTimeout || clearTimeout;
+    // Chromium's setTimeout/clearTimeout are WebIDL operations: they throw
+    // "Illegal invocation" when called with a foreign `this`. Storing the
+    // unbound globals here made every real (un-injected) save crash in the
+    // browser, surfaced only as a mapped 16003. Bind the fallbacks.
+    this._setTimer = options.setTimeout || ((fn, ms) => setTimeout(fn, ms));
+    this._clearTimer = options.clearTimeout || ((id) => clearTimeout(id));
     this._attempt = null;
     this._nextAttempt = 1;
     this._settledWaiters = [];
