@@ -1,0 +1,20 @@
+status=Saved
+artifact=sample-text-2.bin 65536 bytes
+log=capture stopped; the file is ready to save
+saved (1)
+recording: 1604x1002, 17.8s
+capture stopped; the file is ready to save
+saved (2)
+capture stopped; the file is ready to save
+saved (3)
+recording: 1604x1002, 17.8s
+capture stopped; the file is ready to save
+saved (4)
+capture stopped; the file is ready to save
+saved (5)
+recording: 1604x1002, 17.8s
+capture stopped; the file is ready to save
+saved (6)
+capture stopped; the file is ready to save
+saved (7)
+

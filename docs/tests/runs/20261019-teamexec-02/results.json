@@ -42,6 +42,20 @@
     "notes": "blank window produced no artifact (true); stop -> reselect sender -> equal=true"
   },
   {
+    "caseId": "E2E-7",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "receivedSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "proofRefs": [
+      "proof/E2E-7/original.bin",
+      "proof/E2E-7/received.bin"
+    ],
+    "notes": "stop spam converged once; fresh session B roundtrip equal=true"
+  },
+  {
     "caseId": "E2E-11",
     "scope": "local_simulated",
     "caseType": "file_roundtrip",
@@ -109,5 +123,19 @@
       "proof/E2E-19/received.bin"
     ],
     "notes": "reload + close/reopen + server restart: 3 roundtrips, all equal=true"
+  },
+  {
+    "caseId": "E2E-20",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-20/original.bin",
+      "proof/E2E-20/received.bin"
+    ],
+    "notes": "10 mixed rounds (live/video alternating); all 10 outputs equal=true; final-package part belongs to stage 8"
   }
 ]
