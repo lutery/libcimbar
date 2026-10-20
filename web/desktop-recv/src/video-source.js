@@ -116,13 +116,79 @@ export class VideoSource {
     if (!this._video) throw Object.assign(new Error('not open'), { code: 13005 });
     this._playing = true;
     try {
-      await this._runLoop();
+      // Per-frame playback is the truthful way to read a recording: the
+      // browser decodes every frame in order, so inter frames are pixel
+      // exact (time-stepped seeking lands on inter frames without their
+      // decode history and mostly fails the scan - TD-15). Browsers without
+      // rVFC keep the seek-stepping fallback.
+      if (typeof this._video.requestVideoFrameCallback === 'function') {
+        await this._runFrames();
+      } else {
+        await this._runLoop();
+      }
     } catch (error) {
       this._playing = false;
       this.stop();
       this._onError(error && Number.isSafeInteger(error.code) ? error.code : 13002);
       throw error;
     }
+  }
+
+  // Play the recording and process every presented frame, pausing between
+  // frames so exactly one submission is in flight (the scheduler contract).
+  async _runFrames() {
+    const video = this._video;
+    await new Promise((resolve, reject) => {
+      let settled = false;
+      const finishRun = () => {
+        if (settled) return;
+        settled = true;
+        video.removeEventListener('error', onError);
+        resolve();
+      };
+      const failRun = (error) => {
+        if (settled) return;
+        if (!this._playing) { finishRun(); return; }
+        settled = true;
+        video.removeEventListener('error', onError);
+        reject(error);
+      };
+      const onError = () => failRun(Object.assign(new Error('video playback failed'), { code: 13002 }));
+      video.addEventListener('error', onError);
+      video.addEventListener('ended', () => {
+        if (!this._playing) { finishRun(); return; }
+        this._finish('eof');
+        finishRun();
+      }, { once: true });
+
+      const step = () => {
+        if (!this._playing) { finishRun(); return; }
+        video.requestVideoFrameCallback((now, meta) => {
+          if (!this._playing) { finishRun(); return; }
+          try { video.pause(); } catch (error) { /* detached */ }
+          const mediaTime = (meta && Number.isFinite(meta.mediaTime))
+            ? meta.mediaTime
+            : video.currentTime;
+          const frame = this._capture(video, {
+            maxPixels: this._maxPixels,
+            onError: (code) => this._onError(code),
+          });
+          const submission = frame
+            ? this._submit(frame, { mediaTimeUs: Math.round(mediaTime * 1e6) })
+            : Promise.resolve({ outcome: 'no_data' });
+          submission.then((result) => {
+            if (!this._playing) { finishRun(); return; }
+            if (result && result.outcome === 'artifact') {
+              this._finish('eof');
+              finishRun();
+              return;
+            }
+            Promise.resolve(video.play()).then(step).catch(failRun);
+          }).catch(failRun);
+        });
+      };
+      Promise.resolve(video.play()).then(step).catch(failRun);
+    });
   }
 
   async _runLoop() {

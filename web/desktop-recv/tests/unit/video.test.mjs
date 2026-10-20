@@ -8,9 +8,10 @@ import { VideoSource } from '../../src/video-source.js';
 const tick = (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetadata = false,
-  neverSeek = false, failSeekAfter = Infinity } = {}) {
+  neverSeek = false, failSeekAfter = Infinity, withRVFC = false } = {}) {
   let time = 0;
   let seekCount = 0;
+  let frameCallback = null;
   const listeners = {};
   const element = {
     src: null,
@@ -18,6 +19,8 @@ function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetad
     videoHeight: height,
     duration,
     muted: true,
+    paused: false,
+    played: 0,
     addEventListener(type, fn) { (listeners[type] ||= []).push(fn); },
     removeEventListener(type, fn) {
       const list = listeners[type] || [];
@@ -25,7 +28,8 @@ function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetad
       if (index >= 0) list.splice(index, 1);
     },
     dispatch(type) { for (const fn of [...(listeners[type] || [])]) fn(); },
-    pause() {},
+    pause() { element.paused = true; },
+    play() { element.paused = false; element.played += 1; return Promise.resolve(); },
     load() {},
     removeAttribute() {},
     get currentTime() { return time; },
@@ -36,6 +40,14 @@ function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetad
       queueMicrotask(() => this.dispatch(seekCount > failSeekAfter ? 'error' : 'seeked'));
     },
   };
+  if (withRVFC) {
+    element.requestVideoFrameCallback = (callback) => { frameCallback = callback; return 1; };
+    element.fireFrame = (mediaTime) => {
+      const callback = frameCallback;
+      frameCallback = null;
+      if (callback) callback(0, { mediaTime });
+    };
+  }
   Object.defineProperty(element, 'src', {
     set() {
       queueMicrotask(() => element.dispatch(failMetadata ? 'error' : 'loadedmetadata'));
@@ -246,6 +258,46 @@ test('UT-036 stop mid-run submits nothing further', async () => {
 
     assert.equal(after, before, 'no frames submitted after stop');
     assert.equal(revoked.length, 1, 'URL reclaimed exactly once');
+  });
+});
+
+// --- TD-15: per-frame playback import (rVFC) ---
+
+// Given a recording played through the video element
+// When requestVideoFrameCallback is available
+// Then every presented frame is captured and submitted one at a time
+// (no 1/15 s time-stepping, which lands on inter frames and drops data)
+test('UT-081 import decodes every presented frame (rVFC path)', async () => {
+  await withFakeUrls(async () => {
+    const element = fakeVideoElement({ duration: 2, withRVFC: true });
+    const events = [];
+    const { source, submits } = harness({ element, onEnded: (reason) => events.push(reason) });
+
+    await source.open(file());
+    const runPromise = source.run();
+    await tick(5);
+
+    assert.ok(element.played >= 1, 'playback started');
+
+    element.fireFrame(0.5);
+    await tick(5);
+    assert.equal(element.paused, true, 'paused while a submission is in flight');
+    assert.equal(submits.filter((entry) => entry.frame).length, 1);
+
+    // release the first frame; playback resumes and waits for the next one
+    submits[0].release({ outcome: 'no_data' });
+    await tick(10);
+    element.fireFrame(0.9);
+    await tick(5);
+    assert.equal(submits.filter((entry) => entry.frame).length, 2);
+    submits[1].release({ outcome: 'no_data' });
+    await tick(10);
+
+    element.dispatch('ended');
+    await runPromise;
+    assert.deepEqual(events, ['eof']);
+    const times = submits.filter((entry) => entry.frame).map((entry) => entry.meta.mediaTimeUs);
+    assert.deepEqual(times, [500000, 900000], 'the presented media times are used verbatim');
   });
 });
 
