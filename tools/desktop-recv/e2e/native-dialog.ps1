@@ -17,6 +17,7 @@
 
   Usage:
     pwsh -NoProfile -File native-dialog.ps1 -Action save -Path <abs path> \
+         [-OnOverwrite refuse|confirm] [-RenameTo <abs path>] \
          [-ProcessName msedge] [-TimeoutSec 30]
     pwsh -NoProfile -File native-dialog.ps1 -Action share -SourceTitle <title> \
          [-ProcessName msedge] [-TimeoutSec 30]
@@ -27,6 +28,8 @@
 param(
   [Parameter(Mandatory)][ValidateSet('save', 'share', 'share-cancel', 'save-cancel', 'stop-share')][string]$Action,
   [string]$Path,
+  [string]$RenameTo,
+  [ValidateSet('', 'refuse', 'confirm')][string]$OnOverwrite,
   [string]$SourceTitle,
   [ValidateSet('window', 'screen', 'tab')][string]$Tab = 'window',
   [string]$ProcessName = 'msedge',
@@ -158,6 +161,74 @@ public class NativeMouse {
 }
 '@
 
+# The overwrite confirm has neither UIA buttons nor direct dialog controls
+# on this host (GetDlgItem and UIA both find nothing); walk the WHOLE Win32
+# child tree for a Button with the wanted control id instead.
+Add-Type @'
+using System; using System.Text; using System.Runtime.InteropServices;
+public class ConfirmDrive {
+  public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr parent, EnumWindowsProc cb, IntPtr lp);
+  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool GetClassName(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, StringBuilder lParam);
+  // GetWindowText cannot read another process's edit control (it returns the
+  // caption only, cross-process). WM_GETTEXT via SendMessage does cross the
+  // process boundary for standard controls.
+  public static string GetEditText(IntPtr editHwnd) {
+    var lenPtr = SendMessage(editHwnd, 0x000E, IntPtr.Zero, null); // WM_GETTEXTLENGTH
+    int len = (int)lenPtr;
+    if (len <= 0) return string.Empty;
+    var sb = new StringBuilder(len + 1);
+    SendMessage(editHwnd, 0x000D, (IntPtr)(len + 1), sb); // WM_GETTEXT
+    return sb.ToString();
+  }
+  public static IntPtr FindButtonById(IntPtr dialog, int id) {
+    IntPtr found = IntPtr.Zero;
+    EnumChildWindows(dialog, (child, l) => {
+      if (found == IntPtr.Zero && GetDlgCtrlID(child) == id) {
+        var cls = new StringBuilder(64);
+        GetClassName(child, cls, 64);
+        if (cls.ToString() == "Button") { found = child; return false; }
+      }
+      return true;
+    }, IntPtr.Zero);
+    return found;
+  }
+  public static IntPtr FindButtonByText(IntPtr dialog, string want) {
+    IntPtr found = IntPtr.Zero;
+    EnumChildWindows(dialog, (child, l) => {
+      if (found == IntPtr.Zero) {
+        var cls = new StringBuilder(64);
+        GetClassName(child, cls, 64);
+        if (cls.ToString() == "Button") {
+          var txt = new StringBuilder(128);
+          GetWindowText(child, txt, 128);
+          if (txt.ToString().IndexOf(want, StringComparison.OrdinalIgnoreCase) >= 0) {
+            found = child;
+            return false;
+          }
+        }
+      }
+      return true;
+    }, IntPtr.Zero);
+    return found;
+  }
+  public static string Dump(IntPtr dialog) {
+    var sb = new StringBuilder();
+    EnumChildWindows(dialog, (child, l) => {
+      var cls = new StringBuilder(64); GetClassName(child, cls, 64);
+      var txt = new StringBuilder(128); GetWindowText(child, txt, 128);
+      sb.Append("class=").Append(cls).Append(" id=").Append(GetDlgCtrlID(child))
+        .Append(" text='").Append(txt).Append("'; ");
+      return true;
+    }, IntPtr.Zero);
+    return sb.ToString();
+  }
+}
+'@
+
 $AE = [System.Windows.Automation.AutomationElement]
 $TS = [System.Windows.Automation.TreeScope]
 $CT = [System.Windows.Automation.ControlType]
@@ -228,6 +299,31 @@ function Invoke-Element($Element, [string]$FallbackKeys = '{ENTER}') {
   $Element.SetFocus()
   Start-Sleep -Milliseconds 150
   [System.Windows.Forms.SendKeys]::SendWait($FallbackKeys)
+}
+
+# The overwrite confirm ("确认另存为" / "Confirm Save As") is a DirectUI task
+# dialog on this host: its Yes/No are Button-class children with control id 0
+# behind CtrlNotifySink hosts. Find them by id first, then by text
+# ("是(&Y)" / "否(&N)"), click with BM_CLICK, and fall back to the dialog's
+# own Alt mnemonic (Alt+Y / Alt+N). Returns $true when the confirm closed.
+function Invoke-ConfirmChoice([IntPtr]$DialogHwnd, [string]$Kind) {
+  $want = if ($Kind -eq 'yes') { '是' } else { '否' }
+  $alt = if ($Kind -eq 'yes') { '%y' } else { '%n' }
+  $id = if ($Kind -eq 'yes') { 6 } else { 7 }
+  $button = [ConfirmDrive]::FindButtonById($DialogHwnd, $id)
+  if ($button -eq [IntPtr]::Zero) { $button = [ConfirmDrive]::FindButtonByText($DialogHwnd, $want) }
+  if ($button -ne [IntPtr]::Zero) {
+    [NativeMouse]::PostMessage($button, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+  }
+  foreach ($attempt in 1..2) {
+    Start-Sleep -Milliseconds 500
+    if ([NativeMouse]::FindConfirmDialog() -eq [IntPtr]::Zero) { return $true }
+    [NativeMouse]::ForceForeground($DialogHwnd) | Out-Null
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.SendKeys]::SendWait($alt)
+  }
+  Start-Sleep -Milliseconds 500
+  return ([NativeMouse]::FindConfirmDialog() -eq [IntPtr]::Zero)
 }
 
 # Chromium shows a one-time (per fresh profile) "allow this site to edit the
@@ -407,15 +503,116 @@ if ($Action -eq 'save') {
     [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
   }
 
-  # Our target path is always fresh; if an overwrite prompt still appears the
-  # dialog was not filled correctly. Refuse it rather than overwrite silently.
   Start-Sleep -Milliseconds 800
   $confirm = [NativeMouse]::FindConfirmDialog()
   if ($confirm -ne [IntPtr]::Zero) {
-    $no = [NativeMouse]::GetDlgItem($confirm, 7) # IDNO
-    if ($no -ne [IntPtr]::Zero) {
-      [NativeMouse]::PostMessage($no, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+  # An overwrite confirmation only appears for an existing target. It must
+  # never be clicked through: -OnOverwrite decides what a refusal means here.
+  # refuse: keep the sentinel untouched and complete the save under -RenameTo
+  #         (the app settles like any real save, never stuck in Saving…);
+  # confirm: overwrite explicitly, like a user's deliberate Yes;
+  # unset: the old safe default - refuse and back out of the dialog entirely.
+    if ($OnOverwrite -eq 'refuse' -and $RenameTo) {
+      # Refuse the overwrite, then finish under the rename: the sentinel
+      # Refuse, then rename: sentinel untouched, picker promise settles.
+      if (-not (Invoke-ConfirmChoice $confirm 'no')) {
+        [Console]::Error.WriteLine("the refusal did not close the confirm; raw children: $([ConfirmDrive]::Dump($confirm))")
+        exit 1
+      }
+      Write-Output 'overwrite refused'
+      # The returned save dialog may not have keyboard focus back: click once
+      # inside the file-name edit, paste, and VERIFY the edit text really
+      # changed before pressing Enter — an unverified Enter re-submits the
+      # refused name and re-opens the confirmation.
+      [NativeMouse]::ForceForeground($hwnd) | Out-Null
+      Start-Sleep -Milliseconds 1500
+      $rect = New-Object 'NativeMouse+RECT'
+      [NativeMouse]::GetWindowRect($edit, [ref]$rect) | Out-Null
+      [NativeMouse]::Click([int](($rect.Left + $rect.Right) / 2), [int](($rect.Top + $rect.Bottom) / 2))
+      Start-Sleep -Milliseconds 300
+      $editText = ''
+      $pasted = $false
+      foreach ($pasteTry in 1..2) {
+        Set-Clipboard -Value $RenameTo
+        Start-Sleep -Milliseconds 200
+        [System.Windows.Forms.SendKeys]::SendWait('^a')
+        Start-Sleep -Milliseconds 150
+        [System.Windows.Forms.SendKeys]::SendWait('^v')
+        Start-Sleep -Milliseconds 500
+        $sb = New-Object System.Text.StringBuilder(512)
+        $editText = [ConfirmDrive]::GetEditText($edit)
+        Write-Output "rename paste: edit text now '$editText'"
+        if ($editText -eq $RenameTo) { $pasted = $true; break }
+        Write-Output "rename paste try $pasteTry did not take; retrying"
+        if ($pasteTry -lt 2) {
+          try {
+            [System.Windows.Automation.AutomationElement]::FromHandle($edit).SetFocus()
+          } catch { }
+        }
+      }
+      if (-not $pasted) {
+        [Console]::Error.WriteLine("the rename paste did not take (edit text: '$editText')")
+        exit 1
+      }
+      [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+      $renameDone = $false
+      foreach ($renameTry in 1..2) {
+        $fileDeadline = (Get-Date).AddSeconds(4)
+        while ((Get-Date) -lt $fileDeadline -and -not (Test-Path -LiteralPath $RenameTo)) {
+          Start-Sleep -Milliseconds 250
+        }
+        if (Test-Path -LiteralPath $RenameTo) { $renameDone = $true; break }
+        $confirm2 = [NativeMouse]::FindConfirmDialog()
+        if ($confirm2 -ne [IntPtr]::Zero) {
+          # The paste did not take before this Enter: the refused name was
+          # re-submitted. Refuse again and retry the rename once.
+          Write-Output 'confirm reappeared after the rename Enter; refusing again'
+          $null = Invoke-ConfirmChoice $confirm2 'no'
+          continue
+        }
+        if ([NativeMouse]::FindSaveDialog() -ne [IntPtr]::Zero) {
+          [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+          $fileDeadline2 = (Get-Date).AddSeconds(4)
+          while ((Get-Date) -lt $fileDeadline2 -and -not (Test-Path -LiteralPath $RenameTo)) {
+            Start-Sleep -Milliseconds 250
+          }
+        }
+        if (Test-Path -LiteralPath $RenameTo) { $renameDone = $true; break }
+        break
+      }
+      if ($renameDone) {
+        Grant-FilePermission (Get-TargetPids)
+        Write-Output "saved: $RenameTo"
+        exit 0
+      }
+      [Console]::Error.WriteLine("the renamed save did not produce the file: $RenameTo (edit text: '$editText')")
+      exit 1
     }
+    if ($OnOverwrite -eq 'confirm') {
+      # Confirm: an explicit, deliberate overwrite.
+      if (-not (Invoke-ConfirmChoice $confirm 'yes')) {
+        [Console]::Error.WriteLine("the confirm click did not close the confirm; raw children: $([ConfirmDrive]::Dump($confirm))")
+        exit 1
+      }
+      $verifyDeadline = (Get-Date).AddSeconds(15)
+      while ((Get-Date) -lt $verifyDeadline -and -not (Test-Path -LiteralPath $Path)) {
+        Start-Sleep -Milliseconds 250
+      }
+      if (Test-Path -LiteralPath $Path) {
+        Grant-FilePermission (Get-TargetPids)
+        Write-Output 'overwrite confirmed'
+        Write-Output "saved: $Path"
+        exit 0
+      }
+      [Console]::Error.WriteLine("the confirmed overwrite did not produce the file: $Path")
+      exit 1
+    }
+    # Default (no -OnOverwrite): our target path is always fresh; if an
+    # overwrite prompt still appears the dialog was not filled correctly.
+    # Refuse it rather than overwrite silently, then back out of the dialog
+    # so the app's picker promise can settle (state back to Retryable).
+    # Refuse (best effort); the back-out cleanup below follows regardless.
+    $null = Invoke-ConfirmChoice $confirm 'no'
     Start-Sleep -Milliseconds 300
     # Make sure nothing is left blocking the page: close the confirm prompt,
     # then cancel the still-open save dialog via its own Cancel button so the
@@ -426,6 +623,8 @@ if ($Action -eq 'save') {
     $saveDialog = [NativeMouse]::FindSaveDialog()
     if ($saveDialog -ne [IntPtr]::Zero) {
       $cancelButton = [NativeMouse]::GetDlgItem($saveDialog, 2)
+      # The modal must be gone first, or the BM_CLICK lands on the wrong
+      # window and the save dialog never closes (the stuck-Saving cause).
       if ($cancelButton -ne [IntPtr]::Zero) {
         [NativeMouse]::PostMessage($cancelButton, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
       } else {

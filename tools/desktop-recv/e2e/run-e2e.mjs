@@ -967,87 +967,158 @@ const SCENARIOS = {
     return allEqual;
   },
   // E2E-12: a Chinese/space target name saves correctly, and a same-name
-  // overwrite is never silent (the overwrite confirmation is refused and a
-  // sentinel file stays untouched).
+  // overwrite is never silent: the confirmation is refused, the sentinel
+  // stays byte-identical, and the same dialog session then saves under a
+  // new name (refuse-then-rename), so the app settles Saved instead of
+  // hanging in Saving….
   'E2E-12': async (stack) => {
-    await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-2.bin'));
-    await stack.senderPage.bringToFront();
-    await sleep(300);
-    await stack.receiver.page.bringToFront();
-    await sleep(300);
-    await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
-    const target = join(RUN, 'proof', 'E2E-12', '中文 名字.bin');
-    mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, 'SENTINEL');
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    try {
+      await loadSenderFile(stack.senderPage, fixture);
+      await stack.senderPage.bringToFront();
+      await sleep(300);
+      await stack.receiver.page.bringToFront();
+      await sleep(300);
+      await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+      const dir = join(RUN, 'proof', 'E2E-12');
+      const target = join(dir, '中文 名字.bin');
+      const renamed = join(dir, '中文 名字-2.bin');
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(target, 'SENTINEL');
+      rmSync(renamed, { force: true });
 
-    // First save attempt: cancel the modal -> Retryable, sentinel intact.
-    await wakeWindow(stack.receiver.pid);
-    const beforeCancel = await pageState(stack.receiver.page);
-    console.log(`[e2e-12] before cancel: status=${beforeCancel.status} saveDisabled=${beforeCancel.saveDisabled}`);
-    const cancelPromise = runHelper(['-Action', 'save-cancel', '-TimeoutSec', '20'], stack.receiver.pid);
-    await clickButton(stack.receiver.page, '#btn-save', 'save cancel');
-    const cancel = await cancelPromise;
-    if (cancel.code !== 0) throw new Error(`save-cancel failed: ${cancel.out}`);
-    await waitFor(stack.receiver.page, (s) => /save cancelled/i.test(s.log), 15000, 'save cancelled');
-    const cancelled = sha256File(target) === sha256File(target);
+      // Journey step 1: the suggested name must be a safe basename, not the
+      // generic 'file' fallback.
+      const ready = await pageState(stack.receiver.page);
+      const suggested = ready.artifactName;
+      const suggestedOk = /^[^\\/]+$/.test(suggested) && suggested !== 'file';
+      log(`[e2e-12] suggested name: "${suggested}" ok=${suggestedOk}`);
 
-    // Second attempt: same existing name -> overwrite prompt -> refuse.
-    await wakeWindow(stack.receiver.pid);
-    const overwritePromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'],
-      stack.receiver.pid);
-    await clickButton(stack.receiver.page, '#btn-save', 'save same name');
-    const overwrite = await overwritePromise;
-    const overwriteRefused = overwrite.code !== 0 && /overwrite/i.test(overwrite.out);
-    const sentinelIntact = readFileSync(target, 'utf8') === 'SENTINEL';
+      // Phase A: cancel the dialog on the same name; the sentinel must stay.
+      await wakeWindow(stack.receiver.pid);
+      const cancelPromise = runHelper(['-Action', 'save-cancel', '-TimeoutSec', '20'], stack.receiver.pid);
+      await clickButton(stack.receiver.page, '#btn-save', 'save cancel');
+      const cancel = await cancelPromise;
+      if (cancel.code !== 0) throw new Error(`save-cancel failed: ${cancel.out}`);
+      await waitFor(stack.receiver.page, (s) => /save cancelled/i.test(s.log),
+        15000, 'save cancelled');
+      const sentinelAfterCancel = readFileSync(target, 'utf8') === 'SENTINEL';
 
-    // Third attempt: a fresh CJK name saves for real.
-    rmSync(target);
-    await saveArtifact(stack.receiver.page, target, stack.receiver.pid);
-    const equal = sha256File(join(FIXTURES, 'compressible', 'sample-text-2.bin')) === sha256File(target);
+      // Phase B: the same name again — the browser shows the overwrite
+      // confirmation; refuse it (no silent overwrite; sentinel untouched),
+      // then finish the save under a new name in the SAME dialog session,
+      // so the app's picker promise settles like any real save.
+      await wakeWindow(stack.receiver.pid);
+      const overwritePromise = runHelper(['-Action', 'save', '-Path', target,
+        '-OnOverwrite', 'refuse', '-RenameTo', renamed, '-TimeoutSec', '60'], stack.receiver.pid);
+      await clickButton(stack.receiver.page, '#btn-save', 'save same name');
+      const overwrite = await overwritePromise;
+      const refused = overwrite.code === 0 && /overwrite refused/.test(overwrite.out);
+      const sentinelIntact = readFileSync(target, 'utf8') === 'SENTINEL';
+      log(`[e2e-12] refused=${refused} sentinelIntact=${sentinelIntact}`);
+      log(`[e2e-12] helper: ${overwrite.out.trim().split('\n').join(' | ')}`);
 
-    upsertResult(RUN, {
-      ...roundtripRecord({
-        caseId: 'E2E-12', originalPath: join(FIXTURES, 'compressible', 'sample-text-2.bin'),
-        receivedPath: target, runDir: RUN,
-        notes: `cancel -> Retryable (${cancelled}); same-name overwrite refused=${overwriteRefused}, sentinel intact=${sentinelIntact}; CJK name save equal=${equal}`,
-      }),
-      result: overwriteRefused && sentinelIntact && equal ? 'PASS' : 'FAIL',
-    });
-    return overwriteRefused && sentinelIntact && equal;
+      // The picker resolved via the rename: the app must reach Saved, never
+      // stuck in Saving….
+      const settled = await waitFor(stack.receiver.page,
+        (s) => s.status === 'Saved' || /retry|went wrong/i.test(s.status),
+        20000, 'the save to settle after the rename');
+      const savedOk = settled.status === 'Saved';
+      const equal = existsSync(renamed) && sha256File(fixture) === sha256File(renamed);
+      await screenshot(stack.receiver.page, 'E2E-12', 'after-rename-save.png');
+      writeProof(RUN, 'E2E-12', 'log.txt', [
+        `suggested=${suggested} suggestedOk=${suggestedOk}`,
+        `cancel phase: sentinel intact=${sentinelAfterCancel}`,
+        `refuse phase: refused=${refused} sentinel intact=${sentinelIntact}`,
+        `rename save: app status=${settled.status} renamedExists=${existsSync(renamed)} equal=${equal}`,
+        `helper stdout: ${overwrite.out.trim()}`,
+      ].join('\n') + '\n');
+
+      const record = roundtripRecord({
+        caseId: 'E2E-12', originalPath: fixture, receivedPath: renamed, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      const pass = suggestedOk && sentinelAfterCancel && refused && sentinelIntact && savedOk && equal;
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `cancel: sentinel intact=${sentinelAfterCancel}; refuse-then-rename: refused=${refused}, ` +
+          `sentinel intact=${sentinelIntact}, app=${settled.status}, renamed save equal=${equal}; ` +
+          `suggested name "${suggested}" safe=${suggestedOk}`,
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-12', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-12 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-12', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-12/observation.txt'],
+        notes: `refuse-then-rename journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
   },
-  // E2E-13: a rapid double save yields exactly one attempt; the modal being
-  // cancelled leaves the session retryable and the artifact intact.
+  // E2E-13: a rapid double save yields exactly one attempt (the button is
+  // disabled while the picker is open); the modal cancel leaves the session
+  // retryable and the artifact intact. Failures are recorded, not thrown:
+  // a dialog/helper failure must leave an honest FAIL in results.json.
   'E2E-13': async (stack) => {
-    await loadSenderFile(stack.senderPage, join(FIXTURES, 'compressible', 'sample-text-2.bin'));
-    await stack.senderPage.bringToFront();
-    await sleep(300);
-    await stack.receiver.page.bringToFront();
-    await sleep(300);
-    await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
-    const target = join(RUN, 'proof', 'E2E-13', 'one-save.bin');
-    mkdirSync(dirname(target), { recursive: true });
-    const helperPromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'],
-      stack.receiver.pid);
-    // First click opens the modal; while it is selecting the app disables the
-    // Save button, so a second rapid click is impossible in the UI (that is
-    // the defensive behaviour under test).
-    await clickButton(stack.receiver.page, '#btn-save', 'save first');
-    const during = await pageState(stack.receiver.page);
-    const secondBlocked = during.saveDisabled === true;
-    const helper = await helperPromise;
-    if (helper.code !== 0) throw new Error(`save helper failed: ${helper.out}`);
-    await waitFor(stack.receiver.page, (s) => s.status === 'Saved', 20000, 'saved');
-    const equal = sha256File(join(FIXTURES, 'compressible', 'sample-text-2.bin')) === sha256File(target);
-    const state = await pageState(stack.receiver.page);
-    upsertResult(RUN, {
-      ...roundtripRecord({
-        caseId: 'E2E-13', originalPath: join(FIXTURES, 'compressible', 'sample-text-2.bin'),
-        receivedPath: target, runDir: RUN,
-        notes: `save button disabled during selection=${secondBlocked}; single save equal=${equal}; status=${state.status}`,
-      }),
-      result: secondBlocked && equal ? 'PASS' : 'FAIL',
-    });
-    return secondBlocked && equal;
+    const pid = stack.receiver.pid;
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    try {
+      await loadSenderFile(stack.senderPage, fixture);
+      await stack.senderPage.bringToFront();
+      await sleep(300);
+      await stack.receiver.page.bringToFront();
+      await sleep(300);
+      await attachCapture(stack.receiver.page, 'window', stack.receiver.pid);
+      const target = join(RUN, 'proof', 'E2E-13', 'one-save.bin');
+      mkdirSync(dirname(target), { recursive: true });
+      rmSync(target, { force: true }); // a stale proof file would turn this save into an overwrite refusal
+      const helperPromise = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '40'], pid);
+      await wakeWindow(pid);
+      await clickButton(stack.receiver.page, '#btn-save', 'save first');
+      const during = await waitFor(stack.receiver.page,
+        (s) => s.saveDisabled === true, 8000, 'save disabled while the picker is open');
+      const secondBlocked = during.saveDisabled === true;
+      const helper = await helperPromise;
+      if (helper.code !== 0) {
+        // Judge by the file, not by the helper's exit code (work order item
+        // 2): only a real save counts, so record the helper output and fail
+        // honestly if no verified save followed.
+        const afterHelper = await pageState(stack.receiver.page);
+        const fileOk = existsSync(target) && sha256File(fixture) === sha256File(target);
+        if (!fileOk || afterHelper.status !== 'Saved') {
+          throw new Error(`save helper failed and no real save followed: ${helper.out}`);
+        }
+      }
+      await waitFor(stack.receiver.page, (s) => s.status === 'Saved', 20000, 'saved');
+      const equal = sha256File(fixture) === sha256File(target);
+      const state = await pageState(stack.receiver.page);
+      const record = roundtripRecord({
+        caseId: 'E2E-13', originalPath: fixture, receivedPath: target, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: secondBlocked && equal ? 'PASS' : 'FAIL',
+        notes: `save button disabled while the picker is open=${secondBlocked}; single save equal=${equal}; status=${state.status}`,
+      });
+      return secondBlocked && equal;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-13', 'observation.txt');
+      mkdirSync(join(RUN, 'proof', 'E2E-13'), { recursive: true });
+      writeFileSync(observation, `E2E-13 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-13', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-13/observation.txt'],
+        notes: `save journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
   },
   // E2E-18: the supported scale range really roundtrips end to end.
   'E2E-18': async (stack) => {

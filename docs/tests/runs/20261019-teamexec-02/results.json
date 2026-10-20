@@ -70,6 +70,34 @@
     "notes": "save cancelled (Save failed — you can retry) -> same artifact saved on retry -> equal=true"
   },
   {
+    "caseId": "E2E-12",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-12/original.bin",
+      "proof/E2E-12/received.bin"
+    ],
+    "notes": "cancel: sentinel intact=true; refuse-then-rename: refused=true, sentinel intact=true, app=Saved, renamed save equal=true; suggested name \"sample-text-2.bin\" safe=true"
+  },
+  {
+    "caseId": "E2E-13",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-13/original.bin",
+      "proof/E2E-13/received.bin"
+    ],
+    "notes": "save button disabled while the picker is open=true; single save equal=true; status=Saved"
+  },
+  {
     "caseId": "E2E-14",
     "scope": "local_simulated",
     "caseType": "file_roundtrip",
@@ -109,6 +137,20 @@
       "proof/E2E-16/round-with/observation.txt"
     ],
     "notes": "V-SHORT not Ready (incomplete) and V-LAST-without not Ready (incomplete) recorded; the complete 15 s/30 s recording ALSO ended incomplete on this host - recorded-video import yield is keyframe-limited (TD-15): video session never reached Ready (status=Not enough data to rebuild the file) | stats=null"
+  },
+  {
+    "caseId": "E2E-18",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "ebead5ba51c4e42bd5e0e3da64b562e5da132d65322226c85f36332b1b75338b",
+    "receivedSha256": "ebead5ba51c4e42bd5e0e3da64b562e5da132d65322226c85f36332b1b75338b",
+    "proofRefs": [
+      "proof/E2E-18/original.bin",
+      "proof/E2E-18/received.bin"
+    ],
+    "notes": "1 MiB incompressible live roundtrip equal=true; over-budget rejection is covered by IAT/14002 unit coverage (support-matrix)"
   },
   {
     "caseId": "E2E-19",
