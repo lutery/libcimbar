@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 import { validateCaseRecord, validateRunGate } from '../../src/evidence.js';
 import {
-  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput,
+  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
 } from '../../../../tools/desktop-recv/e2e/leg-verdict.mjs';
 import { lifecycleRecord, roundtripRecord } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
@@ -357,34 +357,32 @@ test('UT-097 a fresh empty-file leg settles and passes', () => {
   assert.equal(verdict.checks.expectedCode, '13005');
 });
 
-// A corrupt container may fail with 13002 or 13003; either satisfies the
-// leg. A session that settles in 'Error' is NOT a restartable terminal.
-test('UT-098 corrupt legs accept 13002|13003 but reject an Error terminal', () => {
-  const passed = evaluateVideoFailureLeg({
+// A corrupt container may be rejected at the metadata precheck (13005 -
+// the product's semantically correct exit for a truncated MediaRecorder
+// WebM, whose duration stays Infinity) or mid-read (13002/13003); any
+// registered code of the authorized union satisfies the leg. A session that
+// settles in 'Error' is NOT a restartable terminal.
+test('UT-098 corrupt legs accept the registered union but reject an Error terminal', () => {
+  const mk = (delta, stateName) => evaluateVideoFailureLeg({
     baseline: { attemptId: 10, trailLength: 0 },
-    delta: '[error] 13003: the recording could not be decoded (select another recording)\n',
+    delta,
     state: {
-      statusTrail: [{ state: 'Receiving' }, { state: 'Incomplete' }],
-      state: { state: 'Incomplete', cleanupComplete: true },
+      statusTrail: [{ state: 'Receiving' }, { state: stateName }],
+      state: { state: stateName, cleanupComplete: true },
     },
     buttons: { saveDisabled: true, videoDisabled: false },
     attemptId: 11,
     expectedCodes: expectedCodesForBadInput('corrupt'),
   });
-  assert.equal(passed.ok, true, passed.failures.join('; '));
-  assert.equal(passed.checks.expectedCode, '13003');
+  const decode = mk('[error] 13003: the recording could not be decoded\n', 'Incomplete');
+  assert.equal(decode.ok, true, decode.failures.join('; '));
+  assert.equal(rejectionPointForCode(decode.checks.expectedCode), 'decode_or_step');
 
-  const errored = evaluateVideoFailureLeg({
-    baseline: { attemptId: 10, trailLength: 0 },
-    delta: '[error] 13002: first frame not decodable\n',
-    state: {
-      statusTrail: [{ state: 'Receiving' }, { state: 'Error' }],
-      state: { state: 'Error', cleanupComplete: true },
-    },
-    buttons: { saveDisabled: true, videoDisabled: false },
-    attemptId: 11,
-    expectedCodes: expectedCodesForBadInput('corrupt'),
-  });
+  const precheck = mk('[error] 13005: 录像信息无效\n', 'Idle');
+  assert.equal(precheck.ok, true, precheck.failures.join('; '));
+  assert.equal(rejectionPointForCode(precheck.checks.expectedCode), 'metadata_precheck');
+
+  const errored = mk('[error] 13002: first frame not decodable\n', 'Error');
   assert.equal(errored.ok, false);
   assert.ok(errored.failures.some((f) => f.includes('not a restartable terminal')));
 });
@@ -406,6 +404,23 @@ test('UT-099 an already-active refusal and unconverged cleanup fail the leg', ()
   assert.equal(verdict.ok, false);
   assert.ok(verdict.failures.some((f) => f.includes('already active')));
   assert.ok(verdict.failures.some((f) => f.includes('cleanupComplete is not true')));
+});
+
+// The first import on a fresh page advances the identity from NO attempt
+// (baseline null) to video-1; that IS an advance and must not fail the leg.
+test('UT-103 a null baseline attemptId is a real advance, not a missing hook', () => {
+  const verdict = evaluateVideoFailureLeg({
+    baseline: { attemptId: null, logLength: 10, trailLength: 0 },
+    delta: '[error] 13005: recording metadata invalid\n',
+    state: {
+      statusTrail: [{ state: 'Preparing' }, { state: 'Idle' }],
+      state: { state: 'Idle', cleanupComplete: true },
+    },
+    buttons: { saveDisabled: true, videoDisabled: false },
+    attemptId: 'video-1',
+    expectedCodes: ['13005'],
+  });
+  assert.equal(verdict.ok, true, verdict.failures.join('; '));
 });
 
 // --- Round-3 A-R2: artifact-budget leg ------------------------------------

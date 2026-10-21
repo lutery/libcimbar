@@ -424,10 +424,42 @@ function Dismiss-EdgePromos([string[]]$Pids) {
   }
 }
 
+# Edge can raise a translate bubble ("Translate page?" / CJK equivalent)
+# even on flagged launches; it sits above the dialogs and hides their
+# controls from the UIA tree. Close it (Close/x button, or ESC fallback).
+function Dismiss-TranslateBubbles([string[]]$Pids) {
+  $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
+    $AE::ControlTypeProperty, $CT::Window)
+  $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
+  foreach ($top in $tops) {
+    if ($Pids -and ($Pids -notcontains $top.Current.ProcessId)) { continue }
+    $nested = $top.FindAll($TS::Descendants, $windowCondition)
+    foreach ($candidate in $nested) {
+      if ("$($candidate.Current.Name)" -match 'Translate|翻译') {
+        $button = Find-ByName $candidate '^Close$|^关闭$|Show original|不翻译|^Cancel$|^取消$' $CT::Button
+        if ($button) {
+          Invoke-Element $button
+          Write-Output 'dismissed a translate bubble'
+          Start-Sleep -Milliseconds 400
+        } else {
+          $handle = [IntPtr]$candidate.Current.NativeWindowHandle
+          if ($handle -ne [IntPtr]::Zero) {
+            [NativeMouse]::ForceForeground($handle) | Out-Null
+            Start-Sleep -Milliseconds 200
+            [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+            Write-Output 'dismissed a translate bubble via ESC'
+            Start-Sleep -Milliseconds 300
+          }
+        }
+      }
+    }
+  }
+}
+
 # Cancel-style actions target different windows than the main save/share
 # flows; they are handled before the common dialog-wait loop.
 if ($Action -in @('share-cancel', 'save-cancel', 'stop-share', 'open-cancel')) {
-  Dismiss-EdgePromos (Get-TargetPids)
+  Dismiss-EdgePromos (Get-TargetPids); Dismiss-TranslateBubbles (Get-TargetPids)
   $cancelDeadline = (Get-Date).AddSeconds($TimeoutSec)
   while ((Get-Date) -lt $cancelDeadline) {
     if ($Action -eq 'save-cancel' -or $Action -eq 'open-cancel') {
@@ -537,15 +569,32 @@ if ($Action -in @('share-cancel', 'save-cancel', 'stop-share', 'open-cancel')) {
 $deadline = (Get-Date).AddSeconds($TimeoutSec)
 $dialog = $null
 # A fresh Edge profile shows a modal sync bubble that hides the dialog's
-# controls; clear it before looking for the dialog.
-Dismiss-EdgePromos (Get-TargetPids)
+# controls; clear it before looking for the dialog. Translate bubbles can
+# appear later (they hid a picker for 47 minutes in the E2E-18 lane), so the
+# wait loop re-dismisses both every ~2 s.
+Dismiss-EdgePromos (Get-TargetPids); Dismiss-TranslateBubbles (Get-TargetPids)
+$dismissTick = 0
 while ((Get-Date) -lt $deadline) {
   $dialog = Find-Dialog (Get-TargetPids)
   if ($dialog) { break }
+  $dismissTick += 1
+  if (($dismissTick % 8) -eq 0) {
+    Dismiss-EdgePromos (Get-TargetPids); Dismiss-TranslateBubbles (Get-TargetPids)
+  }
   Start-Sleep -Milliseconds 250
 }
 if (-not $dialog) {
   [Console]::Error.WriteLine("dialog not found for action '$Action' within $TimeoutSec s")
+  # Diagnostics: name every top-level window so the next failed picker is
+  # diagnosable from the log alone (translate bubbles, foreground state).
+  $targetPids = Get-TargetPids
+  $windowCondition2 = New-Object System.Windows.Automation.PropertyCondition(
+    $AE::ControlTypeProperty, $CT::Window)
+  $tops2 = $AE::RootElement.FindAll($TS::Children, $windowCondition2)
+  foreach ($t2 in $tops2) {
+    $mark = if ($targetPids -and ($targetPids -contains $t2.Current.ProcessId)) { 'TARGET' } else { '      ' }
+    [Console]::Error.WriteLine("  window $mark pid=$($t2.Current.ProcessId) class=$($t2.Current.ClassName) name='$($t2.Current.Name)'")
+  }
   exit 1
 }
 
@@ -576,7 +625,7 @@ if ($Action -eq 'save') {
   # "...20261019-tea"). Pasting the full path from the clipboard is atomic
   # and is exactly what a user does with a long path. Edge can re-show its
   # sync bubble while the dialog is open; clear it before typing.
-  Dismiss-EdgePromos (Get-TargetPids)
+  Dismiss-EdgePromos (Get-TargetPids); Dismiss-TranslateBubbles (Get-TargetPids)
   [NativeMouse]::ForceForeground($hwnd) | Out-Null
   Start-Sleep -Milliseconds 500
   Set-Clipboard -Value $Path
@@ -766,7 +815,7 @@ if ($Action -eq 'save') {
     [Console]::Error.WriteLine('open dialog not found')
     exit 1
   }
-  Dismiss-EdgePromos (Get-TargetPids)
+  Dismiss-EdgePromos (Get-TargetPids); Dismiss-TranslateBubbles (Get-TargetPids)
   [NativeMouse]::ForceForeground($hwnd) | Out-Null
   Start-Sleep -Milliseconds 400
 

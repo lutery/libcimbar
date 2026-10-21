@@ -18,6 +18,8 @@
   2. 超预算腿 → **20MiB 可压缩样本实测**（记录产物预算/压缩前后尺寸/拒绝/恢复；像素预算拒绝不得替代产物预算拒绝）；20MiB 难压缩 NOT_RUN 带代码级依据。
   3. 4MiB 难压缩录像腿 → **先做 1MiB 有界探测**（预先声明录制时长/体积/导入等待上界）；失败归因分流（无足量有效录像=装置问题；足量录像仍不能重建=接收端问题）；1MiB 成功≠最大容量；据实提范围修订案→用户确认→同步更新计划/决策记录/支持矩阵/门禁必测子项；历史结果不改判。
   4. 编号统一 → 以 `round-3-verdict.md` 为实际路径入账；round-4 为下一送审轮。
+  5. （TB1 车道授权，2026-10-21）corrupt 腿判据放宽为**注册码并集 {13005,13002,13003}**，逐腿记录 `observedCode/rejectionPoint/terminal/buttons/cleanupComplete`（delta 身份校验不变，陈旧码仍须拦截）；理由：截断 MediaRecorder WebM 的时长恒为 Infinity，产品在元数据预检（video-source.js:84-87）以 13005 拒绝是语义正确的退出点；冻结验收意图（AC-006/008/014、UAT-L15）是"有限/有码/可重启"，不是计划猜测的具体码。
+  6. （TB1 车道授权，2026-10-21）E2E-16 with 腿判据改为**"在产物完成处有限收束"**：`__mediaEnded=null` + `artifactFrameId===最后呈现帧` + `T*>without 时长` + 保存哈希相等；`endReason` 降为诊断记录（产物完成路径上 app.js render→releaseInputs 同步 stop 使 'eof' 标签结构性不可观测），不为此改产品代码。
 
 ## 覆盖检查
 

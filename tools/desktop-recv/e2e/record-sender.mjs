@@ -176,10 +176,38 @@ async function record(page, ms, pid) {
     helper.on('exit', (code) => resolveHelper({ code, out }));
   });
   const evaluatePromise = page.evaluate((duration) => window.__startRecording(duration), ms);
-  const [helper, result] = await Promise.all([helperPromise, evaluatePromise]);
+  // Hard bound (same as the runner): a helper that times out without a picker
+  // used to leave the un-settled getDisplayMedia promise pending forever.
+  const hardBoundMs = 120000 + ms + 180000;
+  const settled = await Promise.race([
+    Promise.all([helperPromise, evaluatePromise]).catch((error) => ({ __error: error })),
+    sleep(hardBoundMs).then(() => null),
+  ]);
+  if (!settled) {
+    throw new Error(`recording exceeded its hard bound (${hardBoundMs} ms): the capture picker never resolved`);
+  }
+  if (settled.__error) throw settled.__error;
+  const [helper, result] = settled;
   if (helper.code !== 0) throw new Error(`recording picker helper failed: ${helper.out}`);
   if (!result.ok) throw new Error(`recording failed: ${result.name}: ${result.message}`);
-  return result;
+  // recorder.html hands the clip over in bounded base64 chunks; drain them
+  // one at a time so neither the page nor the CDP message ever holds the
+  // whole payload as one string.
+  const parts = [];
+  for (;;) {
+    const take = await page.evaluate(() => {
+      const s = window.__recorderState;
+      if (!s) return { done: false, chunk: null, bytes: 0 };
+      const chunk = s.chunks.shift() || null;
+      return { done: s.done, chunk, bytes: s.bytes, error: s.error || null };
+    });
+    if (take.chunk) parts.push(take.chunk);
+    if (take.done && !take.chunk) break;
+  }
+  // Decode each chunk SEPARATELY: each chunk is independently btoa()'d and
+  // padded with '='; a joined decode would stop at the first padding and
+  // silently keep only the first chunk.
+  return { ok: true, bytes: result.bytes, buffer: Buffer.concat(parts.map((part) => Buffer.from(part, 'base64'))) };
 }
 
 // Round-3 A-R3: the V-LAST pair must be an equivalent-traceable construction.
@@ -237,7 +265,9 @@ async function recordTimed(page, ms, pid) {
 // animation restarts from frame 0, which is what makes the pair traceable.
 async function reloadSender(page, filePath) {
   await page.reload();
-  await page.waitForSelector('#file_input', { timeout: 30000 });
+  // The file input is hidden by design; wait for it to be ATTACHED, never
+  // visible (setInputFiles works on the hidden element, as in the live rig).
+  await page.waitForSelector('#file_input', { state: 'attached', timeout: 30000 });
   await sleep(800);
   await launchSender(page, filePath);
 }
@@ -275,7 +305,7 @@ async function main() {
     if (ONLY === 'full') {
       await launchSender(senderPage, join('compressible', 'sample-text-2.bin'));
       const good = await recordTimed(recorderPage, 18000, recorderBrowser.pid);
-      writeFileSync(join(MEDIA, 'V-GOOD-C.webm'), Buffer.from(good.base64, 'base64'));
+      writeFileSync(join(MEDIA, 'V-GOOD-C.webm'), good.buffer);
       manifestClips.push({
         file: 'V-GOOD-C.webm', payload: 'compressible/sample-text-2.bin',
         requestedMs: good.requestedMs, wallMs: good.wallMs,
@@ -302,7 +332,7 @@ async function main() {
     // Reload before EACH V-LAST clip: both share the sender's frame-0 start.
     await reloadSender(senderPage, extFile);
     const lastWith = await recordTimed(recorderPage, WITH_SECONDS * 1000, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-LAST-with.webm'), Buffer.from(lastWith.base64, 'base64'));
+    writeFileSync(join(MEDIA, 'V-LAST-with.webm'), lastWith.buffer);
     manifestClips.push({
       file: 'V-LAST-with.webm', payload: payloadName,
       requestedMs: lastWith.requestedMs, wallMs: lastWith.wallMs,
@@ -311,7 +341,7 @@ async function main() {
     console.log(`V-LAST-with recorded: ${lastWith.bytes} bytes`);
     await reloadSender(senderPage, extFile);
     const lastWithout = await recordTimed(recorderPage, WITHOUT_SECONDS * 1000, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-LAST-without.webm'), Buffer.from(lastWithout.base64, 'base64'));
+    writeFileSync(join(MEDIA, 'V-LAST-without.webm'), lastWithout.buffer);
     manifestClips.push({
       file: 'V-LAST-without.webm', payload: payloadName,
       requestedMs: lastWithout.requestedMs, wallMs: lastWithout.wallMs,
@@ -325,7 +355,7 @@ async function main() {
     // and never re-recorded by --only last; E2E-15/16 use it).
     if (ONLY === 'full') {
       const short = await recordTimed(recorderPage, 400, recorderBrowser.pid);
-      writeFileSync(join(MEDIA, 'V-SHORT.webm'), Buffer.from(short.base64, 'base64'));
+      writeFileSync(join(MEDIA, 'V-SHORT.webm'), short.buffer);
       manifestClips.push({
         file: 'V-SHORT.webm', payload: 'compressible/sample-text-2.bin',
         requestedMs: short.requestedMs, wallMs: short.wallMs,
@@ -370,7 +400,7 @@ async function main() {
     await recorder2.page.goto(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
     await recorder2.page.waitForSelector('#rec');
     const goodN = await recordTimed(recorder2.page, 18000, recorder2.pid);
-    writeFileSync(join(MEDIA, 'V-GOOD-N.webm'), Buffer.from(goodN.base64, 'base64'));
+    writeFileSync(join(MEDIA, 'V-GOOD-N.webm'), goodN.buffer);
     manifestClips.push({
       file: 'V-GOOD-N.webm', payload: 'incompressible/sample-random-2.bin',
       requestedMs: goodN.requestedMs, wallMs: goodN.wallMs,

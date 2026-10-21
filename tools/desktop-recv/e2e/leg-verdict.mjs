@@ -51,13 +51,16 @@ function cleanupCompleteOf(state) {
 }
 
 // (a) THIS dispatch was ingested: the import identity advanced AND the
-// status trail shows the session actually left Idle after the dispatch.
-// A trail that never leaves Idle (or a missing __statusTrail hook) cannot
-// prove ingestion, so the leg fails instead of riding an old error line.
+// status trail shows the session actually left Idle after the dispatch. A
+// baseline of null is the legitimate "no attempt yet" identity on a fresh
+// page (null -> video-1 IS an advance); only a missing post-dispatch
+// identity or a true non-advance fails.
 export function checkIngested({ baseline, attemptId, state }) {
   const failures = [];
   const baseAttempt = baseline ? baseline.attemptId : undefined;
-  if (isHookMissing(attemptId) || isHookMissing(baseAttempt) || attemptId === baseAttempt) {
+  if (isHookMissing(attemptId)) {
+    failures.push('attempt identity is missing after the dispatch (__videoTimeline hook missing)');
+  } else if (baseAttempt !== undefined && attemptId === baseAttempt) {
     failures.push(`attempt identity did not advance (baseline=${String(baseAttempt)}, after=${String(attemptId)})`);
   }
   const trail = state ? state.statusTrail : null;
@@ -197,12 +200,26 @@ export function evaluateBudgetLeg({
   };
 }
 
-// Map an input class to the error codes the product registers for it
-// (video-source.js): empty and non-video files fail the metadata precheck
-// with 13005; a truncated-but-openable container fails decode/step with
-// 13002 or 13003.
+// Map an input class to the error codes the product may legitimately report
+// for it (team-lead decision 2b, round-3 lane): empty and non-video files
+// fail the metadata precheck with 13005; a truncated-but-openable container
+// is ALSO rejected at the metadata precheck with 13005 on this product
+// (MediaRecorder WebM keeps duration Infinity, video-source.js:84-87) and
+// would fail mid-read with 13002/13003 - the acceptance intent
+// (AC-006/008/014, UAT-L15) is finite/registered/restartable, not a
+// specific plan-guessed code, so the corrupt class accepts the registered
+// union. The observed code and rejection point are recorded per leg.
 export function expectedCodesForBadInput(kind) {
   if (kind === 'empty' || kind === 'text') return ['13005'];
-  if (kind === 'corrupt') return ['13002', '13003'];
+  if (kind === 'corrupt') return ['13005', '13002', '13003'];
   return [];
+}
+
+// Which product exit point produced the observed code (for the per-leg
+// record): 13005 is the metadata/first-frame precheck, 13002/13003 are the
+// decode/step paths.
+export function rejectionPointForCode(code) {
+  if (String(code) === '13005') return 'metadata_precheck';
+  if (String(code) === '13002' || String(code) === '13003') return 'decode_or_step';
+  return null;
 }

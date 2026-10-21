@@ -14,15 +14,16 @@
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  readResults, sha256File, upsertResult, roundtripRecord, writeProof, writeResults,
+  copyArtifact, readResults, sha256File, upsertResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
-  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, RESTARTABLE_TERMINALS,
+  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
+  RESTARTABLE_TERMINALS,
 } from './leg-verdict.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -197,6 +198,41 @@ async function resetJourneyMarks(page) {
   await page.evaluate(() => { window.__journey = {}; }).catch(() => {});
 }
 
+// The receiver's renderer can die mid-matrix (observed twice right after the
+// 150 s probe recording: the next page.evaluate fails with "Target page,
+// context or browser has been closed" while the Edge process itself is
+// fine). Reattach: reconnect CDP if needed, open/reload the receiver page so
+// the remaining legs run instead of cascading. The reloaded page starts with
+// fresh diagnostics hooks - exactly what the next leg wants.
+async function ensureReceiverPage(stack) {
+  const receiver = stack.receiver;
+  const revive = async () => {
+    let browser = receiver.browser;
+    if (!browser || !browser.isConnected()) {
+      browser = await chromium.connectOverCDP(`http://127.0.0.1:${DEBUG_PORT}`);
+      receiver.browser = browser;
+    }
+    const context = browser.contexts()[0];
+    let page = context.pages().find((p) => p.url().includes(`127.0.0.1:${RECEIVER_PORT}`) && !p.isClosed());
+    if (!page) page = await context.newPage();
+    if (!page.url().includes(`127.0.0.1:${RECEIVER_PORT}`)) {
+      await page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+    }
+    await page.waitForSelector('#btn-video', { timeout: 60000 });
+    receiver.page = page;
+    return page;
+  };
+  try {
+    const page = receiver.page;
+    if (page && !page.isClosed()) {
+      await page.evaluate(() => 1); // liveness probe: a dead renderer throws here
+      return page;
+    }
+  } catch (error) { /* fall through to revive */ }
+  console.log('[receiver] page lost; reattaching CDP and reloading the receiver');
+  return revive();
+}
+
 async function waitVideoEntryReady(page, timeoutMs = 20000) {
   await page.waitForFunction(() => {
     const button = document.getElementById('btn-video');
@@ -265,8 +301,17 @@ async function launchReceiver(port = RECEIVER_PORT) {
     '--no-first-run',
     '--no-default-browser-check',
     '--remote-allow-origins=*',
-    '--disable-features=Translate,TranslateUI',
+    // Anti-backgrounding: the receiver tab sits in the BACKGROUND during the
+    // long in-journey recordings (60-600 s). Unflagged, Edge froze/discarded
+    // it (the renderer target closed mid-matrix - observed four times, every
+    // time right after a 150 s recorder session, while the video-c 60 s
+    // sessions always survived). The sender browser has carried these flags
+    // from the start; the receiver needs them too.
+    '--disable-features=Translate,TranslateUI,msSleepingTabs,CalculateNativeWinOcclusion',
     '--disable-translate',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding',
+    '--disable-background-timer-throttling',
     '--window-position=1180,0',
     '--window-size=1380,900',
     `http://127.0.0.1:${port}/`,
@@ -402,6 +447,29 @@ async function launchReceiver(port = RECEIVER_PORT) {
     await page.screenshot({ path: shot }).catch(() => {});
     console.error(`receiver page did not load: url=${url} contentLength=${length} screenshot=${shot}`);
     throw error;
+  }
+  // #btn-video and the status text exist in the STATIC html, so a page whose
+  // app module never executed looks identical to a healthy one. That race is
+  // real: Edge starts with the receiver URL as its startup page and this
+  // goto re-navigates during load; Chromium can abort the module fetches and
+  // leave a static shell (observed once in the E2E-18 lane: no window.__state,
+  // empty log, clicks dead). Verify the product's diagnostics hook actually
+  // exists, reloading once, before any journey runs.
+  let appInitialized = false;
+  for (let attempt = 0; attempt < 2 && !appInitialized; attempt += 1) {
+    try {
+      await page.waitForFunction(() => typeof window.__state === 'string', null, { timeout: 30000 });
+      appInitialized = true;
+    } catch (error) {
+      if (attempt === 0) {
+        console.error('receiver app not initialized (window.__state missing); reloading once');
+        await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+        await page.waitForSelector('#btn-video', { timeout: 60000 }).catch(() => {});
+      }
+    }
+  }
+  if (!appInitialized) {
+    throw new Error('receiver app did not initialize (window.__state missing after one reload)');
   }
   const pid = await findEdgePid(profile);
   if (!pid) throw new Error('could not resolve the normal Edge pid for this profile');
@@ -833,18 +901,39 @@ async function videoRoundtrip(stack, { caseId, videoPath, originalPath, round, r
 // and the app's change handler runs unchanged. (Playwright's setInputFiles
 // times out on this hidden input over a CDP connection.)
 async function importVideo(page, videoPath) {
-  const base64 = readFileSync(videoPath).toString('base64');
-  await page.evaluate(async (encoded) => {
-    const binary = atob(encoded);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-    const file = new File([bytes], 'recording.webm', { type: 'video/webm' });
-    const input = document.getElementById('file-input');
-    const transfer = new DataTransfer();
-    transfer.items.add(file);
-    input.files = transfer.files;
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-  }, base64);
+  // Chunked transfer: a single evaluate argument with a 215 MB clip's base64
+  // (~287 MB string) can exceed the CDP message limits and kills the whole
+  // connection ("Target page, context or browser has been closed"). Hand the
+  // bytes over in bounded 8 MiB chunks, assemble the File in the page, and
+  // dispatch the app's own change event unchanged.
+  const info = statSync(videoPath);
+  const chunkBytes = 8 * 1024 * 1024;
+  const handle = openSync(videoPath, 'r');
+  try {
+    await page.evaluate(() => { window.__importChunks = []; });
+    const buffer = Buffer.alloc(chunkBytes);
+    for (let offset = 0; offset < info.size; offset += chunkBytes) {
+      const read = readSync(handle, buffer, 0, chunkBytes, offset);
+      const slice = buffer.subarray(0, read);
+      await page.evaluate((encoded) => {
+        const binary = atob(encoded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+        window.__importChunks.push(bytes);
+      }, slice.toString('base64'));
+    }
+    await page.evaluate(() => {
+      const file = new File(window.__importChunks, 'recording.webm', { type: 'video/webm' });
+      const input = document.getElementById('file-input');
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      window.__importChunks = null;
+    });
+  } finally {
+    closeSync(handle);
+  }
 }
 
 // --- Round-3 A-R2: in-journey recording rig (E2E-18 video legs) ------------
@@ -858,7 +947,7 @@ async function importVideo(page, videoPath) {
 
 async function launchRecorderPage() {
   const profile = mkdtempSync(join(tmpdir(), 'cimbar-e2e-rec-'));
-  spawn(EDGE, [
+  const child = spawn(EDGE, [
     `--remote-debugging-port=${RECORDER_DEBUG_PORT}`,
     `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
@@ -875,11 +964,48 @@ async function launchRecorderPage() {
   if (!connected) throw new Error('recorder Edge did not expose CDP');
   const context = connected.contexts()[0];
   const page = context.pages()[0] || await context.newPage();
-  await page.goto(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
+  // Edge already navigates to recorder.html as its startup page; a second
+  // goto re-navigates mid-load and can leave a half-initialized page (and
+  // historically raced the picker). Only navigate when the page is not
+  // already there.
+  if (!/recorder\.html/.test(page.url())) {
+    await page.goto(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
+  }
   await page.waitForSelector('#rec', { timeout: 30000 });
   const pid = await findEdgePid(profile);
   if (!pid) throw new Error('could not resolve the recorder Edge pid for this profile');
-  return { profile, pid, browser: connected, page };
+  return { child, profile, pid, browser: connected, page };
+}
+
+// Chromium opens the capture picker only while its window is the ACTIVE OS
+// window. wake() alone is not enough on a busy desktop (the foreground lock
+// can silently refuse); verify the foreground window actually belongs to the
+// target pid and retry with a real activation click, like record-sender's
+// rig does. Returns the verified state for diagnostics.
+async function wakeWindowVerified(pid, { attempts = 3 } = {}) {
+  const check = () => new Promise((resolveCheck) => {
+    const ps = spawn('powershell', ['-NoProfile', '-Command',
+      `Add-Type @'
+using System; using System.Runtime.InteropServices;
+public class FgCheck {
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+}
+'@
+$fg = [FgCheck]::GetForegroundWindow(); $p = 0; [FgCheck]::GetWindowThreadProcessId($fg, [ref]$p) | Out-Null
+if ($p -eq ${pid}) { 'FOREGROUND' } else { "OTHER:$p" }`],
+    { stdio: ['ignore', 'pipe', 'ignore'] });
+    let out = '';
+    ps.stdout.on('data', (c) => { out += c; });
+    ps.on('exit', () => resolveCheck(String(out.trim())));
+  });
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    await wakeWindow(pid);
+    const state = await check();
+    if (state === 'FOREGROUND') return { foreground: true, attempt };
+    console.log(`[recorder] wake attempt ${attempt}: foreground window is not the recorder (${state})`);
+  }
+  return { foreground: false, attempt: attempts };
 }
 
 async function recordSenderClip(stack, { seconds, clipPath }) {
@@ -892,18 +1018,68 @@ async function recordSenderClip(stack, { seconds, clipPath }) {
   try {
     await waitHttp(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
     const recorder = await launchRecorderPage();
+    // Crash diagnostics: a recorder Edge that dies mid-recording must leave
+    // its exit code / disconnect behind, not a bare evaluate error.
+    let crashInfo = null;
+    recorder.child.on('exit', (code, signal) => {
+      crashInfo = `recorder Edge process exited code=${code} signal=${signal ?? 'none'}`;
+    });
+    recorder.browser.on('disconnected', () => {
+      crashInfo = crashInfo || 'recorder CDP connection disconnected (browser gone)';
+    });
     try {
-      await wakeWindow(recorder.pid);
+      const wake = await wakeWindowVerified(recorder.pid);
+      if (!wake.foreground) {
+        console.log(`[recorder] WARNING: the recorder window is not foreground after ${wake.attempt} wake attempts; the picker will likely not appear`);
+      }
       const helperPromise = runHelper(['-Action', 'share', '-Tab', 'window',
         '-SourceTitle', SENDER_TITLE, '-TimeoutSec', '30'], recorder.pid);
       const evaluatePromise = recorder.page.evaluate((ms) => window.__startRecording(ms), seconds * 1000);
-      const [helper, result] = await Promise.all([helperPromise, evaluatePromise]);
-      if (helper.code !== 0) throw new Error(`recording picker helper failed: ${helper.out}`);
+      // Hard bound (loud-failure principle): the helper may time out without
+      // a picker (translate popup, lost foreground), which used to leave the
+      // un-settled getDisplayMedia promise pending forever. Race the whole
+      // recording against picker-wait + recording + transfer margin; on a
+      // timeout the finally below kills the recorder and the leg fails with
+      // diagnostics instead of hanging the lane.
+      const hardBoundMs = 120000 + seconds * 1000 + 180000;
+      const settled = await Promise.race([
+        Promise.all([helperPromise, evaluatePromise]).catch((error) => ({ __error: error })),
+        sleep(hardBoundMs).then(() => null),
+      ]);
+      if (!settled) {
+        throw new Error(`recording leg exceeded its hard bound (${hardBoundMs} ms): the capture picker never ` +
+          `resolved${crashInfo ? ` | ${crashInfo}` : ''}`);
+      }
+      if (settled.__error) throw settled.__error;
+      const [helper, result] = settled;
+      if (helper.code !== 0) throw new Error(`recording picker helper failed${crashInfo ? ` (${crashInfo})` : ''}: ${helper.out}`);
       if (!result.ok) throw new Error(`recording failed: ${result.name}: ${result.message}`);
-      const buffer = Buffer.from(result.base64, 'base64');
+      // recorder.html hands the clip over in bounded base64 chunks; drain
+      // them one at a time so neither the page nor the CDP message ever
+      // holds the whole payload as one string (the old single-string path
+      // killed the renderer on the 150 s probe clip).
+      const parts = [];
+      for (;;) {
+        const take = await recorder.page.evaluate(() => {
+          const s = window.__recorderState;
+          if (!s) return { done: false, chunk: null, bytes: 0 };
+          const chunk = s.chunks.shift() || null;
+          return { done: s.done, chunk, bytes: s.bytes, error: s.error || null };
+        });
+        if (take.chunk) parts.push(take.chunk);
+        if (take.done && !take.chunk) break;
+      }
+      // Decode each chunk SEPARATELY: each chunk is independently btoa()'d
+      // and therefore padded with '='; concatenating padded base64 strings
+      // makes the decoder stop at the first padding, silently keeping only
+      // the first chunk (the E2E-18 4 MiB truncated-clip bug).
+      const buffer = Buffer.concat(parts.map((part) => Buffer.from(part, 'base64')));
       mkdirSync(dirname(clipPath), { recursive: true });
       writeFileSync(clipPath, buffer);
       return { bytes: buffer.length, sha256: createHash('sha256').update(buffer).digest('hex') };
+    } catch (error) {
+      if (crashInfo) error.message = `${error.message} | ${crashInfo}`;
+      throw error;
     } finally {
       await closeReceiver(recorder).catch(() => {});
     }
@@ -1341,6 +1517,11 @@ const SCENARIOS = {
   // serves a usable page that completes a live roundtrip.
   'E2E-2': async (stack) => {
     const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    // The clean relaunch's detached server must be stopped by the journey
+    // that started it: yesterday's run-02 E2E-2 leaked one (server.py
+    // --port 8766 alive for a day), which then occupied today's port and
+    // failed this journey before it began.
+    let cleanServerPid = 0;
     try {
       const PORT2 = 8766;
       const launchArgs = ['-NoProfile', '-File', join(STAGING, 'receiver', 'launch.ps1'),
@@ -1366,6 +1547,8 @@ const SCENARIOS = {
       okLauncher.stderr.on('data', (c) => { okLog += c; });
       okCode = await new Promise((r) => okLauncher.on('exit', r));
       if (okCode !== 0) throw new Error(`clean relaunch failed (${okCode}): ${okLog}`);
+      const pidMatch = /server pid (\d+)/.exec(okLog);
+      if (pidMatch) cleanServerPid = Number(pidMatch[1]);
       await waitHttp(`http://127.0.0.1:${PORT2}/`);
       const sender = await startSenderOnly();
       const receiver = await launchReceiver(PORT2);
@@ -1408,6 +1591,10 @@ const SCENARIOS = {
         notes: `startup-failure journey did not complete: ${String(error.message).slice(0, 160)}`,
       });
       return false;
+    } finally {
+      // This journey owns the clean relaunch's detached server; stopping it
+      // here prevents the run-02-style day-long port leak.
+      await stopPackagedServer(cleanServerPid, STAGING).catch(() => {});
     }
   },
   // E2E-3: live roundtrip, both data classes x 3 rounds.
@@ -1891,6 +2078,11 @@ const SCENARIOS = {
         status: verdict.ok ? 'PASS' : 'FAIL',
         basis: verdict.ok ? null : verdict.failures.join('; '),
         settled: settled.settled,
+        observedCode: verdict.checks.expectedCode,
+        rejectionPoint: rejectionPointForCode(verdict.checks.expectedCode),
+        terminal: verdict.checks.terminal,
+        buttons: legButtons(settled.state),
+        cleanupComplete: verdict.checks.cleanupComplete,
         checks: verdict.checks,
         failures: verdict.failures,
         logDelta: delta.slice(-400),
@@ -1927,16 +2119,26 @@ const SCENARIOS = {
     if (openState.attemptId === openBaseline.attemptId) {
       openFailures.push('the attempt identity did not advance for the dialog-selected import');
     }
+    // Failure attribution (round-3 S-1/protocol): when the OS dialog helper
+    // could not drive the real entry (non-zero helper exit) AND the app saw
+    // no change event at all, this is a rig/automation limitation, not a
+    // product verdict: record NOT_RUN with the helper diagnostics. E2E-15
+    // still cannot PASS - an unexecuted leg is never green.
+    const openRigLimited = !openIngested && openHelper.code !== 0;
     legs.push({
       id: 'real-entry-open',
       path: 'real entry (#btn-video) + OS dialog open, recovery recording',
-      status: openFailures.length === 0 ? 'PASS' : 'FAIL',
-      basis: openFailures.length === 0 ? null : openFailures.join('; '),
+      status: openFailures.length === 0 ? 'PASS' : (openRigLimited ? 'NOT_RUN' : 'FAIL'),
+      basis: openFailures.length === 0 ? null
+        : (openRigLimited ? `rig/input evidence: the OS open dialog could not be driven by the helper (exit ${openHelper.code}); ` : '')
+          + openFailures.join('; '),
       helperExit: openHelper.code,
       logDelta: openDelta.slice(-400),
       failures: openFailures,
       attemptId: openState.attemptId,
-      notes: 'real entry (#btn-video click) + OS dialog open; success is only the app-side recording: delta',
+      notes: openRigLimited
+        ? 'real-entry leg NOT executed (automation limitation); NOT a product verdict'
+        : 'real entry (#btn-video click) + OS dialog open; success is only the app-side recording: delta',
     });
 
     const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
@@ -2118,7 +2320,18 @@ const SCENARIOS = {
 
     const withoutBeforeT = withoutLastUs != null && tStarUs != null && withoutLastUs < tStarUs;
     const withoutOk = withoutEnded != null && withoutState.saveDisabled === true && withoutBeforeT;
-    const withOk = withReady && endReason === 'eof' && withEndedNull && equal && !saveFailure;
+    // Criterion refined by the team-lead (round-3 lane decision): the run
+    // must settle FINITELY at the artifact - __mediaEnded stays null (the
+    // session never reaches the natural media end) and the artifact frame is
+    // the last presented frame. `endReason` is a recorded diagnostic only:
+    // on the artifact path app.js releaseInputs() synchronously stops the
+    // source before the run loop can label the ending, so 'eof' at artifact
+    // completion is structurally unobservable and the acceptance intent
+    // (UAT-L16: finish when the final-frame result arrives) is the finite
+    // settling itself.
+    const artifactAtLastFrame = Number.isFinite(timeline.artifactFrameId)
+      && timeline.artifactFrameId === timeline.presented;
+    const withOk = withReady && withEndedNull && artifactAtLastFrame && equal && !saveFailure;
     const pairValid = tStarSec != null && withoutDurationSec != null && tStarSec > withoutDurationSec;
     const suggestedWithoutSeconds = pairValid ? null : (tStarSec != null ? Math.ceil(tStarSec + 2) : null);
 
@@ -2129,8 +2342,11 @@ const SCENARIOS = {
     });
     const withDeltaTail = logDelta(withBaseline, withState).slice(-400);
     writeTimeline('v-last-with.json', {
-      leg: 'v-last-with', ready: withReady, endReason, mediaEnded: withState.mediaEnded,
+      leg: 'v-last-with', ready: withReady, endReason, endReasonDiagnostic: true,
+      artifactAtLastFrame,
+      mediaEnded: withState.mediaEnded,
       lastUs: timeline.lastUs ?? null, artifactFrameId: timeline.artifactFrameId ?? null,
+      presented: timeline.presented ?? null,
       tStarUs, tStarSec, formula: 'tStarUs = lastUs + artifactFrameId (plan Domain H)',
       videoTimeline: withState.videoTimeline, attemptId: withState.attemptId,
       saveFailure, logDelta: withDeltaTail,
@@ -2151,8 +2367,8 @@ const SCENARIOS = {
         id: 'v-last-with',
         inputKind: 'video', dataClass: 'incompressible', tier: '128KiB (with final segment)',
         status: withOk ? 'PASS' : 'FAIL',
-        basis: withOk ? null : `ready=${withReady}, endReason=${String(endReason)}, ` +
-          `mediaEndedNull=${withEndedNull}, equal=${equal}, saveFailure=${String(saveFailure)}, ` +
+        basis: withOk ? null : `ready=${withReady}, mediaEndedNull=${withEndedNull}, ` +
+          `artifactAtLastFrame=${artifactAtLastFrame}, equal=${equal}, saveFailure=${String(saveFailure)}, ` +
           `delta=${JSON.stringify(withDeltaTail)}`,
         timings: legTimings(withState),
         sizes: legSizes(withState, statSync(original).size),
@@ -2174,7 +2390,8 @@ const SCENARIOS = {
         ...roundtripRecord({
           caseId: 'E2E-16', originalPath: original, receivedPath, runDir: RUN, measurement,
           notes: `V-SHORT not Ready; V-LAST-without real EOF (duration ${withoutDurationSec}s, lastUs ${withoutLastUs}) ` +
-            `with no artifact and lastUs < T*=${tStarSec}s; V-LAST-with endReason=${endReason}, ` +
+            `with no artifact and lastUs < T*=${tStarSec}s; V-LAST-with endReason=${String(endReason)} (diagnostic; ` +
+            `artifact completed on frame ${String(timeline.artifactFrameId)} = last presented ${String(timeline.presented)}), ` +
             `__mediaEnded=${withEndedNull ? 'null' : 'FIRED'}, save hash-clean=${equal}; ` +
             `pair validity T*>without duration=${pairValid}` +
             (pairValid ? '' : `; RE-RECORD: raise --without-seconds to at least ${suggestedWithoutSeconds}`),
@@ -2567,13 +2784,37 @@ const SCENARIOS = {
     const ext = join(RUN, 'fixtures-ext');
     const manifest = await ensureExtendedFixtures();
     const extFile = (relative) => join(ext, relative);
-    const page = stack.receiver.page;
+    let page = stack.receiver.page;
     const legs = [];
     let canonicalRound = null;
     const statBytes = (path) => { try { return statSync(path).size; } catch (error) { return null; } };
+    // A legs-filter rerun (`--legs video-n-1mib-probe`) re-executes only the
+    // named legs and merges them into the existing record through the
+    // runner's upsert path, so an already-executed matrix is never re-run
+    // and no evidence is hand-forged: the executed legs carry over verbatim.
+    const ONLY_LEGS = (args.get('legs') || '').split(',').map((s) => s.trim()).filter(Boolean);
+    // The 4 MiB disposition is derived from the probe outcome at runtime, so
+    // a probe retry always re-derives it: the auto-include must happen BEFORE
+    // the merge base is filtered, or stale disposition legs accumulate.
+    if (ONLY_LEGS.includes('video-n-1mib-probe') && !ONLY_LEGS.includes('video-n-4mib')) {
+      ONLY_LEGS.push('video-n-4mib');
+    }
+    if (ONLY_LEGS.length > 0) {
+      const existing = readResults(RUN).find((entry) => entry.caseId === 'E2E-18');
+      const existingLegs = (existing && existing.measurement && existing.measurement.legs) || [];
+      for (const leg of existingLegs) {
+        if (!ONLY_LEGS.includes(leg.id)) legs.push(leg);
+      }
+      const artifacts = join(RUN, 'proof', 'E2E-18');
+      if (existsSync(join(artifacts, 'original.bin')) && existsSync(join(artifacts, 'received.bin'))) {
+        canonicalRound = { fixture: join(artifacts, 'original.bin'), received: join(artifacts, 'received.bin') };
+      }
+    }
+    const legWanted = (id) => ONLY_LEGS.length === 0 || ONLY_LEGS.includes(id);
 
     const liveLeg = async ({ id, file, dataClass, tier }) => {
       try {
+        page = await ensureReceiverPage(stack);
         const round = await liveRoundtrip(stack, {
           caseId: 'E2E-18', file, round: id, source: 'window', resetMarks: true,
           // The 4 MiB incompressible leg needs a longer Ready bound than the
@@ -2613,15 +2854,24 @@ const SCENARIOS = {
 
     // One recorded-input leg. `bounds` are declared by the caller BEFORE
     // recording and are recorded even when they abort the leg.
-    const videoLeg = async ({ id, clipPath, payloadPath, dataClass, tier, bounds = null, readyTimeoutMs, recording = null }) => {
-      const legBase = { id, inputKind: 'video', dataClass, tier, bounds, recording };
+    const videoLeg = async ({ id, clipPath, payloadPath, dataClass, tier, bounds = null, boundsRef = null, readyTimeoutMs, recording = null }) => {
+      const legBase = { id, inputKind: 'video', dataClass, tier, bounds, boundsRef, recording };
+      page = await ensureReceiverPage(stack);
       await resetJourneyMarks(page);
+      await page.evaluate(() => { window.__mediaEnded = null; }).catch(() => {});
       const baseline = legBaseline(await pageState(page));
+      let baselineTaken = baseline;
       try {
         await importVideo(page, clipPath);
       } catch (error) {
-        legs.push({ ...legBase, status: 'FAIL', basis: `import dispatch failed: ${error.message}` });
-        return;
+        // One reattach + re-dispatch: a lost receiver target must not fail
+        // the leg before a fresh page has been tried. The fresh page's
+        // diagnostics start from zero, so the baseline is re-taken.
+        console.log(`[receiver] import dispatch failed (${String(error.message).slice(0, 120)}); reattaching and retrying once`);
+        page = await ensureReceiverPage(stack);
+        await resetJourneyMarks(page);
+        baselineTaken = legBaseline(await pageState(page));
+        await importVideo(page, clipPath);
       }
       let readyState = null;
       let timedOut = false;
@@ -2665,38 +2915,72 @@ const SCENARIOS = {
         }
         return;
       }
-      // No artifact: split the attribution per the user protocol.
-      const deltaTail = logDelta(baseline, readyState).slice(-300);
+      // No artifact: split the attribution per the user protocol. The
+      // decisive question is whether the import consumed the WHOLE clip:
+      //   - clip duration comes from the receiver's own open precheck line
+      //     ("recording: WxH, D s" in the delta);
+      //   - consumed-to-end = endReason 'eof', the DOM ended event fired, or
+      //     lastUs within ~100 ms of the clip duration.
+      // Consumed-to-end without a rebuild means the RECORDING did not contain
+      // enough data for this tier (rig/input evidence, NOT_RUN). Only a run
+      // that stalls well before the clip end while frames are still expected
+      // is a receiver-side finding.
+      const deltaText = logDelta(baselineTaken, readyState);
+      const deltaTail = deltaText.slice(-300);
+      const recMatch = /recording:\s*\d+x\d+,\s*([\d.]+)s/.exec(deltaText);
+      const clipDurationSec = recMatch ? Number(recMatch[1]) : null;
+      const endReason = timeline.endReason ?? null;
+      const mediaEnded = readyState.mediaEnded || null;
+      const consumedToEnd = endReason === 'eof' || mediaEnded != null
+        || (clipDurationSec != null && lastUs != null
+          && lastUs >= clipDurationSec * 1e6 - 100000);
+      const attribution = {
+        clipDurationSec, presented, lastUs, endReason,
+        mediaEndedFired: mediaEnded != null, consumedToEnd, timedOut,
+      };
       if (presented == null || presented === 0) {
         legs.push({
-          ...legBase, status: 'NOT_RUN',
+          ...legBase, status: 'NOT_RUN', attribution,
           basis: `insufficient-valid-recording (rig/input evidence): presented frames=${String(presented)}, ` +
-            `lastUs=${String(lastUs)}, timedOut=${timedOut}, internal=${String(internalStateOf(readyState))}, ` +
-            `delta=${JSON.stringify(deltaTail)}`,
+            `lastUs=${String(lastUs)}, clip=${String(clipDurationSec)}s, timedOut=${timedOut}, ` +
+            `internal=${String(internalStateOf(readyState))}, delta=${JSON.stringify(deltaTail)}`,
           timings: legTimings(readyState), sizes: legSizes(readyState, statBytes(payloadPath)),
           notes: 'rig/input-evidence problem; NOT a receiver verdict',
         });
         return;
       }
+      if (consumedToEnd) {
+        legs.push({
+          ...legBase, status: 'NOT_RUN', attribution,
+          basis: `insufficient-valid-recording (rig/input evidence): the import consumed the WHOLE ` +
+            `${String(clipDurationSec)}s recording (lastUs=${String(lastUs)}us, endReason=${String(endReason)}, ` +
+            `mediaEnded=${mediaEnded != null}) and ended without a rebuild - the clip does not contain enough ` +
+            `media for this tier`,
+          timings: legTimings(readyState), sizes: legSizes(readyState, statBytes(payloadPath)),
+          notes: 'rig/input-evidence problem (insufficient recording coverage); NOT a receiver verdict',
+        });
+        return;
+      }
       legs.push({
-        ...legBase, status: 'FAIL',
-        basis: `receiver-side: ${presented} frames presented (lastUs=${String(lastUs)}) but no rebuild within ${readyTimeoutMs} ms ` +
-          `(delta=${JSON.stringify(deltaTail)})`,
+        ...legBase, status: 'FAIL', attribution,
+        basis: `receiver-side: the import presented ${presented} frames but its media time stopped at ` +
+          `${String(lastUs)}us of ${String(clipDurationSec)}s (endReason=${String(endReason)}) - ` +
+          `it did NOT consume the recording; no rebuild within ${readyTimeoutMs} ms (delta=${JSON.stringify(deltaTail)})`,
         timings: legTimings(readyState), sizes: legSizes(readyState, statBytes(payloadPath)),
-        notes: 'NEW FINDING: sufficient valid recording but no rebuild - receiver-side investigation required',
+        notes: 'NEW FINDING: the import stalled before the recording end - receiver-side investigation required',
       });
     };
 
     // 1-4: live legs, both data classes at 1 MiB and 4 MiB.
-    await liveLeg({ id: 'live-c-1mib', file: extFile('compressible/ext-text-1mib.bin'), dataClass: 'compressible', tier: '1MiB' });
-    await liveLeg({ id: 'live-c-4mib', file: extFile('compressible/ext-text-4mib.bin'), dataClass: 'compressible', tier: '4MiB' });
-    await liveLeg({ id: 'live-n-1mib', file: extFile('incompressible/ext-random-1mib.bin'), dataClass: 'incompressible', tier: '1MiB' });
-    await liveLeg({ id: 'live-n-4mib', file: extFile('incompressible/ext-random-4mib.bin'), dataClass: 'incompressible', tier: '4MiB' });
+    if (legWanted('live-c-1mib')) await liveLeg({ id: 'live-c-1mib', file: extFile('compressible/ext-text-1mib.bin'), dataClass: 'compressible', tier: '1MiB' });
+    if (legWanted('live-c-4mib')) await liveLeg({ id: 'live-c-4mib', file: extFile('compressible/ext-text-4mib.bin'), dataClass: 'compressible', tier: '4MiB' });
+    if (legWanted('live-n-1mib')) await liveLeg({ id: 'live-n-1mib', file: extFile('incompressible/ext-random-1mib.bin'), dataClass: 'incompressible', tier: '1MiB' });
+    if (legWanted('live-n-4mib')) await liveLeg({ id: 'live-n-4mib', file: extFile('incompressible/ext-random-4mib.bin'), dataClass: 'incompressible', tier: '4MiB' });
 
     // 5: recorded compressible 4 MiB. Existing video tiers are covered by
     // E2E-14 (V-GOOD-C / V-GOOD-N, 64 KiB class) and E2E-16 (128 KiB pair);
     // they are not re-recorded here.
-    {
+    if (legWanted('video-c-4mib')) {
       const bounds = { recordSeconds: 60, maxRecordBytes: 268435456, importWaitMs: 300000 };
       const payload = extFile('compressible/ext-text-4mib.bin');
       const id = 'video-c-4mib';
@@ -2723,7 +3007,7 @@ const SCENARIOS = {
     }
 
     // 6: recorded incompressible 128 KiB from the existing real pair.
-    {
+    if (legWanted('video-n-128kib')) {
       const id = 'video-n-128kib';
       const clip = join(RUN, 'fixtures-media', 'V-LAST-with.webm');
       const payload = join(RUN, 'fixtures-media', 'payload-128k-random.bin');
@@ -2739,9 +3023,12 @@ const SCENARIOS = {
     }
 
     // 7: bounded 1 MiB incompressible probe. The bounds are declared HERE,
-    // before recording, and are carried into the leg even on failure.
+    // before recording, written to evidence BEFORE anything executes, and are
+    // carried into the leg even on failure (a bound cannot be back-fitted).
+    // A probe retry (--legs video-n-1mib-probe) re-declares the bounds and
+    // records a NEW attempt.
     let probeOutcome = null;
-    {
+    if (legWanted('video-n-1mib-probe')) {
       const id = 'video-n-1mib-probe';
       const bounds = {
         recordSeconds: 150,          // recording length bound (sender trace coverage)
@@ -2749,6 +3036,19 @@ const SCENARIOS = {
         importWaitMs: 600000,        // bounded import wait
       };
       const payload = extFile('incompressible/ext-random-1mib.bin');
+      const boundsRel = 'proof/E2E-18/probe-bounds.json';
+      writeFileSync(join(RUN, boundsRel), `${JSON.stringify({
+        legId: id,
+        declaredAt: new Date().toISOString(),
+        inputKind: 'video',
+        dataClass: 'incompressible',
+        tier: '1MiB bounded probe',
+        payload: { file: 'fixtures-ext/incompressible/ext-random-1mib.bin', bytes: statBytes(payload) },
+        bounds,
+        failureAttribution: 'insufficient-valid-recording (rig/input evidence) => NOT_RUN; ' +
+          'sufficient presented frames without a rebuild => receiver-side FAIL (new finding)',
+        note: 'declared BEFORE the probe records or imports anything; a later leg record must carry these values',
+      }, null, 2)}\n`);
       await loadSenderFile(stack.senderPage, payload);
       const clipPath = join(RUN, 'fixtures-media', 'E2E18-V-N-1mib-probe.webm');
       let recording = null;
@@ -2758,22 +3058,24 @@ const SCENARIOS = {
       } catch (error) { recError = String(error.message || error); }
       if (!recording) {
         legs.push({ id, inputKind: 'video', dataClass: 'incompressible', tier: '1MiB bounded probe', bounds,
+          boundsRef: boundsRel,
           status: 'NOT_RUN', basis: `recording failed (rig): ${recError}`,
           notes: 'rig/input-evidence problem; NOT a receiver verdict' });
       } else if (recording.bytes > bounds.maxRecordBytes) {
         legs.push({ id, inputKind: 'video', dataClass: 'incompressible', tier: '1MiB bounded probe', bounds,
+          boundsRef: boundsRel,
           status: 'NOT_RUN', basis: `recording exceeded the declared byte bound (${recording.bytes} > ${bounds.maxRecordBytes})`,
           notes: 'rig bound aborted the leg before import' });
       } else {
         await videoLeg({ id, clipPath, payloadPath: payload, dataClass: 'incompressible', tier: '1MiB bounded probe',
-          bounds, readyTimeoutMs: bounds.importWaitMs,
+          bounds, boundsRef: boundsRel, readyTimeoutMs: bounds.importWaitMs,
           recording: { bytes: recording.bytes, sha256: recording.sha256, seconds: bounds.recordSeconds } });
       }
       probeOutcome = legs[legs.length - 1];
     }
 
     // 8: recorded incompressible 4 MiB - disposition decided by the probe.
-    {
+    if (legWanted('video-n-4mib')) {
       const id = 'video-n-4mib';
       const payload = extFile('incompressible/ext-random-4mib.bin');
       if (probeOutcome && probeOutcome.status === 'PASS') {
@@ -2818,7 +3120,7 @@ const SCENARIOS = {
     // 9: live compressible 20 MiB over budget: 15008 rejection, stop, then a
     // hash-clean normal-file recovery (the user decision requires the real
     // artifact-budget rejection; a pixel-budget refusal is not a substitute).
-    {
+    if (legWanted('live-c-20mib-over-budget')) {
       const id = 'live-c-20mib-over-budget';
       const payload = extFile('over-budget/ext-text-20mib.bin');
       const budget = actualArtifactBudget();
@@ -2829,6 +3131,7 @@ const SCENARIOS = {
         sizes: { rawBytes: statBytes(payload), streamBytes: null, artifactBytes: null },
       };
       try {
+        page = await ensureReceiverPage(stack);
         await loadSenderFile(stack.senderPage, payload);
         await stack.senderPage.bringToFront();
         await sleep(300);
@@ -2901,6 +3204,7 @@ const SCENARIOS = {
 
     // 10: live incompressible 20 MiB over budget - NOT_RUN with the code-level
     // basis (the user decision explicitly allows this one).
+    if (legWanted('live-n-20mib-over-budget')) {
     legs.push({
       id: 'live-n-20mib-over-budget',
       inputKind: 'live', dataClass: 'incompressible', tier: '20MiB-over-budget',
@@ -2915,6 +3219,7 @@ const SCENARIOS = {
       timings: null,
       notes: 'planned 20 MiB incompressible sample; no sample generated because the leg is not executable on this rig',
     });
+    }
 
     // Every planned leg must carry an explicit status.
     const PLANNED_LEG_IDS = [
@@ -2927,46 +3232,89 @@ const SCENARIOS = {
         legs.push({ id, status: 'FAIL', basis: 'leg never produced a status (runner abort)' });
       }
     }
-    const everyExecutedOk = legs.every((leg) => leg.status === 'PASS' || leg.status === 'NOT_RUN');
-    const everyNotRunHasBasis = legs
-      .filter((leg) => leg.status === 'NOT_RUN')
-      .every((leg) => typeof leg.basis === 'string' && leg.basis.length > 0);
-    const pass = everyExecutedOk && everyNotRunHasBasis && canonicalRound != null;
+    // Dedupe by id (a legs-filter re-run merges carried legs with newly
+    // executed ones; the LAST occurrence of an id is the newest evidence)
+    // and restore the planned order.
+    const legsById = new Map();
+    for (const leg of legs) legsById.set(leg.id, leg);
+    const uniqueLegs = PLANNED_LEG_IDS.map((id) => legsById.get(id)).filter(Boolean);
+    // A NOT_RUN leg without a basis is a runner-integrity failure, not an
+    // incomplete-but-honest matrix: it is treated as a failing leg below.
+    const legFailIds = uniqueLegs.filter((leg) => leg.status === 'FAIL'
+      || (leg.status === 'NOT_RUN' && !(typeof leg.basis === 'string' && leg.basis.length > 0)))
+      .map((leg) => leg.id);
+    const legNotRunIds = uniqueLegs.filter((leg) => leg.status === 'NOT_RUN').map((leg) => leg.id);
 
     const measurement = {
-      legs,
+      legs: uniqueLegs,
       matrix: {
         fixtures: { root: 'fixtures-ext', seed: manifest.seed, files: (manifest.files || []).length },
         plannedLegIds: PLANNED_LEG_IDS,
       },
     };
     if (canonicalRound) {
+      const matrixNotes = `matrix legs: ${uniqueLegs.map((leg) => `${leg.id}=${leg.status}`).join(', ')}; ` +
+        `over-budget budget=${String(actualArtifactBudget().maxArtifactBytes)}; ` +
+        'performance remains NOT_EVALUATED (thresholds not frozen)';
+      if (legFailIds.length > 0) {
+        upsertResult(RUN, {
+          ...roundtripRecord({
+            caseId: 'E2E-18', originalPath: canonicalRound.fixture, receivedPath: canonicalRound.received,
+            runDir: RUN, measurement,
+            notes: `${matrixNotes}; failing legs: ${legFailIds.join(', ')}; ` +
+              'canonical artifact pair is a hash-clean save from this matrix',
+          }),
+          result: 'FAIL',
+        });
+        return false;
+      }
+      if (legNotRunIds.length > 0) {
+        // User directive (round-3 lane): a matrix whose REQUIRED leg is
+        // NOT_RUN is not a full PASS. The executed legs' evidence stays
+        // verbatim; the record-level result honestly says the matrix is
+        // incomplete. The local gate cannot claim all-PASS until a
+        // user-confirmed scope revision covers the NOT_RUN leg(s).
+        // This branch bypasses roundtripRecord (NOT_RUN must leave
+        // executedBy/received null), so it materializes its proof artifacts
+        // itself - the gate re-checks every proofRef on disk.
+        const originalArtifact = copyArtifact(RUN, 'E2E-18', canonicalRound.fixture, 'original.bin');
+        const receivedArtifact = copyArtifact(RUN, 'E2E-18', canonicalRound.received, 'received.bin');
+        upsertResult(RUN, {
+          caseId: 'E2E-18', scope: 'local_simulated', caseType: 'file_roundtrip',
+          result: 'NOT_RUN', executedBy: null, receivedSha256: null,
+          referenceSha256: originalArtifact.sha256,
+          proofRefs: [originalArtifact.rel, receivedArtifact.rel],
+          measurement,
+          notes: `${matrixNotes}; NOT_RUN legs: ${legNotRunIds.join(', ')}; ` +
+            'RESULT SEMANTICS (user directive): a matrix with a NOT_RUN required leg is not a full ' +
+            'PASS and the local acceptance cannot claim all-PASS until a user-confirmed scope revision ' +
+            'covers it; the executed legs\' PASS evidence and artifacts stay verbatim',
+        });
+        return false;
+      }
       upsertResult(RUN, {
         ...roundtripRecord({
           caseId: 'E2E-18', originalPath: canonicalRound.fixture, receivedPath: canonicalRound.received,
           runDir: RUN, measurement,
-          notes: `matrix legs: ${legs.map((leg) => `${leg.id}=${leg.status}`).join(', ')}; ` +
-            `canonical artifact pair is a hash-clean save from this matrix; ` +
-            `over-budget budget=${String(actualArtifactBudget().maxArtifactBytes)}; ` +
-            'performance remains NOT_EVALUATED (thresholds not frozen)',
+          notes: `${matrixNotes}; canonical artifact pair is a hash-clean save from this matrix`,
         }),
-        result: pass ? 'PASS' : 'FAIL',
+        result: 'PASS',
       });
-      return pass;
+      return true;
     }
     // No hash-clean save happened at all: honest FAIL with an observation.
     const observation = join(RUN, 'proof', 'E2E-18', 'observation.txt');
     mkdirSync(dirname(observation), { recursive: true });
     writeFileSync(observation, [
       `E2E-18 observation (${new Date().toISOString()})`,
-      ...legs.map((leg) => `${leg.id}: ${leg.status} ${leg.basis || ''}`),
+      ...uniqueLegs.map((leg) => `${leg.id}: ${leg.status} ${leg.basis || ''}`),
     ].join('\n') + '\n');
     upsertResult(RUN, {
       caseId: 'E2E-18', scope: 'local_simulated', caseType: 'file_roundtrip', result: 'FAIL',
       executedBy: 'executor',
       referenceSha256: '0'.repeat(64), receivedSha256: '0'.repeat(64),
       proofRefs: ['proof/E2E-18/observation.txt'], measurement,
-      notes: `no hash-clean save in the matrix: ${legs.map((leg) => `${leg.id}=${leg.status}`).join(', ')}`,
+      notes: `no hash-clean save in the matrix: ${uniqueLegs.map((leg) => `${leg.id}=${leg.status}`).join(', ')}`,
     });
     return false;
   },
@@ -3175,6 +3523,11 @@ function writeAttemptMarker(caseId, attemptId) {
   const scope = planned.scope || 'local_simulated';
   const executor = planned.executorRole || 'executor';
   const caseType = planned.caseType || 'negative_or_lifecycle';
+  // Preserve the previous attempt's measurement DATA on the in-flight marker:
+  // a legs-filter rerun (E2E-18 --legs) merges its new legs into the prior
+  // matrix, and the marker must not destroy that merge base. The marker
+  // still claims no PASS (result FAIL), so no stale claim is resurrected.
+  const existing = readResults(RUN).find((entry) => entry.caseId === caseId);
   const rel = `proof/${caseId}/attempt-${attemptId}.txt`;
   const markerPath = join(RUN, rel);
   mkdirSync(dirname(markerPath), { recursive: true });
@@ -3193,6 +3546,7 @@ function writeAttemptMarker(caseId, attemptId) {
     notes: `attempt ${attemptId} in flight; this attempt claims no PASS (round-3 S-1 attempt marker)`,
     attemptId,
   };
+  if (existing && existing.measurement) record.measurement = existing.measurement;
   if (caseType === 'file_roundtrip') {
     record.referenceSha256 = '0'.repeat(64);
     record.receivedSha256 = '0'.repeat(64);
