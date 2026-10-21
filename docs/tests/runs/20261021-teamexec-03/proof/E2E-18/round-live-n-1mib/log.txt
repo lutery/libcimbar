@@ -1,0 +1,9 @@
+status=Saved
+artifact=ext-random-1mib.bin 1048576 bytes
+log=capture stopped; the file is ready to save
+saved (1)
+capture stopped; the file is ready to save
+saved (2)
+capture stopped; the file is ready to save
+saved (3)
+

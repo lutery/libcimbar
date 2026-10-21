@@ -1,0 +1,33 @@
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:39] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 00:17:40] "GET /pwa.json HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:17:47] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:17:48] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:17:48] code 404, message File not found
+127.0.0.1 - - [22/Oct/2026 00:17:48] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=54084
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-video-c-4mib\received.bin
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:23:44] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:23:45] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [22/Oct/2026 00:23:45] code 404, message File not found
+127.0.0.1 - - [22/Oct/2026 00:23:45] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=72364
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+2026-10-21T16:27:03.352Z CASE E2E-18 FAIL (attempt E2E-18-2026-10-21T16-17-38-857Z-8ce7ca)

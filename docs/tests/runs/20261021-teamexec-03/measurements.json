@@ -1,0 +1,1477 @@
+{
+  "measurements": {
+    "status": "NOT_EVALUATED",
+    "reason": "thresholds not frozen (V-002/V-003 pending); this tool reports measurements only",
+    "boundaries": {
+      "init": "decoder-client init start (before the Worker is created) -> first valid input frame accepted",
+      "validInputStart": "the first frame from the selected source accepted by the session (state -> Receiving; for a recording, the first frame actually presented)",
+      "reconstruction": "valid-input start -> artifact delivered (state -> Ready): fountain decode + decompress",
+      "save": "save click / picker request -> writable stream closed after the last byte (the OS picker interval is included, not separated)"
+    },
+    "legs": [
+      {
+        "caseId": "E2E-15",
+        "legId": "real-entry-cancel",
+        "inputKind": null,
+        "dataClass": null,
+        "tier": null,
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "real entry (#btn-video click) + OS dialog cancel; no change event may fire"
+      },
+      {
+        "caseId": "E2E-15",
+        "legId": "empty-import",
+        "inputKind": null,
+        "dataClass": null,
+        "tier": null,
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+      },
+      {
+        "caseId": "E2E-15",
+        "legId": "text-import",
+        "inputKind": null,
+        "dataClass": null,
+        "tier": null,
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+      },
+      {
+        "caseId": "E2E-15",
+        "legId": "corrupt-import",
+        "inputKind": null,
+        "dataClass": null,
+        "tier": null,
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+      },
+      {
+        "caseId": "E2E-15",
+        "legId": "real-entry-open",
+        "inputKind": null,
+        "dataClass": null,
+        "tier": null,
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "real entry (#btn-video click) + OS dialog open; success is only the app-side recording: delta"
+      },
+      {
+        "caseId": "E2E-16",
+        "legId": "v-short",
+        "inputKind": "video",
+        "dataClass": "compressible",
+        "tier": "V-SHORT (400 ms)",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": 218,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792603864885,
+          "initReadyAt": 1792603865000,
+          "validInputStartAt": 1792603865103,
+          "reconstructionDoneAt": null,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 218,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "a 400 ms real recording must not produce a saveable artifact"
+      },
+      {
+        "caseId": "E2E-16",
+        "legId": "v-last-without",
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB (without)",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": null,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": 686,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792603869110,
+          "initReadyAt": 1792603869211,
+          "validInputStartAt": 1792603869796,
+          "reconstructionDoneAt": null,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 686,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "real EOF duration 5.842s; no artifact"
+      },
+      {
+        "caseId": "E2E-16",
+        "legId": "v-last-with",
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB (with final segment)",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 131072,
+          "streamBytes": 131184,
+          "artifactBytes": 131072
+        },
+        "timings": {
+          "initMs": 630,
+          "reconstructMs": 17350,
+          "totalToReadyMs": 17980,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792603906025,
+          "initReadyAt": 1792603906127,
+          "validInputStartAt": 1792603906655,
+          "reconstructionDoneAt": 1792603924005,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 630,
+          "reconstructMs": 17350,
+          "totalToReadyMs": 17980,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+          "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+          "equal": true
+        },
+        "notes": "completion media time T*=8.028118s from lastUs+artifactFrameId"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-c-1mib",
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "1MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 1048576,
+          "streamBytes": 3354,
+          "artifactBytes": 1048576
+        },
+        "timings": {
+          "initMs": 3979,
+          "reconstructMs": 245,
+          "totalToReadyMs": 4224,
+          "saveMs": 4230
+        },
+        "rawTimings": {
+          "initStartAt": 1792578797212,
+          "initReadyAt": 1792578797310,
+          "validInputStartAt": 1792578801191,
+          "reconstructionDoneAt": 1792578801436,
+          "saveRequestAt": 1792578807367,
+          "writeCloseAt": 1792578811597,
+          "initMs": 3979,
+          "reconstructMs": 245,
+          "totalToReadyMs": 4224,
+          "saveMs": 4230
+        },
+        "hashes": {
+          "original": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+          "received": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+          "equal": true
+        },
+        "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-1mib/received.bin"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-c-4mib",
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "4MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 4194304,
+          "streamBytes": 13338,
+          "artifactBytes": 4194304
+        },
+        "timings": {
+          "initMs": 3464,
+          "reconstructMs": 306,
+          "totalToReadyMs": 3770,
+          "saveMs": 4148
+        },
+        "rawTimings": {
+          "initStartAt": 1792578827500,
+          "initReadyAt": 1792578827929,
+          "validInputStartAt": 1792578830964,
+          "reconstructionDoneAt": 1792578831270,
+          "saveRequestAt": 1792578834655,
+          "writeCloseAt": 1792578838803,
+          "initMs": 3464,
+          "reconstructMs": 306,
+          "totalToReadyMs": 3770,
+          "saveMs": 4148
+        },
+        "hashes": {
+          "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+          "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+          "equal": true
+        },
+        "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-4mib/received.bin"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-n-1mib",
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "1MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 1048576,
+          "streamBytes": 1049244,
+          "artifactBytes": 1048576
+        },
+        "timings": {
+          "initMs": 3363,
+          "reconstructMs": 16240,
+          "totalToReadyMs": 19603,
+          "saveMs": 4047
+        },
+        "rawTimings": {
+          "initStartAt": 1792578854871,
+          "initReadyAt": 1792578855306,
+          "validInputStartAt": 1792578858234,
+          "reconstructionDoneAt": 1792578874474,
+          "saveRequestAt": 1792578877142,
+          "writeCloseAt": 1792578881189,
+          "initMs": 3363,
+          "reconstructMs": 16240,
+          "totalToReadyMs": 19603,
+          "saveMs": 4047
+        },
+        "hashes": {
+          "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+          "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+          "equal": true
+        },
+        "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-1mib/received.bin"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-n-4mib",
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "4MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 4194304,
+          "streamBytes": 4196892,
+          "artifactBytes": 4194304
+        },
+        "timings": {
+          "initMs": 3426,
+          "reconstructMs": 67300,
+          "totalToReadyMs": 70726,
+          "saveMs": 4059
+        },
+        "rawTimings": {
+          "initStartAt": 1792578897106,
+          "initReadyAt": 1792578897504,
+          "validInputStartAt": 1792578900532,
+          "reconstructionDoneAt": 1792578967832,
+          "saveRequestAt": 1792578970850,
+          "writeCloseAt": 1792578974909,
+          "initMs": 3426,
+          "reconstructMs": 67300,
+          "totalToReadyMs": 70726,
+          "saveMs": 4059
+        },
+        "hashes": {
+          "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+          "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+          "equal": true
+        },
+        "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-4mib/received.bin"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "video-c-4mib",
+        "inputKind": "video",
+        "dataClass": "compressible",
+        "tier": "4MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 4194304,
+          "streamBytes": 13338,
+          "artifactBytes": 4194304
+        },
+        "timings": {
+          "initMs": 696,
+          "reconstructMs": 373,
+          "totalToReadyMs": 1069,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792600834823,
+          "initReadyAt": 1792600834969,
+          "validInputStartAt": 1792600835519,
+          "reconstructionDoneAt": 1792600835892,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 696,
+          "reconstructMs": 373,
+          "totalToReadyMs": 1069,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+          "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+          "equal": true
+        },
+        "notes": "recorded import roundtrip; presented frames=2, lastUs=169000"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "video-n-128kib",
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 131072,
+          "streamBytes": 131184,
+          "artifactBytes": 131072
+        },
+        "timings": {
+          "initMs": 651,
+          "reconstructMs": 17611,
+          "totalToReadyMs": 18262,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792579199608,
+          "initReadyAt": 1792579199736,
+          "validInputStartAt": 1792579200259,
+          "reconstructionDoneAt": 1792579217870,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 651,
+          "reconstructMs": 17611,
+          "totalToReadyMs": 18262,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+          "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+          "equal": true
+        },
+        "notes": "recorded import roundtrip; presented frames=118, lastUs=8028000"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "video-n-1mib-probe",
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "1MiB bounded probe",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 1048576,
+          "streamBytes": 1049244,
+          "artifactBytes": 1048576
+        },
+        "timings": {
+          "initMs": 570,
+          "reconstructMs": 141731,
+          "totalToReadyMs": 142301,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792601887658,
+          "initReadyAt": 1792601887779,
+          "validInputStartAt": 1792601888228,
+          "reconstructionDoneAt": 1792602029959,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 570,
+          "reconstructMs": 141731,
+          "totalToReadyMs": 142301,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+          "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+          "equal": true
+        },
+        "notes": "recorded import roundtrip; presented frames=975, lastUs=65559000"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "video-n-4mib",
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "4MiB",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 4194304,
+          "streamBytes": 4196892,
+          "artifactBytes": 4194304
+        },
+        "timings": {
+          "initMs": 1943,
+          "reconstructMs": 566085,
+          "totalToReadyMs": 568028,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792603075113,
+          "initReadyAt": 1792603075228,
+          "validInputStartAt": 1792603077056,
+          "reconstructionDoneAt": 1792603643141,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 1943,
+          "reconstructMs": 566085,
+          "totalToReadyMs": 568028,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+          "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+          "equal": true
+        },
+        "notes": "recorded import roundtrip; presented frames=3844, lastUs=264821000"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-c-20mib-over-budget",
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "20MiB-over-budget",
+        "status": "PASS",
+        "basis": null,
+        "sizes": {
+          "rawBytes": 20971520,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": 3529,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {
+          "initStartAt": 1792579432214,
+          "initReadyAt": 1792579432630,
+          "validInputStartAt": 1792579435743,
+          "reconstructionDoneAt": null,
+          "saveRequestAt": null,
+          "writeCloseAt": null,
+          "initMs": 3529,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "hashes": {
+          "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+          "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+          "equal": true
+        },
+        "notes": "budget 16777216 (build-desktop-recv/staging/receiver/config/profile.json); rejection then stop then hash-clean normal-file recovery"
+      },
+      {
+        "caseId": "E2E-18",
+        "legId": "live-n-20mib-over-budget",
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "20MiB-over-budget",
+        "status": "NOT_RUN",
+        "basis": "code-level basis: the receiver has no early artifact-size check. build_artifact (web/desktop-recv/worker/decoder-worker.js:209-246) runs only after the fountain decoder reports a complete file, so an incompressible 20 MiB payload must transfer the full ~20 MiB encoded stream before rejection - unbounded wall time on this rig. The artifact-budget boundary itself is covered by IAT/UT-023 and by the compressible 20 MiB leg, which exercises the real 15008 rejection. The pixel budget is a different (frame-size) boundary and is explicitly NOT a substitute.",
+        "sizes": {
+          "rawBytes": 20971520,
+          "streamBytes": null,
+          "artifactBytes": null
+        },
+        "timings": {
+          "initMs": null,
+          "reconstructMs": null,
+          "totalToReadyMs": null,
+          "saveMs": null
+        },
+        "rawTimings": {},
+        "hashes": {
+          "original": null,
+          "received": null,
+          "equal": null
+        },
+        "notes": "planned 20 MiB incompressible sample; no sample generated because the leg is not executable on this rig"
+      }
+    ],
+    "grouped": [
+      {
+        "inputKind": "None",
+        "dataClass": "None",
+        "tier": "None",
+        "legs": [
+          {
+            "caseId": "E2E-15",
+            "legId": "real-entry-cancel",
+            "inputKind": null,
+            "dataClass": null,
+            "tier": null,
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "real entry (#btn-video click) + OS dialog cancel; no change event may fire"
+          },
+          {
+            "caseId": "E2E-15",
+            "legId": "empty-import",
+            "inputKind": null,
+            "dataClass": null,
+            "tier": null,
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+          },
+          {
+            "caseId": "E2E-15",
+            "legId": "text-import",
+            "inputKind": null,
+            "dataClass": null,
+            "tier": null,
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+          },
+          {
+            "caseId": "E2E-15",
+            "legId": "corrupt-import",
+            "inputKind": null,
+            "dataClass": null,
+            "tier": null,
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "import-path-only evidence (DataTransfer change event, not the entry)"
+          },
+          {
+            "caseId": "E2E-15",
+            "legId": "real-entry-open",
+            "inputKind": null,
+            "dataClass": null,
+            "tier": null,
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "real entry (#btn-video click) + OS dialog open; success is only the app-side recording: delta"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "1MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-c-1mib",
+            "inputKind": "live",
+            "dataClass": "compressible",
+            "tier": "1MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 1048576,
+              "streamBytes": 3354,
+              "artifactBytes": 1048576
+            },
+            "timings": {
+              "initMs": 3979,
+              "reconstructMs": 245,
+              "totalToReadyMs": 4224,
+              "saveMs": 4230
+            },
+            "rawTimings": {
+              "initStartAt": 1792578797212,
+              "initReadyAt": 1792578797310,
+              "validInputStartAt": 1792578801191,
+              "reconstructionDoneAt": 1792578801436,
+              "saveRequestAt": 1792578807367,
+              "writeCloseAt": 1792578811597,
+              "initMs": 3979,
+              "reconstructMs": 245,
+              "totalToReadyMs": 4224,
+              "saveMs": 4230
+            },
+            "hashes": {
+              "original": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+              "received": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+              "equal": true
+            },
+            "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-1mib/received.bin"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "20MiB-over-budget",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-c-20mib-over-budget",
+            "inputKind": "live",
+            "dataClass": "compressible",
+            "tier": "20MiB-over-budget",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 20971520,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": 3529,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792579432214,
+              "initReadyAt": 1792579432630,
+              "validInputStartAt": 1792579435743,
+              "reconstructionDoneAt": null,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 3529,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+              "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+              "equal": true
+            },
+            "notes": "budget 16777216 (build-desktop-recv/staging/receiver/config/profile.json); rejection then stop then hash-clean normal-file recovery"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "compressible",
+        "tier": "4MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-c-4mib",
+            "inputKind": "live",
+            "dataClass": "compressible",
+            "tier": "4MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 4194304,
+              "streamBytes": 13338,
+              "artifactBytes": 4194304
+            },
+            "timings": {
+              "initMs": 3464,
+              "reconstructMs": 306,
+              "totalToReadyMs": 3770,
+              "saveMs": 4148
+            },
+            "rawTimings": {
+              "initStartAt": 1792578827500,
+              "initReadyAt": 1792578827929,
+              "validInputStartAt": 1792578830964,
+              "reconstructionDoneAt": 1792578831270,
+              "saveRequestAt": 1792578834655,
+              "writeCloseAt": 1792578838803,
+              "initMs": 3464,
+              "reconstructMs": 306,
+              "totalToReadyMs": 3770,
+              "saveMs": 4148
+            },
+            "hashes": {
+              "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+              "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+              "equal": true
+            },
+            "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-4mib/received.bin"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "1MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-n-1mib",
+            "inputKind": "live",
+            "dataClass": "incompressible",
+            "tier": "1MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 1048576,
+              "streamBytes": 1049244,
+              "artifactBytes": 1048576
+            },
+            "timings": {
+              "initMs": 3363,
+              "reconstructMs": 16240,
+              "totalToReadyMs": 19603,
+              "saveMs": 4047
+            },
+            "rawTimings": {
+              "initStartAt": 1792578854871,
+              "initReadyAt": 1792578855306,
+              "validInputStartAt": 1792578858234,
+              "reconstructionDoneAt": 1792578874474,
+              "saveRequestAt": 1792578877142,
+              "writeCloseAt": 1792578881189,
+              "initMs": 3363,
+              "reconstructMs": 16240,
+              "totalToReadyMs": 19603,
+              "saveMs": 4047
+            },
+            "hashes": {
+              "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+              "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+              "equal": true
+            },
+            "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-1mib/received.bin"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "20MiB-over-budget",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-n-20mib-over-budget",
+            "inputKind": "live",
+            "dataClass": "incompressible",
+            "tier": "20MiB-over-budget",
+            "status": "NOT_RUN",
+            "basis": "code-level basis: the receiver has no early artifact-size check. build_artifact (web/desktop-recv/worker/decoder-worker.js:209-246) runs only after the fountain decoder reports a complete file, so an incompressible 20 MiB payload must transfer the full ~20 MiB encoded stream before rejection - unbounded wall time on this rig. The artifact-budget boundary itself is covered by IAT/UT-023 and by the compressible 20 MiB leg, which exercises the real 15008 rejection. The pixel budget is a different (frame-size) boundary and is explicitly NOT a substitute.",
+            "sizes": {
+              "rawBytes": 20971520,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": null,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {},
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "planned 20 MiB incompressible sample; no sample generated because the leg is not executable on this rig"
+          }
+        ]
+      },
+      {
+        "inputKind": "live",
+        "dataClass": "incompressible",
+        "tier": "4MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "live-n-4mib",
+            "inputKind": "live",
+            "dataClass": "incompressible",
+            "tier": "4MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 4194304,
+              "streamBytes": 4196892,
+              "artifactBytes": 4194304
+            },
+            "timings": {
+              "initMs": 3426,
+              "reconstructMs": 67300,
+              "totalToReadyMs": 70726,
+              "saveMs": 4059
+            },
+            "rawTimings": {
+              "initStartAt": 1792578897106,
+              "initReadyAt": 1792578897504,
+              "validInputStartAt": 1792578900532,
+              "reconstructionDoneAt": 1792578967832,
+              "saveRequestAt": 1792578970850,
+              "writeCloseAt": 1792578974909,
+              "initMs": 3426,
+              "reconstructMs": 67300,
+              "totalToReadyMs": 70726,
+              "saveMs": 4059
+            },
+            "hashes": {
+              "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+              "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+              "equal": true
+            },
+            "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-4mib/received.bin"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "compressible",
+        "tier": "4MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "video-c-4mib",
+            "inputKind": "video",
+            "dataClass": "compressible",
+            "tier": "4MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 4194304,
+              "streamBytes": 13338,
+              "artifactBytes": 4194304
+            },
+            "timings": {
+              "initMs": 696,
+              "reconstructMs": 373,
+              "totalToReadyMs": 1069,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792600834823,
+              "initReadyAt": 1792600834969,
+              "validInputStartAt": 1792600835519,
+              "reconstructionDoneAt": 1792600835892,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 696,
+              "reconstructMs": 373,
+              "totalToReadyMs": 1069,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+              "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+              "equal": true
+            },
+            "notes": "recorded import roundtrip; presented frames=2, lastUs=169000"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "compressible",
+        "tier": "V-SHORT (400 ms)",
+        "legs": [
+          {
+            "caseId": "E2E-16",
+            "legId": "v-short",
+            "inputKind": "video",
+            "dataClass": "compressible",
+            "tier": "V-SHORT (400 ms)",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": 218,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792603864885,
+              "initReadyAt": 1792603865000,
+              "validInputStartAt": 1792603865103,
+              "reconstructionDoneAt": null,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 218,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "a 400 ms real recording must not produce a saveable artifact"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "video-n-128kib",
+            "inputKind": "video",
+            "dataClass": "incompressible",
+            "tier": "128KiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 131072,
+              "streamBytes": 131184,
+              "artifactBytes": 131072
+            },
+            "timings": {
+              "initMs": 651,
+              "reconstructMs": 17611,
+              "totalToReadyMs": 18262,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792579199608,
+              "initReadyAt": 1792579199736,
+              "validInputStartAt": 1792579200259,
+              "reconstructionDoneAt": 1792579217870,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 651,
+              "reconstructMs": 17611,
+              "totalToReadyMs": 18262,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+              "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+              "equal": true
+            },
+            "notes": "recorded import roundtrip; presented frames=118, lastUs=8028000"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB (with final segment)",
+        "legs": [
+          {
+            "caseId": "E2E-16",
+            "legId": "v-last-with",
+            "inputKind": "video",
+            "dataClass": "incompressible",
+            "tier": "128KiB (with final segment)",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 131072,
+              "streamBytes": 131184,
+              "artifactBytes": 131072
+            },
+            "timings": {
+              "initMs": 630,
+              "reconstructMs": 17350,
+              "totalToReadyMs": 17980,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792603906025,
+              "initReadyAt": 1792603906127,
+              "validInputStartAt": 1792603906655,
+              "reconstructionDoneAt": 1792603924005,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 630,
+              "reconstructMs": 17350,
+              "totalToReadyMs": 17980,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+              "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+              "equal": true
+            },
+            "notes": "completion media time T*=8.028118s from lastUs+artifactFrameId"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "128KiB (without)",
+        "legs": [
+          {
+            "caseId": "E2E-16",
+            "legId": "v-last-without",
+            "inputKind": "video",
+            "dataClass": "incompressible",
+            "tier": "128KiB (without)",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": null,
+              "streamBytes": null,
+              "artifactBytes": null
+            },
+            "timings": {
+              "initMs": 686,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792603869110,
+              "initReadyAt": 1792603869211,
+              "validInputStartAt": 1792603869796,
+              "reconstructionDoneAt": null,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 686,
+              "reconstructMs": null,
+              "totalToReadyMs": null,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": null,
+              "received": null,
+              "equal": null
+            },
+            "notes": "real EOF duration 5.842s; no artifact"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "1MiB bounded probe",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "video-n-1mib-probe",
+            "inputKind": "video",
+            "dataClass": "incompressible",
+            "tier": "1MiB bounded probe",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 1048576,
+              "streamBytes": 1049244,
+              "artifactBytes": 1048576
+            },
+            "timings": {
+              "initMs": 570,
+              "reconstructMs": 141731,
+              "totalToReadyMs": 142301,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792601887658,
+              "initReadyAt": 1792601887779,
+              "validInputStartAt": 1792601888228,
+              "reconstructionDoneAt": 1792602029959,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 570,
+              "reconstructMs": 141731,
+              "totalToReadyMs": 142301,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+              "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+              "equal": true
+            },
+            "notes": "recorded import roundtrip; presented frames=975, lastUs=65559000"
+          }
+        ]
+      },
+      {
+        "inputKind": "video",
+        "dataClass": "incompressible",
+        "tier": "4MiB",
+        "legs": [
+          {
+            "caseId": "E2E-18",
+            "legId": "video-n-4mib",
+            "inputKind": "video",
+            "dataClass": "incompressible",
+            "tier": "4MiB",
+            "status": "PASS",
+            "basis": null,
+            "sizes": {
+              "rawBytes": 4194304,
+              "streamBytes": 4196892,
+              "artifactBytes": 4194304
+            },
+            "timings": {
+              "initMs": 1943,
+              "reconstructMs": 566085,
+              "totalToReadyMs": 568028,
+              "saveMs": null
+            },
+            "rawTimings": {
+              "initStartAt": 1792603075113,
+              "initReadyAt": 1792603075228,
+              "validInputStartAt": 1792603077056,
+              "reconstructionDoneAt": 1792603643141,
+              "saveRequestAt": null,
+              "writeCloseAt": null,
+              "initMs": 1943,
+              "reconstructMs": 566085,
+              "totalToReadyMs": 568028,
+              "saveMs": null
+            },
+            "hashes": {
+              "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+              "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+              "equal": true
+            },
+            "notes": "recorded import roundtrip; presented frames=3844, lastUs=264821000"
+          }
+        ]
+      }
+    ],
+    "recordFields": [
+      {
+        "caseId": "E2E-1",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-2",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-3",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-4",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-5",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-6",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-7",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-8",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-9",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-10",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-11",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-12",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-13",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-14",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-15",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-16",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-17",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-19",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-20",
+        "scope": "local_simulated",
+        "result": "PASS"
+      }
+    ]
+  },
+  "supportMatrixDraft": {
+    "verified": [
+      "E2E-1",
+      "E2E-10",
+      "E2E-11",
+      "E2E-12",
+      "E2E-13",
+      "E2E-14",
+      "E2E-15",
+      "E2E-16",
+      "E2E-17",
+      "E2E-19",
+      "E2E-2",
+      "E2E-20",
+      "E2E-3",
+      "E2E-4",
+      "E2E-5",
+      "E2E-6",
+      "E2E-7",
+      "E2E-8",
+      "E2E-9"
+    ],
+    "note": "only combinations actually exercised in this run are listed; see support-matrix.md"
+  },
+  "counts": {
+    "total": 20,
+    "pass": 19,
+    "fail": 0,
+    "notRun": 1
+  }
+}

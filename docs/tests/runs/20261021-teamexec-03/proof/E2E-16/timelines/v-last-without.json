@@ -1,0 +1,25 @@
+{
+  "leg": "v-last-without",
+  "settled": true,
+  "mediaEnded": {
+    "at": 1792603881981,
+    "duration": 5.842,
+    "currentTime": 5.842
+  },
+  "durationSec": 5.842,
+  "videoTimeline": {
+    "attemptId": "video-2",
+    "presented": 87,
+    "firstUs": 32000,
+    "lastUs": 5842000,
+    "endReason": "eof",
+    "artifactFrameId": null,
+    "finalSample": {
+      "captured": true,
+      "width": 1604,
+      "height": 1002,
+      "t": 1792603882001
+    }
+  },
+  "attemptId": "video-2"
+}

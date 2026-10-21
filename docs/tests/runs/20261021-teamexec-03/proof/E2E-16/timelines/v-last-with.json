@@ -1,0 +1,26 @@
+{
+  "leg": "v-last-with",
+  "ready": true,
+  "endReason": null,
+  "endReasonDiagnostic": true,
+  "artifactAtLastFrame": true,
+  "mediaEnded": null,
+  "lastUs": 8028000,
+  "artifactFrameId": 118,
+  "presented": 118,
+  "tStarUs": 8028118,
+  "tStarSec": 8.028118,
+  "formula": "tStarUs = lastUs + artifactFrameId (plan Domain H)",
+  "videoTimeline": {
+    "attemptId": "video-3",
+    "presented": 118,
+    "firstUs": 29000,
+    "lastUs": 8028000,
+    "endReason": null,
+    "artifactFrameId": 118,
+    "finalSample": null
+  },
+  "attemptId": "video-3",
+  "saveFailure": null,
+  "logDelta": "recording: 1604x1002, 39.8s\ncapture stopped; the file is ready to save\n"
+}

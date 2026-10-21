@@ -1,0 +1,101 @@
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:22] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 17:52:23] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 12758)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T09:52:38.422Z round live-c-1mib: File ready to save artifact=ext-text-1mib.bin 1048576 bytes
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-live-c-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T09:53:05.388Z round live-c-4mib: File ready to save artifact=ext-text-4mib.bin 4194304 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-live-c-4mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T09:53:48.984Z round live-n-1mib: File ready to save artifact=ext-random-1mib.bin 1048576 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-live-n-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T09:55:22.327Z round live-n-4mib: File ready to save artifact=ext-random-4mib.bin 4194304 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-live-n-4mib\received.bin
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:55:42] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:55:43] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:55:44] code 404, message File not found
+127.0.0.1 - - [21/Oct/2026 17:55:44] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=46060
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-video-c-4mib\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-video-n-128kib\received.bin
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:59:52] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:59:53] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 17:59:53] code 404, message File not found
+127.0.0.1 - - [21/Oct/2026 17:59:53] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=74864
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=62732
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T10:03:20.633Z round budget-recovery: File ready to save artifact=sample-text-2.bin 65536 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-18\round-budget-recovery\received.bin
+E2E FAILED: ReferenceError: everyExecutedOk is not defined
+    at E2E-18 (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:3058:18)
+    at async main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:3404:16)

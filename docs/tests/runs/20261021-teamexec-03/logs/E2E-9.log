@@ -1,0 +1,61 @@
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:13] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:01:14] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 3840)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=83768
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share[helper] 
+2026-10-21T18:01:28.856Z round default: File ready to save artifact=sample-text-2.bin 65536 bytes
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-9\round-default\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=83768
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T18:01:56.886Z round small-scaled: File ready to save artifact=sample-text-2.bin 65536 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-9\round-small-scaled\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=83768
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T18:02:24.339Z round large-default-scale: File ready to save artifact=sample-text-2.bin 65536 bytes
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-9\round-large-default-scale\received.bin
+2026-10-21T18:02:42.284Z CASE E2E-9 PASS (attempt E2E-9-2026-10-21T18-01-13-300Z-583370)

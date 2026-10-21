@@ -1,0 +1,5 @@
+status=Saved
+artifact=ext-text-1mib.bin 1048576 bytes
+log=capture stopped; the file is ready to save
+saved (1)
+

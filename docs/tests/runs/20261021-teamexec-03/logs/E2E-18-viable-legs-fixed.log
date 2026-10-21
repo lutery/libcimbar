@@ -1,0 +1,19 @@
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /main.js HTTP/1.1" 200 -
+127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 19:13:04] "GET /pwa.json HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 19:13:11] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 19:13:12] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 19:13:12] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 19:13:12] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dismissed the Edge sync bubble
+[helper] dialog not found for action 'share' within 30 s

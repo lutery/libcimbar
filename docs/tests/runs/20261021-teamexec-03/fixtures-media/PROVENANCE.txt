@@ -1,0 +1,9 @@
+Copied byte-identical INPUT media from run 20261019-teamexec-02.
+Reason: the fixed browser-lane order runs E2E-15 before `record-sender --only last`,
+and --only last never re-records V-GOOD-C/N or V-SHORT (they are fixed inputs for
+E2E-14/15/16/20). These are test inputs only; no result record or PASS claim is copied.
+The V-LAST pair and payload-128k-random.bin are re-recorded in run-03 by `--only last`.
+
+9956fb11e391bba34e9529ed746ec37b45c04bd640331497995f9a989c8255b3  V-GOOD-C.webm
+7ff78b0d396d32845b34ca97e49be21cbd29179f4ce7dd0794a70ee2d3a3582b  V-GOOD-N.webm
+7450099f6ce8b53eb26f864f0185690d56187100b87c7d2e6ab1b937f8e5aa5a  V-SHORT.webm
