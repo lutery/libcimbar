@@ -117,7 +117,7 @@
 | E2E-2 | 占用端口启动 exit 3 且报因可读；清洁重启 + 实时往返哈希相等 |
 | E2E-3 | 实时往返：可压缩 + 难压缩各 3 轮（6 轮全等） |
 | E2E-4 | 真实选源取消 → 可重启 → 往返哈希相等 |
-| E2E-5 | 空白窗口无产物；停止重选恢复 |
+| E2E-5 | 空白窗口：7 秒观察期结束后重读页面状态复核（saveDisabled=true、无产物）；停止重选恢复 |
 | E2E-6 | 同名同大小 A/B：外部结束（标签页/窗口关闭）收敛 Incomplete、无幻影产物；新会话保存 B 哈希正确 |
 | E2E-7 | 停止连点收敛一次；新会话干净 |
 | E2E-8 | 4C 发送端无假 Ready；页面内翻回 B 无法恢复可解码流（产品发现 TD-16）；重载发送端恢复、哈希相等 |
@@ -128,10 +128,10 @@
 | E2E-13 | picker 打开时保存按钮禁用防御；单次真实保存 |
 | E2E-14 | 真实发送窗口录像（V-GOOD-C/N）6 轮全等 |
 | E2E-15 | 空/非视频/损坏容器有限失败；恢复后真实录像保存 |
-| E2E-16 | 128 KiB 难压缩载荷：V-SHORT 不 Ready；V-LAST-without 结束 Incomplete；完整录像保存哈希相等（TD-15 载荷口径见 D-08） |
+| E2E-16 | 128 KiB 难压缩载荷：V-SHORT 不 Ready；V-LAST-without 结束 Incomplete（该负向腿已纳入 PASS 判定）；完整录像保存哈希相等（TD-15 载荷口径见 D-08） |
 | E2E-17 | 双输入停止切换两腿：录像 A 中停→实时 B；实时 A 中停→录像 B |
 | E2E-18 | 1 MiB 难压缩实时往返哈希相等 |
-| E2E-19 | 刷新 / 关页重开 / 接收服务重启三轮往返 |
+| E2E-19 | 刷新 / 真实关页重开（旧页 close 后新开页加载接收页）/ 接收服务重启，四轮往返全等 |
 | E2E-20 | 10 轮交替双输入，每次输出哈希相等；最终包部分留阶段8 |
 | E2E-21..26 | 用户云桌面现场旅程：NOT_RUN（用户执行；field 门禁按设计 FAIL） |
 
@@ -141,7 +141,7 @@
 
 | 门禁 | 命令 | 当前结果 |
 |---|---|---|
-| 单元 | `node tools/desktop-recv/run-unit.mjs --all` | PASS——9 套件 88 测试，0 fail/todo/skip |
+| 单元 | `node tools/desktop-recv/run-unit.mjs --all` | PASS——9 套件 90 测试，0 fail/todo/skip（round-7 B-1 后含 evidence UT-083/084） |
 | 资产 | `node tools/desktop-recv/verify-assets.mjs --root build-desktop-recv/staging/receiver` | PASS——assetSetId `desktop-recv-v1`，revision `a515922`（staging 资产仍绑定 `a515922` 构建树，非当前 HEAD） |
 | native | `ctest --test-dir /home/luctery/t12a-src/build-native --output-on-failure`（WSL） | 9/9 PASS——外审 round 1 实跑；整改未触碰 C++ 源，本轮未重新构建 WASM，不据此声称新构建产物 |
 | 本地证据 | `python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261019-teamexec-02 --gate local` | PASS（20 required cases），exit 0 |

@@ -149,7 +149,10 @@ async function launchReceiver(port = RECEIVER_PORT) {
   if (!connected) throw new Error('normal Edge did not expose CDP');
   const context = connected.contexts()[0];
   const page = context.pages()[0] || await context.newPage();
-  await page.addInitScript(() => {
+  // Install the diagnostics at CONTEXT level so a page created later (the
+  // E2E-19 close/reopen leg) gets the same capture/save tracing as the
+  // original page. Page-level scripts do not follow new tabs.
+  await context.addInitScript(() => {
     const original = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getDisplayMedia = async (constraints) => {
       try { return await original(constraints); }
@@ -303,7 +306,11 @@ async function launchStack({ withSender = true } = {}) {
       await closeReceiver(receiver);
       await Promise.allSettled([senderBrowser && senderBrowser.close()]);
       if (senderServer) senderServer.kill();
-      receiverServer.kill();
+      // Read the property, not the captured local: a scenario may replace
+      // the receiver server (E2E-19 restarts it), and killing the stale
+      // original leaks the replacement, which then keeps this process alive.
+      if (this.receiverServer) this.receiverServer.kill();
+      if (this.receiverServer !== receiverServer) receiverServer.kill();
     },
   };
 }
@@ -1258,31 +1265,50 @@ const SCENARIOS = {
   },
   // E2E-5: share a blank (non-encoding) window -> no data -> stop -> reselect.
   'E2E-5': async (stack) => {
-    await stack.senderPage.evaluate((title) => {
-      document.title = title;
-      setInterval(() => { if (document.title !== title) document.title = title; }, 250);
-    }, SENDER_TITLE);
-    await sleep(300);
-    await stack.senderPage.bringToFront();
-    await sleep(300);
-    await stack.receiver.page.bringToFront();
-    await sleep(300);
-    const blank = await startCapture(stack);
-    await sleep(7000); // let the no-data notice window pass
-    const stillNoArtifact = blank.saveDisabled;
-    await stopSession(stack);
-    const round = await liveRoundtrip(stack, {
-      caseId: 'E2E-5', file: join('compressible', 'sample-text-2.bin'), round: 'reselect', source: 'window',
-    });
-    const equal = sha256File(round.fixture) === sha256File(round.received);
-    upsertResult(RUN, {
-      ...roundtripRecord({
-        caseId: 'E2E-5', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
-        notes: `blank window produced no artifact (${stillNoArtifact}); stop -> reselect sender -> equal=${equal}`,
-      }),
-      result: stillNoArtifact && equal ? 'PASS' : 'FAIL',
-    });
-    return stillNoArtifact && equal;
+    try {
+      await stack.senderPage.evaluate((title) => {
+        document.title = title;
+        setInterval(() => { if (document.title !== title) document.title = title; }, 250);
+      }, SENDER_TITLE);
+      await sleep(300);
+      await stack.senderPage.bringToFront();
+      await sleep(300);
+      await stack.receiver.page.bringToFront();
+      await sleep(300);
+      const capture = await startCapture(stack);
+      await sleep(7000); // let the no-data notice window pass
+      // Round-7 B-3a: the capture-time snapshot cannot prove anything about
+      // the observation window. Read the page state AFTER the window and
+      // assert the absence of an artifact from that reading.
+      const afterWindow = await pageState(stack.receiver.page);
+      const stillNoArtifact = afterWindow.saveDisabled === true;
+      await stopSession(stack);
+      const round = await liveRoundtrip(stack, {
+        caseId: 'E2E-5', file: join('compressible', 'sample-text-2.bin'), round: 'reselect', source: 'window',
+      });
+      const equal = sha256File(round.fixture) === sha256File(round.received);
+      upsertResult(RUN, {
+        ...roundtripRecord({
+          caseId: 'E2E-5', originalPath: round.fixture, receivedPath: round.received, runDir: RUN,
+          notes: `blank window: capture status=${capture.status}; after the 7 s observation window ` +
+            `status=${afterWindow.status} saveDisabled=${afterWindow.saveDisabled} ` +
+            `artifact=${JSON.stringify(afterWindow.artifactName)}; stop -> reselect sender -> equal=${equal}`,
+        }),
+        result: stillNoArtifact && equal ? 'PASS' : 'FAIL',
+      });
+      return stillNoArtifact && equal;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-5', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-5 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-5', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-5/observation.txt'],
+        notes: `blank-window/recovery journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
   },
   // E2E-8: mode mismatch. The support matrix verifies ONLY mode B (68);
   // 4C is outside the verified set ("8C/Bu/Bm 模式解码" is listed as not
@@ -1607,15 +1633,21 @@ const SCENARIOS = {
       });
       const receivedPath = round.received;
       const equal = sha256File(original) === sha256File(receivedPath);
+      // Round-7 B-2: the negative leg is part of the verdict. A truncated
+      // recording that wrongly reached Ready would let the coordinator
+      // reject the next import as busy and the save would silently write the
+      // previous session's artifact (same payload, same hash). PASS therefore
+      // requires V-LAST-without to have ended Incomplete.
+      const pass = equal && !withoutReady;
       upsertResult(RUN, {
         ...roundtripRecord({
           caseId: 'E2E-16', originalPath: original, receivedPath, runDir: RUN,
           notes: `V-SHORT not Ready (${short.status}); V-LAST-without incomplete=${!withoutReady}; complete recording equal=${equal}`,
         }),
-        result: equal ? 'PASS' : 'FAIL',
-        notes: `128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (${short.status}); V-LAST-without incomplete=${!withoutReady}; the complete recording saved hash-clean=${equal}`,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (${short.status}); V-LAST-without incomplete=${!withoutReady}; the complete recording saved hash-clean=${equal}; PASS requires the V-LAST-without leg to end Incomplete (withoutReady=false)`,
       });
-      return equal;
+      return pass;
     } catch (error) {
       const observation = join(RUN, 'proof', 'E2E-16', 'round-with', 'observation.txt');
       mkdirSync(dirname(observation), { recursive: true });
@@ -1762,34 +1794,68 @@ const SCENARIOS = {
     log(`[diag] final status="${final.status}" saveDisabled=${final.saveDisabled} log=${JSON.stringify(final.log)}`);
     return true;
   },
-  // E2E-19: refresh, page close/reopen, and a server restart keep working.
+  // E2E-19: refresh, a REAL page close/reopen, and a server restart keep
+  // working. Round-7 B-3b: the plan's second step is "close the page and open
+  // it again", which is not a reload - the old page is really closed and a
+  // fresh page is navigated to the receiver URL.
   'E2E-19': async (stack) => {
     const file = join('compressible', 'sample-text-2.bin');
     const results = [];
-    results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'before-reload', source: 'window' }));
-    await stack.receiver.page.reload();
-    await sleep(1200);
-    results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'after-reload', source: 'window' }));
-    // server restart
-    stack.receiverServer.kill();
-    await sleep(1000);
-    const restarted = startServer('python', [join(STAGING, 'receiver', 'server.py'),
-      '--port', String(RECEIVER_PORT), '--directory', join(STAGING, 'receiver')], 'receiver-http2');
-    await waitHttp(`http://127.0.0.1:${RECEIVER_PORT}/`);
-    stack.receiverServer = restarted;
-    await stack.receiver.page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
-    await sleep(800);
-    results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'after-restart', source: 'window' }));
-    const pairs = results.map((entry) => sha256File(entry.fixture) === sha256File(entry.received));
-    const allEqual = pairs.every(Boolean);
-    upsertResult(RUN, {
-      ...roundtripRecord({
-        caseId: 'E2E-19', originalPath: results[0].fixture, receivedPath: results[0].received, runDir: RUN,
-        notes: `reload + close/reopen + server restart: ${results.length} roundtrips, all equal=${allEqual}`,
-      }),
-      result: allEqual ? 'PASS' : 'FAIL',
-    });
-    return allEqual;
+    try {
+      results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'before-reload', source: 'window' }));
+      await stack.receiver.page.reload();
+      await sleep(1200);
+      results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'after-reload', source: 'window' }));
+      // Close the receiver page for real. A blank keep-alive tab keeps the
+      // Edge window alive while the last receiver tab is closed; that tab is
+      // then navigated to the receiver URL, so the leg runs in a fresh page.
+      const context = stack.receiver.page.context();
+      const oldPage = stack.receiver.page;
+      const keepAlive = await context.newPage();
+      await oldPage.close();
+      const oldClosed = oldPage.isClosed();
+      await keepAlive.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+      await keepAlive.waitForSelector('#btn-video', { timeout: 60000 });
+      stack.receiver.page = keepAlive;
+      log(`[e2e-19] old page closed=${oldClosed}; fresh page=${keepAlive.url()}`);
+      results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'after-reopen', source: 'window' }));
+      // server restart
+      stack.receiverServer.kill();
+      await sleep(1000);
+      const restarted = startServer('python', [join(STAGING, 'receiver', 'server.py'),
+        '--port', String(RECEIVER_PORT), '--directory', join(STAGING, 'receiver')], 'receiver-http2');
+      await waitHttp(`http://127.0.0.1:${RECEIVER_PORT}/`);
+      stack.receiverServer = restarted;
+      await stack.receiver.page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+      await sleep(800);
+      results.push(await liveRoundtrip(stack, { caseId: 'E2E-19', file, round: 'after-restart', source: 'window' }));
+      const pairs = results.map((entry) => sha256File(entry.fixture) === sha256File(entry.received));
+      const allEqual = pairs.every(Boolean);
+      const pass = oldClosed && allEqual;
+      upsertResult(RUN, {
+        ...roundtripRecord({
+          caseId: 'E2E-19', originalPath: results[0].fixture, receivedPath: results[0].received, runDir: RUN,
+          notes: `before reload, after reload, after real page close/reopen, after server restart: ` +
+            `${results.length} roundtrips, all equal=${allEqual}`,
+        }),
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `reload + REAL close/reopen (old page isClosed=${oldClosed}; fresh page loaded #btn-video) ` +
+          `+ receiver server restart: ${results.length} roundtrips, all equal=${allEqual}; ` +
+          'PASS requires the old page to be closed',
+      });
+      return pass;
+    } catch (error) {
+      const observation = join(RUN, 'proof', 'E2E-19', 'observation.txt');
+      mkdirSync(dirname(observation), { recursive: true });
+      writeFileSync(observation, `E2E-19 observation (${new Date().toISOString()})\n${error.message}\n`);
+      upsertResult(RUN, {
+        caseId: 'E2E-19', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
+        executedBy: 'executor',
+        proofRefs: ['proof/E2E-19/observation.txt'],
+        notes: `refresh/close-reopen/server-restart journey did not complete: ${String(error.message).slice(0, 160)}`,
+      });
+      return false;
+    }
   },
   // E2E-12: a Chinese/space target name saves correctly, and a same-name
   // overwrite is never silent: the confirmation is refused, the sentinel
@@ -2162,6 +2228,10 @@ async function main() {
   } finally {
     if (stack) await stack.close();
   }
+  // Guards against a leaked handle (a child process, a CDP socket) keeping
+  // this runner alive after every scenario outcome is already recorded and
+  // flushed to results.json.
+  process.exit(process.exitCode || 0);
 }
 
 main().catch((error) => {

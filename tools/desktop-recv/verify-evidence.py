@@ -6,16 +6,19 @@ reference); this tool applies them to the run directory on disk.
 
 A gate is a claim about executed work, not about record shape:
   local   E2E-1..20 must each be PASS, scope local_simulated, executed by
-          the implementer (executor). Every file_roundtrip PASS must have
-          the reference and received byte artifacts on disk, and their
-          SHA-256 values are RECOMPUTED here and compared with the record.
+          the implementer (executor), with the caseType the plan declared.
+          Every planned file_roundtrip PASS must have the reference and
+          received byte artifacts on disk, and their SHA-256 values are
+          RECOMPUTED here and compared with the record.
   field   E2E-21..26 must each be PASS, scope real_cloud, executed by the
-          user. A field gate over NOT_RUN placeholders fails (exit != 0).
+          user, with the planned caseType. A field gate over NOT_RUN
+          placeholders fails (exit != 0).
 
 FAIL is never a pass; NOT_RUN is never a pass; a mocked/unit scope never
 satisfies a local journey; metadata-equal hashes without real artifacts
-are rejected. A measurement PASS needs an explicitly frozen threshold
-(--thresholds <json with {"frozen": true}>).
+are rejected; a record cannot relabel its caseType to skip the artifact
+checks the plan requires. A measurement PASS needs an explicitly frozen
+threshold (--thresholds <json with {"frozen": true}>).
 """
 import argparse
 import hashlib
@@ -127,6 +130,10 @@ def plan_rows(planning_path, gate):
             "id": case_id,
             "scope": case.get("scope") or GATE_RULES[gate]["scope"],
             "executor": case.get("executorRole") or GATE_RULES[gate]["executor"],
+            # The plan declares what kind of journey this is. The gate
+            # cross-checks the record against it, so a file roundtrip cannot
+            # be relabelled as a lifecycle case to skip the artifact checks.
+            "caseType": case.get("caseType"),
         })
     return rows
 
@@ -220,7 +227,19 @@ def main():
             violations.append(
                 f"{case_id}: executedBy must be {row['executor']} for the "
                 f"{args.gate} gate (got {record.get('executedBy')})")
-        if record.get("caseType") == "file_roundtrip" and record.get("result") == "PASS":
+        planned_type = row.get("caseType")
+        if not planned_type:
+            # Fail closed: a required scenario without a planned type could
+            # otherwise be relabelled at will.
+            violations.append(f"{case_id}: the plan does not declare a caseType")
+        elif record.get("caseType") != planned_type:
+            violations.append(
+                f"{case_id}: caseType must be {planned_type} per the plan "
+                f"(got {record.get('caseType')})")
+        # Artifact verification is keyed on the PLANNED type, not the
+        # record's own label: even a relabelled record must still produce
+        # the byte artifacts its journey promises.
+        if planned_type == "file_roundtrip" and record.get("result") == "PASS":
             violations.extend(f"{case_id}: {v}" for v in verify_artifacts(run_dir, record))
 
     # every claimed proof reference must exist on disk (all records, not just

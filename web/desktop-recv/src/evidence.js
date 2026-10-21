@@ -95,14 +95,17 @@ export function validateCaseRecord(record, context = {}) {
   return { ok: violations.length === 0, violations };
 }
 
-// A whole-run gate. Required scenarios carry the scope/executor the plan
-// declared; the gate refuses anything that does not match. For local and
+// A whole-run gate. Required scenarios carry the scope/executor/caseType the
+// plan declared; the gate refuses anything that does not match. For local and
 // field runs alike:
 // - every required id must be recorded and PASS;
 // - scope/executor must equal the planned values;
-// - a file_roundtrip PASS additionally needs on-disk artifact verification
-//   supplied through options.artifactsVerified[id] = {reference, received}
-//   (the python tool computes those by hashing the two artifact files);
+// - the record's caseType must equal the planned caseType; a record cannot
+//   relabel a file roundtrip as a lifecycle case to skip artifact checks;
+// - a PLANNED file_roundtrip PASS additionally needs on-disk artifact
+//   verification supplied through options.artifactsVerified[id] =
+//   {reference, received} (the python tool computes those by hashing the two
+//   artifact files);
 // - duplicate case ids are a violation;
 // - real_cloud results never fold into the local gate.
 export function validateRunGate(records, options = {}) {
@@ -146,7 +149,14 @@ export function validateRunGate(records, options = {}) {
     if (record.executedBy !== expectedExecutor) {
       violations.push(`${spec.id}: executedBy must be ${expectedExecutor} for the ${gate} gate (got ${record.executedBy})`);
     }
-    if (record.caseType === 'file_roundtrip' && record.result === 'PASS') {
+    if (!spec.caseType) {
+      // Fail closed: a required scenario without a planned type could
+      // otherwise be relabelled at will.
+      violations.push(`${spec.id}: the plan does not declare a caseType`);
+    } else if (record.caseType !== spec.caseType) {
+      violations.push(`${spec.id}: caseType must be ${spec.caseType} per the plan (got ${record.caseType})`);
+    }
+    if (spec.caseType === 'file_roundtrip' && record.result === 'PASS') {
       const verified = options.artifactsVerified && options.artifactsVerified[spec.id];
       if (!verified) {
         violations.push(`${spec.id}: file_roundtrip PASS requires verified on-disk artifacts`);

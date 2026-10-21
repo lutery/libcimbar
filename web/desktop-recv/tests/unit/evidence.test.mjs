@@ -129,14 +129,23 @@ test('UT-048 performance without a threshold is not a pass', () => {
 // The run gate assembles the pieces: required ids must exist, and the local
 // gate refuses unexecuted cases.
 test('the run gate requires every id and keeps the field separate', () => {
-  const gate = validateRunGate([roundtripPass], { gate: 'local', requiredIds: ['E2E-3', 'E2E-4'] });
+  const gate = validateRunGate([roundtripPass], {
+    gate: 'local',
+    required: [
+      { id: 'E2E-3', scope: 'local_simulated', executor: 'executor', caseType: 'file_roundtrip' },
+      { id: 'E2E-4', scope: 'local_simulated', executor: 'executor', caseType: 'file_roundtrip' },
+    ],
+    artifactsVerified: { 'E2E-3': { reference: HASH, received: HASH } },
+  });
   assert.equal(gate.ok, false);
   assert.ok(gate.violations.some((v) => v.includes('missing record for E2E-4')));
 });
 
 // --- Round-1 external review A-04/B-S01: a gate is a claim about work ---
 
-const plannedLocal = (id) => ({ id, scope: 'local_simulated', executor: 'executor' });
+const plannedLocal = (id) => ({
+  id, scope: 'local_simulated', executor: 'executor', caseType: 'file_roundtrip',
+});
 
 // Given a required local journey recorded honestly as FAIL
 // When gating
@@ -183,7 +192,9 @@ test('UT-075 a field gate over NOT_RUN placeholders fails', () => {
   };
   const gate = validateRunGate([placeholder], {
     gate: 'field',
-    required: [{ id: 'E2E-21', scope: 'real_cloud', executor: 'user' }],
+    required: [{
+      id: 'E2E-21', scope: 'real_cloud', executor: 'user', caseType: 'negative_or_lifecycle',
+    }],
   });
   assert.equal(gate.ok, false);
   assert.ok(gate.violations.some((v) => v.includes('requires result PASS')));
@@ -257,4 +268,36 @@ test('UT-079 duplicate case records are refused', () => {
   });
   assert.equal(gate.ok, false);
   assert.ok(gate.violations.some((v) => v.includes('duplicate record for E2E-3')));
+});
+
+// Round-7 B-1: the plan declares each journey's type. A record cannot
+// relabel a planned file roundtrip as a lifecycle case and keep PASS by
+// leaving only a log behind.
+test('UT-083 a relabelled caseType cannot pass a planned file roundtrip', () => {
+  const relabelled = {
+    caseId: 'E2E-3',
+    scope: 'local_simulated',
+    caseType: 'negative_or_lifecycle',
+    result: 'PASS',
+    executedBy: 'executor',
+    proofRefs: ['proof/log.txt'],
+  };
+  const gate = validateRunGate([relabelled], {
+    gate: 'local',
+    required: [plannedLocal('E2E-3')],
+  });
+  assert.equal(gate.ok, false);
+  assert.ok(gate.violations.some((v) => v.includes('caseType must be file_roundtrip per the plan')));
+});
+
+// A required scenario whose plan omits the type is refused (fail closed):
+// an undeclared type would let any label through.
+test('UT-084 a planned scenario without a caseType is refused', () => {
+  const gate = validateRunGate([roundtripPass], {
+    gate: 'local',
+    required: [{ id: 'E2E-3', scope: 'local_simulated', executor: 'executor' }],
+    artifactsVerified: { 'E2E-3': { reference: HASH, received: HASH } },
+  });
+  assert.equal(gate.ok, false);
+  assert.ok(gate.violations.some((v) => v.includes('does not declare a caseType')));
 });

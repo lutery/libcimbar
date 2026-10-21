@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-21T09:47:06+08:00",
+  "updated_at": "2026-10-21T02:34:57.598Z+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -210,12 +210,12 @@
       "team_mode": "omc",
       "omc_slug": "desktop-receiver",
       "contract_files": [],
-      "review_rounds": 6,
+      "review_rounds": 7,
       "max_rounds": 10,
-      "test_status": "passed",
+      "test_status": "failed",
       "started_at": "2026-10-18T13:20:01+08:00",
       "completed_at": null,
-      "notes": "Stage-5 rectification after external review round 1 is COMPLETE through batch M and awaits internal review round 7 before external round 2 resubmission. Local E2E: run docs/tests/runs/20261019-teamexec-02 - all 20 local journeys (E2E-1..20) PASS, executedBy=executor, scope=local_simulated; every PASS has on-disk proof and external SHA-256 equality recomputed by the gate. Gates (2026-10-21, HEAD 247b68c): unit 9 suites / 88 tests green; assets PASS (staging still bound to revision a515922, not HEAD); evidence local gate PASS (20 required cases); evidence field gate FAIL by design (E2E-21..26 NOT_RUN, user-side). Native ctest 9/9 was last run by external review round 1; no C++ source changed in the rectification and WASM was not rebuilt. Rectification batches H/I/J/K/L fixed all 7 blocking themes (A-01 via real journeys, A-02/A-03/C-02 in 558dee9, B-S04 in b16004a, A-04/B-S01 in 95c54b6, C-01 in aa31eed). The real E2E found and fixed THREE product defects invisible to unit tests (468428c unbound setTimeout, 648dacb hidden preview, 16c367d stale srcObject) plus TD-15 per-frame import (eb80706). Batch M wrote stage5-dev-summary.md and autonomous-decisions.md, closed TD-01 (main-thread init/frame watchdogs) and TD-12 (real executor roundtrips with external hashes; field journeys remain separate), and refreshed this state. external-review.status stays failed (round 2 not submitted); field journeys E2E-21..26 remain NOT_RUN.",
+      "notes": "Round-7 internal review (2026-10-21, docs/dev-pipeline/review-round-7.md) FAILED with 3 Blockings; all three rectified the same day, and the 7 round-1 themes remain genuinely closed. B-1: both evidence gates (tools/desktop-recv/verify-evidence.py and web/desktop-recv/src/evidence.js) now read the planned caseType from docs/tests/planning-cases.json (all 26 scenarios declare it; local E2E-1..20 file_roundtrip, field E2E-21/22/25 file_roundtrip, E2E-23/24 negative_or_lifecycle, E2E-26 measurement), cross-check every required record against it, fail closed when the plan omits the type, and key the artifact verification on the PLANNED type; negative regressions added (verify-evidence-selftest.py 14 cases including relabelled-caseType and missing-planned-type; evidence.test.mjs UT-083/UT-084). B-2: E2E-16 PASS now requires the V-LAST-without leg to end Incomplete (withoutReady=false). B-3a: E2E-5 re-reads the page state after the 7 s blank observation window and asserts from that reading. B-3b: E2E-19 now really closes the receiver page and opens a fresh one (not a reload; old page isClosed recorded); harness hardening that the reruns required: launchReceiver installs diagnostics at context level so reopened pages keep tracing, stack.close() kills the CURRENT receiver server (the E2E-19 restart used to leak it and hang the runner), and main() hard-exits after the outcome is recorded. Reruns (runner upserted the records): E2E-5 PASS, E2E-19 PASS (4 roundtrips incl. the real close/reopen), E2E-16 PASS (negative leg inside the predicate); overclaim wording corrected in results.json notes, batch-l-status.md and stage5-dev-summary.md. Gates after rectification: unit 9 suites / 90 tests green; selftest 14/14; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side; E2E-26 will need frozen thresholds once measured). test_status is back to failed because round 7 itself failed before this rectification; external-review.status stays failed (round 2 not yet submitted). Round-1 rectification history: batches H/I/J/K/L/M closed all 7 external themes (A-01..A-04, B-S01/B-S04, C-01/C-02), three real-E2E product defects were found and fixed (468428c, 648dacb, 16c367d) plus TD-15 per-frame import (eb80706), TD-01/TD-12 closed in batch M, and the E2E-1 pwsh mis-attribution was retracted and re-verified PASS (TD-17 Node fs.cpSync GBK-mojibake twin). Field journeys E2E-21..26 remain NOT_RUN.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },

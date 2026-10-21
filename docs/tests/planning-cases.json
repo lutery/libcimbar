@@ -1092,6 +1092,7 @@
       "sourceCase": "UAT-L01",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1118,6 +1119,7 @@
       "sourceCase": "UAT-L02",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1149,6 +1151,7 @@
       "sourceCase": "UAT-L03",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1175,6 +1178,7 @@
       "sourceCase": "UAT-L04",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1200,6 +1204,7 @@
       "sourceCase": "UAT-L05",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1227,6 +1232,7 @@
       "sourceCase": "UAT-L06",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1252,6 +1258,7 @@
       "sourceCase": "UAT-L07",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1277,6 +1284,7 @@
       "sourceCase": "UAT-L08",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1306,6 +1314,7 @@
       "sourceCase": "UAT-L09",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1333,6 +1342,7 @@
       "sourceCase": "UAT-L10",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1359,6 +1369,7 @@
       "sourceCase": "UAT-L11",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1387,6 +1398,7 @@
       "sourceCase": "UAT-L12",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1415,6 +1427,7 @@
       "sourceCase": "UAT-L13",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1445,6 +1458,7 @@
       "sourceCase": "UAT-L14",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1472,6 +1486,7 @@
       "sourceCase": "UAT-L15",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1498,6 +1513,7 @@
       "sourceCase": "UAT-L16",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1524,6 +1540,7 @@
       "sourceCase": "UAT-L17",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1550,6 +1567,7 @@
       "sourceCase": "UAT-L18",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1577,6 +1595,7 @@
       "sourceCase": "UAT-L19",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1607,6 +1626,7 @@
       "sourceCase": "UAT-L20",
       "scope": "local_simulated",
       "executorRole": "executor",
+      "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1633,6 +1653,7 @@
       "sourceCase": "FAT-01",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "file_roundtrip",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1658,6 +1679,7 @@
       "sourceCase": "FAT-02",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "file_roundtrip",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1684,6 +1706,7 @@
       "sourceCase": "FAT-03",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "negative_or_lifecycle",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1710,6 +1733,7 @@
       "sourceCase": "FAT-04",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "negative_or_lifecycle",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1737,6 +1761,7 @@
       "sourceCase": "FAT-05",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "file_roundtrip",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null
@@ -1766,6 +1791,7 @@
       "sourceCase": "FAT-06",
       "scope": "real_cloud",
       "executorRole": "user",
+      "caseType": "measurement",
       "execution": "用户现场手工",
       "result": "NOT_RUN",
       "executedBy": null

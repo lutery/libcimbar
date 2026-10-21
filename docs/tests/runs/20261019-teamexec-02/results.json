@@ -67,7 +67,7 @@
       "proof/E2E-5/original.bin",
       "proof/E2E-5/received.bin"
     ],
-    "notes": "blank window produced no artifact (true); stop -> reselect sender -> equal=true"
+    "notes": "blank window: capture status=Receiving frames; after the 7 s observation window status=Receiving frames saveDisabled=true artifact=\"\"; stop -> reselect sender -> equal=true"
   },
   {
     "caseId": "E2E-6",
@@ -215,13 +215,13 @@
     "caseType": "file_roundtrip",
     "result": "PASS",
     "executedBy": "executor",
-    "referenceSha256": "65e364fe7c8afc57eecf7dff6485159ec65311d4aba047facb2d004d29977667",
-    "receivedSha256": "65e364fe7c8afc57eecf7dff6485159ec65311d4aba047facb2d004d29977667",
+    "referenceSha256": "bab4d8c034cbe6acddb26cc9b006782a711bfeec01fa260b8780f1f459878c95",
+    "receivedSha256": "bab4d8c034cbe6acddb26cc9b006782a711bfeec01fa260b8780f1f459878c95",
     "proofRefs": [
       "proof/E2E-16/original.bin",
       "proof/E2E-16/received.bin"
     ],
-    "notes": "128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (Not enough data to rebuild the file); V-LAST-without incomplete=true; the complete recording saved hash-clean=true"
+    "notes": "128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (Not enough data to rebuild the file); V-LAST-without incomplete=true; the complete recording saved hash-clean=true; PASS requires the V-LAST-without leg to end Incomplete (withoutReady=false)"
   },
   {
     "caseId": "E2E-17",
@@ -263,7 +263,7 @@
       "proof/E2E-19/original.bin",
       "proof/E2E-19/received.bin"
     ],
-    "notes": "reload + close/reopen + server restart: 3 roundtrips, all equal=true"
+    "notes": "reload + REAL close/reopen (old page isClosed=true; fresh page loaded #btn-video) + receiver server restart: 4 roundtrips, all equal=true; PASS requires the old page to be closed"
   },
   {
     "caseId": "E2E-20",
