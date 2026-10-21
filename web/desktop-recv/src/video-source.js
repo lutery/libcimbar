@@ -23,6 +23,7 @@ export class VideoSource {
     this._nextTime = 0;
     this._playing = false;
     this._pendingSeek = null;
+    this._runSettle = null; // settles a pending rVFC run (S-2)
     this._listeners = [];
   }
 
@@ -145,51 +146,66 @@ export class VideoSource {
     const video = this._video;
     await new Promise((resolve, reject) => {
       let settled = false;
+      const cleanup = () => {
+        video.removeEventListener('error', onError);
+        video.removeEventListener('ended', onEnded);
+        if (this._runSettle === finishRun) this._runSettle = null;
+      };
       const finishRun = () => {
         if (settled) return;
         settled = true;
-        video.removeEventListener('error', onError);
+        cleanup();
         resolve();
       };
       const failRun = (error) => {
         if (settled) return;
         if (!this._playing) { finishRun(); return; }
         settled = true;
-        video.removeEventListener('error', onError);
+        cleanup();
         reject(error);
       };
       const onError = () => failRun(Object.assign(new Error('video playback failed'), { code: 13002 }));
-      video.addEventListener('error', onError);
-      video.addEventListener('ended', () => {
+      const onEnded = () => {
         if (!this._playing) { finishRun(); return; }
         this._finish('eof');
         finishRun();
-      }, { once: true });
+      };
+      // S-2: stop() must settle a run whose next frame callback may never
+      // fire; cleanup removes both listeners whenever the run settles.
+      this._runSettle = finishRun;
+      video.addEventListener('error', onError);
+      video.addEventListener('ended', onEnded);
 
       const step = () => {
         if (!this._playing) { finishRun(); return; }
         video.requestVideoFrameCallback((now, meta) => {
           if (!this._playing) { finishRun(); return; }
-          try { video.pause(); } catch (error) { /* detached */ }
-          const mediaTime = (meta && Number.isFinite(meta.mediaTime))
-            ? meta.mediaTime
-            : video.currentTime;
-          const frame = this._capture(video, {
-            maxPixels: this._maxPixels,
-            onError: (code) => this._onError(code),
-          });
-          const submission = frame
-            ? this._submit(frame, { mediaTimeUs: Math.round(mediaTime * 1e6) })
-            : Promise.resolve({ outcome: 'no_data' });
-          submission.then((result) => {
-            if (!this._playing) { finishRun(); return; }
-            if (result && result.outcome === 'artifact') {
-              this._finish('eof');
-              finishRun();
-              return;
-            }
-            Promise.resolve(video.play()).then(step).catch(failRun);
-          }).catch(failRun);
+          // S-2: a synchronous throw (capture, play, ...) must fail the run
+          // with a registered code instead of escaping the callback.
+          try {
+            video.pause();
+            const mediaTime = (meta && Number.isFinite(meta.mediaTime))
+              ? meta.mediaTime
+              : video.currentTime;
+            const frame = this._capture(video, {
+              maxPixels: this._maxPixels,
+              onError: (code) => this._onError(code),
+            });
+            const submission = frame
+              ? this._submit(frame, { mediaTimeUs: Math.round(mediaTime * 1e6) })
+              : Promise.resolve({ outcome: 'no_data' });
+            submission.then((result) => {
+              if (!this._playing) { finishRun(); return; }
+              if (result && result.outcome === 'artifact') {
+                this._finish('eof');
+                finishRun();
+                return;
+              }
+              Promise.resolve(video.play()).then(step).catch(failRun);
+            }).catch(failRun);
+          } catch (error) {
+            failRun(Object.assign(new Error('frame callback failed'), { code: 13002 }));
+          }
         });
       };
       Promise.resolve(video.play()).then(step).catch(failRun);
@@ -255,13 +271,16 @@ export class VideoSource {
   stop() {
     const wasPlaying = this._playing;
     this._playing = false;
+    // a run waiting for the next presented frame must settle, not hang (S-2)
+    if (this._runSettle) this._runSettle();
     this._removeListeners();
     // a seek that can no longer complete must not hang the run() coroutine
     if (this._pendingSeek) {
       const resolveSeek = this._pendingSeek;
       this._pendingSeek = null;
       resolveSeek();
-    }    if (this._video) {
+    }
+    if (this._video) {
       try { this._video.pause(); } catch (e) { /* detached */ }
       this._video.removeAttribute('src');
       this._video.load();

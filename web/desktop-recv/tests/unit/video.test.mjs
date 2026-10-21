@@ -28,6 +28,7 @@ function fakeVideoElement({ width = 1024, height = 1024, duration = 1, failMetad
       if (index >= 0) list.splice(index, 1);
     },
     dispatch(type) { for (const fn of [...(listeners[type] || [])]) fn(); },
+    listenerCount(type) { return (listeners[type] || []).length; },
     pause() { element.paused = true; },
     play() { element.paused = false; element.played += 1; return Promise.resolve(); },
     load() {},
@@ -398,5 +399,92 @@ test('UT-072 a failed source is discarded and a fresh import succeeds', { timeou
     const good = harness({ element: fakeVideoElement() });
     const meta = await good.source.open(file('good.webm'));
     assert.equal(meta.durationSeconds, 1);
+  });
+});
+
+// --- Round-3 S-2: the rVFC run must not leak pending promises ---
+
+// Given capture throws synchronously inside a presented-frame callback
+// When the rVFC run steps that frame
+// Then run() rejects with 13002 instead of letting the exception escape the
+// callback, the source is torn down, and no run promise is left pending
+test('UT-093 a sync throw in the frame callback rejects the run with 13002', { timeout: 3000 }, async () => {
+  await withFakeUrls(async ({ revoked }) => {
+    const errors = [];
+    const element = fakeVideoElement({ duration: 2, withRVFC: true });
+    let captures = 0;
+    const source = new VideoSource({
+      createElement: () => element,
+      captureFrame: () => {
+        captures += 1;
+        // the open() precheck captures once; the first run frame explodes
+        if (captures > 1) throw new Error('capture exploded');
+        return { width: element.videoWidth, height: element.videoHeight, pixels: new ArrayBuffer(16) };
+      },
+      submit: async () => ({ outcome: 'no_data' }),
+      onError: (code) => errors.push(code),
+    });
+
+    await source.open(file());
+    const runPromise = source.run();
+    await tick(5);
+    assert.ok(element.played >= 1, 'playback started');
+    element.fireFrame(0.5); // the exception is thrown inside this callback
+
+    await assert.rejects(runPromise, (error) => error.code === 13002);
+    assert.deepEqual(errors, [13002], 'the failure is surfaced once');
+    assert.equal(source.snapshot().open, false, 'the source is torn down');
+    assert.equal(revoked.length, 1, 'the object URL is reclaimed');
+  });
+});
+
+// Given a run is waiting for the next presented frame
+// When stop() is called before that callback ever fires
+// Then the run promise settles promptly instead of hanging forever
+test('UT-094 stop settles a run waiting on the frame callback', { timeout: 3000 }, async () => {
+  await withFakeUrls(async ({ revoked }) => {
+    const element = fakeVideoElement({ duration: 5, withRVFC: true });
+    const { source } = harness({ element });
+
+    await source.open(file());
+    const runPromise = source.run();
+    await tick(10);
+    assert.equal(element.played, 1, 'playback started and no frame was presented yet');
+
+    source.stop();
+    const outcome = await Promise.race([
+      runPromise.then(() => 'settled', () => 'settled'),
+      new Promise((resolve) => setTimeout(() => resolve('hung'), 200)),
+    ]);
+    assert.equal(outcome, 'settled', 'stop() must settle the pending rVFC run');
+    assert.equal(revoked.length, 1, 'URL reclaimed exactly once');
+  });
+});
+
+// Given a run is in progress
+// When stop() is called
+// Then the run's ended/error listeners are removed, so a late media event
+// cannot reach a torn-down source
+test('UT-095 stop removes the run ended and error listeners', { timeout: 3000 }, async () => {
+  await withFakeUrls(async () => {
+    const element = fakeVideoElement({ duration: 5, withRVFC: true });
+    const events = [];
+    const { source } = harness({ element, onEnded: (reason) => events.push(reason) });
+
+    await source.open(file());
+    const runPromise = source.run();
+    await tick(5);
+    assert.equal(element.listenerCount('ended'), 1, 'the run listens for the real EOF');
+    const errorsBefore = element.listenerCount('error');
+
+    source.stop();
+    await runPromise;
+
+    assert.equal(element.listenerCount('ended'), 0, 'the ended listener is removed on settle');
+    assert.ok(element.listenerCount('error') < errorsBefore,
+      'the run error listener is removed on settle');
+    element.dispatch('ended');
+    await tick(5);
+    assert.deepEqual(events, [], 'a late ended event cannot fire eof after stop');
   });
 });

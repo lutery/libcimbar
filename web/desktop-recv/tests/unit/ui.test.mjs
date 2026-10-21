@@ -97,6 +97,26 @@ test('UT-039 controls are consistent with the session state', () => {
   assert.equal(noCaps.canStart, false, 'no input capability');
 });
 
+// Given cleanup has not converged yet (a pending picker/init is still owned)
+// When deriving the controls for an idle-like state
+// Then canStart and canImportVideo stay disabled; a missing cleanupComplete
+// field keeps the historical enabled behavior (backward compatibility)
+test('UT-092 unconverged cleanup blocks canStart and canImportVideo', () => {
+  const caps = { realtime: true, videoImport: true, savePicker: true };
+
+  const pending = deriveControls({ state: 'Idle', artifact: null, cleanupComplete: false }, caps);
+  assert.equal(pending.canStart, false, 'cleanup not converged');
+  assert.equal(pending.canImportVideo, false, 'cleanup not converged');
+
+  const converged = deriveControls({ state: 'Idle', artifact: null, cleanupComplete: true }, caps);
+  assert.equal(converged.canStart, true);
+  assert.equal(converged.canImportVideo, true);
+
+  const legacy = deriveControls({ state: 'Idle', artifact: null }, caps);
+  assert.equal(legacy.canStart, true, 'a missing field keeps the old behavior');
+  assert.equal(legacy.canImportVideo, true, 'a missing field keeps the old behavior');
+});
+
 // Given a cancelled or denied capture error
 // When describing recovery
 // Then the user gets an actionable message and a new click is required

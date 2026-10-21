@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-21T10:51:57+08:00",
+  "updated_at": "2026-10-21T13:05:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -204,7 +204,7 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": null,
       "output_files": [],
       "team_mode": "omc",
@@ -212,17 +212,17 @@
       "contract_files": [],
       "review_rounds": 8,
       "max_rounds": 10,
-      "test_status": "passed",
+      "test_status": "failed",
       "started_at": "2026-10-18T13:20:01+08:00",
-      "completed_at": "2026-10-21T10:51:57+08:00",
-      "notes": "Stage 5 COMPLETE after external round 1 FAIL (7 independent themes) and internal round 7 FAIL (3 Blockings), both rectified; internal round 8 PASS with 0 Blocking (delta 80c92dd..ce4051c). Final gates (2026-10-21, HEAD ce4051c): unit 9 suites / 90 tests green; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side); verify-assets PASS (staging bound to revision a515922, declared); native ctest 9/9 per the external round-1 re-run (no C++ source changed since; WASM not rebuilt). Round-1 themes closed: A-01 -> real local journeys E2E-1..20 + batches L/M docs; A-02/A-03/C-02 -> 558dee9; B-S04 -> b16004a + eb80706 (TD-15 frame-by-frame import); A-04/B-S01 -> 95c54b6 + ce4051c (planned caseType declared for all 26 scenarios, both gates cross-check with fail-closed plan, artifact checks keyed on the planned type, selftest 14 cases, UT-083/084); C-01 -> aa31eed + E2E-1 final state (247b68c; the pwsh CJK+space attribution was retracted and re-verified, TD-17 Node fs.cpSync GBK-mojibake twin). Internal round 7 (2026-10-21) found B-1 planned caseType unvalidated, B-2 E2E-16 negative leg outside the PASS predicate, B-3 E2E-5 pre-window snapshot and E2E-19 reload-only; ce4051c rectified all three and re-executed E2E-5/E2E-16/E2E-19 (PASS, external Get-FileHash equality), with harness fixes (stack.close targets the current receiver server; hard-exit after results flush; honest-FAIL catches for 5/19). Round 8 PASS 0 Blocking. Field journeys E2E-21..26 remain NOT_RUN; TD-12 closed by local executor roundtrips, the field phase remains for the user.",
+      "completed_at": null,
+      "notes": "Stage 5 COMPLETE after external round 1 FAIL (7 independent themes) and internal round 7 FAIL (3 Blockings), both rectified; internal round 8 PASS with 0 Blocking (delta 80c92dd..ce4051c). Final gates (2026-10-21, HEAD ce4051c): unit 9 suites / 90 tests green; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side); verify-assets PASS (staging bound to revision a515922, declared); native ctest 9/9 per the external round-1 re-run (no C++ source changed since; WASM not rebuilt). Round-1 themes closed: A-01 -> real local journeys E2E-1..20 + batches L/M docs; A-02/A-03/C-02 -> 558dee9; B-S04 -> b16004a + eb80706 (TD-15 frame-by-frame import); A-04/B-S01 -> 95c54b6 + ce4051c (planned caseType declared for all 26 scenarios, both gates cross-check with fail-closed plan, artifact checks keyed on the planned type, selftest 14 cases, UT-083/084); C-01 -> aa31eed + E2E-1 final state (247b68c; the pwsh CJK+space attribution was retracted and re-verified, TD-17 Node fs.cpSync GBK-mojibake twin). Internal round 7 (2026-10-21) found B-1 planned caseType unvalidated, B-2 E2E-16 negative leg outside the PASS predicate, B-3 E2E-5 pre-window snapshot and E2E-19 reload-only; ce4051c rectified all three and re-executed E2E-5/E2E-16/E2E-19 (PASS, external Get-FileHash equality), with harness fixes (stack.close targets the current receiver server; hard-exit after results flush; honest-FAIL catches for 5/19). Round 8 PASS 0 Blocking. Field journeys E2E-21..26 remain NOT_RUN; TD-12 closed by local executor roundtrips, the field phase remains for the user. | ROUND-3 VERDICT (consumed round-2 package, file round-3-verdict.md): FAIL, 3 themes - T1 resource lifecycle (init-failed no terminate; cancel-during-init restart), T2 scale/budget/measurement (E2E-18 one 1MiB live sample only), T3 video acceptance false-green (stale-log pass; DataTransfer entry bypass; V-LAST pair causality). Stage 6.5 rectification started; user decisions: new run 20261021-teamexec-03 full local re-run; 20MiB compressible over-budget probe; bounded 1MiB incompressible video probe before any scope revision.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "failed",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [
         "round-1-package.md",
@@ -231,9 +231,10 @@
         "round-2-package.md",
         "round-2-template.md"
       ],
-      "ext_rounds": 2,
+      "ext_rounds": 3,
       "verdict_files": [
-        "docs/dev-pipeline/ext-review/round-1-verdict.md"
+        "docs/dev-pipeline/ext-review/round-1-verdict.md",
+        "docs/dev-pipeline/ext-review/round-3-verdict.md"
       ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-1-package.md",
@@ -273,7 +274,7 @@
       ],
       "started_at": "2026-10-19T11:01:00+08:00",
       "completed_at": null,
-      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design).",
+      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design). | Round-3 verdict consumed (numbering: round-3-verdict.md corresponds to the round-2 package; ext_rounds=3). Pipeline returned to stage 5; round-4 package to follow rectification.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },

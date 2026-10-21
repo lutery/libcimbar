@@ -1,8 +1,10 @@
-// UT-055..UT-062: main-thread DecoderClient failure convergence.
-// Round-1 external review A-03/B-S03: every exit (worker error,
+// UT-055..UT-062, UT-085..UT-087: main-thread DecoderClient failure
+// convergence. Round-1 external review A-03/B-S03: every exit (worker error,
 // messageerror, close, postMessage failure, init/frame watchdog timeout)
 // must settle init and frame promises exactly once, terminate the dead
-// worker, and surface a registered code (15010/15011/14003).
+// worker, and surface a registered code (15010/15011/14003). UT-085..087
+// close the round-3 A-R1/B-R1 gap: a PROTOCOL init failure (init-failed) and
+// a throwing frame postMessage must release the worker too.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -163,4 +165,60 @@ test('UT-062 the healthy path still works', async () => {
 
   client.close();
   assert.equal(worker.terminated, true);
+});
+
+// --- Round-3 A-R1/B-R1: the protocol init failure must release the worker ---
+
+// Given the worker's own digest/asset verification fails and posts init-failed
+// When the protocol rejection arrives before ready
+// Then init rejects with the worker's code, the worker is terminated, and
+// onFailure stays silent (the session never adopted the client yet)
+test('UT-085 protocol init-failed terminates the worker and rejects init', async () => {
+  const worker = fakeWorker();
+  const client = new DecoderClient(worker, { initTimeoutMs: 500, frameTimeoutMs: 500 });
+  const failures = [];
+  client.onFailure = (error) => failures.push(error.code);
+  const init = client.init(initMessage());
+  worker.emit({ type: 'init-failed', code: 18002, detail: 'wasm digest mismatch' });
+  await assert.rejects(init, (error) => error.code === 18002);
+  assert.equal(worker.terminated, true, 'the failed worker is released');
+  assert.deepEqual(failures, [], 'onFailure stays silent before ready');
+});
+
+// Given postMessage itself throws while the init message is being sent
+// When init is called
+// Then init rejects with 15010 and the worker is terminated
+test('UT-086 a throwing init postMessage terminates the worker', async () => {
+  const worker = fakeWorker();
+  worker.postMessage = () => { throw new Error('gone'); };
+  const client = new DecoderClient(worker, { initTimeoutMs: 500, frameTimeoutMs: 500 });
+  const failures = [];
+  client.onFailure = (error) => failures.push(error.code);
+  await assert.rejects(client.init(initMessage()), (error) => error.code === 15010);
+  assert.equal(worker.terminated, true, 'the dead worker is released');
+  assert.deepEqual(failures, [], 'onFailure stays silent before ready');
+});
+
+// Given a frame is already in flight and postMessage now throws for a new one
+// When submitting the next frame
+// Then the throwing frame rejects with 15010, the still-pending frames reject
+// with the same failure, the worker is terminated, and the owner is told once
+test('UT-087 a throwing frame postMessage converges the whole channel', async () => {
+  const worker = fakeWorker();
+  const client = new DecoderClient(worker, { initTimeoutMs: 500, frameTimeoutMs: 500 });
+  const init = client.init(initMessage());
+  worker.emit({ type: 'ready', mode: 68 });
+  await init;
+
+  const failures = [];
+  client.onFailure = (error) => failures.push(error.code);
+  const first = client.submitFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  assert.equal(worker.posted.length, 2, 'init and the first frame went out');
+  worker.postMessage = () => { throw new Error('gone'); };
+  const second = client.submitFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await assert.rejects(second, (error) => error.code === 15010);
+  await assert.rejects(first, (error) => error.code === 15010,
+    'the other pending frame rejects with the same failure');
+  assert.equal(worker.terminated, true, 'the dead worker is terminated');
+  assert.deepEqual(failures, [15010], 'onFailure fired exactly once');
 });

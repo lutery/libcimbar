@@ -33,21 +33,25 @@ function status_text(state, hasArtifact) {
 }
 
 // Controls follow the session state. An unconverged session cannot start a
-// new one; saving is only possible with a real artifact.
+// new one; saving is only possible with a real artifact. `cleanupComplete`
+// closes the window in which a cancelled capture has already rendered Idle
+// while its decoder init is still owned (B-R1). A missing field keeps the
+// historical behavior.
 export function deriveControls(snapshot, capabilities = {}) {
   const state = snapshot && snapshot.state ? snapshot.state : 'Idle';
   const hasArtifact = !!(snapshot && snapshot.artifact);
   const anyInput = !!(capabilities.realtime || capabilities.videoImport);
   const idleLike = IDLE_LIKE.has(state);
+  const cleanupComplete = !snapshot || snapshot.cleanupComplete !== false;
   const saveCapable = capabilities.savePicker !== false;
 
   return {
-    canStart: idleLike && anyInput,
+    canStart: idleLike && anyInput && cleanupComplete,
     canStop: STOPPABLE.has(state),
     canSave: (state === 'Ready' && hasArtifact && saveCapable) ||
       (state === 'Retryable' && hasArtifact && saveCapable),
     canRetrySave: state === 'Retryable' && hasArtifact && saveCapable,
-    canImportVideo: idleLike && !!capabilities.videoImport,
+    canImportVideo: idleLike && !!capabilities.videoImport && cleanupComplete,
     statusText: status_text(state, hasArtifact),
   };
 }

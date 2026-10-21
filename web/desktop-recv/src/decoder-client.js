@@ -90,12 +90,17 @@ export class DecoderClient {
           [pixels]
         );
       } catch (error) {
+        // A-R1: a frame whose postMessage throws must converge the channel
+        // like any other death: the throwing frame rejects below, the other
+        // pending frames reject through _failAll, and the worker terminates.
+        const failure = codedError(15010, 'worker postMessage failed');
         const entry = this.pending.get(frameId);
         if (entry) {
           clearTimeout(entry.timer);
           this.pending.delete(frameId);
         }
-        reject(codedError(15010, 'worker postMessage failed'));
+        reject(failure);
+        this._channelFailed(failure);
       }
     });
   }
@@ -107,9 +112,11 @@ export class DecoderClient {
       return;
     }
     if (msg.type === 'init-failed') {
-      const error = codedError(msg.code, msg.detail || 'init failed');
-      this._settleInit(error);
-      this._failAll(error);
+      // A-R1: a protocol init failure cannot continue on this channel, so it
+      // converges like any other channel death: settle everything, terminate
+      // the worker, and stay silent on onFailure while not ready (the session
+      // has not adopted the client yet).
+      this._channelFailed(codedError(msg.code, msg.detail || 'init failed'));
       return;
     }
     if (msg.type === 'frame-result') {

@@ -3,8 +3,8 @@
 // V-LAST-without is a shorter real recording (never byte-truncated).
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import { mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,10 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
 const STAGING = join(REPO, 'build-desktop-recv', 'staging');
 const FIXTURES = join(REPO, 'docs', 'tests', 'runs', '20261018-teamexec-01', 'fixtures');
-const MEDIA = join(REPO, 'docs', 'tests', 'runs', '20261019-teamexec-02', 'fixtures-media');
+// Round-3 rectification: the user decided on a NEW run directory with a full
+// re-run, so the media fixtures land in run-03 (run-02 is preserved unchanged).
+const RUN = join(REPO, 'docs', 'tests', 'runs', '20261021-teamexec-03');
+const MEDIA = join(RUN, 'fixtures-media');
 const SENDER_PORT = 8811;
 const RECORDER_PORT = 8790; // the e2e dir is already served there
 const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
@@ -179,6 +182,66 @@ async function record(page, ms, pid) {
   return result;
 }
 
+// Round-3 A-R3: the V-LAST pair must be an equivalent-traceable construction.
+// Both clips are recorded from a RELOADED sender that re-loads the same
+// payload, so both start at the sender's frame 0 and share the same encoded
+// trace prefix; the only difference between them is where the recording
+// stops. True media durations are measured at import time by the receiver
+// (E2E-16 reads the video element's ended duration), so the manifest records
+// the requested seconds and the wall intervals instead of inventing one.
+const manifestClips = [];
+
+function sha256OfFile(path) {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+function writeMediaManifest(payloadInfo) {
+  const clips = manifestClips.map((clip) => ({
+    ...clip,
+    sha256: sha256OfFile(join(MEDIA, clip.file)),
+    bytes: statSync(join(MEDIA, clip.file)).size,
+  }));
+  const manifest = {
+    run: RUN,
+    generatedAt: new Date().toISOString(),
+    commandLine: process.argv.join(' '),
+    construction: 'V-LAST-with and V-LAST-without are recorded from a RELOADED sender that '
+      + 're-loads the same payload before each clip, so both clips start at the sender frame 0 '
+      + 'and share the same encoded trace prefix (equivalent-traceable pair; the only difference '
+      + 'is where the recording stops)',
+    durations: 'requestedSeconds and wallMs are rig-side; the true media duration is measured '
+      + 'at import time by the receiver (E2E-16 reads the video element ended duration)',
+    payload: payloadInfo,
+    clips,
+  };
+  const path = join(MEDIA, 'manifest.json');
+  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
+  console.log(`manifest: ${path}`);
+}
+
+// Record one clip and keep its wall timings for the manifest.
+async function recordTimed(page, ms, pid) {
+  const startedAt = new Date().toISOString();
+  const startedMs = Date.now();
+  const result = await record(page, ms, pid);
+  return {
+    ...result,
+    startedAt,
+    stoppedAt: new Date().toISOString(),
+    wallMs: Date.now() - startedMs,
+    requestedMs: ms,
+  };
+}
+
+// A fresh page and a fresh payload load before each V-LAST clip: the sender
+// animation restarts from frame 0, which is what makes the pair traceable.
+async function reloadSender(page, filePath) {
+  await page.reload();
+  await page.waitForSelector('#file_input', { timeout: 30000 });
+  await sleep(800);
+  await launchSender(page, filePath);
+}
+
 async function main() {
   mkdirSync(MEDIA, { recursive: true });
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
@@ -207,11 +270,17 @@ async function main() {
 
   // helper pid: the recorder browser is Playwright-launched; the picker still
   // appears (Playwright launch worked for capture pickers before).
+  let payloadInfo = null;
   try {
     if (ONLY === 'full') {
       await launchSender(senderPage, join('compressible', 'sample-text-2.bin'));
-      const good = await record(recorderPage, 18000, recorderBrowser.pid);
+      const good = await recordTimed(recorderPage, 18000, recorderBrowser.pid);
       writeFileSync(join(MEDIA, 'V-GOOD-C.webm'), Buffer.from(good.base64, 'base64'));
+      manifestClips.push({
+        file: 'V-GOOD-C.webm', payload: 'compressible/sample-text-2.bin',
+        requestedMs: good.requestedMs, wallMs: good.wallMs,
+        startedAt: good.startedAt, stoppedAt: good.stoppedAt,
+      });
       console.log(`V-GOOD-C recorded: ${good.bytes} bytes`);
     } else {
       console.log(`--only ${ONLY}: skipping V-GOOD-C (E2E-14/20 use it; must not change)`);
@@ -225,18 +294,43 @@ async function main() {
     const payloadName = `payload-${Math.round(PAYLOAD_BYTES / 1024)}k-random.bin`;
     const extFile = join(MEDIA, payloadName);
     writeFileSync(extFile, randomBytes(PAYLOAD_BYTES));
-    await launchSender(senderPage, extFile);
-    const lastWith = await record(recorderPage, WITH_SECONDS * 1000, recorderBrowser.pid);
+    payloadInfo = {
+      file: payloadName,
+      bytes: statSync(extFile).size,
+      sha256: sha256OfFile(extFile),
+    };
+    // Reload before EACH V-LAST clip: both share the sender's frame-0 start.
+    await reloadSender(senderPage, extFile);
+    const lastWith = await recordTimed(recorderPage, WITH_SECONDS * 1000, recorderBrowser.pid);
     writeFileSync(join(MEDIA, 'V-LAST-with.webm'), Buffer.from(lastWith.base64, 'base64'));
+    manifestClips.push({
+      file: 'V-LAST-with.webm', payload: payloadName,
+      requestedMs: lastWith.requestedMs, wallMs: lastWith.wallMs,
+      startedAt: lastWith.startedAt, stoppedAt: lastWith.stoppedAt,
+    });
     console.log(`V-LAST-with recorded: ${lastWith.bytes} bytes`);
-    const lastWithout = await record(recorderPage, WITHOUT_SECONDS * 1000, recorderBrowser.pid);
+    await reloadSender(senderPage, extFile);
+    const lastWithout = await recordTimed(recorderPage, WITHOUT_SECONDS * 1000, recorderBrowser.pid);
     writeFileSync(join(MEDIA, 'V-LAST-without.webm'), Buffer.from(lastWithout.base64, 'base64'));
+    manifestClips.push({
+      file: 'V-LAST-without.webm', payload: payloadName,
+      requestedMs: lastWithout.requestedMs, wallMs: lastWithout.wallMs,
+      startedAt: lastWithout.startedAt, stoppedAt: lastWithout.stoppedAt,
+    });
     console.log(`V-LAST-without recorded: ${lastWithout.bytes} bytes`);
+    // --only last stops here: the pair and its manifest are complete, and the
+    // byte-identical clips other journeys depend on are never touched.
+    if (ONLY !== 'full') writeMediaManifest(payloadInfo);
     // A genuinely insufficient clip (kept byte-for-byte in --only full runs
     // and never re-recorded by --only last; E2E-15/16 use it).
     if (ONLY === 'full') {
-      const short = await record(recorderPage, 400, recorderBrowser.pid);
+      const short = await recordTimed(recorderPage, 400, recorderBrowser.pid);
       writeFileSync(join(MEDIA, 'V-SHORT.webm'), Buffer.from(short.base64, 'base64'));
+      manifestClips.push({
+        file: 'V-SHORT.webm', payload: 'compressible/sample-text-2.bin',
+        requestedMs: short.requestedMs, wallMs: short.wallMs,
+        startedAt: short.startedAt, stoppedAt: short.stoppedAt,
+      });
       console.log(`V-SHORT recorded: ${short.bytes} bytes`);
     } else {
       console.log(`--only ${ONLY}: skipping V-SHORT (E2E-15/16 use it; must not change)`);
@@ -275,8 +369,13 @@ async function main() {
     const recorder2 = await launchNormalEdge();
     await recorder2.page.goto(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
     await recorder2.page.waitForSelector('#rec');
-    const goodN = await record(recorder2.page, 18000, recorder2.pid);
+    const goodN = await recordTimed(recorder2.page, 18000, recorder2.pid);
     writeFileSync(join(MEDIA, 'V-GOOD-N.webm'), Buffer.from(goodN.base64, 'base64'));
+    manifestClips.push({
+      file: 'V-GOOD-N.webm', payload: 'incompressible/sample-random-2.bin',
+      requestedMs: goodN.requestedMs, wallMs: goodN.wallMs,
+      startedAt: goodN.startedAt, stoppedAt: goodN.stoppedAt,
+    });
     console.log(`V-GOOD-N recorded: ${goodN.bytes} bytes`);
     await senderBrowser2.close();
     await recorder2.browser.close().catch(() => {});
@@ -290,6 +389,7 @@ async function main() {
     recorderServer.kill();
     incompressibleServer.kill();
   }
+  writeMediaManifest(payloadInfo);
 }
 
 main().catch((error) => { console.error('RIG FAILED:', error); process.exit(1); });

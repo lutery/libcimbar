@@ -1,8 +1,15 @@
 // UT-043..UT-048: the evidence gate rules.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { validateCaseRecord, validateRunGate } from '../../src/evidence.js';
+import {
+  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput,
+} from '../../../../tools/desktop-recv/e2e/leg-verdict.mjs';
+import { lifecycleRecord, roundtripRecord } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
 const HASH = 'a'.repeat(64);
 const HASH2 = 'b'.repeat(64);
@@ -300,4 +307,189 @@ test('UT-084 a planned scenario without a caseType is refused', () => {
   });
   assert.equal(gate.ok, false);
   assert.ok(gate.violations.some((v) => v.includes('does not declare a caseType')));
+});
+
+// --- Round-3 A-R3: per-leg verdicts (leg-verdict.mjs) ----------------------
+
+// The reviewer's controlled replay: the FIRST import produced 13005, the
+// SECOND one stayed in Preparing with only the OLD error line in the log,
+// and the old journey still returned PASS. The verdict must fail: the delta
+// since the second dispatch is empty, the attempt identity did not advance,
+// and Preparing is not a terminal state.
+test('UT-096 the reviewer replay (old 13005 + empty delta + Preparing) cannot pass', () => {
+  const verdict = evaluateVideoFailureLeg({
+    baseline: { attemptId: 7, logLength: 500, trailLength: 2 },
+    delta: '',
+    state: {
+      // The cumulative log still contains the OLD error; only the delta counts.
+      log: `${'x'.repeat(460)}[error] 13005: recording metadata invalid\n`,
+      statusTrail: [{ state: 'Idle' }, { state: 'Idle' }],
+      state: { state: 'Preparing', cleanupComplete: false },
+    },
+    buttons: { saveDisabled: true, videoDisabled: true },
+    attemptId: 7,
+    expectedCodes: ['13005'],
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.failures.some((f) => f.includes('none of [13005]')), verdict.failures.join('; '));
+  assert.ok(verdict.failures.some((f) => f.includes('attempt identity did not advance')));
+  assert.ok(verdict.failures.some((f) => f.includes('never left Idle')));
+  assert.ok(verdict.failures.some((f) => f.includes('not a restartable terminal')));
+});
+
+// A fresh leg: the attempt identity advanced, the trail left Idle, the delta
+// carries THIS leg's 13005, and the session settled back to Idle with the
+// video entry live and cleanup converged.
+test('UT-097 a fresh empty-file leg settles and passes', () => {
+  const verdict = evaluateVideoFailureLeg({
+    baseline: { attemptId: 4, logLength: 100, trailLength: 1 },
+    delta: '[error] 13005: recording metadata invalid (select another recording)\n',
+    state: {
+      statusTrail: [{ state: 'Idle' }, { state: 'Preparing' }, { state: 'Idle' }],
+      state: { state: 'Idle', cleanupComplete: true },
+    },
+    buttons: { saveDisabled: true, videoDisabled: false },
+    attemptId: 5,
+    expectedCodes: expectedCodesForBadInput('empty'),
+  });
+  assert.equal(verdict.ok, true, verdict.failures.join('; '));
+  assert.equal(verdict.checks.leftIdle, true);
+  assert.equal(verdict.checks.expectedCode, '13005');
+});
+
+// A corrupt container may fail with 13002 or 13003; either satisfies the
+// leg. A session that settles in 'Error' is NOT a restartable terminal.
+test('UT-098 corrupt legs accept 13002|13003 but reject an Error terminal', () => {
+  const passed = evaluateVideoFailureLeg({
+    baseline: { attemptId: 10, trailLength: 0 },
+    delta: '[error] 13003: the recording could not be decoded (select another recording)\n',
+    state: {
+      statusTrail: [{ state: 'Receiving' }, { state: 'Incomplete' }],
+      state: { state: 'Incomplete', cleanupComplete: true },
+    },
+    buttons: { saveDisabled: true, videoDisabled: false },
+    attemptId: 11,
+    expectedCodes: expectedCodesForBadInput('corrupt'),
+  });
+  assert.equal(passed.ok, true, passed.failures.join('; '));
+  assert.equal(passed.checks.expectedCode, '13003');
+
+  const errored = evaluateVideoFailureLeg({
+    baseline: { attemptId: 10, trailLength: 0 },
+    delta: '[error] 13002: first frame not decodable\n',
+    state: {
+      statusTrail: [{ state: 'Receiving' }, { state: 'Error' }],
+      state: { state: 'Error', cleanupComplete: true },
+    },
+    buttons: { saveDisabled: true, videoDisabled: false },
+    attemptId: 11,
+    expectedCodes: expectedCodesForBadInput('corrupt'),
+  });
+  assert.equal(errored.ok, false);
+  assert.ok(errored.failures.some((f) => f.includes('not a restartable terminal')));
+});
+
+// Everything can look green by code/state yet be a refused dispatch or an
+// unconverged cleanup: both must fail the leg.
+test('UT-099 an already-active refusal and unconverged cleanup fail the leg', () => {
+  const verdict = evaluateVideoFailureLeg({
+    baseline: { attemptId: 1, trailLength: 0 },
+    delta: '[error] 13005: recording metadata invalid\na session is already active\n',
+    state: {
+      statusTrail: [{ state: 'Preparing' }, { state: 'Idle' }],
+      state: { state: 'Idle', cleanupComplete: false },
+    },
+    buttons: { saveDisabled: true, videoDisabled: false },
+    attemptId: 2,
+    expectedCodes: ['13005'],
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.failures.some((f) => f.includes('already active')));
+  assert.ok(verdict.failures.some((f) => f.includes('cleanupComplete is not true')));
+});
+
+// --- Round-3 A-R2: artifact-budget leg ------------------------------------
+
+// The compressible 20 MiB leg: the delta carries THIS dispatch's 15008, no
+// artifact exists, save is dead and stop is still available.
+test('UT-100 a budget rejection with no artifact and a live stop passes', () => {
+  const verdict = evaluateBudgetLeg({
+    baseline: { attemptId: null, logLength: 10, trailLength: null },
+    delta: '[error] 15008: the rebuilt file exceeds the artifact budget (start a new session)\n',
+    state: {
+      status: 'Receiving frames',
+      state: { state: 'Receiving', cleanupComplete: false },
+      saveDisabled: true,
+      stopDisabled: false,
+      contractSnapshot: { artifact: null },
+    },
+    buttons: { saveDisabled: true, videoDisabled: true, stopDisabled: false },
+    expectedCode: '15008',
+  });
+  assert.equal(verdict.ok, true, verdict.failures.join('; '));
+  assert.equal(verdict.checks.codeHit, true);
+  assert.equal(verdict.checks.stopAvailable, true);
+});
+
+// A missing rejection, a saveable/Ready artifact, or a dead stop each fail
+// the budget leg.
+test('UT-101 a budget leg without 15008, with an artifact or without stop fails', () => {
+  const verdict = evaluateBudgetLeg({
+    baseline: { attemptId: null, logLength: 10, trailLength: null },
+    delta: 'nothing relevant here\n',
+    state: {
+      state: { state: 'Ready', cleanupComplete: true },
+      saveDisabled: false,
+      stopDisabled: true,
+      contractSnapshot: { artifact: { byteCount: 20971520 } },
+    },
+    buttons: { saveDisabled: false, videoDisabled: true, stopDisabled: true },
+    expectedCode: '15008',
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.failures.some((f) => f.includes('does not contain 15008')));
+  assert.ok(verdict.failures.some((f) => f.includes('an artifact is present')));
+  assert.ok(verdict.failures.some((f) => f.includes('save is not disabled')));
+  assert.ok(verdict.failures.some((f) => f.includes('stop is not available')));
+});
+
+// --- Round-3 S-1/A-R2: record writers carry attemptId + measurement --------
+
+test('UT-102 record writers pass through attemptId and the measurement block', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cimbar-evidence-'));
+  try {
+    const original = join(dir, 'original.bin');
+    const received = join(dir, 'received.bin');
+    writeFileSync(original, 'payload bytes');
+    writeFileSync(received, 'payload bytes');
+
+    const record = roundtripRecord({
+      caseId: 'E2E-18', originalPath: original, receivedPath: received, runDir: dir,
+      attemptId: 'att-9', measurement: { legs: [{ id: 'live-c-1mib', status: 'PASS' }] },
+    });
+    assert.equal(record.attemptId, 'att-9');
+    assert.equal(record.measurement.legs.length, 1);
+    // The frozen top-level vocabulary is unchanged.
+    assert.equal(record.result, 'PASS');
+    assert.equal(record.scope, 'local_simulated');
+    assert.equal(record.caseType, 'file_roundtrip');
+    assert.equal(record.executedBy, 'executor');
+    assert.equal(record.referenceSha256, record.receivedSha256);
+
+    // Absent options are not injected as nulls.
+    const plain = roundtripRecord({
+      caseId: 'E2E-3', originalPath: original, receivedPath: received, runDir: dir,
+    });
+    assert.equal('attemptId' in plain, false);
+    assert.equal('measurement' in plain, false);
+
+    const lifecycle = lifecycleRecord({
+      caseId: 'E2E-4', result: 'FAIL', runDir: dir, proofFiles: ['proof/E2E-4/x.txt'],
+      attemptId: 'att-10', measurement: {},
+    });
+    assert.equal(lifecycle.attemptId, 'att-10');
+    assert.deepEqual(lifecycle.measurement, {});
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -522,35 +522,183 @@ test('UT-065 a late client after rejection is closed by the cleanup token', asyn
   assert.equal(late.closed, true, 'the late client is closed, not adopted');
 });
 
-// Given the user cancels the picker three times in a row
-// When each parallel init eventually returns
-// Then every client is closed and no resource survives
-test('UT-066 repeated cancellations release every late client', async () => {
+// Given the user cancels the picker three times in a row, restarting between
+// rounds only after the late decoder init has arrived
+// When each round's client eventually returns
+// Then every client is closed, the cleanup state converges before the next
+// round is admitted, and create/close counts match (round-3 B-R1: an
+// unconverged init must not let a new session accumulate in parallel).
+// UT-089 rewrites UT-066, which assumed restarts were always admitted.
+test('UT-089 repeated cancellations release every late client', async () => {
+  let createCalls = 0;
   const clients = [];
-  const resolvers = [];
-  let rejectPicker;
+  const clientResolvers = [];
+  const pickerRejects = [];
   const coordinator = new SessionCoordinator({
-    getDisplayMedia: () => new Promise((resolve, reject) => { rejectPicker = reject; }),
-    createClient: () => new Promise((resolve) => { resolvers.push(resolve); }),
+    getDisplayMedia: () => new Promise((resolve, reject) => { pickerRejects.push(reject); }),
+    createClient: () => {
+      createCalls += 1;
+      return new Promise((resolve) => { clientResolvers.push(resolve); });
+    },
   });
 
   for (let round = 1; round <= 3; round += 1) {
-    coordinator.startLive({ requestId: `live-${round}` });
-    rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
-    await tick(); // the rejection settles in a microtask before the next start
-  }
-  await tick();
-  assert.equal(coordinator.snapshot().state, 'Idle');
+    const started = coordinator.startLive({ requestId: `live-${round}` });
+    assert.equal(started.accepted, true, `round ${round} is admitted`);
+    pickerRejects[round - 1](Object.assign(new Error('cancelled'), { code: 12002 }));
+    await tick();
+    assert.equal(coordinator.snapshot().state, 'Idle');
+    assert.equal(coordinator.snapshot().cleanupComplete, false,
+      `round ${round} still owns the pending init`);
 
-  for (const resolve of resolvers) {
     const client = fakeClient();
     clients.push(client);
-    resolve(client);
+    clientResolvers[round - 1](client);
+    await tick();
+    assert.equal(client.closed, true, `round ${round} late client was closed`);
+    assert.equal(coordinator.snapshot().cleanupComplete, true,
+      `round ${round} cleanup converged before the next start`);
   }
-  await tick();
+
+  assert.equal(createCalls, 3, 'one decoder per round');
   assert.equal(clients.length, 3);
   assert.equal(clients.filter((client) => client.closed).length, 3,
     'every late client was closed');
+});
+
+// --- Round-3 B-R1: an unconverged init blocks a new session ---
+
+// Given the picker was cancelled while the decoder init is still pending
+// When the user clicks start again before the init settles
+// Then the restart is refused with reason 'cleanup' and no second decoder is
+// created; once the late client arrives it is closed, the snapshot is
+// re-emitted with cleanupComplete=true, and the restart is admitted
+test('UT-088 a cancel during init blocks restart until cleanup converges', async () => {
+  const snapshots = [];
+  let createCalls = 0;
+  let pickerCalls = 0;
+  let rejectPicker;
+  let resolveClient;
+  const clients = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => {
+      pickerCalls += 1;
+      return new Promise((resolve, reject) => { rejectPicker = reject; });
+    },
+    createClient: () => {
+      createCalls += 1;
+      return new Promise((resolve) => { resolveClient = resolve; });
+    },
+    onSnapshot: (snapshot) => snapshots.push(snapshot),
+  });
+
+  assert.equal(coordinator.startLive({ requestId: 'live-1' }).accepted, true);
+  rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
+  await tick();
+
+  let snapshot = coordinator.snapshot();
+  assert.equal(snapshot.state, 'Idle');
+  assert.equal(snapshot.cleanupComplete, false, 'the init is still owned');
+
+  const blocked = coordinator.startLive({ requestId: 'live-2' });
+  assert.deepEqual(blocked, { accepted: false, reason: 'cleanup' });
+  assert.equal(createCalls, 1, 'no second decoder was created');
+  assert.equal(pickerCalls, 1, 'no second picker was opened');
+  assert.equal(coordinator.snapshot().sessionSeq, 1, 'no new session was reserved');
+
+  const emittedBefore = snapshots.length;
+  const late = fakeClient();
+  clients.push(late);
+  resolveClient(late);
+  await tick();
+
+  assert.equal(late.closed, true, 'the late client of the cancelled session is closed');
+  snapshot = coordinator.snapshot();
+  assert.equal(snapshot.state, 'Idle');
+  assert.equal(snapshot.cleanupComplete, true, 'cleanup converged');
+  assert.ok(snapshots.length > emittedBefore, 'the snapshot is re-emitted on convergence');
+  assert.equal(snapshots[snapshots.length - 1].cleanupComplete, true);
+
+  const restarted = coordinator.startLive({ requestId: 'live-3' });
+  assert.equal(restarted.accepted, true, 'a converged session admits the next start');
+  assert.notEqual(restarted.sessionId, snapshot.sessionId);
+  await tick();
+});
+
+// Given the user stops while the decoder init promise is still pending
+// When that init finally REJECTS (rather than resolving late)
+// Then the session stays Stopped, cleanup completes, and no error is surfaced
+test('UT-090 a pending init rejection after stop stays silent', async () => {
+  const errors = [];
+  let rejectClient;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => Promise.resolve(fakeStream()),
+    createClient: () => new Promise((resolve, reject) => { rejectClient = reject; }),
+    onError: (code) => errors.push(code),
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Preparing');
+
+  coordinator.stop();
+  assert.equal(coordinator.snapshot().state, 'Stopping');
+
+  rejectClient(Object.assign(new Error('init failed'), { code: 15002 }));
+  await tick();
+
+  const snapshot = coordinator.snapshot();
+  assert.equal(snapshot.state, 'Stopped');
+  assert.equal(snapshot.cleanupComplete, true);
+  assert.deepEqual(errors, [], 'a user-initiated stop settles silently');
+});
+
+// Given an unconverged live cancellation (pending decoder init)
+// When the user imports a recording instead
+// Then startVideo refuses with reason 'cleanup' and starts no session; after
+// convergence the same video entry is admitted normally
+test('UT-091 startVideo honours the same cleanup gate as startLive', async () => {
+  let createCalls = 0;
+  let opened = 0;
+  let rejectPicker;
+  let resolveClient;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve, reject) => { rejectPicker = reject; }),
+    createClient: () => {
+      createCalls += 1;
+      return new Promise((resolve) => { resolveClient = resolve; });
+    },
+  });
+
+  coordinator.startLive({ requestId: 'live-1' });
+  rejectPicker(Object.assign(new Error('cancelled'), { code: 12002 }));
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Idle');
+  assert.equal(coordinator.snapshot().cleanupComplete, false);
+
+  const blocked = coordinator.startVideo({
+    requestId: 'video-1',
+    openSource: () => { opened += 1; return Promise.resolve({ stop() {} }); },
+  });
+  assert.deepEqual(blocked, { accepted: false, reason: 'cleanup' });
+  assert.equal(opened, 0, 'the file was not opened for a refused start');
+  assert.equal(createCalls, 1, 'no second decoder was created');
+  assert.equal(coordinator.snapshot().sessionSeq, 1, 'no new session was reserved');
+
+  const late = fakeClient();
+  resolveClient(late);
+  await tick();
+  assert.equal(late.closed, true);
+  assert.equal(coordinator.snapshot().cleanupComplete, true);
+
+  const restarted = coordinator.startVideo({
+    requestId: 'video-2',
+    openSource: () => { opened += 1; return Promise.resolve({ stop() {} }); },
+  });
+  assert.equal(restarted.accepted, true, 'the video entry is admitted after convergence');
+  resolveClient(fakeClient());
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Receiving');
 });
 
 // --- Round-1 external review A-03: init failure must converge under stop ---

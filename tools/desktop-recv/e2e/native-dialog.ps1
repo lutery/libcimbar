@@ -21,12 +21,20 @@
          [-ProcessName msedge] [-TimeoutSec 30]
     pwsh -NoProfile -File native-dialog.ps1 -Action share -SourceTitle <title> \
          [-ProcessName msedge] [-TimeoutSec 30]
+    pwsh -NoProfile -File native-dialog.ps1 -Action open -Path <abs path> \
+         [-ProcessName msedge] [-TimeoutSec 30]
+    pwsh -NoProfile -File native-dialog.ps1 -Action open-cancel \
+         [-ProcessName msedge] [-TimeoutSec 30]
+
+  For -Action open the exit code is INFORMATIONAL ONLY: the app-side change
+  event (a 'recording:' log line in the receiver) is the sole success
+  criterion, judged by run-e2e.mjs, never by this helper's output.
 
   Exit: 0 the dialog was driven to completion, 1 the dialog/source was not found.
 #>
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory)][ValidateSet('save', 'share', 'share-cancel', 'save-cancel', 'stop-share')][string]$Action,
+  [Parameter(Mandatory)][ValidateSet('save', 'share', 'share-cancel', 'save-cancel', 'stop-share', 'open', 'open-cancel')][string]$Action,
   [string]$Path,
   [string]$RenameTo,
   [ValidateSet('', 'refuse', 'confirm')][string]$OnOverwrite,
@@ -242,7 +250,40 @@ function Test-DialogName([string]$Name) {
   if ($Action -eq 'save') {
     return $Name -match '(?i)save as|另存为|^save$'
   }
+  if ($Action -eq 'open' -or $Action -eq 'open-cancel') {
+    # The hidden <input type=file> shows the classic file-OPEN dialog. Its
+    # title is 打开 / Open on this host; the same #32770+edit1001 structure
+    # also matches the save template, so a structural fallback is allowed
+    # only when no title match exists (only one file dialog is ever open in
+    # these journeys).
+    return $Name -match '(?i)打开|^open$'
+  }
   return $Name -match '(?i)share|共享|choose what to share|选择.*共享'
+}
+
+# The open dialog is the classic Win32 file dialog. The edit-id 1001 +
+# IDOK structure is VERIFIED for the save template on this host but NOT yet
+# verified for the open template (the open dialog also exposes 文件名/File
+# name through UIA). Title first, structure fallback; the caller additionally
+# uses the UIA-name tier before falling back to focus+paste.
+function Find-OpenDialogHwnd {
+  $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
+    $AE::ControlTypeProperty, $CT::Window)
+  $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
+  foreach ($top in $tops) {
+    if ("$($top.Current.Name)" -match '(?i)打开|^open$') {
+      $handle = [IntPtr]$top.Current.NativeWindowHandle
+      if ($handle -ne [IntPtr]::Zero) { return $handle }
+    }
+    $nested = $top.FindAll($TS::Descendants, $windowCondition)
+    foreach ($candidate in $nested) {
+      if ("$($candidate.Current.Name)" -match '(?i)打开|^open$') {
+        $handle = [IntPtr]$candidate.Current.NativeWindowHandle
+        if ($handle -ne [IntPtr]::Zero) { return $handle }
+      }
+    }
+  }
+  return [NativeMouse]::FindSaveDialog()
 }
 
 # The media picker is a nested views window inside the browser window, while
@@ -385,18 +426,48 @@ function Dismiss-EdgePromos([string[]]$Pids) {
 
 # Cancel-style actions target different windows than the main save/share
 # flows; they are handled before the common dialog-wait loop.
-if ($Action -in @('share-cancel', 'save-cancel', 'stop-share')) {
+if ($Action -in @('share-cancel', 'save-cancel', 'stop-share', 'open-cancel')) {
   Dismiss-EdgePromos (Get-TargetPids)
   $cancelDeadline = (Get-Date).AddSeconds($TimeoutSec)
   while ((Get-Date) -lt $cancelDeadline) {
-    if ($Action -eq 'save-cancel') {
-      # The save dialog is the classic #32770 with a Cancel button (ID 2).
-      $hwnd = [NativeMouse]::FindSaveDialog()
+    if ($Action -eq 'save-cancel' -or $Action -eq 'open-cancel') {
+      # The classic #32770 file dialog carries a Cancel button (ID 2).
+      $hwnd = if ($Action -eq 'open-cancel') {
+        Find-OpenDialogHwnd
+      } else {
+        [NativeMouse]::FindSaveDialog()
+      }
       if ($hwnd -ne [IntPtr]::Zero) {
         $cancel = [NativeMouse]::GetDlgItem($hwnd, 2)
         if ($cancel -ne [IntPtr]::Zero) {
           [NativeMouse]::PostMessage($cancel, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
-          Write-Output 'save dialog cancelled'
+          Write-Output "$Action via Cancel id 2"
+          exit 0
+        }
+        # Fallback 1: the dialog's own Cancel button through UIA.
+        $dialogElement = $null
+        try { $dialogElement = $AE::FromHandle($hwnd) } catch { }
+        if ($dialogElement) {
+          $cancelElement = Find-ByName $dialogElement '^取消$|^Cancel$' $CT::Button
+          if ($cancelElement) {
+            Invoke-Element $cancelElement
+            Write-Output "$Action via UIA cancel"
+            Start-Sleep -Milliseconds 300
+            exit 0
+          }
+        }
+        # Fallback 2: ESC on the foregrounded dialog.
+        [NativeMouse]::ForceForeground($hwnd) | Out-Null
+        Start-Sleep -Milliseconds 200
+        [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+        Start-Sleep -Milliseconds 400
+        $stillOpen = if ($Action -eq 'open-cancel') {
+          Find-OpenDialogHwnd
+        } else {
+          [NativeMouse]::FindSaveDialog()
+        }
+        if ($stillOpen -eq [IntPtr]::Zero) {
+          Write-Output "$Action via ESC"
           exit 0
         }
       }
@@ -674,6 +745,107 @@ if ($Action -eq 'save') {
   }
   [Console]::Error.WriteLine("the save dialog did not produce the file: $Path")
   exit 1
+} elseif ($Action -eq 'open') {
+  if (-not $Path) { [Console]::Error.WriteLine('-Path is required for open'); exit 1 }
+
+  # The hidden <input type=file> opens the classic file dialog. Its control
+  # template looks like the save dialog's, but edit id 1001 for the OPEN
+  # template is NOT verified on this host. Three tiers, each best-effort:
+  #   1. Win32 edit id 1001 (verified only for the save template)
+  #   2. UIA Edit named 文件名 / File name
+  #   3. focus the dialog and paste
+  # Success is NEVER judged here: the app-side change event (a 'recording:'
+  # delta in the receiver log) is the sole criterion, checked by run-e2e.mjs.
+  $openDeadline = (Get-Date).AddSeconds($TimeoutSec)
+  $hwnd = [IntPtr]::Zero
+  while ((Get-Date) -lt $openDeadline -and $hwnd -eq [IntPtr]::Zero) {
+    $hwnd = Find-OpenDialogHwnd
+    if ($hwnd -eq [IntPtr]::Zero) { Start-Sleep -Milliseconds 300 }
+  }
+  if ($hwnd -eq [IntPtr]::Zero) {
+    [Console]::Error.WriteLine('open dialog not found')
+    exit 1
+  }
+  Dismiss-EdgePromos (Get-TargetPids)
+  [NativeMouse]::ForceForeground($hwnd) | Out-Null
+  Start-Sleep -Milliseconds 400
+
+  $filled = $false
+  $edit = [NativeMouse]::FindEdit1001($hwnd)
+  if ($edit -ne [IntPtr]::Zero) {
+    Set-Clipboard -Value $Path
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.SendKeys]::SendWait('^a')
+    Start-Sleep -Milliseconds 150
+    [System.Windows.Forms.SendKeys]::SendWait('^v')
+    Start-Sleep -Milliseconds 400
+    $editText = [ConfirmDrive]::GetEditText($edit)
+    Write-Output "open tier 1 (win32 edit 1001): text now '$editText'"
+    if ($editText -eq $Path) { $filled = $true }
+  } else {
+    Write-Output 'open tier 1: no win32 edit 1001 in this dialog'
+  }
+
+  if (-not $filled) {
+    $dialogElement = $null
+    try { $dialogElement = $AE::FromHandle($hwnd) } catch { }
+    if ($dialogElement) {
+      $nameEdit = Find-ByName $dialogElement '文件名|File name' $CT::Edit
+      if ($nameEdit) {
+        try {
+          $nameEdit.SetFocus()
+          Start-Sleep -Milliseconds 200
+          Set-Clipboard -Value $Path
+          Start-Sleep -Milliseconds 200
+          [System.Windows.Forms.SendKeys]::SendWait('^a')
+          Start-Sleep -Milliseconds 150
+          [System.Windows.Forms.SendKeys]::SendWait('^v')
+          Start-Sleep -Milliseconds 400
+          $uiaHandle = [IntPtr]$nameEdit.Current.NativeWindowHandle
+          if ($uiaHandle -ne [IntPtr]::Zero) {
+            $editText = [ConfirmDrive]::GetEditText($uiaHandle)
+            Write-Output "open tier 2 (UIA name edit): text now '$editText'"
+            if ($editText -eq $Path) { $filled = $true }
+          } else {
+            Write-Output 'open tier 2: UIA edit has no native handle; paste unverified'
+            $filled = $true
+          }
+        } catch {
+          Write-Output "open tier 2 failed: $($_.Exception.Message)"
+        }
+      } else {
+        Write-Output 'open tier 2: no UIA edit named 文件名/File name'
+      }
+    }
+  }
+
+  if (-not $filled) {
+    [NativeMouse]::ForceForeground($hwnd) | Out-Null
+    Start-Sleep -Milliseconds 200
+    Set-Clipboard -Value $Path
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.SendKeys]::SendWait('^a')
+    Start-Sleep -Milliseconds 150
+    [System.Windows.Forms.SendKeys]::SendWait('^v')
+    Start-Sleep -Milliseconds 400
+    Write-Output 'open tier 3: focus+paste (unverified)'
+  }
+
+  [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+  Start-Sleep -Milliseconds 500
+  if ((Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
+    [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+  }
+  $closeDeadline = (Get-Date).AddSeconds(5)
+  while ((Get-Date) -lt $closeDeadline -and (Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
+    Start-Sleep -Milliseconds 250
+  }
+  if ((Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
+    [Console]::Error.WriteLine('the open dialog did not close after Enter')
+    exit 1
+  }
+  Write-Output 'open dialog confirmed (informational; the app-side change event decides)'
+  exit 0
 } else {
   Write-Output "dialog: $($dialog.Current.Name) pid=$($dialog.Current.ProcessId)"
 

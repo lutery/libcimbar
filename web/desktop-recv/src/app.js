@@ -5,6 +5,7 @@ import { deriveControls, describeRecovery, safeSuggestedName, noDataHint } from 
 import { DecoderClient } from './decoder-client.js';
 import { LIMITS_DEFAULT } from './contracts.js';
 import { SessionCoordinator } from './session.js';
+import { toContractSnapshot } from './contract-snapshot.js';
 import { SaveController } from './save-controller.js';
 import { captureFrame } from './live-source.js';
 import { VideoSource } from './video-source.js';
@@ -53,18 +54,29 @@ const coordinator = new SessionCoordinator({
     return stream;
   },
   createClient: async () => {
-    const worker = new Worker(new URL('../worker/decoder-worker.js', import.meta.url));
-    const client = new DecoderClient(worker, {
-      maxFramePixels: MAX_PIXELS,
-      maxArtifactBytes: 16777216,
-      // Main-thread watchdogs (A-03): the worker cannot rescue a wedged
-      // thread itself. Limits come from the same frozen defaults as the
-      // worker side (profile.json mirrors contracts.js).
-      initTimeoutMs: LIMITS_DEFAULT.initTimeoutMs,
-      frameTimeoutMs: LIMITS_DEFAULT.frameTimeoutMs,
-    });
-    await client.init({ mode: MODE_B, assets, limits: {} });
-    return client;
+    // A-R1: this factory owns the client until init settles. A rejection
+    // (protocol init-failed, watchdog, or a throwing construction) releases
+    // the worker here, because the coordinator never adopts the client.
+    journey().initStartAt = Date.now();
+    let client = null;
+    try {
+      const worker = new Worker(new URL('../worker/decoder-worker.js', import.meta.url));
+      client = new DecoderClient(worker, {
+        maxFramePixels: MAX_PIXELS,
+        maxArtifactBytes: 16777216,
+        // Main-thread watchdogs (A-03): the worker cannot rescue a wedged
+        // thread itself. Limits come from the same frozen defaults as the
+        // worker side (profile.json mirrors contracts.js).
+        initTimeoutMs: LIMITS_DEFAULT.initTimeoutMs,
+        frameTimeoutMs: LIMITS_DEFAULT.frameTimeoutMs,
+      });
+      await client.init({ mode: MODE_B, assets, limits: {} });
+      journey().initReadyAt = Date.now();
+      return client;
+    } catch (error) {
+      if (client && typeof client.close === 'function') client.close();
+      throw error;
+    }
   },
   maxPixels: MAX_PIXELS,
   onSnapshot: () => render(),
@@ -82,8 +94,45 @@ function showError(code) {
   logLine(`${code}: ${recovery.message} (${recovery.retryAction})`, true);
 }
 
+// --- Measurement hooks (diagnostics only) ---------------------------------
+// The external journey runner observes these from the page; nothing here
+// changes product behavior. The status trail is bounded so a long-lived page
+// cannot grow without limit.
+function journey() {
+  if (!window.__journey || typeof window.__journey !== 'object') window.__journey = {};
+  return window.__journey;
+}
+
+function recordStatus(state) {
+  const trail = Array.isArray(window.__statusTrail) ? window.__statusTrail : [];
+  window.__statusTrail = trail;
+  const last = trail[trail.length - 1];
+  if (last && last.state === state) return;
+  trail.push({ state, t: Date.now() });
+  while (trail.length > 100) trail.shift();
+}
+
+function recordJourney(snapshot) {
+  const marks = journey();
+  if (snapshot.state === 'Receiving' && marks.receivingAt === undefined) {
+    marks.receivingAt = Date.now();
+  }
+  if (snapshot.artifact && marks.readyAt === undefined) {
+    marks.readyAt = Date.now();
+  }
+  if (snapshot.state === 'Saved' && marks.savedAt === undefined) {
+    marks.savedAt = Date.now();
+  }
+}
+
 function render() {
   const snapshot = coordinator.snapshot();
+  // Diagnostics: last observed values for the external journey runner.
+  window.__lastStats = snapshot.stats;
+  window.__state = snapshot.state;
+  recordStatus(snapshot.state);
+  recordJourney(snapshot);
+  window.__contractSnapshot = toContractSnapshot(snapshot, { mode: 'B' });
   const controls = deriveControls(snapshot, capabilities || {});
   el.status.textContent = controls.statusText;
   el.btnLive.disabled = !(controls.canStart && capabilities.realtime);
@@ -218,22 +267,58 @@ function startVideoImport(file) {
   if (!capabilities.videoImport) return;
   startClicks += 1;
   videoRunStarted = false;
+  // Diagnostics: one timeline per import attempt (fresh identity each time).
+  const attemptId = `video-${startClicks}`;
+  window.__videoTimeline = {
+    attemptId,
+    presented: 0,
+    firstUs: null,
+    lastUs: null,
+    endReason: null,
+    artifactFrameId: null,
+    finalSample: null,
+  };
   const result = coordinator.startVideo({
-    requestId: `video-${startClicks}`,
+    requestId: attemptId,
     openSource: async () => {
       // The shared preview element doubles as the video element; the source
       // sets its src and reclaims the URL on stop.
       const source = new VideoSource({
         createElement: () => el.preview,
-        submit: (frame) => coordinator.submitVideoFrame(frame),
-        onEnded: () => {
+        submit: (frame, meta) => {
+          const timeline = window.__videoTimeline;
+          if (timeline && meta && Number.isFinite(meta.mediaTimeUs)) {
+            if (timeline.firstUs === null) timeline.firstUs = meta.mediaTimeUs;
+            timeline.lastUs = meta.mediaTimeUs;
+            timeline.presented += 1;
+          }
+          const submission = coordinator.submitVideoFrame(frame);
+          if (timeline && submission && typeof submission.then === 'function') {
+            submission.then((frameResult) => {
+              if (frameResult && frameResult.outcome === 'artifact') {
+                timeline.artifactFrameId = frameResult.frameId ?? null;
+              }
+            }).catch(() => { /* the run path surfaces the failure */ });
+          }
+          return submission;
+        },
+        onEnded: (reason) => {
+          if (window.__videoTimeline) window.__videoTimeline.endReason = reason;
           // EOF drain takes one real final capture (B-S04): the recorded
           // path must not skip the last usable frame like the live path.
           void coordinator.finishStream({
-            takeFinalSample: () => captureFrame(el.preview, {
-              maxPixels: MAX_PIXELS,
-              onError: (code) => showError(code),
-            }),
+            takeFinalSample: () => {
+              const frame = captureFrame(el.preview, {
+                maxPixels: MAX_PIXELS,
+                onError: (code) => showError(code),
+              });
+              if (window.__videoTimeline) {
+                window.__videoTimeline.finalSample = frame
+                  ? { captured: true, width: frame.width, height: frame.height, t: Date.now() }
+                  : { captured: false, t: Date.now() };
+              }
+              return frame;
+            },
           }).catch((error) => logLine(String((error && error.message) || error), true));
         },
         onError: (code) => showError(code),
@@ -306,6 +391,13 @@ async function init() {
     saveController = new SaveController({
       showSaveFilePicker: (options) => window.showSaveFilePicker(options),
       onEvent: (event) => {
+        const marks = journey();
+        if (event.saveStatus === 'selecting' && marks.saveRequestAt === undefined) {
+          marks.saveRequestAt = Date.now();
+        }
+        if (event.saveStatus === 'saved' && marks.writeCloseAt === undefined) {
+          marks.writeCloseAt = Date.now();
+        }
         reportSave(event);
         coordinator.saveEvent(event);
       },

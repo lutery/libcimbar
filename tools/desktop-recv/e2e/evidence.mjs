@@ -51,12 +51,24 @@ export function writeProof(runDir, caseId, name, content) {
   return `proof/${caseId}/${name}`;
 }
 
+// Round-3 S-1 / A-R2: records may carry a per-invocation attempt identity
+// and a nested measurement block. Both are additive: the frozen top-level
+// vocabulary (scope/caseType/result/executedBy/hashes/proofRefs) is written
+// exactly as before, and NOT_RUN rules stay keyed on their own fields.
+function attachAttemptFields(record, { attemptId, measurement } = {}) {
+  if (attemptId !== undefined && attemptId !== null) record.attemptId = attemptId;
+  if (measurement !== undefined && measurement !== null) record.measurement = measurement;
+  return record;
+}
+
 // A file roundtrip record: PASS with real artifacts and external hashes.
-export function roundtripRecord({ caseId, originalPath, receivedPath, runDir, notes = '', extra = {} }) {
+export function roundtripRecord({
+  caseId, originalPath, receivedPath, runDir, notes = '', extra = {}, attemptId, measurement,
+}) {
   const original = copyArtifact(runDir, caseId, originalPath, 'original.bin');
   const received = copyArtifact(runDir, caseId, receivedPath, 'received.bin');
   const equal = original.sha256 === received.sha256;
-  return {
+  return attachAttemptFields({
     caseId,
     scope: 'local_simulated',
     caseType: 'file_roundtrip',
@@ -69,12 +81,14 @@ export function roundtripRecord({ caseId, originalPath, receivedPath, runDir, no
       ? `external SHA-256 equal (${original.bytes} bytes)`
       : `external SHA-256 differ (${original.sha256} vs ${received.sha256})`),
     ...extra,
-  };
+  }, { attemptId, measurement });
 }
 
 // A lifecycle/negative record with screenshots/logs as proof.
-export function lifecycleRecord({ caseId, result, runDir, proofFiles = [], notes = '', extra = {} }) {
-  return {
+export function lifecycleRecord({
+  caseId, result, runDir, proofFiles = [], notes = '', extra = {}, attemptId, measurement,
+}) {
+  return attachAttemptFields({
     caseId,
     scope: 'local_simulated',
     caseType: 'negative_or_lifecycle',
@@ -83,7 +97,7 @@ export function lifecycleRecord({ caseId, result, runDir, proofFiles = [], notes
     proofRefs: proofFiles,
     notes,
     ...extra,
-  };
+  }, { attemptId, measurement });
 }
 
 export function ensureDir(path) {

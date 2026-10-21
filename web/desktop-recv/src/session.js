@@ -81,8 +81,13 @@ export class SessionCoordinator {
     this._pending.add(tracked);
     tracked.finally(() => {
       this._pending.delete(tracked);
-      if (this._session && this._session.state === 'Stopping' && this._pending.size === 0) {
+      if (!this._session || this._pending.size > 0) return;
+      if (this._session.state === 'Stopping') {
         this._emit({ state: 'Stopped' });
+      } else {
+        // B-R1: the UI may have rendered while cleanup was still open (Idle
+        // with cleanupComplete=false). Re-emit on convergence so it re-enables.
+        this._emit({});
       }
     });
     return tracked;
@@ -118,6 +123,12 @@ export class SessionCoordinator {
     if (previousId && this._session && this._session.id === previousId &&
         !IDLE_STATES.has(this._session.state)) {
       return { accepted: true, duplicate: true, sessionId: previousId };
+    }
+    // B-R1: no new session may start while an earlier one still owns a
+    // pending picker/init. The state can already read Idle (a cancelled
+    // capture), so the pending set is the authoritative cleanup gate.
+    if (this._pending.size > 0) {
+      return { accepted: false, reason: 'cleanup' };
     }
     if (this._session && !IDLE_STATES.has(this._session.state)) {
       return { accepted: false, reason: 'busy' };
@@ -170,6 +181,10 @@ export class SessionCoordinator {
     if (previousId && this._session && this._session.id === previousId &&
         !IDLE_STATES.has(this._session.state)) {
       return { accepted: true, duplicate: true, sessionId: previousId };
+    }
+    // B-R1: same cleanup gate as startVideo (see above).
+    if (this._pending.size > 0) {
+      return { accepted: false, reason: 'cleanup' };
     }
     if (this._session && !IDLE_STATES.has(this._session.state)) {
       return { accepted: false, reason: 'busy' };
