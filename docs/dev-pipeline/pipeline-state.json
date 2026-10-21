@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-19T13:24:52+08:00",
+  "updated_at": "2026-10-21T09:47:06+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -212,10 +212,10 @@
       "contract_files": [],
       "review_rounds": 6,
       "max_rounds": 10,
-      "test_status": "failed",
+      "test_status": "passed",
       "started_at": "2026-10-18T13:20:01+08:00",
       "completed_at": null,
-      "notes": "RE-ENTERED from external review round 1 (verdict 2026-10-19: FAIL, 7 independent blocking themes). Rectification progress: batches H (A-02/A-03/C-02), I (B-S04), J (A-04), K (C-01) delivered. The real E2E found and fixed THREE product defects invisible to unit tests: unbound setTimeout in SaveController (468428c), hidden preview stalls per-frame import (648dacb), stale srcObject after a live round (16c367d); TD-15 import rewritten to per-frame rVFC decoding (eb80706 + UT-081). Batch L (run docs/tests/runs/20261019-teamexec-02, see batch-l-status.md): PASS E2E-3 (live 2 classes x 3), E2E-4, E2E-5, E2E-7, E2E-11, E2E-14 (real recordings x 6), E2E-15, E2E-19, E2E-20 (10 mixed rounds) - every PASS has on-disk artifacts and external hashes. E2E-16 FAIL recorded honestly (TD-15 recording-quality ceiling on the complete-recording phase). Not yet executed: E2E-1, E2E-2, E2E-6, E2E-8, E2E-9, E2E-10, E2E-12, E2E-13, E2E-17, E2E-18 (scenarios for 12/13 implemented; dialog-activation flakiness on this desktop blocks stable completion). test_status stays failed; local gate stays red; no false pass.",
+      "notes": "Stage-5 rectification after external review round 1 is COMPLETE through batch M and awaits internal review round 7 before external round 2 resubmission. Local E2E: run docs/tests/runs/20261019-teamexec-02 - all 20 local journeys (E2E-1..20) PASS, executedBy=executor, scope=local_simulated; every PASS has on-disk proof and external SHA-256 equality recomputed by the gate. Gates (2026-10-21, HEAD 247b68c): unit 9 suites / 88 tests green; assets PASS (staging still bound to revision a515922, not HEAD); evidence local gate PASS (20 required cases); evidence field gate FAIL by design (E2E-21..26 NOT_RUN, user-side). Native ctest 9/9 was last run by external review round 1; no C++ source changed in the rectification and WASM was not rebuilt. Rectification batches H/I/J/K/L fixed all 7 blocking themes (A-01 via real journeys, A-02/A-03/C-02 in 558dee9, B-S04 in b16004a, A-04/B-S01 in 95c54b6, C-01 in aa31eed). The real E2E found and fixed THREE product defects invisible to unit tests (468428c unbound setTimeout, 648dacb hidden preview, 16c367d stale srcObject) plus TD-15 per-frame import (eb80706). Batch M wrote stage5-dev-summary.md and autonomous-decisions.md, closed TD-01 (main-thread init/frame watchdogs) and TD-12 (real executor roundtrips with external hashes; field journeys remain separate), and refreshed this state. external-review.status stays failed (round 2 not submitted); field journeys E2E-21..26 remain NOT_RUN.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
@@ -224,9 +224,15 @@
       "display": "独立外部审查",
       "status": "failed",
       "output_dir": "docs/dev-pipeline/ext-review/",
-      "output_files": ["round-1-package.md", "round-1-template.md", "round-1-verdict.md"],
+      "output_files": [
+        "round-1-package.md",
+        "round-1-template.md",
+        "round-1-verdict.md"
+      ],
       "ext_rounds": 1,
-      "verdict_files": ["docs/dev-pipeline/ext-review/round-1-verdict.md"],
+      "verdict_files": [
+        "docs/dev-pipeline/ext-review/round-1-verdict.md"
+      ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-1-package.md",
         "docs/requirements/requirements-spec.md",
