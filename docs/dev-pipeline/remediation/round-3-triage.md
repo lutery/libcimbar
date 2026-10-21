@@ -20,6 +20,7 @@
   4. 编号统一 → 以 `round-3-verdict.md` 为实际路径入账；round-4 为下一送审轮。
   5. （TB1 车道授权，2026-10-21）corrupt 腿判据放宽为**注册码并集 {13005,13002,13003}**，逐腿记录 `observedCode/rejectionPoint/terminal/buttons/cleanupComplete`（delta 身份校验不变，陈旧码仍须拦截）；理由：截断 MediaRecorder WebM 的时长恒为 Infinity，产品在元数据预检（video-source.js:84-87）以 13005 拒绝是语义正确的退出点；冻结验收意图（AC-006/008/014、UAT-L15）是"有限/有码/可重启"，不是计划猜测的具体码。
   6. （TB1 车道授权，2026-10-21）E2E-16 with 腿判据改为**"在产物完成处有限收束"**：`__mediaEnded=null` + `artifactFrameId===最后呈现帧` + `T*>without 时长` + 保存哈希相等；`endReason` 降为诊断记录（产物完成路径上 app.js render→releaseInputs 同步 stop 使 'eof' 标签结构性不可观测），不为此改产品代码。
+  7. （TB1 车道授权补录，2026-10-22）E2E-18 **旅程级矩阵语义**：矩阵记录为 **PASS 当且仅当所有已执行腿 PASS，且所有 NOT_RUN 腿均属于显式用户裁定清单（AUTHORIZED_NOT_RUN）并各自带依据**；E2E-18 的清单恰为 `['live-n-20mib-over-budget']`——由用户批准的腿矩阵"实时 | 难压缩 | 20MiB 超预算 | NOT_RUN 带代码级依据"裁定。实现于 `run-e2e.mjs` E2E-18 组装处的 `AUTHORIZED_NOT_RUN`（引用本条）；裁定本体见 `autonomous-decisions.md` D-19。此语义取代先前的"存在计划腿 NOT_RUN 即整案 NOT_RUN"保守判据及该次运行后的人工升级（人工升级链仅存于会话，不可复现；重跑由改后代码路径再生成记录）。
 
 ## 覆盖检查
 

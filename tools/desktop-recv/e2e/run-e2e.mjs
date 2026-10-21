@@ -3170,6 +3170,10 @@ const SCENARIOS = {
         leg.sizes = legSizes(hit, statBytes(payload));
         leg.timings = legTimings(hit);
         await stopSession(stack);
+        // The recovery roundtrip is its own measured session: clear the
+        // page-lifetime marks so init/receiving/ready describe the recovery
+        // alone (round-9 S-1: stale marks produced a negative initMs).
+        await resetJourneyMarks(page);
         const round = await liveRoundtrip(stack, {
           caseId: 'E2E-18', file: join('compressible', 'sample-text-2.bin'), round: 'budget-recovery', source: 'window',
         });
@@ -3244,6 +3248,21 @@ const SCENARIOS = {
       || (leg.status === 'NOT_RUN' && !(typeof leg.basis === 'string' && leg.basis.length > 0)))
       .map((leg) => leg.id);
     const legNotRunIds = uniqueLegs.filter((leg) => leg.status === 'NOT_RUN').map((leg) => leg.id);
+    // Matrix-level result semantics (triage decision 7, autonomous-decisions
+    // D-19): the matrix record is PASS iff every EXECUTED leg passed AND
+    // every NOT_RUN leg is in the explicitly user-sanctioned list below and
+    // carries its basis. 'live-n-20mib-over-budget' is sanctioned by the
+    // user-approved plan's leg matrix ("实时 | 难压缩 | 20MiB 超预算 | NOT_RUN
+    // 带代码级依据"). Any other NOT_RUN leg (or a sanctioned leg without a
+    // basis) keeps the record honestly NOT_RUN.
+    const AUTHORIZED_NOT_RUN = new Set(['live-n-20mib-over-budget']);
+    const unauthorizedNotRunIds = legNotRunIds.filter((id) => !AUTHORIZED_NOT_RUN.has(id));
+    const sanctionedNotRunWithBasis = legNotRunIds
+      .filter((id) => AUTHORIZED_NOT_RUN.has(id))
+      .every((id) => {
+        const leg = legsById.get(id);
+        return typeof leg.basis === 'string' && leg.basis.length > 0;
+      });
 
     const measurement = {
       legs: uniqueLegs,
@@ -3268,17 +3287,21 @@ const SCENARIOS = {
         });
         return false;
       }
-      if (legNotRunIds.length > 0) {
-        // User directive (round-3 lane): a matrix whose REQUIRED leg is
-        // NOT_RUN is not a full PASS. The executed legs' evidence stays
-        // verbatim; the record-level result honestly says the matrix is
-        // incomplete. The local gate cannot claim all-PASS until a
-        // user-confirmed scope revision covers the NOT_RUN leg(s).
+      if (legNotRunIds.length > 0 && (unauthorizedNotRunIds.length > 0 || !sanctionedNotRunWithBasis)) {
+        // Round-9 B-1 path (i): only the explicitly user-sanctioned legs
+        // (AUTHORIZED_NOT_RUN, triage decision 7 / D-19) with their bases may
+        // accompany a matrix PASS. Anything else - an unlisted NOT_RUN leg,
+        // or a sanctioned leg without its basis - keeps the record honestly
+        // NOT_RUN: the executed legs' evidence stays verbatim and the gate
+        // stays red until the scope question is actually resolved.
         // This branch bypasses roundtripRecord (NOT_RUN must leave
         // executedBy/received null), so it materializes its proof artifacts
         // itself - the gate re-checks every proofRef on disk.
         const originalArtifact = copyArtifact(RUN, 'E2E-18', canonicalRound.fixture, 'original.bin');
         const receivedArtifact = copyArtifact(RUN, 'E2E-18', canonicalRound.received, 'received.bin');
+        const reason = unauthorizedNotRunIds.length > 0
+          ? `NOT_RUN legs outside AUTHORIZED_NOT_RUN: ${unauthorizedNotRunIds.join(', ')}`
+          : 'a sanctioned NOT_RUN leg lost its basis';
         upsertResult(RUN, {
           caseId: 'E2E-18', scope: 'local_simulated', caseType: 'file_roundtrip',
           result: 'NOT_RUN', executedBy: null, receivedSha256: null,
@@ -3286,17 +3309,23 @@ const SCENARIOS = {
           proofRefs: [originalArtifact.rel, receivedArtifact.rel],
           measurement,
           notes: `${matrixNotes}; NOT_RUN legs: ${legNotRunIds.join(', ')}; ` +
-            'RESULT SEMANTICS (user directive): a matrix with a NOT_RUN required leg is not a full ' +
-            'PASS and the local acceptance cannot claim all-PASS until a user-confirmed scope revision ' +
-            'covers it; the executed legs\' PASS evidence and artifacts stay verbatim',
+            `RESULT SEMANTICS (triage decision 7 / D-19): ${reason}; a matrix record is PASS only when ` +
+            'every executed leg passed and every NOT_RUN leg is in AUTHORIZED_NOT_RUN with its basis; ' +
+            'the executed legs\' PASS evidence and artifacts stay verbatim',
         });
         return false;
       }
+      // Every executed leg passed and the only NOT_RUN legs (if any) are the
+      // user-sanctioned ones with bases: the matrix record is PASS by the
+      // code path itself (triage decision 7 / D-19) - no manual upsert.
+      const sanctionedList = legNotRunIds.join(', ') || 'none';
       upsertResult(RUN, {
         ...roundtripRecord({
           caseId: 'E2E-18', originalPath: canonicalRound.fixture, receivedPath: canonicalRound.received,
           runDir: RUN, measurement,
-          notes: `${matrixNotes}; canonical artifact pair is a hash-clean save from this matrix`,
+          notes: `${matrixNotes}; every executable leg PASS; NOT_RUN legs: ${sanctionedList} ` +
+            '(sanctioned by the user-approved plan basis, AUTHORIZED_NOT_RUN per triage decision 7 / D-19); ' +
+            'no scope revision needed',
         }),
         result: 'PASS',
       });

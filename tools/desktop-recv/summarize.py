@@ -97,14 +97,19 @@ def leg_rows(records):
 
 
 def group_rows(rows):
-    """Group by inputKind x data class x tier (the matrix the review asked for)."""
+    """Group by inputKind x data class x tier (the matrix the review asked for).
+
+    Legs without a class/tier (per-leg verdict legs, e.g. E2E-15) group under
+    a labelled verdict bucket instead of a literal "None / None / None" header
+    (round-9 S-3).
+    """
     order = []
     buckets = {}
     for row in rows:
         key = (
-            str(row.get("inputKind")),
-            str(row.get("dataClass")),
-            str(row.get("tier")),
+            str(row.get("inputKind") or "verdict"),
+            str(row.get("dataClass") or "verdict"),
+            str(row.get("tier") or "legs"),
         )
         if key not in buckets:
             buckets[key] = []

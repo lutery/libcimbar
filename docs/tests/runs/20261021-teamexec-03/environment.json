@@ -101,7 +101,7 @@
     "legs": 18,
     "legsPass": 17,
     "legsNotRun": 1,
-    "note": "summarize.py re-run on 2026-10-22 after the authorized E2E-18 matrix-PASS upgrade; counts now match results.json record level (20/20 PASS)"
+    "note": "summarize.py re-run on 2026-10-22 after the full E2E-18 matrix re-run under the committed code path (matrix PASS semantics per triage decision 7 / autonomous-decisions D-19: AUTHORIZED_NOT_RUN=['live-n-20mib-over-budget'], attempt E2E-18-2026-10-21T19-58-28-508Z-fc3f88, logs/E2E-18-r9-repro.log); counts match results.json record level (20/20 PASS); the earlier session-only manual upgrade is superseded by that reproducible path"
   },
   "notProbed": {
     "nativeCtest": "9/9 is the external round-1 historical result; not re-run in this capture (no C++/WASM change since; scope stated in stage5-dev-summary.md section 6)",

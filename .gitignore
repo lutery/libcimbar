@@ -30,3 +30,6 @@ cimbar.wasm.tar.gz
 .playwright-mcp/
 
 docs/tests/runs/*/fixtures-media/
+# fixtures-ext holds regenerable deterministic samples (create-fixtures.py
+# --extended, seed in the manifest); only the manifest itself is committed.
+docs/tests/runs/*/fixtures-ext/*/

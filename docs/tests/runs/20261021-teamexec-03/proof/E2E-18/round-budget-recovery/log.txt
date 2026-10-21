@@ -8,15 +8,22 @@ capture stopped; the file is ready to save
 saved (3)
 capture stopped; the file is ready to save
 saved (4)
-recording: 1604x1002, 2.3s
+recording: 1604x1002, 59.9s
 capture stopped; the file is ready to save
 saved (5)
 recording: 1604x1002, 39.8s
 capture stopped; the file is ready to save
 saved (6)
-recording: 1604x1002, 2.2s
-[error] 15008: 文件超过当前接收容量 (fix_input)
-[error] 15010: 解码通信中断 (new_session)
+recording: 1604x1002, 149.9s
 capture stopped; the file is ready to save
 saved (7)
+recording: 1604x1002, 599.9s
+capture stopped; the file is ready to save
+saved (8)
+[error] 15008: 文件超过当前接收容量 (fix_input)
+[error] 15005: 编码块不符合接收参数 (fix_input)
+[error] 15005: 编码块不符合接收参数 (fix_input)
+[error] 15005: 编码块不符合接收参数 (fix_input)
+capture stopped; the file is ready to save
+saved (9)
 

@@ -471,12 +471,13 @@
     "caseType": "file_roundtrip",
     "result": "PASS",
     "executedBy": "executor",
-    "receivedSha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
     "referenceSha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+    "receivedSha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
     "proofRefs": [
       "proof/E2E-18/original.bin",
       "proof/E2E-18/received.bin"
     ],
+    "notes": "matrix legs: live-c-1mib=PASS, live-c-4mib=PASS, live-n-1mib=PASS, live-n-4mib=PASS, video-c-4mib=PASS, video-n-128kib=PASS, video-n-1mib-probe=PASS, video-n-4mib=PASS, live-c-20mib-over-budget=PASS, live-n-20mib-over-budget=NOT_RUN; over-budget budget=16777216; performance remains NOT_EVALUATED (thresholds not frozen); every executable leg PASS; NOT_RUN legs: live-n-20mib-over-budget (sanctioned by the user-approved plan basis, AUTHORIZED_NOT_RUN per triage decision 7 / D-19); no scope revision needed",
     "measurement": {
       "legs": [
         {
@@ -492,16 +493,16 @@
             "artifactBytes": 1048576
           },
           "timings": {
-            "initStartAt": 1792578797212,
-            "initReadyAt": 1792578797310,
-            "validInputStartAt": 1792578801191,
-            "reconstructionDoneAt": 1792578801436,
-            "saveRequestAt": 1792578807367,
-            "writeCloseAt": 1792578811597,
-            "initMs": 3979,
-            "reconstructMs": 245,
-            "totalToReadyMs": 4224,
-            "saveMs": 4230
+            "initStartAt": 1792612719912,
+            "initReadyAt": 1792612720074,
+            "validInputStartAt": 1792612730205,
+            "reconstructionDoneAt": 1792612730455,
+            "saveRequestAt": 1792612734067,
+            "writeCloseAt": 1792612742339,
+            "initMs": 10293,
+            "reconstructMs": 250,
+            "totalToReadyMs": 10543,
+            "saveMs": 8272
           },
           "hashes": {
             "original": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
@@ -523,16 +524,16 @@
             "artifactBytes": 4194304
           },
           "timings": {
-            "initStartAt": 1792578827500,
-            "initReadyAt": 1792578827929,
-            "validInputStartAt": 1792578830964,
-            "reconstructionDoneAt": 1792578831270,
-            "saveRequestAt": 1792578834655,
-            "writeCloseAt": 1792578838803,
-            "initMs": 3464,
-            "reconstructMs": 306,
-            "totalToReadyMs": 3770,
-            "saveMs": 4148
+            "initStartAt": 1792612758220,
+            "initReadyAt": 1792612758646,
+            "validInputStartAt": 1792612761745,
+            "reconstructionDoneAt": 1792612761971,
+            "saveRequestAt": 1792612765527,
+            "writeCloseAt": 1792612770149,
+            "initMs": 3525,
+            "reconstructMs": 226,
+            "totalToReadyMs": 3751,
+            "saveMs": 4622
           },
           "hashes": {
             "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
@@ -554,16 +555,16 @@
             "artifactBytes": 1048576
           },
           "timings": {
-            "initStartAt": 1792578854871,
-            "initReadyAt": 1792578855306,
-            "validInputStartAt": 1792578858234,
-            "reconstructionDoneAt": 1792578874474,
-            "saveRequestAt": 1792578877142,
-            "writeCloseAt": 1792578881189,
-            "initMs": 3363,
-            "reconstructMs": 16240,
-            "totalToReadyMs": 19603,
-            "saveMs": 4047
+            "initStartAt": 1792612785975,
+            "initReadyAt": 1792612786385,
+            "validInputStartAt": 1792612789452,
+            "reconstructionDoneAt": 1792612806246,
+            "saveRequestAt": 1792612809262,
+            "writeCloseAt": 1792612813702,
+            "initMs": 3477,
+            "reconstructMs": 16794,
+            "totalToReadyMs": 20271,
+            "saveMs": 4440
           },
           "hashes": {
             "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
@@ -585,16 +586,16 @@
             "artifactBytes": 4194304
           },
           "timings": {
-            "initStartAt": 1792578897106,
-            "initReadyAt": 1792578897504,
-            "validInputStartAt": 1792578900532,
-            "reconstructionDoneAt": 1792578967832,
-            "saveRequestAt": 1792578970850,
-            "writeCloseAt": 1792578974909,
-            "initMs": 3426,
-            "reconstructMs": 67300,
-            "totalToReadyMs": 70726,
-            "saveMs": 4059
+            "initStartAt": 1792612829727,
+            "initReadyAt": 1792612830134,
+            "validInputStartAt": 1792612833154,
+            "reconstructionDoneAt": 1792612899997,
+            "saveRequestAt": 1792612902771,
+            "writeCloseAt": 1792612907475,
+            "initMs": 3427,
+            "reconstructMs": 66843,
+            "totalToReadyMs": 70270,
+            "saveMs": 4704
           },
           "hashes": {
             "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
@@ -615,8 +616,8 @@
           },
           "boundsRef": null,
           "recording": {
-            "bytes": 85258146,
-            "sha256": "43bed36d596cbd5819c5b023a116670d5d3381a895d5425f3f1f685334406595",
+            "bytes": 86586644,
+            "sha256": "05e17a1f7b335f06559907b14b64d99039f9a11aa8a837b459f1ef8e9e288d7c",
             "seconds": 60
           },
           "status": "PASS",
@@ -627,15 +628,15 @@
             "artifactBytes": 4194304
           },
           "timings": {
-            "initStartAt": 1792600834823,
-            "initReadyAt": 1792600834969,
-            "validInputStartAt": 1792600835519,
-            "reconstructionDoneAt": 1792600835892,
+            "initStartAt": 1792613037633,
+            "initReadyAt": 1792613037767,
+            "validInputStartAt": 1792613038318,
+            "reconstructionDoneAt": 1792613038713,
             "saveRequestAt": null,
             "writeCloseAt": null,
-            "initMs": 696,
-            "reconstructMs": 373,
-            "totalToReadyMs": 1069,
+            "initMs": 685,
+            "reconstructMs": 395,
+            "totalToReadyMs": 1080,
             "saveMs": null
           },
           "hashes": {
@@ -643,7 +644,7 @@
             "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
             "equal": true
           },
-          "notes": "recorded import roundtrip; presented frames=2, lastUs=169000"
+          "notes": "recorded import roundtrip; presented frames=2, lastUs=165000"
         },
         {
           "id": "video-n-128kib",
@@ -661,15 +662,15 @@
             "artifactBytes": 131072
           },
           "timings": {
-            "initStartAt": 1792579199608,
-            "initReadyAt": 1792579199736,
-            "validInputStartAt": 1792579200259,
-            "reconstructionDoneAt": 1792579217870,
+            "initStartAt": 1792613079930,
+            "initReadyAt": 1792613080053,
+            "validInputStartAt": 1792613080621,
+            "reconstructionDoneAt": 1792613097713,
             "saveRequestAt": null,
             "writeCloseAt": null,
-            "initMs": 651,
-            "reconstructMs": 17611,
-            "totalToReadyMs": 18262,
+            "initMs": 691,
+            "reconstructMs": 17092,
+            "totalToReadyMs": 17783,
             "saveMs": null
           },
           "hashes": {
@@ -691,8 +692,8 @@
           },
           "boundsRef": "proof/E2E-18/probe-bounds.json",
           "recording": {
-            "bytes": 216009796,
-            "sha256": "4c0e3abd543c26d7150306454a39eb0b0325e2aec4e924d2a9f24b01b29f41d1",
+            "bytes": 215269512,
+            "sha256": "eb58188b0832d666ca0ab1797e7f098a4d8198e6b2339bcaa99fb03bd447fe2a",
             "seconds": 150
           },
           "status": "PASS",
@@ -703,15 +704,15 @@
             "artifactBytes": 1048576
           },
           "timings": {
-            "initStartAt": 1792601887658,
-            "initReadyAt": 1792601887779,
-            "validInputStartAt": 1792601888228,
-            "reconstructionDoneAt": 1792602029959,
+            "initStartAt": 1792613389704,
+            "initReadyAt": 1792613389844,
+            "validInputStartAt": 1792613390226,
+            "reconstructionDoneAt": 1792613534702,
             "saveRequestAt": null,
             "writeCloseAt": null,
-            "initMs": 570,
-            "reconstructMs": 141731,
-            "totalToReadyMs": 142301,
+            "initMs": 522,
+            "reconstructMs": 144476,
+            "totalToReadyMs": 144998,
             "saveMs": null
           },
           "hashes": {
@@ -719,7 +720,7 @@
             "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
             "equal": true
           },
-          "notes": "recorded import roundtrip; presented frames=975, lastUs=65559000"
+          "notes": "recorded import roundtrip; presented frames=987, lastUs=67689000"
         },
         {
           "id": "video-n-4mib",
@@ -733,8 +734,8 @@
           },
           "boundsRef": null,
           "recording": {
-            "bytes": 856230680,
-            "sha256": "823b0ed3628790c4ce6630d19ae00abe3b567187b400c87917321970997005b8",
+            "bytes": 861505434,
+            "sha256": "616206ca1b6385b9b95164da3f98bd8c17ee953ebd98e3ff04930cd4c6dd17c9",
             "seconds": 600
           },
           "status": "PASS",
@@ -745,15 +746,15 @@
             "artifactBytes": 4194304
           },
           "timings": {
-            "initStartAt": 1792603075113,
-            "initReadyAt": 1792603075228,
-            "validInputStartAt": 1792603077056,
-            "reconstructionDoneAt": 1792603643141,
+            "initStartAt": 1792614579328,
+            "initReadyAt": 1792614579440,
+            "validInputStartAt": 1792614580842,
+            "reconstructionDoneAt": 1792615138342,
             "saveRequestAt": null,
             "writeCloseAt": null,
-            "initMs": 1943,
-            "reconstructMs": 566085,
-            "totalToReadyMs": 568028,
+            "initMs": 1514,
+            "reconstructMs": 557500,
+            "totalToReadyMs": 559014,
             "saveMs": null
           },
           "hashes": {
@@ -761,7 +762,7 @@
             "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
             "equal": true
           },
-          "notes": "recorded import roundtrip; presented frames=3844, lastUs=264821000"
+          "notes": "recorded import roundtrip; presented frames=3859, lastUs=262500000"
         },
         {
           "id": "live-c-20mib-over-budget",
@@ -774,7 +775,7 @@
           },
           "rejection": {
             "code": "15008",
-            "delta": "[error] 15008: 文件超过当前接收容量 (fix_input)\n",
+            "delta": "[error] 15008: 文件超过当前接收容量 (fix_input)\n[error] 15005: 编码块不符合接收参数 (fix_input)\n[error] 15005: 编码块不符合接收参数 (fix_input)\n[error] 15005: 编码块不符合接收参数 (fix_input)\n",
             "checks": {
               "codeHit": true,
               "internal": "Receiving",
@@ -795,16 +796,16 @@
             "streamBytes": 626,
             "artifactBytes": 65536,
             "timings": {
-              "initStartAt": 1792579441871,
-              "initReadyAt": 1792579442298,
-              "validInputStartAt": 1792579435743,
-              "reconstructionDoneAt": 1792579445518,
-              "saveRequestAt": 1792579449060,
-              "writeCloseAt": 1792579453137,
-              "initMs": -6128,
-              "reconstructMs": 9775,
-              "totalToReadyMs": 3647,
-              "saveMs": 4077
+              "initStartAt": 1792615172006,
+              "initReadyAt": 1792615172438,
+              "validInputStartAt": 1792615175614,
+              "reconstructionDoneAt": 1792615175784,
+              "saveRequestAt": 1792615178392,
+              "writeCloseAt": 1792615182697,
+              "initMs": 3608,
+              "reconstructMs": 170,
+              "totalToReadyMs": 3778,
+              "saveMs": 4305
             }
           },
           "sizes": {
@@ -813,13 +814,13 @@
             "artifactBytes": null
           },
           "timings": {
-            "initStartAt": 1792579432214,
-            "initReadyAt": 1792579432630,
-            "validInputStartAt": 1792579435743,
+            "initStartAt": 1792615161830,
+            "initReadyAt": 1792615162245,
+            "validInputStartAt": 1792615165254,
             "reconstructionDoneAt": null,
             "saveRequestAt": null,
             "writeCloseAt": null,
-            "initMs": 3529,
+            "initMs": 3424,
             "reconstructMs": null,
             "totalToReadyMs": null,
             "saveMs": null
@@ -869,8 +870,7 @@
         ]
       }
     },
-    "notes": "matrix legs: live-c-1mib=PASS, live-c-4mib=PASS, live-n-1mib=PASS, live-n-4mib=PASS, video-c-4mib=PASS, video-n-128kib=PASS, video-n-1mib-probe=PASS, video-n-4mib=PASS, live-c-20mib-over-budget=PASS, live-n-20mib-over-budget=NOT_RUN; every executable leg PASS; live-n-20mib-over-budget NOT_RUN per the user-approved plan basis; the 4 MiB incompressible RECORDED import PASSed (measured: 600 s / 856,230,680 B clip, hash-clean), superseding the old TD-15 128 KiB ceiling via the per-frame rVFC import path; no max-capacity claim (profile budget remains 16 MiB; 1 MiB success never implies one); no scope revision needed, so none is proposed; performance remains NOT_EVALUATED (thresholds not frozen)",
-    "attemptId": "E2E-18-2026-10-21T16-53-27-279Z-e68c45"
+    "attemptId": "E2E-18-2026-10-21T19-58-28-508Z-fc3f88"
   },
   {
     "caseId": "E2E-19",
