@@ -1,0 +1,11 @@
+{
+  "caseId": "E2E-1",
+  "scope": "local_simulated",
+  "caseType": "negative_or_lifecycle",
+  "result": "FAIL",
+  "executedBy": "executor",
+  "proofRefs": [
+    "proof/E2E-1/observation.txt"
+  ],
+  "notes": "packaged-launch journey did not complete: launch.ps1 exited 64: 参数 'C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压\\launch.ps1' 无法识别为脚本文件名。请检查名称的拼写或验证路径是否正确(如果包含路径)，然后重试。\r\n\r\n用法: pwsh[.exe] [-Log"
+}

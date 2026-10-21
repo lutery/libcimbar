@@ -2,13 +2,16 @@
   {
     "caseId": "E2E-1",
     "scope": "local_simulated",
-    "caseType": "negative_or_lifecycle",
-    "result": "FAIL",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
     "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
     "proofRefs": [
-      "proof/E2E-1/observation.txt"
+      "proof/E2E-1/original.bin",
+      "proof/E2E-1/received.bin"
     ],
-    "notes": "packaged-launch journey did not complete: launch.ps1 exited 64: 参数 'C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压\\launch.ps1' 无法识别为脚本文件名。请检查名称的拼写或验证路径是否正确(如果包含路径)，然后重试。\r\n\r\n用法: pwsh[.exe] [-Log"
+    "notes": "packaged first launch from a codepoint-built CJK+space dir (C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压); README-documented launch.cmd exit=0; pwsh -File absolute preflight exit=0; live equal=true (2f5a22f95c01), V-GOOD-C recorded import equal=true (2f5a22f95c01); RETRACTION: the 8c59864 FAIL blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test invocation chain (package copied under a GBK-mojibake twin name); original evidence preserved at proof/E2E-1/first-run-fail/"
   },
   {
     "caseId": "E2E-2",

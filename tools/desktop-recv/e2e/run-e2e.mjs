@@ -14,7 +14,7 @@
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -763,6 +763,130 @@ async function stopSession(stack) {
   return waitFor(stack.receiver.page, (s) => /stopped/i.test(s.status), 20000, 'stopped state');
 }
 
+// ---------------------------------------------------------------------------
+// Encoding-boundary audit for the packaged-launch journey (E2E-1).
+//
+// The directory name is built from CODEPOINTS, never from a pasted literal:
+// whatever encoding the file travels through, the test path cannot silently
+// change. (The 8c59864 FAIL came from a package copied under a GBK-mojibake
+// twin name while the launcher was invoked with the intended codepoints;
+// pwsh then reported the genuinely missing file as "cannot be recognized as
+// a script file name", which was misread as a platform defect.)
+// (U+4E2D U+6587 U+0020 U+76EE U+5F55 U+0020 U+89E3 U+538B; no literal here)
+const CJK_SPACE_DIR = String.fromCodePoint(0x4E2D, 0x6587, 0x20, 0x76EE, 0x5F55, 0x20, 0x89E3, 0x538B);
+
+const codepointsOf = (value) => Array.from(value,
+  (ch) => `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`).join(' ');
+
+const utf8HexOf = (value) => Buffer.from(value, 'utf8').toString('hex').toUpperCase();
+
+const bytesHex = (buffer, limit = 2048) => {
+  const shown = buffer.subarray(0, Math.min(buffer.length, limit));
+  const hex = shown.toString('hex').toUpperCase().replace(/(..)(?=.)/g, '$1 ');
+  return buffer.length > limit ? `${hex} ... (${buffer.length} bytes, first ${limit} shown)` : hex;
+};
+
+const describeBoundary = (label, value) =>
+  `${label}: text=${JSON.stringify(value)} codepoints=[${codepointsOf(value)}] utf8hex=${utf8HexOf(value)}`;
+
+// Run a process to completion and keep stdout/stderr as BYTES: a mojibake
+// round-trip can render plausibly while the bytes differ, so the audit
+// records the hex the child actually emitted.
+function runCaptured(command, argv, options = {}) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(command, argv, { ...options, stdio: ['ignore', 'pipe', 'pipe'] });
+    const out = []; const err = [];
+    child.stdout.on('data', (chunk) => out.push(chunk));
+    child.stderr.on('data', (chunk) => err.push(chunk));
+    child.on('error', rejectPromise);
+    child.on('exit', (code, signal) => resolvePromise({
+      code, signal, stdout: Buffer.concat(out), stderr: Buffer.concat(err),
+    }));
+  });
+}
+
+// Decode once as UTF-8 and once as the system ANSI/OEM codepage (936 here),
+// so the evidence shows which reading is coherent.
+function decodeBoth(buffer) {
+  const utf8 = buffer.toString('utf8');
+  let gbk = null;
+  try { gbk = new TextDecoder('gbk').decode(buffer); } catch (error) { gbk = null; }
+  return { utf8, gbk };
+}
+
+// fs.cpSync takes a C++ fast path (fsBinding.cpSyncCopyDir) whenever no
+// filter is supplied. On this host (Node v22.23.1, Windows, ACP/OEM 936)
+// that path writes a non-ASCII destination as a GBK-mojibake twin directory
+// and leaves the intended directory EMPTY - silently. Reproduced in
+// isolation: mkdirSync/writeFileSync/copyFileSync and cpSync's JavaScript
+// path (forced with filter) all handle the same codepoints correctly.
+// Copy entry by entry so the package lands where the audit looks for it.
+function copyTreeSync(src, dest) {
+  const info = statSync(src);
+  if (info.isDirectory()) {
+    mkdirSync(dest, { recursive: true });
+    for (const name of readdirSync(src)) copyTreeSync(join(src, name), join(dest, name));
+    return;
+  }
+  copyFileSync(src, dest);
+}
+
+// Filesystem proof, BEFORE any pwsh call: the package must live at exactly
+// the codepoint-built path. Every sibling is listed with its codepoints, so
+// a twin directory (e.g. a GBK-mojibake name left by an earlier run) is
+// visible in the evidence instead of being mistaken for a loader failure.
+function auditDestination(dest, audit) {
+  audit.push(describeBoundary('boundary 1 (JS string) dest', dest));
+  const parent = dirname(dest);
+  const siblings = readdirSync(parent);
+  audit.push(`boundary 2 (fs) parent ${parent} has ${siblings.length} entries:`);
+  for (const name of siblings) audit.push(`  sibling ${describeBoundary('name', name)}`);
+  const exact = siblings.filter((name) => name === CJK_SPACE_DIR).length;
+  audit.push(`boundary 2 (fs) entries whose name is EXACTLY the codepoint name: ${exact}`);
+  if (exact !== 1) {
+    throw new Error(`expected exactly one directory with the exact codepoint name, found ${exact}`);
+  }
+  const info = statSync(dest);
+  audit.push(`boundary 2 (fs) dest isDirectory=${info.isDirectory()}`);
+  if (!info.isDirectory()) throw new Error('the codepoint destination is not a directory');
+  const entries = readdirSync(dest);
+  audit.push(`boundary 2 (fs) dest entries (${entries.length}): ${entries.join(', ')}`);
+  for (const required of ['launch.cmd', 'launch.ps1', 'server.py', 'index.html',
+    'config/asset-set.json', 'vendor/cimbar_js.wasm']) {
+    const target = join(dest, required);
+    const present = existsSync(target);
+    audit.push(`boundary 2 (fs) required ${required} exists=${present} at ${describeBoundary('path', target)}`);
+    if (!present) throw new Error(`package incomplete at the codepoint path: ${required} is missing`);
+  }
+}
+
+const ENV_PROBE = [
+  '$ErrorActionPreference = "Stop"',
+  '"PSVersion=" + $PSVersionTable.PSVersion.ToString()',
+  '"WinSystemLocale=" + (Get-WinSystemLocale).Name',
+  '"Culture=" + (Get-Culture).Name',
+  '"ConsoleInputCP=" + [Console]::InputEncoding.CodePage',
+  '"ConsoleOutputCP=" + [Console]::OutputEncoding.CodePage',
+  '$nls = Get-ItemProperty "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Nls\\CodePage"',
+  '"ACP=" + $nls.ACP',
+  '"OEMCP=" + $nls.OEMCP',
+].join('; ');
+
+// launch.ps1 starts the packaged server as a detached child and exits; the
+// journey owns that process, so stop it when the journey ends. The command
+// line is checked first, so a recycled pid is never killed.
+async function stopPackagedServer(pid, dest) {
+  if (!pid || !dest) return;
+  const escaped = dest.replace(/'/g, "''");
+  const script = '$p = Get-CimInstance Win32_Process -Filter "ProcessId=' + pid + '" -ErrorAction SilentlyContinue; '
+    + `if ($p -and $p.CommandLine -like '*${escaped}*') { Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue; 'stopped' } else { 'not-ours' }`;
+  await new Promise((resolveStop) => {
+    const ps = spawn('powershell', ['-NoProfile', '-Command', script], { stdio: 'ignore' });
+    ps.on('exit', resolveStop);
+    ps.on('error', resolveStop);
+  });
+}
+
 const SCENARIOS = {
   SMOKE: async (stack, source) => {
     const result = await liveRoundtrip(stack, {
@@ -773,94 +897,209 @@ const SCENARIOS = {
     log(`SMOKE original=${original.slice(0, 12)} received=${received.slice(0, 12)} equal=${original === received}`);
     return original === received;
   },
-  // E2E-1: candidate-package first launch. Copy the staged receiver into a
-  // fresh dir whose path has CJK and spaces, launch it via its own
-  // launch.ps1 from a DIFFERENT cwd, attach a normal Edge, and complete one
-  // live roundtrip and one V-GOOD-C recorded import, both hash-clean.
+  // E2E-1: candidate-package first launch from a CJK+space directory.
+  //
+  // Re-verification after the 8c59864 FAIL. That run blamed pwsh's -File
+  // loader for rejecting CJK+space paths; the real cause was a corrupted
+  // path in this test chain: the package had been copied under a
+  // GBK-mojibake twin name while the launcher was invoked with the intended
+  // codepoints, so pwsh reported a genuinely missing file ("cannot be
+  // recognized as a script file name", exit 64). This scenario now builds
+  // the name from codepoints, proves the filesystem matches before any
+  // process starts, and logs the bytes at every boundary.
   'E2E-1': async (stack) => {
     const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
-    const launchLog = { text: '', code: null };
+    const audit = [];
+    let launchLog = null;
+    let serverPid = 0;
+    let receiver = null;
+    let sender = null;
+    let dest = null;
+    const PORT1 = 8767; // the README's documented example port
     try {
-      const dest = join(tmpdir(), 'cimbar-e2e-1', '中文 目录 解压');
+      const cjkRoot = join(tmpdir(), 'cimbar-e2e-1');
+      dest = join(cjkRoot, CJK_SPACE_DIR);
       rmSync(dest, { recursive: true, force: true });
       mkdirSync(dest, { recursive: true });
-      cpSync(join(STAGING, 'receiver'), dest, { recursive: true });
-      const launchDir = join(tmpdir(), 'cimbar-e2e-1', 'plain-cwd');
+      copyTreeSync(join(STAGING, 'receiver'), dest);
+      const launchDir = join(cjkRoot, 'plain-cwd');
       mkdirSync(launchDir, { recursive: true });
-      const PORT1 = 8766;
-      // The documented form (README alternative): pwsh -File with the
-      // package path. Node probes prove pwsh cannot load the launcher from
-      // a CJK+space directory by ANY form (absolute -File, relative -File
-      // after cd, env + Set-Location + &) - this leg is expected to fail
-      // and the record keeps the honest FAIL with the evidence.
-      const launcher = spawn('pwsh', ['-NoProfile', '-File', join(dest, 'launch.ps1'),
-        '-Port', String(PORT1), '-NoBrowser'], { cwd: launchDir, stdio: ['ignore', 'pipe', 'pipe'] });
-      launcher.stdout.on('data', (c) => { launchLog.text += c; });
-      launcher.stderr.on('data', (c) => { launchLog.text += c; });
-      launchLog.code = await new Promise((r) => launcher.on('exit', r));
-      if (launchLog.code !== 0) throw new Error(`launch.ps1 exited ${launchLog.code}: ${launchLog.text}`);
-      await waitHttp(`http://127.0.0.1:${PORT1}/`);
-      const sender = await startSenderOnly();
-      const receiver = await launchReceiver(PORT1);
-      try {
-        await loadSenderFile(sender.senderPage, fixture);
-        await sender.senderPage.bringToFront();
-        await sleep(300);
-        await receiver.page.bringToFront();
-        await sleep(300);
-        const state = await attachCapture(receiver.page, 'window', receiver.pid);
-        log(`e2e-1: live ${state.status} artifact=${state.artifactName}`);
-        const livePath = join(RUN, 'proof', 'E2E-1', 'live', 'received.bin');
-        mkdirSync(dirname(livePath), { recursive: true });
-        await saveArtifact(receiver.page, livePath, receiver.pid);
-        const liveEqual = sha256File(fixture) === sha256File(livePath);
-        await sleep(1000);
-        await importVideo(receiver.page, join(RUN, 'fixtures-media', 'V-GOOD-C.webm'));
-        await waitFor(receiver.page, (s) => !s.saveDisabled, 240000, 'recorded import Ready');
-        const recordedPath = join(RUN, 'proof', 'E2E-1', 'recorded', 'received.bin');
-        mkdirSync(dirname(recordedPath), { recursive: true });
-        await saveArtifact(receiver.page, recordedPath, receiver.pid);
-        const recordedEqual = sha256File(fixture) === sha256File(recordedPath);
-        writeProof(RUN, 'E2E-1', 'launch-log.txt',
-          `launch.cmd exit=${launchLog.code}\n${launchLog.text}\n` +
-          'Isolation matrix (plain pwsh, no automation): absolute -File path with\n' +
-          'ASCII+space = works; CJK without space = works; CJK+space = exit 64\n' +
-          '("cannot be recognized as a script file name") via -File, -Command and\n' +
-          'cmd-level quoting; the RELATIVE form (cd into the dir, -File launch.ps1)\n' +
-          'works, which is what launch.cmd uses. System ANSI codepage utf-8, zh-CN.\n' +
-          `live sha256=${sha256File(livePath)}\nrecorded sha256=${sha256File(recordedPath)}\n`);
-        await screenshot(receiver.page, 'E2E-1', 'packaged-receiver.png');
-        const pass = liveEqual && recordedEqual;
-        const record = roundtripRecord({
-          caseId: 'E2E-1', originalPath: fixture, receivedPath: recordedPath, runDir: RUN,
-          notes: 'filled by the caller below',
-        });
-        upsertResult(RUN, {
-          ...record,
-          result: pass ? 'PASS' : 'FAIL',
-          notes: `packaged copy at a CJK+space dir; documented launch form (pwsh -File absolute): ` +
-            `exit ${launchLog.code} - pwsh cannot load the launcher from such a dir by any form ` +
-            '(Node probes: absolute -File, relative -File after cd, env + Set-Location + & all fail); ' +
-            `live equal=${liveEqual}, V-GOOD-C import equal=${recordedEqual}`,
-        });
-        return pass;
-      } finally {
-        await closeReceiver(receiver);
-        await sender.close();
+      auditDestination(dest, audit);
+
+      // Environment facts: locale, console codepages, chcp's own answer.
+      const envProbe = await runCaptured('pwsh', ['-NoProfile', '-Command', ENV_PROBE], { cwd: launchDir });
+      audit.push(`env pwsh -Command exit=${envProbe.code}`);
+      audit.push(`env pwsh text:\n${decodeBoth(envProbe.stdout).utf8.trim()}`);
+      const chcp = await runCaptured('cmd.exe', ['/d', '/s', '/c', 'chcp'], { cwd: launchDir });
+      const chcpText = decodeBoth(chcp.stdout);
+      audit.push(`env chcp exit=${chcp.code} utf8=${JSON.stringify(chcpText.utf8.trim())} ` +
+        `gbk=${JSON.stringify(chcpText.gbk ? chcpText.gbk.trim() : null)} hex=${bytesHex(chcp.stdout)}`);
+
+      // Boundary 3: spawn argv -> pwsh -> script. A probe INSIDE the package
+      // prints what the child actually received, so the path is observable on
+      // both sides of the CreateProcessW boundary.
+      const probePath = join(dest, 'encoding-probe.ps1');
+      writeFileSync(probePath, [
+        '$p = $PSCommandPath',
+        "$codes = ($p.ToCharArray() | ForEach-Object { 'U+{0:X4}' -f [int]$_ }) -join ' '",
+        "$hex = -join ([Text.Encoding]::UTF8.GetBytes($p) | ForEach-Object { $_.ToString('X2') })",
+        'Write-Output "probe PSCommandPath=$p"',
+        'Write-Output "probe codepoints=$codes"',
+        'Write-Output "probe utf8hex=$hex"',
+        'Write-Output "probe PSScriptRoot=$PSScriptRoot"',
+      ].join('\r\n'), 'ascii');
+      const probeArgs = ['-NoProfile', '-File', probePath];
+      audit.push(`boundary 3 (spawn argv) ${JSON.stringify(probeArgs)}`);
+      probeArgs.forEach((value, index) => audit.push(`  argv[${index}] ${describeBoundary('arg', value)}`));
+      const probe = await runCaptured('pwsh', probeArgs, { cwd: launchDir });
+      const probeText = decodeBoth(probe.stdout).utf8;
+      audit.push(`boundary 3 (pwsh echo) exit=${probe.code} stdout hex=${bytesHex(probe.stdout)}`);
+      audit.push(`boundary 3 (pwsh echo) text:\n${probeText.trim()}`);
+      if (probe.code !== 0) throw new Error(`encoding probe exited ${probe.code}: ${probeText.trim()}`);
+      if (!probeText.includes(codepointsOf(CJK_SPACE_DIR))) {
+        throw new Error('the child pwsh did not echo the CJK+space codepoints');
       }
+      if (!probeText.includes(utf8HexOf(CJK_SPACE_DIR))) {
+        throw new Error('the child pwsh did not echo the CJK+space UTF-8 bytes');
+      }
+
+      // Boundary 3b: the exact form that failed in 8c59864 (absolute -File
+      // from a different cwd). -Help loads and parses the launcher, then
+      // exits 0 without binding the port.
+      const helpArgs = ['-NoProfile', '-File', join(dest, 'launch.ps1'), '-Help'];
+      audit.push(`boundary 3b (spawn argv) ${JSON.stringify(helpArgs)}`);
+      helpArgs.forEach((value, index) => audit.push(`  argv[${index}] ${describeBoundary('arg', value)}`));
+      const help = await runCaptured('pwsh', helpArgs, { cwd: launchDir });
+      const helpText = decodeBoth(help.stdout).utf8;
+      audit.push(`boundary 3b (absolute -File) exit=${help.code} ` +
+        `stdout hex=${bytesHex(help.stdout)} stderr hex=${bytesHex(help.stderr)}`);
+      audit.push(`boundary 3b (absolute -File) text:\n${helpText.trim()}`);
+      if (help.code !== 0) {
+        throw new Error(`pwsh -File absolute exited ${help.code}: ${decodeBoth(help.stderr).utf8.trim()}`);
+      }
+      if (!/usage: pwsh/i.test(helpText)) throw new Error('the launcher did not print its usage');
+
+      // Boundary 4: the README-documented form (launch.cmd) from a different
+      // cwd. cmd /s /c strips the FIRST and LAST quote on the line, so the
+      // command is wrapped in an extra pair; without it cmd splits at the
+      // first space (verified in isolation on this host).
+      const cmdPath = join(dest, 'launch.cmd');
+      const commandLine = `""${cmdPath}" -Port ${PORT1} -NoBrowser"`;
+      audit.push(`boundary 4 (documented form) cmd.exe /d /s /c ${commandLine} cwd=${launchDir}`);
+      audit.push(describeBoundary('boundary 4 launch.cmd', cmdPath));
+      const launcher = spawn('cmd.exe', ['/d', '/s', '/c', commandLine],
+        { cwd: launchDir, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true });
+      const launchOut = []; const launchErr = [];
+      launcher.stdout.on('data', (chunk) => launchOut.push(chunk));
+      launcher.stderr.on('data', (chunk) => launchErr.push(chunk));
+      launchLog = {
+        code: await new Promise((r) => launcher.on('exit', r)),
+        out: Buffer.concat(launchOut),
+        err: Buffer.concat(launchErr),
+      };
+      const launchText = decodeBoth(Buffer.concat([launchLog.out, launchLog.err]));
+      audit.push(`boundary 4 exit=${launchLog.code}`);
+      audit.push(`boundary 4 stdout hex=${bytesHex(launchLog.out)}`);
+      audit.push(`boundary 4 stderr hex=${bytesHex(launchLog.err)}`);
+      audit.push(`boundary 4 stdout text: utf8=${JSON.stringify(launchText.utf8)} ` +
+        `gbk=${JSON.stringify(launchText.gbk)}`);
+      if (launchLog.code !== 0) {
+        throw new Error(`launch.cmd exited ${launchLog.code}: ` +
+          `${launchText.utf8.trim() || (launchText.gbk || '').trim()}`);
+      }
+      const pidMatch = /server pid (\d+)/.exec(launchText.utf8);
+      if (pidMatch) serverPid = Number(pidMatch[1]);
+      await waitHttp(`http://127.0.0.1:${PORT1}/`);
+      const served = await (await fetch(`http://127.0.0.1:${PORT1}/config/asset-set.json`)).json();
+      audit.push(`boundary 4 served assetSetId=${served.assetSetId} ` +
+        `wasmSha256=${String(served.wasmSha256).slice(0, 16)}...`);
+
+      sender = await startSenderOnly();
+      receiver = await launchReceiver(PORT1);
+      await loadSenderFile(sender.senderPage, fixture);
+      await sender.senderPage.bringToFront();
+      await sleep(300);
+      await receiver.page.bringToFront();
+      await sleep(300);
+      const state = await attachCapture(receiver.page, 'window', receiver.pid);
+      log(`e2e-1: live ${state.status} artifact=${state.artifactName}`);
+      const livePath = join(RUN, 'proof', 'E2E-1', 'live', 'received.bin');
+      mkdirSync(dirname(livePath), { recursive: true });
+      await saveArtifact(receiver.page, livePath, receiver.pid);
+      const liveEqual = sha256File(fixture) === sha256File(livePath);
+      await sleep(1000);
+      await importVideo(receiver.page, join(RUN, 'fixtures-media', 'V-GOOD-C.webm'));
+      await waitFor(receiver.page, (s) => !s.saveDisabled, 240000, 'recorded import Ready');
+      const recordedPath = join(RUN, 'proof', 'E2E-1', 'recorded', 'received.bin');
+      mkdirSync(dirname(recordedPath), { recursive: true });
+      await saveArtifact(receiver.page, recordedPath, receiver.pid);
+      const recordedEqual = sha256File(fixture) === sha256File(recordedPath);
+      await screenshot(receiver.page, 'E2E-1', 'packaged-receiver.png');
+
+      const liveSha = sha256File(livePath);
+      const recordedSha = sha256File(recordedPath);
+      const originalSha = sha256File(fixture);
+      writeProof(RUN, 'E2E-1', 'launch-log.txt', [
+        `E2E-1 re-verification (${new Date().toISOString()})`,
+        'Retraction: the 8c59864 FAIL ("pwsh cannot load from CJK+space") was a corrupted',
+        'path in this test chain, not a platform defect. The original evidence is preserved',
+        'at proof/E2E-1/first-run-fail/; this file is the re-verification record.',
+        '',
+        ...audit,
+        '',
+        `original sha256=${originalSha}`,
+        `live      sha256=${liveSha} equal=${liveEqual}`,
+        `recorded  sha256=${recordedSha} equal=${recordedEqual}`,
+      ].join('\n'));
+      const pass = liveEqual && recordedEqual;
+      const record = roundtripRecord({
+        caseId: 'E2E-1', originalPath: fixture, receivedPath: recordedPath, runDir: RUN,
+        notes: 'filled by the caller below',
+      });
+      upsertResult(RUN, {
+        ...record,
+        result: pass ? 'PASS' : 'FAIL',
+        notes: `packaged first launch from a codepoint-built CJK+space dir (${dest}); ` +
+          `README-documented launch.cmd exit=${launchLog.code}; pwsh -File absolute preflight ` +
+          `exit=${help.code}; live equal=${liveEqual} (${liveSha.slice(0, 12)}), V-GOOD-C recorded ` +
+          `import equal=${recordedEqual} (${recordedSha.slice(0, 12)}); RETRACTION: the 8c59864 FAIL ` +
+          'blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test ' +
+          'invocation chain (package copied under a GBK-mojibake twin name); original evidence ' +
+          'preserved at proof/E2E-1/first-run-fail/',
+      });
+      return pass;
     } catch (error) {
-      writeProof(RUN, 'E2E-1', 'launch-log.txt',
-        `launch.ps1 exit=${launchLog.code}\n${launchLog.text}\n${error.message}\n`);
-      const observation = join(RUN, 'proof', 'E2E-1', 'observation.txt');
-      mkdirSync(dirname(observation), { recursive: true });
-      writeFileSync(observation, `E2E-1 observation (${new Date().toISOString()})\n${error.message}\n`);
+      const launchText = launchLog
+        ? decodeBoth(Buffer.concat([launchLog.out, launchLog.err])).utf8
+        : '(launcher not started)';
+      try {
+        writeProof(RUN, 'E2E-1', 'launch-log.txt', [
+          `E2E-1 failure (${new Date().toISOString()})`,
+          `launch exit=${launchLog ? launchLog.code : 'n/a'}`,
+          launchText,
+          '',
+          'encoding audit:',
+          ...audit,
+          '',
+          String(error.stack || error.message),
+        ].join('\n'));
+        const observation = join(RUN, 'proof', 'E2E-1', 'observation.txt');
+        mkdirSync(dirname(observation), { recursive: true });
+        writeFileSync(observation, `E2E-1 observation (${new Date().toISOString()})\n${error.message}\n`);
+      } catch (writeError) {
+        console.error('could not write the E2E-1 failure evidence:', writeError);
+      }
       upsertResult(RUN, {
         caseId: 'E2E-1', scope: 'local_simulated', caseType: 'negative_or_lifecycle', result: 'FAIL',
         executedBy: 'executor',
         proofRefs: ['proof/E2E-1/observation.txt'],
-        notes: `packaged-launch journey did not complete: ${String(error.message).slice(0, 160)}`,
+        notes: `packaged-launch re-verification did not complete: ${String(error.message).slice(0, 160)}`,
       });
       return false;
+    } finally {
+      if (receiver) await closeReceiver(receiver).catch(() => {});
+      if (sender) await sender.close().catch(() => {});
+      await stopPackagedServer(serverPid, dest).catch(() => {});
     }
   },
   // E2E-2: startup-failure recovery. With the port occupied, launch.ps1 must

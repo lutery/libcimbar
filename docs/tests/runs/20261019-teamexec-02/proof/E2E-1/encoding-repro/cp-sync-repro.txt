@@ -1,0 +1,10 @@
+node=v22.23.1 platform=win32 tmpdir=C:\Users\admin\AppData\Local\Temp
+codepoint name: 中文 目录 解压
+
+A) fs.cpSync (no filter -> C++ cpSyncCopyDir): intended dest entries=0
+   root listing (note the second, mojibake name):
+   src [U+0073 U+0072 U+0063] dir entries=2
+   中文 目录 解压 [U+4E2D U+6587 U+0020 U+76EE U+5F55 U+0020 U+89E3 U+538B] dir entries=0
+   涓枃 鐩綍 瑙ｅ帇 [U+6D93 U+E15F U+6783 U+0020 U+9429 U+E1BC U+7D8D U+0020 U+7459 U+FF45 U+5E07] dir entries=2
+
+B) entry-by-entry copy (mkdirSync + copyFileSync): intended dest entries=2

@@ -1,0 +1,22 @@
+E2E-1 failure (2026-10-21T01:32:48.353Z)
+launch exit=n/a
+(launcher not started)
+
+encoding audit:
+boundary 1 (JS string) dest: text="C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压" codepoints=[U+0043 U+003A U+005C U+0055 U+0073 U+0065 U+0072 U+0073 U+005C U+0061 U+0064 U+006D U+0069 U+006E U+005C U+0041 U+0070 U+0070 U+0044 U+0061 U+0074 U+0061 U+005C U+004C U+006F U+0063 U+0061 U+006C U+005C U+0054 U+0065 U+006D U+0070 U+005C U+0063 U+0069 U+006D U+0062 U+0061 U+0072 U+002D U+0065 U+0032 U+0065 U+002D U+0031 U+005C U+4E2D U+6587 U+0020 U+76EE U+5F55 U+0020 U+89E3 U+538B] utf8hex=433A5C55736572735C61646D696E5C417070446174615C4C6F63616C5C54656D705C63696D6261722D6532652D315CE4B8ADE6968720E79BAEE5BD9520E8A7A3E58E8B
+boundary 2 (fs) parent C:\Users\admin\AppData\Local\Temp\cimbar-e2e-1 has 5 entries:
+  sibling name: text="ascii dir" codepoints=[U+0061 U+0073 U+0063 U+0069 U+0069 U+0020 U+0064 U+0069 U+0072] utf8hex=617363696920646972
+  sibling name: text="plain-cwd" codepoints=[U+0070 U+006C U+0061 U+0069 U+006E U+002D U+0063 U+0077 U+0064] utf8hex=706C61696E2D637764
+  sibling name: text="中文 目录 解压" codepoints=[U+4E2D U+6587 U+0020 U+76EE U+5F55 U+0020 U+89E3 U+538B] utf8hex=E4B8ADE6968720E79BAEE5BD9520E8A7A3E58E8B
+  sibling name: text="中文目录" codepoints=[U+4E2D U+6587 U+76EE U+5F55] utf8hex=E4B8ADE69687E79BAEE5BD95
+  sibling name: text="涓枃 鐩綍 瑙ｅ帇" codepoints=[U+6D93 U+E15F U+6783 U+0020 U+9429 U+E1BC U+7D8D U+0020 U+7459 U+FF45 U+5E07] utf8hex=E6B693EE859FE69E8320E990A9EE86BCE7B68D20E79199EFBD85E5B887
+boundary 2 (fs) entries whose name is EXACTLY the codepoint name: 1
+boundary 2 (fs) dest isDirectory=true
+boundary 2 (fs) dest entries (0): 
+boundary 2 (fs) required launch.cmd exists=false at path: text="C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压\\launch.cmd" codepoints=[U+0043 U+003A U+005C U+0055 U+0073 U+0065 U+0072 U+0073 U+005C U+0061 U+0064 U+006D U+0069 U+006E U+005C U+0041 U+0070 U+0070 U+0044 U+0061 U+0074 U+0061 U+005C U+004C U+006F U+0063 U+0061 U+006C U+005C U+0054 U+0065 U+006D U+0070 U+005C U+0063 U+0069 U+006D U+0062 U+0061 U+0072 U+002D U+0065 U+0032 U+0065 U+002D U+0031 U+005C U+4E2D U+6587 U+0020 U+76EE U+5F55 U+0020 U+89E3 U+538B U+005C U+006C U+0061 U+0075 U+006E U+0063 U+0068 U+002E U+0063 U+006D U+0064] utf8hex=433A5C55736572735C61646D696E5C417070446174615C4C6F63616C5C54656D705C63696D6261722D6532652D315CE4B8ADE6968720E79BAEE5BD9520E8A7A3E58E8B5C6C61756E63682E636D64
+
+Error: package incomplete at the codepoint path: launch.cmd is missing
+    at auditDestination (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:842:25)
+    at E2E-1 (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:910:7)
+    at main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:2142:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)

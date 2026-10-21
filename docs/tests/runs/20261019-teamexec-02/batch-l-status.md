@@ -1,12 +1,13 @@
 # Batch L status - real local E2E (run 20261019-teamexec-02)
 
-Updated: 2026-10-20. Source of truth for executed records is `results.json`;
+Updated: 2026-10-21. Source of truth for executed records is `results.json`;
 this page summarizes what ran, what did not, and why.
 
 ## Executed and PASS
 
 | Journey | Scope of the run |
 |---|---|
+| E2E-1 | packaged first launch from a codepoint-built CJK+space directory (re-verification; see the retraction below): README-documented `launch.cmd` plus an absolute `pwsh -File` preflight, both exit 0; live roundtrip and V-GOOD-C recorded import both hash-clean (external SHA-256) |
 | E2E-3 | live roundtrips, compressible + incompressible, 3 rounds each (6) |
 | E2E-4 | real source picker cancelled, then restart + roundtrip |
 | E2E-5 | blank (non-encoding) window, no artifact, stop, reselect + roundtrip |
@@ -23,18 +24,61 @@ this page summarizes what ran, what did not, and why.
 | E2E-18 | 1 MiB incompressible live roundtrip; PASS in results.json |
 | E2E-2 | occupied-port launch exits 3 with a readable reason; clean relaunch + live roundtrip hash-clean |
 | E2E-6 | same-name/same-size A/B: external ends (tab close, window close) settle Incomplete with no phantom artifact; each new session saves hash-B |
-| E2E-8 | 4C sender (outside the verified set): no false Ready in 30 s; recovery via sender reload hash-clean (see FAIL notes) |
+| E2E-8 | 4C sender (outside the verified set): no false Ready in 30 s; recovery via sender reload hash-clean (see the E2E-8 finding below) |
 | E2E-9 | default + window-resize + receiver render-scale 1.5 legs all hash-clean; OS display scaling not covered (matrix claims no such combo) |
 | E2E-10 | receiver-in-front roundtrip; sender minimized mid-capture 15 s = no false Ready; restore saves hash-clean |
 
 Every PASS above has real artifacts under `proof/<case>/` and external
 SHA-256 equality (the gate recomputes the hashes from the files).
 
-## Executed and FAIL (honest)
+## Retracted FAIL: E2E-1 (2026-10-21)
 
-| Journey | Finding |
-|---|---|
-| E2E-1 | pwsh 7 无法从「CJK+空格」目录加载启动脚本（Node 探针验证，非shell污染证据）：绝对 `-File`（首跑，exit 64）、相对 `-File`（cd 后）、env + `Set-Location` + `&` 全部失败；同宿主 pwsh 对正常 ASCII 路径工作正常。cpSync 版包内容正确、文件齐全。修复需平台/打包层（用户侧建议：解压到 ASCII 路径，README 已注明）；launch.cmd shim 保留供正常环境使用。见 `proof/E2E-1/`。注意：早期部分手工矩阵证据被本机交互 shell 的 CJK 乱码污染，已用 Node 探针（全 ASCII 源码 + 码点构建路径）重验并以探针结果为准。 |
+Commit 8c59864 recorded E2E-1 as FAIL and attributed it to a "pwsh 7 CJK+space
+platform defect" ("pwsh cannot load the launcher from such a directory by any
+invocation form"). **That attribution is withdrawn.** The user disproved it on
+this same machine (system codepages 936, 32 invocation combinations, and the
+real package launching from a CJK+space directory).
+
+The re-run established the actual cause, and it is in our test chain:
+
+- Node 22.23.1's `fs.cpSync(dir, dest, { recursive: true })` takes the C++
+  fast path `fsBinding.cpSyncCopyDir` when no `filter` is supplied. On this
+  host (ACP/OEM 936) that path writes a non-ASCII destination as a
+  GBK-mojibake twin directory - the UTF-8 bytes of the intended name decoded
+  as cp936 - and leaves the intended directory **empty**, without an error.
+  `mkdirSync` / `writeFileSync` / `copyFileSync` and cpSync's JavaScript path
+  (forced by passing `filter`) handle the same codepoints correctly.
+- So the package was copied to the mojibake twin (codepoints U+6D93 U+E15F
+  U+6783 ...) while the launcher was spawned with the intended codepoints.
+  pwsh's exit 64, "参数 ... 无法识别为脚本文件名", is its missing-file
+  diagnostic for `-File`; the quoted text is the argv it received. There was
+  no file at that path.
+- `run-e2e.mjs` now builds the directory name from codepoints (no literal),
+  verifies the exact-codepoint directory and required files with node fs
+  before any process starts, and logs codepoints + UTF-8 hex + raw bytes at
+  every boundary (JS string, spawn argv, child pwsh echo, cmd/launch output).
+  It copies the package entry by entry (`mkdirSync` + `copyFileSync`).
+
+Evidence:
+
+- `proof/E2E-1/first-run-fail/` - the original failure evidence, byte-identical
+  to the 8c59864 blobs (`git hash-object` matches), plus the original
+  results.json record.
+- `proof/E2E-1/encoding-repro/` - isolated reproduction of the cpSync
+  corruption (script + output; no pwsh or browser involved).
+- `proof/E2E-1/attempt-2-harness-fail/` - the first re-run, whose new audit
+  caught the empty destination before any process started.
+- `proof/E2E-1/launch-log.txt` - the re-verification: locale/codepages
+  (PS 7.6.7, zh-CN, Console 65001, ACP/OEM 936), exact commands, codepoints
+  and hex at each boundary, the sibling listing that still shows the mojibake
+  twin, and the three equal SHA-256 values.
+- `proof/E2E-1/{live,recorded}/received.bin` and `proof/E2E-1/{original,received}.bin`
+  - externally re-hashed, all equal to
+  `2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e`.
+
+The historical commit 8c59864 and its incorrect attribution stay in git
+history; the correction is recorded here, in `web/desktop-recv/README.md`,
+in the `launch.cmd` comments, and as TD-17 in `docs/dev-pipeline/tech-debt.md`.
 
 The E2E-8 PASS record carries a PRODUCT FINDING: flipping the sender's
 in-page mode selector back to B restores the UI class but NOT a decodable
@@ -44,8 +88,8 @@ sender page reload (the selector's default is B). Evidence in
 
 ## Not executed in this round
 
-(none - all 20 local journeys have executed records; E2E-1 is the single
-honest FAIL, see above. E2E-21..26 remain field journeys for the user.)
+(none - all 20 local journeys have executed PASS records after the E2E-1
+re-verification, see above. E2E-21..26 remain field journeys for the user.)
 
 ## Environment notes (reproducible facts)
 
