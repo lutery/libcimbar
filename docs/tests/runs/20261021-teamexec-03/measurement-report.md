@@ -103,6 +103,6 @@ Performance: NOT_EVALUATED (thresholds not frozen (V-002/V-003 pending); this to
 
 ## Totals
 
-- records: 20 (PASS 19, FAIL 0, NOT_RUN 1)
+- records: 20 (PASS 20, FAIL 0, NOT_RUN 0)
 - legs: 18 (PASS 17, FAIL 0, NOT_RUN 1)
 

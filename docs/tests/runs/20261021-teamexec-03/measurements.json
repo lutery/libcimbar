@@ -1433,6 +1433,11 @@
         "result": "PASS"
       },
       {
+        "caseId": "E2E-18",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
         "caseId": "E2E-19",
         "scope": "local_simulated",
         "result": "PASS"
@@ -1455,6 +1460,7 @@
       "E2E-15",
       "E2E-16",
       "E2E-17",
+      "E2E-18",
       "E2E-19",
       "E2E-2",
       "E2E-20",
@@ -1470,8 +1476,8 @@
   },
   "counts": {
     "total": 20,
-    "pass": 19,
+    "pass": 20,
     "fail": 0,
-    "notRun": 1
+    "notRun": 0
   }
 }

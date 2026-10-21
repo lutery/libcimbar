@@ -1,0 +1,111 @@
+{
+  "runId": "20261021-teamexec-03",
+  "createdAt": "2026-10-22T03:18:31+08:00",
+  "createdBy": "doc-td2 (round-3 rectification TD2 follow-up, team-lead approved)",
+  "purpose": "run-03 environment snapshot referenced by reproduction.md sections header and stage5-dev-summary.md baseline",
+  "code": {
+    "branch": "screen-capture-recv",
+    "commitSha": "cb43f859adb6e6c6df234dd298ac5bd02e090d78",
+    "commitSubject": "test(e2e): run-03 full local lane - 20/20 journeys executed, E2E-18 matrix PASS with 4 MiB recorded-import evidence",
+    "uncommittedAtCapture": "TD2 documentation refresh (tech-debt.md, stage5-dev-summary.md, run-01 support-matrix.md) + regenerated measurements.json/measurement-report.md + this file; no product/test code changed since cb43f85"
+  },
+  "os": {
+    "productName": "Windows 10 Pro",
+    "productNameNote": "registry value verbatim; Windows 11 reports 'Windows 10 Pro' in CurrentVersion\\ProductName (build 22631 >= 22000 = Windows 11)",
+    "displayVersion": "23H2",
+    "build": "22631.6199",
+    "architecture": "AMD64",
+    "codePage": {
+      "ACP": 936,
+      "OEMCP": 936,
+      "note": "ACP/OEM 936 host: the GBK-mojibake class of issues documented in tech-debt.md TD-17 applies to tooling on this machine"
+    }
+  },
+  "locale": {
+    "culture": "zh-CN",
+    "uiCulture": "zh-CN",
+    "systemLocale": "zh-CN"
+  },
+  "runtimes": {
+    "python": "3.11.7",
+    "node": "v22.23.1",
+    "powershell": "7.6.7"
+  },
+  "browser": {
+    "lane": "Microsoft Edge via Playwright channel 'msedge', headed (run-e2e.mjs)",
+    "edgeVersion": "155.0.4283.62",
+    "edgePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+  },
+  "staging": {
+    "assetSetId": "desktop-recv-v1",
+    "revision": "a515922d2106af0cab5f350e0af469b6f4d93ca4",
+    "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+    "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+    "profileMaxArtifactBytes": 16777216,
+    "note": "verify-assets PASS on 2026-10-22 against build-desktop-recv/staging/receiver; staging declares binding to the a515922 build tree, not HEAD"
+  },
+  "e2eRecords": {
+    "counts": {
+      "total": 20,
+      "pass": 20,
+      "fail": 0,
+      "not_run": 0
+    },
+    "note": "recomputed from results.json at capture time; every record executedBy=executor, scope=local_simulated, caseType=file_roundtrip"
+  },
+  "gates": [
+    {
+      "name": "unit",
+      "command": "node tools/desktop-recv/run-unit.mjs --all",
+      "result": "PASS - 9 suites / 108 tests, 0 fail/todo/skip",
+      "exitCode": 0,
+      "date": "2026-10-22",
+      "rerunBy": "doc-td2 (TD2)"
+    },
+    {
+      "name": "evidence-gate-selftest",
+      "command": "python tools/desktop-recv/verify-evidence-selftest.py",
+      "result": "PASS - 14/14",
+      "exitCode": 0,
+      "date": "2026-10-22",
+      "rerunBy": "doc-td2 (TD2)"
+    },
+    {
+      "name": "assets",
+      "command": "node tools/desktop-recv/verify-assets.mjs --root build-desktop-recv/staging/receiver",
+      "result": "PASS - revision a515922d2106af0cab5f350e0af469b6f4d93ca4 (declared)",
+      "exitCode": 0,
+      "date": "2026-10-22",
+      "rerunBy": "doc-td2 (TD2)"
+    },
+    {
+      "name": "evidence-local",
+      "command": "python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261021-teamexec-03 --gate local",
+      "result": "PASS (20 required cases)",
+      "exitCode": 0,
+      "date": "2026-10-22",
+      "rerunBy": "doc-td2 (TD2)"
+    },
+    {
+      "name": "evidence-field",
+      "command": "python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261021-teamexec-03 --gate field",
+      "result": "FAIL (6 violations: E2E-21..26 missing) - correct by design",
+      "exitCode": 1,
+      "date": "2026-10-22",
+      "rerunBy": "doc-td2 (TD2)"
+    }
+  ],
+  "measurements": {
+    "status": "NOT_EVALUATED",
+    "reason": "thresholds not frozen (V-002/V-003 pending)",
+    "legs": 18,
+    "legsPass": 17,
+    "legsNotRun": 1,
+    "note": "summarize.py re-run on 2026-10-22 after the authorized E2E-18 matrix-PASS upgrade; counts now match results.json record level (20/20 PASS)"
+  },
+  "notProbed": {
+    "nativeCtest": "9/9 is the external round-1 historical result; not re-run in this capture (no C++/WASM change since; scope stated in stage5-dev-summary.md section 6)",
+    "senderEnvironment": null,
+    "note": "null fields = not captured by this tool run; do not backfill without a real probe"
+  }
+}
