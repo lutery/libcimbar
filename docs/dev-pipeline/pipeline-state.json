@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-21T02:34:57.598Z+08:00",
+  "updated_at": "2026-10-21T10:51:57+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -204,32 +204,34 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "in_progress",
+      "status": "completed",
       "output_dir": null,
       "output_files": [],
       "team_mode": "omc",
       "omc_slug": "desktop-receiver",
       "contract_files": [],
-      "review_rounds": 7,
+      "review_rounds": 8,
       "max_rounds": 10,
-      "test_status": "failed",
+      "test_status": "passed",
       "started_at": "2026-10-18T13:20:01+08:00",
-      "completed_at": null,
-      "notes": "Round-7 internal review (2026-10-21, docs/dev-pipeline/review-round-7.md) FAILED with 3 Blockings; all three rectified the same day, and the 7 round-1 themes remain genuinely closed. B-1: both evidence gates (tools/desktop-recv/verify-evidence.py and web/desktop-recv/src/evidence.js) now read the planned caseType from docs/tests/planning-cases.json (all 26 scenarios declare it; local E2E-1..20 file_roundtrip, field E2E-21/22/25 file_roundtrip, E2E-23/24 negative_or_lifecycle, E2E-26 measurement), cross-check every required record against it, fail closed when the plan omits the type, and key the artifact verification on the PLANNED type; negative regressions added (verify-evidence-selftest.py 14 cases including relabelled-caseType and missing-planned-type; evidence.test.mjs UT-083/UT-084). B-2: E2E-16 PASS now requires the V-LAST-without leg to end Incomplete (withoutReady=false). B-3a: E2E-5 re-reads the page state after the 7 s blank observation window and asserts from that reading. B-3b: E2E-19 now really closes the receiver page and opens a fresh one (not a reload; old page isClosed recorded); harness hardening that the reruns required: launchReceiver installs diagnostics at context level so reopened pages keep tracing, stack.close() kills the CURRENT receiver server (the E2E-19 restart used to leak it and hang the runner), and main() hard-exits after the outcome is recorded. Reruns (runner upserted the records): E2E-5 PASS, E2E-19 PASS (4 roundtrips incl. the real close/reopen), E2E-16 PASS (negative leg inside the predicate); overclaim wording corrected in results.json notes, batch-l-status.md and stage5-dev-summary.md. Gates after rectification: unit 9 suites / 90 tests green; selftest 14/14; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side; E2E-26 will need frozen thresholds once measured). test_status is back to failed because round 7 itself failed before this rectification; external-review.status stays failed (round 2 not yet submitted). Round-1 rectification history: batches H/I/J/K/L/M closed all 7 external themes (A-01..A-04, B-S01/B-S04, C-01/C-02), three real-E2E product defects were found and fixed (468428c, 648dacb, 16c367d) plus TD-15 per-frame import (eb80706), TD-01/TD-12 closed in batch M, and the E2E-1 pwsh mis-attribution was retracted and re-verified PASS (TD-17 Node fs.cpSync GBK-mojibake twin). Field journeys E2E-21..26 remain NOT_RUN.",
+      "completed_at": "2026-10-21T10:51:57+08:00",
+      "notes": "Stage 5 COMPLETE after external round 1 FAIL (7 independent themes) and internal round 7 FAIL (3 Blockings), both rectified; internal round 8 PASS with 0 Blocking (delta 80c92dd..ce4051c). Final gates (2026-10-21, HEAD ce4051c): unit 9 suites / 90 tests green; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side); verify-assets PASS (staging bound to revision a515922, declared); native ctest 9/9 per the external round-1 re-run (no C++ source changed since; WASM not rebuilt). Round-1 themes closed: A-01 -> real local journeys E2E-1..20 + batches L/M docs; A-02/A-03/C-02 -> 558dee9; B-S04 -> b16004a + eb80706 (TD-15 frame-by-frame import); A-04/B-S01 -> 95c54b6 + ce4051c (planned caseType declared for all 26 scenarios, both gates cross-check with fail-closed plan, artifact checks keyed on the planned type, selftest 14 cases, UT-083/084); C-01 -> aa31eed + E2E-1 final state (247b68c; the pwsh CJK+space attribution was retracted and re-verified, TD-17 Node fs.cpSync GBK-mojibake twin). Internal round 7 (2026-10-21) found B-1 planned caseType unvalidated, B-2 E2E-16 negative leg outside the PASS predicate, B-3 E2E-5 pre-window snapshot and E2E-19 reload-only; ce4051c rectified all three and re-executed E2E-5/E2E-16/E2E-19 (PASS, external Get-FileHash equality), with harness fixes (stack.close targets the current receiver server; hard-exit after results flush; honest-FAIL catches for 5/19). Round 8 PASS 0 Blocking. Field journeys E2E-21..26 remain NOT_RUN; TD-12 closed by local executor roundtrips, the field phase remains for the user.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "failed",
+      "status": "waiting_external",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [
         "round-1-package.md",
         "round-1-template.md",
-        "round-1-verdict.md"
+        "round-1-verdict.md",
+        "round-2-package.md",
+        "round-2-template.md"
       ],
-      "ext_rounds": 1,
+      "ext_rounds": 2,
       "verdict_files": [
         "docs/dev-pipeline/ext-review/round-1-verdict.md"
       ],
@@ -258,11 +260,20 @@
         "docs/tests/runs/20261018-teamexec-01/red-evidence.md",
         "docs/tests/field-guide.md",
         "docs/tests/field-receipt.json",
-        "git diff master..HEAD"
+        "git diff master..HEAD",
+        "docs/dev-pipeline/ext-review/round-2-package.md",
+        "docs/dev-pipeline/ext-review/round-2-template.md",
+        "docs/dev-pipeline/review-round-7.md",
+        "docs/dev-pipeline/review-round-8.md",
+        "docs/dev-pipeline/stage5-dev-summary.md",
+        "docs/dev-pipeline/autonomous-decisions.md",
+        "docs/tests/runs/20261019-teamexec-02/results.json",
+        "docs/tests/runs/20261019-teamexec-02/batch-l-status.md",
+        "docs/tests/runs/20261019-teamexec-02/proof/"
       ],
       "started_at": "2026-10-19T11:01:00+08:00",
       "completed_at": null,
-      "notes": "Round 1 verdict (2026-10-19, reviewer codex-gpt-6 + spec/standards axes): FAIL - both axes failed, 7 independent blocking themes (3 cross-confirmed). Fixed range bfb0c8e..d61fa74 = 35 commits/157 files. Verdict archived; pipeline returned to team-exec for rectification; resubmission becomes round 2. Blocking registry: A-01 (18 local journeys E2E-3..20 unexecuted while stage-5 claimed completed/passed; missing stage5-dev-summary.md + autonomous-decisions.md), A-02 (Incomplete state restart dead-end), A-03 (worker init/frame failure never settles; no effective watchdogs), A-04/B-S01 (evidence gates pass NOT_RUN/FAIL/wrong-scope/mock), B-S04 (video seek can hang forever; EOF misses final frames), C-01 (launcher exits 0 from spaced/CJK paths without listening), C-02 (capture cancel leaves parallel-initialized worker unreleased).",
+      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design).",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
