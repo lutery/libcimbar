@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-22T19:45:51+08:00",
+  "updated_at": "2026-10-22T21:30:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -222,7 +222,7 @@
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "passed",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [
         "round-1-package.md",
@@ -250,13 +250,14 @@
         "docs/dev-pipeline/ext-review/round-10-package.md",
         "docs/dev-pipeline/ext-review/round-10-template.md"
       ],
-      "ext_rounds": 10,
+      "ext_rounds": 11,
       "verdict_files": [
         "docs/dev-pipeline/ext-review/round-1-verdict.md",
         "docs/dev-pipeline/ext-review/round-3-verdict.md",
         "docs/dev-pipeline/ext-review/round-5-verdict.md",
         "docs/dev-pipeline/ext-review/round-7-verdict.md",
-        "docs/dev-pipeline/ext-review/round-9-verdict.md"
+        "docs/dev-pipeline/ext-review/round-9-verdict.md",
+        "docs/dev-pipeline/ext-review/round-11-verdict.md"
       ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-1-package.md",
@@ -308,8 +309,8 @@
         "docs/dev-pipeline/ext-review/round-4-template.md"
       ],
       "started_at": "2026-10-19T11:01:00+08:00",
-      "completed_at": null,
-      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design). | Round-3 verdict consumed (numbering: round-3-verdict.md corresponds to the round-2 package; ext_rounds=3). Pipeline returned to stage 5; round-4 package to follow rectification. | ROUND-4 PACKAGE PREPARED (2026-10-22): fixed baseline 31b9d30 (master..31b9d30 = 64 commits, 735 files, +39,303/-9); rectification index for the round-3 themes (T1/T2/T3) with run-03 evidence; honest notes: field gate exit 1 by design, live-n-20mib-over-budget NOT_RUN per the user-approved plan basis with the AUTHORIZED_NOT_RUN chain (triage 7 + D-19) and round-10 S-1 quoted verbatim (a one-line user confirmation can be appended if the external reviewer requires it); performance NOT_EVALUATED. Status waiting_external until round-4-verdict.md returns; ext_rounds=4. | Round-5 verdict consumed (round-4 package; ext_rounds=5; next verdict file round-6-verdict.md per N=ext_rounds+1). Pipeline returned to stage 5. | Round-5 verdict rectified; round-6 package prepared (ext_rounds=6; next verdict file round-7-verdict.md per N=ext_rounds+1). | Round-7 verdict consumed (round-6 package; ext_rounds=7; next verdict round-8). Pipeline returned to stage 5 for the B-R1 tool fix. | Round-7 B-R1 rectified; round-8 package prepared (ext_rounds=8; next verdict round-9 per N=ext_rounds+1). | Round-9 verdict consumed (round-8 package; ext_rounds=9; next verdict round-10). Pipeline returned to stage 5 for the marker-attribution fix. | Round-9 B-R1 rectified; round-10 package prepared (ext_rounds=10; next verdict round-11 per N=ext_rounds+1).",
+      "completed_at": "2026-10-22T21:30:00+08:00",
+      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design). | Round-3 verdict consumed (numbering: round-3-verdict.md corresponds to the round-2 package; ext_rounds=3). Pipeline returned to stage 5; round-4 package to follow rectification. | ROUND-4 PACKAGE PREPARED (2026-10-22): fixed baseline 31b9d30 (master..31b9d30 = 64 commits, 735 files, +39,303/-9); rectification index for the round-3 themes (T1/T2/T3) with run-03 evidence; honest notes: field gate exit 1 by design, live-n-20mib-over-budget NOT_RUN per the user-approved plan basis with the AUTHORIZED_NOT_RUN chain (triage 7 + D-19) and round-10 S-1 quoted verbatim (a one-line user confirmation can be appended if the external reviewer requires it); performance NOT_EVALUATED. Status waiting_external until round-4-verdict.md returns; ext_rounds=4. | Round-5 verdict consumed (round-4 package; ext_rounds=5; next verdict file round-6-verdict.md per N=ext_rounds+1). Pipeline returned to stage 5. | Round-5 verdict rectified; round-6 package prepared (ext_rounds=6; next verdict file round-7-verdict.md per N=ext_rounds+1). | Round-7 verdict consumed (round-6 package; ext_rounds=7; next verdict round-8). Pipeline returned to stage 5 for the B-R1 tool fix. | Round-7 B-R1 rectified; round-8 package prepared (ext_rounds=8; next verdict round-9 per N=ext_rounds+1). | Round-9 verdict consumed (round-8 package; ext_rounds=9; next verdict round-10). Pipeline returned to stage 5 for the marker-attribution fix. | Round-9 B-R1 rectified; round-10 package prepared (ext_rounds=10; next verdict round-11 per N=ext_rounds+1). | Round-11 VERDICT: PASS, 0 Blocking, 0 new suggestions (fixed HEAD 7f705be; two commits 12 files reviewed; B-R1 exception exits closed with red-green ablation: removing the marker guard restored 10 wrong attributions, current = 0). Prior themes retained closed. Stage 7 may proceed; field E2E-21..26 remain NOT_RUN (user-side), performance NOT_EVALUATED, stage-8 final packaging binds the environment.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
