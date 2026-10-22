@@ -1,0 +1,109 @@
+{
+  "measurements": {
+    "status": "NOT_EVALUATED",
+    "reason": "no thresholds frozen yet (V-002/V-003 recorded, thresholds pending)",
+    "measurements": [
+      {
+        "caseId": "UTS-contracts",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-session",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-scheduler",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-worker",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-save",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-video",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-ui",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "UTS-evidence",
+        "scope": "unit_integration",
+        "result": "PASS"
+      },
+      {
+        "caseId": "IAT-01",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "IAT-02",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "IAT-03",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "IAT-04",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "IAT-05",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-1",
+        "scope": "local_simulated",
+        "result": "PASS"
+      },
+      {
+        "caseId": "E2E-2",
+        "scope": "local_simulated",
+        "result": "PASS"
+      }
+    ]
+  },
+  "supportMatrixDraft": {
+    "verified": [
+      "E2E-1",
+      "E2E-2",
+      "IAT-01",
+      "IAT-02",
+      "IAT-03",
+      "IAT-04",
+      "IAT-05",
+      "UTS-contracts",
+      "UTS-evidence",
+      "UTS-save",
+      "UTS-scheduler",
+      "UTS-session",
+      "UTS-ui",
+      "UTS-video",
+      "UTS-worker"
+    ],
+    "note": "only combinations actually exercised in this run are listed; see support-matrix.md"
+  },
+  "counts": {
+    "total": 40,
+    "pass": 15,
+    "fail": 0,
+    "notRun": 25
+  }
+}

@@ -1,0 +1,28 @@
+flowchart TD
+  classDef event fill:#ff9800,stroke:#e65100,color:#000
+  classDef command fill:#2196f3,stroke:#0d47a1,color:#fff
+  classDef actor fill:#ffeb3b,stroke:#f57f17,color:#000
+  classDef system fill:#9c27b0,stroke:#4a148c,color:#fff
+  classDef aggregate fill:#4caf50,stroke:#1b5e20,color:#fff
+  classDef hotspot fill:#f44336,stroke:#b71c1c,color:#fff
+  U["接收操作者"]:::actor --> C["点击开始实时接收"]:::command
+  C --> S["创建新会话并直接发起系统源选择"]:::aggregate
+  S --> P["浏览器显示选择与授权"]:::system
+  S --> W["新建独立 Worker / WASM"]:::system
+  P --> A{"源选择成功且会话仍有效？"}
+  A -->|否| Cleanup["关闭迟到流及初始化资源"]
+  Cleanup --> Cancel["已取消或初始化失败"]:::event
+  A -->|是| Both{"输入与解码器均就绪？"}
+  W --> Both
+  Both -->|初始化失败| Cleanup
+  Both -->|是| F["按自然尺寸采样 RGBA"]
+  F --> Busy{"已有在途帧？"}
+  Busy -->|是| Drop["跳过本次采样并计数"]
+  Drop --> F
+  Busy -->|否| D["提交一帧并等待处理结果"]
+  D --> Done{"完整产物已就绪？"}
+  Done -->|否且输入可用| F
+  Done -->|是| Ready["停止输入并保留文件待保存"]:::event
+  D -->|用户停止或源中断| Stop["使会话失效并清理资源"]
+  Stop --> End["已停止或输入已中断"]:::event
+  F -.-> H["? H-CAP 黑屏与压缩信号需实测"]:::hotspot

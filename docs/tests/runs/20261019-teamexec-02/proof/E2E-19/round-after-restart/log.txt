@@ -1,0 +1,5 @@
+status=Saved
+artifact=sample-text-2.bin 65536 bytes
+log=capture stopped; the file is ready to save
+saved (1)
+

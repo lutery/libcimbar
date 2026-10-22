@@ -1,0 +1,28 @@
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:50] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [21/Oct/2026 20:09:51] "GET /pwa.json HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:09:58] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:09:59] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:09:59] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:10:00] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:10:00] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dismissed the Edge sync bubble
+[helper] dialog not found for action 'share' within 30 s
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:11:40] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:11:41] "GET /recorder.html HTTP/1.1" 304 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:11:41] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [21/Oct/2026 20:11:41] code 404, message File not found
+127.0.0.1 - - [21/Oct/2026 20:11:41] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dismissed the Edge sync bubble
+[helper] dialog not found for action 'share' within 30 s
+2026-10-21T12:13:19.352Z CASE E2E-18 FAIL (attempt E2E-18-2026-10-21T12-09-50-539Z-ca98c8)

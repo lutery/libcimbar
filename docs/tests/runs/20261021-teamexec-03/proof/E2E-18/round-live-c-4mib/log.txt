@@ -1,0 +1,10 @@
+status=Saved
+artifact=ext-text-4mib.bin 4194304 bytes
+saveTimings={"initStartAt":1792649989383,"initReadyAt":1792649989836,"validInputStartAt":1792649993408,"reconstructionDoneAt":1792649993727,"saveRequestAt":1792649997106,"createWritableAccessedAt":1792650001438,"writableAt":1792650001439,"writeCloseAt":1792650001574,"lastSaveClickAt":1792649997106,"decoderInitMs":453,"sourceWaitMs":3572,"initMs":4025,"reconstructMs":319,"totalToReadyMs":4344,"pickerWaitMs":4332,"writableOpenMs":1,"saveWaitMs":4333,"saveWriteMs":135,"saveMs":4468}
+saveTimingsComplete=true
+sha256 original=aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752 received=aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752 equal=true
+log=capture stopped; the file is ready to save
+saved (1)
+capture stopped; the file is ready to save
+saved (2)
+

@@ -1,0 +1,9 @@
+[helper] dismissed the Edge sync bubble
+[helper] open-cancel via Cancel id 2
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: focus+paste (unverified)
+[helper] open dialog confirmed (informational; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-15\recovery\received.bin
+2026-10-21T17:29:57.805Z CASE E2E-15 PASS (attempt E2E-15-2026-10-21T17-29-14-804Z-cba758)

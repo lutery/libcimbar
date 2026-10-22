@@ -1,0 +1,45 @@
+// Planning-only C++ skeleton, not in any CMake source list.
+#error "Replace planning skeleton with real arrange/act/assert before compiling"
+#include "unittest.h"
+
+// UT-049: 正常压缩流精确还原
+// Given 已知原字节与真实压缩流; When 逐块读取至严格EOF; Then 字节逐个一致且只有完整消费/刷新后0
+TEST_CASE("UT-049", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}
+
+// UT-050: 损坏流错误传播
+// Given 被破坏的真实压缩流; When write_once及C read; Then 返回错误，不把失败变0/Ready
+TEST_CASE("UT-050", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}
+
+// UT-051: 截断流不完整
+// Given 压缩头/块/尾部多处合法截断; When 读取至无输入无进展; Then 负不完整；已有部分输出不得当成功
+TEST_CASE("UT-051", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}
+
+// UT-052: 尾部无输入刷新
+// Given 需要输出刷新的真实压缩流; When 耗尽输入后继续读取; Then 排空所有字节，有限结束且完整状态正确
+TEST_CASE("UT-052", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}
+
+// UT-053: 重复读取和小输出缓冲
+// Given 完整流与比输出块小的调用方buffer; When 多次read/完成后再read; Then 无丢字节；完成后稳定0；不无限循环
+TEST_CASE("UT-053", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}
+
+// UT-054: 共享分块写入回归
+// Given 原有流式write/decompress多块输入; When 逐块write而非一次性整个输入; Then 分块末尾不误报整个流截断；已有测试与原发送兼容
+TEST_CASE("UT-054", "[unit][desktop-recv]")
+{
+    // TODO: use actual Zstd and existing C exports; no fake decoder.
+}

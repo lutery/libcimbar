@@ -5,6 +5,7 @@ build*/
 dist/
 opencv4/
 web/test/node_modules/
+tools/desktop-recv/e2e/node_modules/
 web/cimbar_js.js
 web/cimbar_js.wasm
 CMakeCache.txt
@@ -13,3 +14,26 @@ CTestTestfile.cmake
 Makefile
 callgrind.out*
 cmake_install.cmake
+
+# local agent/tooling state -- never part of the project
+.omc/
+
+# scratch dir + download from the screen-capture howto in
+# docs/cloud-desktop-screen-capture-feasibility.md
+cimbar-recv/
+cimbar.wasm.tar.gz
+
+# local Claude session memo (personal, not part of the project)
+.claude/
+
+# Playwright MCP scratch artifacts
+.playwright-mcp/
+
+docs/tests/runs/*/fixtures-media/
+# fixtures-ext holds regenerable deterministic samples (create-fixtures.py
+# --extended, seed in the manifest); only the manifest itself is committed.
+docs/tests/runs/*/fixtures-ext/*/
+
+# python build artifacts
+__pycache__/
+*.pyc

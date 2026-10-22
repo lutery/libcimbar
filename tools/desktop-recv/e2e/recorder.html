@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" translate="no">
+<head><meta charset="utf-8"><title>CIMBAR-RECORDER</title>
+<meta name="google" content="notranslate">
+<style>body{font-family:system-ui;margin:2rem}button{font-size:1.1rem;padding:.6rem 1.2rem}</style>
+</head>
+<body>
+<h1>cimbar E2E recording rig</h1>
+<button id="rec">record</button>
+<div id="out">idle</div>
+<script>
+// Round-3 lane: long recordings (150-600 s at 16 Mbps) must not build one
+// giant base64 string in the renderer (a 150 s clip at ~11 Mbps is ~215 MB;
+// the old binary-string concatenation plus btoa peaked near 1 GB and killed
+// the renderer mid-probe - "Target page, context or browser has been
+// closed"). The clip is now handed to the runner in bounded base64 chunks
+// (4 MiB slices) via window.__recorderState, which the runner drains chunk
+// by chunk, releasing each one.
+window.__recorderState = null;
+window.__startRecording = (ms) => new Promise((resolve) => {
+  const out = document.getElementById('out');
+  window.__recorderState = { chunks: [], bytes: 0, done: false, error: null };
+  // Hard bound: if the capture picker never appears (translate popup in the
+  // way, window not foreground), the recording promise must settle instead
+  // of hanging the rig forever.
+  const pickerTimer = setTimeout(() => {
+    resolve({ ok: false, name: 'TimeoutError', message: 'the capture picker never appeared within 90 s' });
+  }, 90000);
+  navigator.mediaDevices.getDisplayMedia({ video: { frameRate: window.__FPS || 30 } }).then((stream) => {
+    clearTimeout(pickerTimer);
+    const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    const mimeType = types.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    const recorder = new MediaRecorder(stream, { videoBitsPerSecond: 16_000_000, mimeType });
+    const chunks = [];
+    recorder.ondataavailable = (event) => { if (event.data && event.data.size) chunks.push(event.data); };
+    recorder.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(chunks, { type: mimeType });
+      const size = blob.size;
+      const CH = 4 * 1024 * 1024;
+      for (let off = 0; off < blob.size; off += CH) {
+        const buf = await blob.slice(off, Math.min(off + CH, blob.size)).arrayBuffer();
+        let binary = '';
+        const bytes = new Uint8Array(buf);
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        }
+        window.__recorderState.chunks.push(btoa(binary));
+      }
+      window.__recorderState.bytes = size;
+      window.__recorderState.done = true;
+      out.textContent = 'recorded ' + size + ' bytes';
+      resolve({ ok: true, bytes: size });
+    };
+    recorder.start(500);
+    setTimeout(() => recorder.stop(), ms);
+  }).catch((error) => {
+    clearTimeout(pickerTimer);
+    if (window.__recorderState) window.__recorderState.error = error.message;
+    resolve({ ok: false, name: error.name, message: error.message });
+  });
+});
+
+// Round-5 A-02: the V-LAST pair is recorded from ONE getDisplayMedia stream
+// by TWO MediaRecorders that are constructed and start()ed in the SAME task.
+// Both encoders therefore see the same frames from t=0, and the only
+// difference between the clips is the declared stop point:
+//   without stops at withoutCutMs (the declared cut),
+//   with    stops at withMs (its declared duration).
+// Neither clip is ever byte-truncated; video-prefix-check.py verifies the
+// shared head/tail on the produced files afterwards. The state is exposed as
+// window.__pairState = { with: {...}, without: {...}, meta: {...} } and the
+// chunks drain through it exactly like __recorderState (bounded base64).
+window.__pairState = null;
+window.__startPairRecording = ({ withMs, withoutCutMs }) => new Promise((resolve) => {
+  const out = document.getElementById('out');
+  const meta = {
+    startEpochMs: null,
+    declaredCutMs: withoutCutMs,
+    withStopMs: withMs,
+    mimeType: '',
+    videoBitsPerSecond: 16_000_000,
+    startedInSameTask: false,
+    error: null,
+  };
+  const side = () => ({ chunks: [], bytes: 0, done: false, error: null, stopAt: null });
+  window.__pairState = { with: side(), without: side(), meta };
+  const pickerTimer = setTimeout(() => {
+    meta.error = 'the capture picker never appeared within 90 s';
+    resolve({ ok: false, name: 'TimeoutError', message: meta.error });
+  }, 90000);
+  navigator.mediaDevices.getDisplayMedia({ video: { frameRate: window.__FPS || 30 } }).then((stream) => {
+    clearTimeout(pickerTimer);
+    const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    const mimeType = types.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    meta.mimeType = mimeType;
+    meta.startEpochMs = Date.now();
+    const recorders = {
+      with: new MediaRecorder(stream, { videoBitsPerSecond: meta.videoBitsPerSecond, mimeType }),
+      without: new MediaRecorder(stream, { videoBitsPerSecond: meta.videoBitsPerSecond, mimeType }),
+    };
+    const blobs = { with: [], without: [] };
+    const finished = { with: false, without: false };
+    let remaining = 2;
+    const finish = async (key) => {
+      if (finished[key]) return;
+      finished[key] = true;
+      const state = window.__pairState[key];
+      try {
+        const blob = new Blob(blobs[key], { type: mimeType });
+        const CH = 4 * 1024 * 1024;
+        for (let off = 0; off < blob.size; off += CH) {
+          const buf = await blob.slice(off, Math.min(off + CH, blob.size)).arrayBuffer();
+          let binary = '';
+          const bytes = new Uint8Array(buf);
+          for (let i = 0; i < bytes.length; i += 0x8000) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          }
+          state.chunks.push(btoa(binary));
+        }
+        state.bytes = blob.size;
+      } catch (error) {
+        state.error = error.message;
+      }
+      state.done = true;
+      remaining -= 1;
+      if (remaining === 0) {
+        stream.getTracks().forEach((t) => t.stop());
+        out.textContent = 'pair recorded ' + window.__pairState.with.bytes + ' / '
+          + window.__pairState.without.bytes + ' bytes';
+        resolve({
+          ok: true,
+          withBytes: window.__pairState.with.bytes,
+          withoutBytes: window.__pairState.without.bytes,
+          meta,
+        });
+      }
+    };
+    for (const key of ['with', 'without']) {
+      const recorder = recorders[key];
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size) blobs[key].push(event.data);
+      };
+      recorder.onstop = () => { void finish(key); };
+      recorder.onerror = (event) => {
+        const state = window.__pairState[key];
+        state.error = (event.error && event.error.message) || 'MediaRecorder error';
+        if (!state.done) { void finish(key); }
+      };
+    }
+    // Started in the same task, back to back: the encoders share the stream's
+    // frame sequence from this moment on.
+    recorders.with.start(500);
+    recorders.without.start(500);
+    meta.startedInSameTask = true;
+    setTimeout(() => {
+      if (recorders.without.state !== 'inactive') {
+        window.__pairState.without.stopAt = Date.now();
+        recorders.without.stop();
+      }
+    }, withoutCutMs);
+    setTimeout(() => {
+      if (recorders.with.state !== 'inactive') {
+        window.__pairState.with.stopAt = Date.now();
+        recorders.with.stop();
+      }
+    }, withMs);
+  }).catch((error) => {
+    clearTimeout(pickerTimer);
+    meta.error = error.message;
+    if (window.__pairState) {
+      window.__pairState.with.error = error.message;
+      window.__pairState.without.error = error.message;
+    }
+    resolve({ ok: false, name: error.name, message: error.message });
+  });
+});
+</script>
+</body>
+</html>

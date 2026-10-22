@@ -1,0 +1,282 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-1/original.bin",
+      "proof/E2E-1/received.bin"
+    ],
+    "notes": "packaged first launch from a codepoint-built CJK+space dir (C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压); README-documented launch.cmd exit=0; pwsh -File absolute preflight exit=0; live equal=true (2f5a22f95c01), V-GOOD-C recorded import equal=true (2f5a22f95c01); RETRACTION: the 8c59864 FAIL blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test invocation chain (package copied under a GBK-mojibake twin name); original evidence preserved at proof/E2E-1/first-run-fail/"
+  },
+  {
+    "caseId": "E2E-2",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-2/original.bin",
+      "proof/E2E-2/received.bin"
+    ],
+    "notes": "occupied-port launch exited 3 with a readable reason=true; clean relaunch exit=0; recovery live roundtrip equal=true"
+  },
+  {
+    "caseId": "E2E-3",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-3/original.bin",
+      "proof/E2E-3/received.bin"
+    ],
+    "notes": "live x 6 rounds (2 classes x 3); all 6 pairs equal=true; per-round proof under proof/E2E-3/round-*"
+  },
+  {
+    "caseId": "E2E-4",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "receivedSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "proofRefs": [
+      "proof/E2E-4/original.bin",
+      "proof/E2E-4/received.bin"
+    ],
+    "notes": "picker cancel -> Ready to receive (12002) -> restart -> roundtrip equal=true"
+  },
+  {
+    "caseId": "E2E-5",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-5/original.bin",
+      "proof/E2E-5/received.bin"
+    ],
+    "notes": "blank window: capture status=Receiving frames; after the 7 s observation window status=Receiving frames saveDisabled=true artifact=\"\"; stop -> reselect sender -> equal=true"
+  },
+  {
+    "caseId": "E2E-6",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "bbdd0ab312012fb5ccbbf3a915200aa75f1a4a58943bf035394b0d6ff2de30bc",
+    "receivedSha256": "bbdd0ab312012fb5ccbbf3a915200aa75f1a4a58943bf035394b0d6ff2de30bc",
+    "proofRefs": [
+      "proof/E2E-6/original.bin",
+      "proof/E2E-6/received.bin"
+    ],
+    "notes": "same-name/same-size A/B, external ends (tab close, window close; Edge's sharing chip not UIA-exposed on this host): tab-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true; window-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true"
+  },
+  {
+    "caseId": "E2E-7",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "receivedSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "proofRefs": [
+      "proof/E2E-7/original.bin",
+      "proof/E2E-7/received.bin"
+    ],
+    "notes": "stop spam converged once; fresh session B roundtrip equal=true"
+  },
+  {
+    "caseId": "E2E-8",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-8/original.bin",
+      "proof/E2E-8/received.bin"
+    ],
+    "notes": "4C sender (outside the matrix's verified mode B): no Ready in 30191 ms, no false artifact; in-page flip-back to B does NOT restore a decodable stream (180 s frame-starved, PRODUCT FINDING); sender reload with default B recovers, roundtrip equal=true; matrix quoted: \"模式 | B（68） | IAT-01/05 实测\" (verified), \"8C/Bu/Bm 模式解码\" not claimed"
+  },
+  {
+    "caseId": "E2E-9",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-9/original.bin",
+      "proof/E2E-9/received.bin"
+    ],
+    "notes": "3 window/zoom legs all hash-clean=true (default; sender 900x700 + receiver render scale 1.5; sender 1400x950 + scale 1.0). OS display scaling not covered (not automatable; matrix claims no such combo: \"其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）\")"
+  },
+  {
+    "caseId": "E2E-10",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "74c08d5bc39088d5e450d6cd95dfc86cda78421b9ebef5a0d033b5b1776d1c6a",
+    "receivedSha256": "74c08d5bc39088d5e450d6cd95dfc86cda78421b9ebef5a0d033b5b1776d1c6a",
+    "proofRefs": [
+      "proof/E2E-10/original.bin",
+      "proof/E2E-10/received.bin"
+    ],
+    "notes": "receiver-front roundtrip equal=true; sender minimized mid-capture 15 s: no false Ready (status=\"Receiving frames\"), no artifact; restore -> save equal=true; occlusion covered by the minimize leg (same starve/recover contract)"
+  },
+  {
+    "caseId": "E2E-11",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-11/original.bin",
+      "proof/E2E-11/received.bin"
+    ],
+    "notes": "save cancelled (Save failed — you can retry) -> same artifact saved on retry -> equal=true"
+  },
+  {
+    "caseId": "E2E-12",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-12/original.bin",
+      "proof/E2E-12/received.bin"
+    ],
+    "notes": "cancel: sentinel intact=true; refuse-then-rename: refused=true, sentinel intact=true, app=Saved, renamed save equal=true; suggested name \"sample-text-2.bin\" safe=true"
+  },
+  {
+    "caseId": "E2E-13",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-13/original.bin",
+      "proof/E2E-13/received.bin"
+    ],
+    "notes": "save button disabled while the picker is open=true; single save equal=true; status=Saved"
+  },
+  {
+    "caseId": "E2E-14",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-14/original.bin",
+      "proof/E2E-14/received.bin"
+    ],
+    "notes": "real sender-window recordings (V-GOOD-C/N) x 6 rounds; all pairs equal=true; video sha256 e85d22c7d232…"
+  },
+  {
+    "caseId": "E2E-15",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-15/original.bin",
+      "proof/E2E-15/received.bin"
+    ],
+    "notes": "bad inputs rejected finitely=true (empty.webm, text.webm, corrupt.webm); recovery equal=true"
+  },
+  {
+    "caseId": "E2E-16",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "bab4d8c034cbe6acddb26cc9b006782a711bfeec01fa260b8780f1f459878c95",
+    "receivedSha256": "bab4d8c034cbe6acddb26cc9b006782a711bfeec01fa260b8780f1f459878c95",
+    "proofRefs": [
+      "proof/E2E-16/original.bin",
+      "proof/E2E-16/received.bin"
+    ],
+    "notes": "128 KiB incompressible payload (re-recorded pair; the 4 MiB one mislabeled 512k exceeded the rig's delivery ceiling, TD-15): V-SHORT not Ready (Not enough data to rebuild the file); V-LAST-without incomplete=true; the complete recording saved hash-clean=true; PASS requires the V-LAST-without leg to end Incomplete (withoutReady=false)"
+  },
+  {
+    "caseId": "E2E-17",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "receivedSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "proofRefs": [
+      "proof/E2E-17/original.bin",
+      "proof/E2E-17/received.bin"
+    ],
+    "notes": "leg1 stop-video A -> live B equal=true; leg2 stop-live A -> video B equal=true (V-GOOD-C output hash=2f5a22f95c01…); A contents never pollute B in either direction"
+  },
+  {
+    "caseId": "E2E-18",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "ebead5ba51c4e42bd5e0e3da64b562e5da132d65322226c85f36332b1b75338b",
+    "receivedSha256": "ebead5ba51c4e42bd5e0e3da64b562e5da132d65322226c85f36332b1b75338b",
+    "proofRefs": [
+      "proof/E2E-18/original.bin",
+      "proof/E2E-18/received.bin"
+    ],
+    "notes": "1 MiB incompressible live roundtrip equal=true; over-budget rejection is covered by IAT/14002 unit coverage (support-matrix)"
+  },
+  {
+    "caseId": "E2E-19",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-19/original.bin",
+      "proof/E2E-19/received.bin"
+    ],
+    "notes": "reload + REAL close/reopen (old page isClosed=true; fresh page loaded #btn-video) + receiver server restart: 4 roundtrips, all equal=true; PASS requires the old page to be closed"
+  },
+  {
+    "caseId": "E2E-20",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-20/original.bin",
+      "proof/E2E-20/received.bin"
+    ],
+    "notes": "10 mixed rounds (live/video alternating); all 10 outputs equal=true; final-package part belongs to stage 8"
+  }
+]

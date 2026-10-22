@@ -1,0 +1,18 @@
+{
+  "legId": "video-n-1mib-probe",
+  "declaredAt": "2026-10-22T06:25:37.611Z",
+  "inputKind": "video",
+  "dataClass": "incompressible",
+  "tier": "1MiB bounded probe",
+  "payload": {
+    "file": "fixtures-ext/incompressible/ext-random-1mib.bin",
+    "bytes": 1048576
+  },
+  "bounds": {
+    "recordSeconds": 150,
+    "maxRecordBytes": 268435456,
+    "importWaitMs": 600000
+  },
+  "failureAttribution": "insufficient-valid-recording (rig/input evidence) => NOT_RUN; sufficient presented frames without a rebuild => receiver-side FAIL (new finding)",
+  "note": "declared BEFORE the probe records or imports anything; a later leg record must carry these values"
+}

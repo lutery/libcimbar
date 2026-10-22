@@ -1,0 +1,33 @@
+sequenceDiagram
+  actor U as 接收操作者
+  participant W as 解码 Worker
+  participant S as 会话与产物管理
+  participant B as 浏览器保存能力
+  participant F as 本地文件
+  participant H as 外部 SHA-256 验证
+  W->>S: 正常解压完成并交付不可变产物
+  S-->>W: 产物已接收
+  S->>W: 释放实例
+  S-->>U: 文件已重建且可保存
+  U->>S: 点击保存文件
+  S->>B: 在用户动作中打开保存选择器
+  alt 用户选择且写入与关闭成功
+    B->>F: 写入 Blob 并关闭
+    F-->>B: 写入关闭成功
+    B-->>S: 保存已完成
+    S-->>U: 保存完成
+    U->>H: 原文与已保存文件
+    H-->>U: 哈希一致或不一致
+  else 取消或权限拒绝或 IO 失败
+    B-->>S: 保存未完成
+    Note over S: 当前会话继续保有原 Blob
+    S-->>U: 可重新保存而无需重新接收
+    U->>S: 再次点击保存
+    S->>B: 发起新的保存尝试
+  end
+  opt 写入期间请求停止
+    U->>S: 停止
+    S->>B: 尝试取消并等待写入结果收敛
+    Note over S,F: 已提交文件不删除且结果如实记录
+    S->>S: 清理会话产物并恢复可开始状态
+  end

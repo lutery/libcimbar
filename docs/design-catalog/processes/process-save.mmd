@@ -1,0 +1,27 @@
+flowchart TD
+  classDef event fill:#ff9800,stroke:#e65100,color:#000
+  classDef command fill:#2196f3,stroke:#0d47a1,color:#fff
+  classDef actor fill:#ffeb3b,stroke:#f57f17,color:#000
+  classDef system fill:#9c27b0,stroke:#4a148c,color:#fff
+  classDef aggregate fill:#4caf50,stroke:#1b5e20,color:#fff
+  classDef hotspot fill:#f44336,stroke:#b71c1c,color:#fff
+  Ready["文件已重建且正常解压结束"]:::event --> Blob["当前会话不可变 Blob"]:::aggregate
+  Blob --> U["接收操作者"]:::actor
+  U --> C["点击保存或重试保存"]:::command
+  C --> Picker["系统保存选择器与重名确认"]:::system
+  Picker --> Selected{"选择成功？"}
+  Selected -->|取消或拒绝| Retry["产物保留且可重试"]:::event
+  Selected -->|是| Write["创建写入流并写入产物"]
+  Write --> Close["关闭写入并等待结果"]
+  Close --> OK{"写入和关闭均成功？"}
+  OK -->|否| Retry
+  Retry --> C
+  OK -->|是| Saved["保存完成已确认"]:::event
+  Saved --> Hash["外部核对 SHA-256"]:::command
+  Hash --> Match{"两侧哈希一致？"}
+  Match -->|是| Pass["文件正确性已验证"]:::event
+  Match -->|否或证据缺失| Fail["失败或验收未完成"]:::event
+  Blob -->|停止或重置| Clear["产物已释放且无跨会话续传"]:::event
+  Write -->|停止请求| Settle["取消或等待写入收敛后清理"]
+  Settle --> Clear
+  Picker -.-> H["? H-SAVE 运行时能力与 IO 失败"]:::hotspot

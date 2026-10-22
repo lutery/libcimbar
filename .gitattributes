@@ -1,2 +1,8 @@
 *.h linguist-language=C++
 LICENSE text eol=lf
+
+# Analysis docs and their build tools: pin LF in the working tree too.
+# core.autocrlf=true is common on Windows, and without this a fresh checkout
+# writes CRLF, which makes docs/src/tools/verify.py report a false failure.
+docs/**/*.md text eol=lf
+docs/**/*.py text eol=lf

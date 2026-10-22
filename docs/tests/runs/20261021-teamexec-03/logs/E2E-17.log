@@ -1,0 +1,30 @@
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:23] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [22/Oct/2026 02:14:24] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=60316
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-21T18:15:07.284Z round live-B: File ready to save artifact=sample-random-2.bin 65536 bytes
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-17\round-live-B\received.bin
+2026-10-21T18:15:25.846Z [e2e-17] leg1 stop-video -> live-B equal=true
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=60316
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261021-teamexec-03\proof\E2E-17\video-B\received.bin
+2026-10-21T18:16:00.551Z [e2e-17] leg2 stop-live -> video-B equal=true
+2026-10-21T18:16:00.561Z CASE E2E-17 PASS (attempt E2E-17-2026-10-21T18-14-23-476Z-e5823c)

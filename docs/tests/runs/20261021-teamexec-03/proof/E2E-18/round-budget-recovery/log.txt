@@ -1,0 +1,10 @@
+status=Saved
+artifact=sample-text-2.bin 65536 bytes
+saveTimings={"initStartAt":1792653112834,"initReadyAt":1792653113232,"validInputStartAt":1792653116464,"reconstructionDoneAt":1792653116602,"saveRequestAt":1792653119143,"createWritableAccessedAt":1792653124010,"writableAt":1792653124017,"writeCloseAt":1792653124169,"lastSaveClickAt":1792653119143,"decoderInitMs":398,"sourceWaitMs":3232,"initMs":3630,"reconstructMs":138,"totalToReadyMs":3768,"pickerWaitMs":4867,"writableOpenMs":7,"saveWaitMs":4874,"saveWriteMs":152,"saveMs":5026}
+saveTimingsComplete=true
+sha256 original=2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e received=2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e equal=true
+log=[error] 15008: 文件超过当前接收容量 (fix_input)
+[error] 15010: 解码通信中断 (new_session)
+capture stopped; the file is ready to save
+saved (1)
+

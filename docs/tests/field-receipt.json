@@ -1,0 +1,92 @@
+{
+  "runId": "20261018-teamexec-01",
+  "guide": "docs/tests/field-guide.md",
+  "generatedAt": "2026-10-18T20:52:17+08:00",
+  "status": "field-journeys-not-executed",
+  "environment": {
+    "cloudDesktop": null,
+    "citrixClientVersion": null,
+    "sharedWindowResolution": null,
+    "observedFps": null,
+    "networkQuality": null
+  },
+  "cases": [
+    {
+      "caseId": "E2E-21",
+      "fatId": "FAT-01",
+      "title": "real cloud desktop realtime",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    },
+    {
+      "caseId": "E2E-22",
+      "fatId": "FAT-02",
+      "title": "real cloud desktop recording",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    },
+    {
+      "caseId": "E2E-23",
+      "fatId": "FAT-03",
+      "title": "field daily display layout",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    },
+    {
+      "caseId": "E2E-24",
+      "fatId": "FAT-04",
+      "title": "field cancel/stop/restart",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    },
+    {
+      "caseId": "E2E-25",
+      "fatId": "FAT-05",
+      "title": "field save recovery",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    },
+    {
+      "caseId": "E2E-26",
+      "fatId": "FAT-06",
+      "title": "field measurements and receipt",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "originalSha256": null,
+      "receivedSha256": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": []
+    }
+  ],
+  "notes": [
+    "This receipt is generated empty by design (T5.2.a): every field journey keeps NOT_RUN until the user executes it at the real cloud desktop.",
+    "Functional, performance and field columns stay separate: thresholds are not frozen, so performance is only measured, never PASS.",
+    "Never delete old evidence; a FAIL keeps its reproduction material."
+  ]
+}

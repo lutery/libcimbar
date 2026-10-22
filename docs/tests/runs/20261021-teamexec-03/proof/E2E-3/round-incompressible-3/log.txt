@@ -1,0 +1,15 @@
+status=Saved
+artifact=sample-random-2.bin 65536 bytes
+log=capture stopped; the file is ready to save
+saved (1)
+capture stopped; the file is ready to save
+saved (2)
+capture stopped; the file is ready to save
+saved (3)
+capture stopped; the file is ready to save
+saved (4)
+capture stopped; the file is ready to save
+saved (5)
+capture stopped; the file is ready to save
+saved (6)
+

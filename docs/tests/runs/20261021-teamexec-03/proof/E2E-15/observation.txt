@@ -1,0 +1,7 @@
+E2E-15 observation (2026-10-21T08:15:13.856Z)
+real-entry-cancel: PASS 
+empty-import: PASS 
+text-import: PASS 
+corrupt-import: FAIL the log delta since this dispatch contains none of [13002|13003] (delta 68 chars)
+real-entry-open: FAIL the app never logged 'recording:' after the open dialog (helper exit 1); the helper's output is not evidence of success (delta ""); the attempt identity did not advance for the dialog-selected import
+no dialog-selected import reached a save

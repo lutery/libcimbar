@@ -1,0 +1,7 @@
+status=Saved
+artifact=sample-random-2.bin 65536 bytes
+log=recording: 1604x1002, 39.8s
+[error] 15010: 解码通信中断 (new_session)
+capture stopped; the file is ready to save
+saved (1)
+

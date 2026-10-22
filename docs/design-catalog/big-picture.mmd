@@ -1,0 +1,27 @@
+flowchart LR
+  classDef event fill:#ff9800,stroke:#e65100,color:#000
+  classDef command fill:#2196f3,stroke:#0d47a1,color:#fff
+  classDef actor fill:#ffeb3b,stroke:#f57f17,color:#000
+  classDef system fill:#9c27b0,stroke:#4a148c,color:#fff
+  classDef aggregate fill:#4caf50,stroke:#1b5e20,color:#fff
+  classDef policy fill:#00bcd4,stroke:#006064,color:#fff
+  classDef hotspot fill:#f44336,stroke:#b71c1c,color:#fff
+  Sender["发送操作者"]:::actor --> Send["运行原项目发送端"]:::command
+  Send --> Displayed["cimbar 动画已显示"]:::event
+  Displayed --> Source["云桌面客户端窗口或已录录像"]:::system
+  User["宿主机接收操作者"]:::actor --> Start["开始实时抓屏或导入录像"]:::command
+  Start --> Session["单文件接收会话"]:::aggregate
+  Source --> Selected["输入源已选定"]:::event
+  Session --> Selected
+  Selected --> Frames["画面帧已获取"]:::event
+  Frames --> Decode["使用原 WASM 解码与重建"]:::policy
+  Decode --> Ready["完整文件已重建"]:::event
+  Ready --> Artifact["会话内不可变文件产物"]:::aggregate
+  Artifact --> Save["点击保存文件"]:::command
+  Save --> Saved["写入已关闭并完成"]:::event
+  Saved --> Check["外部核对 SHA-256"]:::command
+  Check --> Matched["原文与接收文件一致已验证"]:::event
+  Validator["实施执行方随后交付用户现场验收"]:::actor --> Check
+  Selected -.-> H1["? H-CAP / H-VIDEO 实际画面与格式"]:::hotspot
+  Decode -.-> H2["? H-ASSET / H-MEM / H-PERF 装配与测量"]:::hotspot
+  Save -.-> H3["? H-SAVE 保存能力与权限"]:::hotspot

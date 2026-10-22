@@ -1,0 +1,12 @@
+{
+  "profileId": "local-baseline-v1",
+  "maxFramePixels": 4194304,
+  "maxArtifactBytes": 16777216,
+  "inflightLimit": 1,
+  "initTimeoutMs": 30000,
+  "frameTimeoutMs": 30000,
+  "videoReadyTimeoutMs": 15000,
+  "saveIoNoticeMs": 30000,
+  "cleanupNoticeMs": 5000,
+  "noDataNoticeMs": 5000
+}

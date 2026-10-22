@@ -1,0 +1,6 @@
+status=Saved
+artifact=sample-text-1.bin 4096 bytes
+log=[error] 12002: 未获得抓屏权限 (new_click)
+capture stopped; the file is ready to save
+saved (1)
+

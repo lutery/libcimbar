@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cimbar Desktop Receiver</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Cimbar Desktop Receiver</h1>
+    <span id="mode" class="pill">Mode B</span>
+  </header>
+
+  <section id="caps" class="banner" hidden></section>
+
+  <main>
+    <div class="controls">
+      <button id="btn-live" type="button">Share a window or screen</button>
+      <button id="btn-video" type="button">Import a recording</button>
+      <button id="btn-stop" type="button" disabled>Stop</button>
+      <button id="btn-save" type="button" disabled>Save file…</button>
+      <input id="file-input" type="file" accept="video/*,.mp4,.webm,.mkv" hidden>
+    </div>
+
+    <p id="status" class="status">Ready to receive</p>
+
+    <div id="artifact" class="artifact" hidden>
+      <span id="artifact-name"></span>
+      <span id="artifact-size" class="muted"></span>
+    </div>
+
+    <video id="preview" playsinline muted hidden></video>
+    <pre id="log" class="log" aria-live="polite"></pre>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

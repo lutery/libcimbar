@@ -1,0 +1,81 @@
+{
+  "runId": "20261018-teamexec-01",
+  "generatedAt": "2026-10-18T13:37:52+08:00",
+  "baselineCommit": "5c32681",
+  "host": {
+    "os": "Microsoft Windows 10.0.22631",
+    "pwshVersion": "7.6.7",
+    "machine": "DESKTOP-H8UIM1A",
+    "appliedDpi": 120,
+    "resolution": "2560x1440"
+  },
+  "tools": {
+    "git": {
+      "version": "git version 2.43.0.windows.1",
+      "path": "F:\\Program Files\\Git\\cmd\\git.exe"
+    },
+    "cmake": {
+      "version": "cmake version 3.24.1",
+      "path": "F:\\Program Files\\CMake\\bin\\cmake.exe"
+    },
+    "python": {
+      "version": "Python 3.11.7",
+      "path": "D:\\ProgramData\\anaconda3\\python.exe"
+    },
+    "node": {
+      "version": "v22.23.1",
+      "path": "E:\\Program Files\\nodejs\\node.exe"
+    },
+    "pwsh": {
+      "version": "7.6.7",
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe"
+    },
+    "ffmpeg": {
+      "version": null,
+      "path": null,
+      "status": "NOT_RUN"
+    },
+    "tar": {
+      "version": "bsdtar 3.7.7 - libarchive 3.7.7 zlib/1.2.5.f-ipp liblzma/5.4.3 bz2lib/1.0.8 libzstd/1.5.4 ",
+      "path": "C:\\WINDOWS\\system32\\tar.exe"
+    }
+  },
+  "wsl": {
+    "distro": "Ubuntu 22.04.3 LTS",
+    "opencv4": "4.5.4",
+    "glfw3": "3.3.6",
+    "gles3Header": "present",
+    "dockerPath": "/usr/bin/docker",
+    "emsdkImage": "emscripten/emsdk:5.0.0 2.26GB"
+  },
+  "browser": {
+    "edge": {
+      "version": "155.0.4283.45",
+      "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+    }
+  },
+  "originalSender": {
+    "entry": "web/index.html",
+    "present": true,
+    "mode": "B (68)"
+  },
+  "capabilities": {
+    "realtimeCapture": "NOT_RUN",
+    "videoImport": "NOT_RUN",
+    "savePicker": "NOT_RUN",
+    "externalSha256": "NOT_RUN",
+    "decoderWasm": "NOT_RUN"
+  },
+  "missing": [
+    {
+      "tool": "ffmpeg",
+      "why": "not on PATH; needed for real-recording production in batch E2E steps that require re-encoding",
+      "recovery": "add an existing local copy to PATH (e.g. E:\\Program Files\\ShareX\\ffmpeg.exe) or install a release build"
+    }
+  ],
+  "notes": [
+    "Tool versions are inventory facts, not capability PASS.",
+    "Capabilities stay NOT_RUN until a real run provides evidence.",
+    "WSL docker daemon proxy was retargeted to 127.0.0.1:10802 at owner direction (previous LAN address unreachable from WSL)."
+  ]
+}

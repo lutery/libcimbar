@@ -1,0 +1,6 @@
+status=Saved
+artifact=sample-random-2.bin 65536 bytes
+log=recording: 1604x1002, 14.9s
+capture stopped; the file is ready to save
+saved (1)
+

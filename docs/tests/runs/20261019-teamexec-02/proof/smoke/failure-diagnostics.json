@@ -1,0 +1,462 @@
+[
+  {
+    "at": 1792391498777,
+    "status": "Starting…",
+    "log": [
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": null
+  },
+  {
+    "at": 1792391501791,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391504798,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391507802,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391510803,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391513807,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391516823,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391519835,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391522840,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391525845,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391528854,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391531861,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391534872,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391537884,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391540887,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391543888,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391546893,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391549903,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391552916,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391555928,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391558938,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391561951,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391564956,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391567970,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391570978,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391573982,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391576990,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391579997,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  },
+  {
+    "at": 1792391583011,
+    "status": "Ready to receive",
+    "log": [
+      "[error] 12002: 未获得抓屏权限 (new_click)",
+      ""
+    ],
+    "hasStream": false,
+    "videoW": 0,
+    "videoH": 0,
+    "saveDisabled": true,
+    "gdmError": {
+      "name": "NotReadableError",
+      "message": "Could not start video source"
+    }
+  }
+]
