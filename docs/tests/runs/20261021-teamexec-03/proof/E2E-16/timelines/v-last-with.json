@@ -3,24 +3,298 @@
   "ready": true,
   "endReason": null,
   "endReasonDiagnostic": true,
-  "artifactAtLastFrame": true,
   "mediaEnded": null,
-  "lastUs": 8028000,
-  "artifactFrameId": 118,
-  "presented": 118,
-  "tStarUs": 8028118,
-  "tStarSec": 8.028118,
-  "formula": "tStarUs = lastUs + artifactFrameId (plan Domain H)",
+  "lastUs": 8869000,
+  "artifactFrameId": 105,
+  "presented": 105,
+  "tStarSec": 8.869,
+  "formula": "tStarSec = __videoTimeline.lastUs / 1e6 (round-5 dimensional fix; artifactFrameId is a frame identity, recorded separately)",
+  "withDurationSec": 9.3,
+  "withDurationSource": "open-precheck delta line",
+  "criteria": {
+    "tStarSec": 8.869,
+    "withDurationSec": 9.3,
+    "endSegmentBoundarySec": 7.300000000000001,
+    "endSegment": true,
+    "mediaEndedNull": true,
+    "saveHashEqual": true,
+    "saveTimingsComplete": true,
+    "withoutEofFired": true,
+    "withoutEofMediaTimeSec": 6.348,
+    "withoutDeclaredCutSec": 6.5,
+    "withoutArtifactAbsent": true,
+    "pairValidity": true,
+    "saveOk": true,
+    "withLegOk": true,
+    "withoutLegOk": true
+  },
+  "drainOrder": {
+    "productTailEvents": [
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 90,
+        "mediaTimeUs": 7897000,
+        "t": 1792649845131
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 91,
+        "mediaTimeUs": 7955000,
+        "t": 1792649845272
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 92,
+        "mediaTimeUs": 8019000,
+        "t": 1792649845411
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 93,
+        "mediaTimeUs": 8082000,
+        "t": 1792649845531
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 94,
+        "mediaTimeUs": 8144000,
+        "t": 1792649845688
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 95,
+        "mediaTimeUs": 8199000,
+        "t": 1792649845815
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 96,
+        "mediaTimeUs": 8257000,
+        "t": 1792649845928
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 97,
+        "mediaTimeUs": 8315000,
+        "t": 1792649846068
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 98,
+        "mediaTimeUs": 8425000,
+        "t": 1792649846260
+      },
+      {
+        "kind": "result",
+        "outcome": "data",
+        "frameId": 99,
+        "mediaTimeUs": 8481000,
+        "t": 1792649846395
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 100,
+        "mediaTimeUs": 8539000,
+        "t": 1792649846516
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 101,
+        "mediaTimeUs": 8596000,
+        "t": 1792649846643
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 102,
+        "mediaTimeUs": 8650000,
+        "t": 1792649846789
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 103,
+        "mediaTimeUs": 8758000,
+        "t": 1792649846986
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 104,
+        "mediaTimeUs": 8813000,
+        "t": 1792649847122
+      },
+      {
+        "kind": "result",
+        "outcome": "artifact",
+        "frameId": 105,
+        "mediaTimeUs": 8869000,
+        "t": 1792649847268
+      }
+    ],
+    "milestones": [
+      {
+        "event": "lastPresentedFrame",
+        "mediaTimeUs": 8869000
+      },
+      {
+        "event": "artifactFrame",
+        "frameId": 105
+      },
+      {
+        "event": "saveRequest",
+        "at": 1792649850404
+      },
+      {
+        "event": "writableOpen",
+        "at": 1792649855810
+      },
+      {
+        "event": "writeClose",
+        "at": 1792649855910
+      }
+    ]
+  },
   "videoTimeline": {
     "attemptId": "video-3",
-    "presented": 118,
-    "firstUs": 29000,
-    "lastUs": 8028000,
+    "presented": 105,
+    "firstUs": 31000,
+    "lastUs": 8869000,
     "endReason": null,
-    "artifactFrameId": 118,
-    "finalSample": null
+    "artifactFrameId": 105,
+    "finalSample": null,
+    "tailEvents": [
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 90,
+        "mediaTimeUs": 7897000,
+        "t": 1792649845131
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 91,
+        "mediaTimeUs": 7955000,
+        "t": 1792649845272
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 92,
+        "mediaTimeUs": 8019000,
+        "t": 1792649845411
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 93,
+        "mediaTimeUs": 8082000,
+        "t": 1792649845531
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 94,
+        "mediaTimeUs": 8144000,
+        "t": 1792649845688
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 95,
+        "mediaTimeUs": 8199000,
+        "t": 1792649845815
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 96,
+        "mediaTimeUs": 8257000,
+        "t": 1792649845928
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 97,
+        "mediaTimeUs": 8315000,
+        "t": 1792649846068
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 98,
+        "mediaTimeUs": 8425000,
+        "t": 1792649846260
+      },
+      {
+        "kind": "result",
+        "outcome": "data",
+        "frameId": 99,
+        "mediaTimeUs": 8481000,
+        "t": 1792649846395
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 100,
+        "mediaTimeUs": 8539000,
+        "t": 1792649846516
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 101,
+        "mediaTimeUs": 8596000,
+        "t": 1792649846643
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 102,
+        "mediaTimeUs": 8650000,
+        "t": 1792649846789
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 103,
+        "mediaTimeUs": 8758000,
+        "t": 1792649846986
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 104,
+        "mediaTimeUs": 8813000,
+        "t": 1792649847122
+      },
+      {
+        "kind": "result",
+        "outcome": "artifact",
+        "frameId": 105,
+        "mediaTimeUs": 8869000,
+        "t": 1792649847268
+      }
+    ]
   },
   "attemptId": "video-3",
+  "hashes": {
+    "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+    "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+    "equal": true
+  },
   "saveFailure": null,
-  "logDelta": "recording: 1604x1002, 39.8s\ncapture stopped; the file is ready to save\n"
+  "logDelta": "recording: 1604x1002, 9.3s\ncapture stopped; the file is ready to save\n"
 }

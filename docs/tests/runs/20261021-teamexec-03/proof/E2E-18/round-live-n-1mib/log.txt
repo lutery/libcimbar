@@ -1,5 +1,8 @@
 status=Saved
 artifact=ext-random-1mib.bin 1048576 bytes
+saveTimings={"initStartAt":1792650017421,"initReadyAt":1792650017894,"validInputStartAt":1792650024120,"reconstructionDoneAt":1792650041275,"saveRequestAt":1792650043827,"createWritableAccessedAt":1792650048682,"writableAt":1792650048688,"writeCloseAt":1792650048817,"lastSaveClickAt":1792650043826,"decoderInitMs":473,"sourceWaitMs":6226,"initMs":6699,"reconstructMs":17155,"totalToReadyMs":23854,"pickerWaitMs":4855,"writableOpenMs":6,"saveWaitMs":4861,"saveWriteMs":129,"saveMs":4990}
+saveTimingsComplete=true
+sha256 original=3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9 received=3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9 equal=true
 log=capture stopped; the file is ready to save
 saved (1)
 capture stopped; the file is ready to save
