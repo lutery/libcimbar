@@ -128,7 +128,10 @@ export function tagCarriedLegs(legs, reexecutedIds, attemptId) {
     if (!leg || reexecuted.has(leg.id)) continue;
     leg.carriedInAttempt = {
       into: attemptId,
-      origin: 'unknown',
+      // Round-13 S-1: at a second merge, a carried leg that already carries
+      // its execution origin keeps it as carriedInAttempt.origin; 'unknown'
+      // remains the fail-closed value only when no origin exists.
+      origin: leg.executedInAttempt || 'unknown',
       basis: 'present in the record before this attempt; excluded from the --legs re-execution set',
     };
     carried.push(leg);

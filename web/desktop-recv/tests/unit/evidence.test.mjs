@@ -802,5 +802,15 @@ test('UT-113 tagCarriedLegs tags only legs outside the re-execution set; empty s
   assert.deepEqual(tagCarriedLegs(full, [], 'att-full'), []);
   assert.equal(full[0].carriedInAttempt, undefined);
   assert.equal(full[1].carriedInAttempt, undefined);
+
+  // Round-13 S-1 (second-merge boundary): a carried leg that already carries
+  // its execution origin keeps it as carriedInAttempt.origin - never
+  // 'unknown', never overwritten - and executedInAttempt stays untouched.
+  const secondMerge = [{ id: 'k', executedInAttempt: 'att-first' }];
+  const carriedAgain = tagCarriedLegs(secondMerge, ['fresh'], 'att-second');
+  assert.equal(carriedAgain.length, 1);
+  assert.equal(carriedAgain[0].carriedInAttempt.origin, 'att-first');
+  assert.equal(carriedAgain[0].carriedInAttempt.into, 'att-second');
+  assert.equal(carriedAgain[0].executedInAttempt, 'att-first');
 });
 
