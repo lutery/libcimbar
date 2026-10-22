@@ -263,6 +263,19 @@ async function startLive() {
   }
 }
 
+// --- A-02 diagnostics: bounded per-import tail ledger -----------------------
+// The external journey runner orders the last settled submissions, the EOF
+// signal and the final sample from this array. It is diagnostics only: no
+// product path reads it back, and it never grows past TAIL_EVENTS_CAP. `t` is
+// the page clock in ms (Date.now()), consistent with this file's other records.
+const TAIL_EVENTS_CAP = 16;
+
+function recordTailEvent(timeline, event) {
+  if (!timeline || !Array.isArray(timeline.tailEvents)) return;
+  timeline.tailEvents.push(event);
+  if (timeline.tailEvents.length > TAIL_EVENTS_CAP) timeline.tailEvents.shift();
+}
+
 function startVideoImport(file) {
   if (!capabilities.videoImport) return;
   startClicks += 1;
@@ -277,6 +290,8 @@ function startVideoImport(file) {
     endReason: null,
     artifactFrameId: null,
     finalSample: null,
+    // A-02: bounded tail ledger; the oldest event shifts out at the cap.
+    tailEvents: [],
   };
   const result = coordinator.startVideo({
     requestId: attemptId,
@@ -298,12 +313,26 @@ function startVideoImport(file) {
               if (frameResult && frameResult.outcome === 'artifact') {
                 timeline.artifactFrameId = frameResult.frameId ?? null;
               }
+              // A-02: keep the settled submission's media time and outcome so
+              // the tail window can be ordered against eof and the drain.
+              recordTailEvent(timeline, {
+                kind: 'result',
+                outcome: frameResult && frameResult.outcome != null ? frameResult.outcome : null,
+                frameId: frameResult && frameResult.frameId != null ? frameResult.frameId : null,
+                mediaTimeUs: meta && Number.isFinite(meta.mediaTimeUs) ? meta.mediaTimeUs : null,
+                t: Date.now(),
+              });
             }).catch(() => { /* the run path surfaces the failure */ });
           }
           return submission;
         },
         onEnded: (reason) => {
           if (window.__videoTimeline) window.__videoTimeline.endReason = reason;
+          recordTailEvent(window.__videoTimeline, {
+            kind: 'ended',
+            reason: reason ?? null,
+            t: Date.now(),
+          });
           // EOF drain takes one real final capture (B-S04): the recorded
           // path must not skip the last usable frame like the live path.
           void coordinator.finishStream({
@@ -312,11 +341,19 @@ function startVideoImport(file) {
                 maxPixels: MAX_PIXELS,
                 onError: (code) => showError(code),
               });
+              const capturedAt = Date.now();
               if (window.__videoTimeline) {
                 window.__videoTimeline.finalSample = frame
-                  ? { captured: true, width: frame.width, height: frame.height, t: Date.now() }
-                  : { captured: false, t: Date.now() };
+                  ? { captured: true, width: frame.width, height: frame.height, t: capturedAt }
+                  : { captured: false, t: capturedAt };
               }
+              recordTailEvent(window.__videoTimeline, {
+                kind: 'finalSample',
+                captured: !!frame,
+                width: frame ? frame.width : null,
+                height: frame ? frame.height : null,
+                t: capturedAt,
+              });
               return frame;
             },
           }).catch((error) => logLine(String((error && error.message) || error), true));

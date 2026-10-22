@@ -1,13 +1,16 @@
 // Media fixture rig: records REAL videos of the real sender animation for
-// the recorded-input E2E journeys (V-GOOD / V-SHORT / V-LAST pairs).
-// V-LAST-without is a shorter real recording (never byte-truncated).
+// the recorded-input E2E journeys (V-GOOD / V-SHORT / the V-LAST pair).
+// Round-5 A-02: the V-LAST pair is ONE getDisplayMedia stream captured by TWO
+// MediaRecorders started in the same task (never byte-truncated); the shared
+// head/tail is checked by video-prefix-check.py.
 import { chromium } from 'playwright-core';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PAIR_CONSTRUCTION } from './pair-evidence.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
@@ -26,16 +29,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // CLI params (round-2): --only last records just the V-LAST pair against a
 // fresh payload; --only full (default) records the whole rig as before.
-// Payload size and the pair's durations are parametrized so the V-LAST pair
-// can be re-tuned without touching V-GOOD-C/N or V-SHORT.
+// Payload size and the pair's DECLARED stop points are parametrized so the
+// V-LAST pair can be re-tuned without touching V-GOOD-C/N or V-SHORT.
+//
+// Round-5 A-02 defaults: --with-seconds 9.5, --cut-seconds 6.5. They are
+// probe-tuned from the run-03 measurement T* = 8.028 s (the media time at
+// which the 128 KiB incompressible payload completed): the with clip must
+// still complete inside its last END_SEGMENT_TOLERANCE (2.0 s), i.e.
+// 8.028 >= 9.5 - 2.0, and the without clip must fall ~1.5 s short of T*
+// (6.5 < 8.028). If E2E-16 fails the end-segment criterion, re-record with
+// withMs = T* + 1.5 s and cut = T* - 1.5 s (the runner prints the measured
+// values; at most two calibrations).
 const cliArgs = new Map();
 for (let i = 2; i < process.argv.length; i += 2) {
   cliArgs.set(String(process.argv[i]).replace(/^--/, ''), process.argv[i + 1]);
 }
 const ONLY = cliArgs.get('only') || 'full';
 const PAYLOAD_BYTES = Number(cliArgs.get('payload-bytes') || '131072');
-const WITH_SECONDS = Number(cliArgs.get('with-seconds') || '40');
-const WITHOUT_SECONDS = Number(cliArgs.get('without-seconds') || '6');
+const WITH_SECONDS = Number(cliArgs.get('with-seconds') || '9.5');
+// --without-seconds is the pre-round-5 name of the same declared stop point;
+// it stays accepted so an old reproduction command still records a pair.
+const CUT_SECONDS = Number(cliArgs.get('cut-seconds') || cliArgs.get('without-seconds') || '6.5');
+const WITH_MS = Math.round(WITH_SECONDS * 1000);
+const CUT_MS = Math.round(CUT_SECONDS * 1000);
 
 // A normally launched Edge (CDP-attached) is required: Playwright-launched
 // Edge instances cannot start cross-window capture on this host.
@@ -210,17 +226,51 @@ async function record(page, ms, pid) {
   return { ok: true, bytes: result.bytes, buffer: Buffer.concat(parts.map((part) => Buffer.from(part, 'base64'))) };
 }
 
-// Round-3 A-R3: the V-LAST pair must be an equivalent-traceable construction.
-// Both clips are recorded from a RELOADED sender that re-loads the same
-// payload, so both start at the sender's frame 0 and share the same encoded
-// trace prefix; the only difference between them is where the recording
-// stops. True media durations are measured at import time by the receiver
-// (E2E-16 reads the video element's ended duration), so the manifest records
-// the requested seconds and the wall intervals instead of inventing one.
+// Round-5 A-02: the V-LAST pair is a SAME-STREAM construction. One
+// getDisplayMedia stream feeds two MediaRecorders started in the same task
+// (recorder.html __startPairRecording); the without clip stops at the
+// declared cut and the with clip at its declared duration. The pair is never
+// byte-truncated, and the shared head/tail is verified on the produced files
+// by video-prefix-check.py, whose JSON is embedded below. True media
+// durations and the completion media time T* are measured at import time by
+// the receiver (E2E-16), never invented here.
 const manifestClips = [];
+// Filled by the pair path; written into the manifest by writeMediaManifest.
+let pairInfo = null;
+let prefixCheck = null;
 
 function sha256OfFile(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+// Run the cv2 checker over the produced pair. A failing check never aborts
+// the rig: the manifest must carry the honest result so E2E-16's pair gate
+// can reject it with the checker's own numbers.
+function runPrefixCheck(withPath, withoutPath, cutMs) {
+  const jsonPath = join(MEDIA, 'prefix-check.json');
+  if (existsSync(jsonPath)) writeFileSync(jsonPath, '');
+  const check = spawnSync('python', [
+    join(HERE, 'video-prefix-check.py'),
+    '--with', withPath,
+    '--without', withoutPath,
+    '--cut-ms', String(cutMs),
+    '--json', jsonPath,
+  ], { encoding: 'utf8' });
+  if (check.stdout) process.stdout.write(`[prefix-check] ${check.stdout}`);
+  if (check.stderr) process.stdout.write(`[prefix-check] ${check.stderr}`);
+  if (existsSync(jsonPath) && statSync(jsonPath).size > 0) {
+    const parsed = JSON.parse(readFileSync(jsonPath, 'utf8'));
+    if (parsed.verdict !== 'PASS') {
+      console.warn('[prefix-check] the pair did NOT pass the shared head/tail check; '
+        + 'E2E-16 will reject it at the pair-integrity gate');
+    }
+    return parsed;
+  }
+  return {
+    verdict: 'FAIL',
+    error: `video-prefix-check.py produced no JSON (exit ${String(check.status)})`,
+    stderr: String(check.stderr || '').slice(-400),
+  };
 }
 
 function writeMediaManifest(payloadInfo) {
@@ -233,18 +283,23 @@ function writeMediaManifest(payloadInfo) {
     run: RUN,
     generatedAt: new Date().toISOString(),
     commandLine: process.argv.join(' '),
-    construction: 'V-LAST-with and V-LAST-without are recorded from a RELOADED sender that '
-      + 're-loads the same payload before each clip, so both clips start at the sender frame 0 '
-      + 'and share the same encoded trace prefix (equivalent-traceable pair; the only difference '
-      + 'is where the recording stops)',
-    durations: 'requestedSeconds and wallMs are rig-side; the true media duration is measured '
-      + 'at import time by the receiver (E2E-16 reads the video element ended duration)',
+    construction: PAIR_CONSTRUCTION,
+    pair: pairInfo,
+    prefixCheck,
+    durations: 'requestedMs/declaredCutMs/startEpochMs/wallStopAt are rig-side declarations; the true media '
+      + 'duration and the completion media time T* are measured at import time by the receiver (E2E-16 reads the '
+      + 'video element ended event and __videoTimeline.lastUs)',
     payload: payloadInfo,
     clips,
   };
+  const text = `${JSON.stringify(manifest, null, 2)}\n`;
   const path = join(MEDIA, 'manifest.json');
-  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(path, text);
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const stamped = join(MEDIA, `manifest-${stamp}.json`);
+  writeFileSync(stamped, text);
   console.log(`manifest: ${path}`);
+  console.log(`manifest (stamped copy): ${stamped}`);
 }
 
 // Record one clip and keep its wall timings for the manifest.
@@ -258,6 +313,89 @@ async function recordTimed(page, ms, pid) {
     stoppedAt: new Date().toISOString(),
     wallMs: Date.now() - startedMs,
     requestedMs: ms,
+  };
+}
+
+// Record the same-stream pair: ONE getDisplayMedia stream, TWO MediaRecorders
+// started in the same task (recorder.html __startPairRecording). Drains both
+// chunk sets through window.__pairState exactly like the single-clip path.
+async function recordPair(page, { withMs, withoutCutMs }, pid) {
+  await wakeWindow(pid);
+  const helperArgs = ['-Action', 'share', '-Tab', 'window', '-SourceTitle', SENDER_TITLE,
+    '-TimeoutSec', '30'];
+  if (pid > 0) helperArgs.push('-ProcessId', String(pid));
+  const helperPromise = new Promise((resolveHelper) => {
+    const helper = spawn('pwsh', ['-NoProfile', '-File', join(HERE, 'native-dialog.ps1'), ...helperArgs],
+      { stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '';
+    helper.stdout.on('data', (c) => { out += c; process.stdout.write(`[helper] ${c}`); });
+    helper.stderr.on('data', (c) => { out += c; process.stdout.write(`[helper] ${c}`); });
+    helper.on('exit', (code) => resolveHelper({ code, out }));
+  });
+  const evaluatePromise = page.evaluate(
+    (config) => window.__startPairRecording(config),
+    { withMs, withoutCutMs }
+  );
+  const hardBoundMs = 120000 + withMs + 180000;
+  const settled = await Promise.race([
+    Promise.all([helperPromise, evaluatePromise]).catch((error) => ({ __error: error })),
+    sleep(hardBoundMs).then(() => null),
+  ]);
+  if (!settled) {
+    throw new Error(`pair recording exceeded its hard bound (${hardBoundMs} ms): the capture picker never resolved`);
+  }
+  if (settled.__error) throw settled.__error;
+  const [helper, result] = settled;
+  if (helper.code !== 0) throw new Error(`recording picker helper failed: ${helper.out}`);
+  if (!result.ok) throw new Error(`pair recording failed: ${result.name}: ${result.message}`);
+
+  const take = () => page.evaluate(() => {
+    const state = window.__pairState;
+    const side = (value) => ({
+      chunk: value.chunks.shift() || null,
+      done: value.done,
+      bytes: value.bytes,
+      error: value.error || null,
+      stopAt: value.stopAt || null,
+    });
+    return { meta: state.meta, with: side(state.with), without: side(state.without) };
+  });
+  const withParts = [];
+  const withoutParts = [];
+  let last = null;
+  for (;;) {
+    last = await take();
+    if (last.with.chunk) withParts.push(last.with.chunk);
+    if (last.without.chunk) withoutParts.push(last.without.chunk);
+    if (last.with.error || last.without.error) {
+      throw new Error(`pair recording failed: with=${String(last.with.error)} without=${String(last.without.error)}`);
+    }
+    if (last.with.done && !last.with.chunk && last.without.done && !last.without.chunk) break;
+    await sleep(50);
+  }
+  // Decode each chunk SEPARATELY (each is independently btoa()'d and padded).
+  const withBuffer = Buffer.concat(withParts.map((part) => Buffer.from(part, 'base64')));
+  const withoutBuffer = Buffer.concat(withoutParts.map((part) => Buffer.from(part, 'base64')));
+  return {
+    withBuffer,
+    withoutBuffer,
+    meta: last.meta,
+    withStopAt: last.with.stopAt,
+    withoutStopAt: last.without.stopAt,
+  };
+}
+
+async function recordPairTimed(page, { withMs, withoutCutMs }, pid) {
+  const startedAt = new Date().toISOString();
+  const startedMs = Date.now();
+  const result = await recordPair(page, { withMs, withoutCutMs }, pid);
+  return {
+    ...result,
+    startedAt,
+    stoppedAt: new Date().toISOString(),
+    wallMs: Date.now() - startedMs,
+    requestedWithMs: withMs,
+    requestedCutMs: withoutCutMs,
   };
 }
 
@@ -329,25 +467,46 @@ async function main() {
       bytes: statSync(extFile).size,
       sha256: sha256OfFile(extFile),
     };
-    // Reload before EACH V-LAST clip: both share the sender's frame-0 start.
+    // Round-5 A-02: ONE continuous sender playback, ONE getDisplayMedia
+    // stream, TWO MediaRecorders started in the same task. The without clip
+    // stops at the declared cut, the with clip at its declared duration -
+    // the pair shares its encoded head/tail by construction, and the cv2
+    // checker proves it on the produced files.
     await reloadSender(senderPage, extFile);
-    const lastWith = await recordTimed(recorderPage, WITH_SECONDS * 1000, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-LAST-with.webm'), lastWith.buffer);
+    const pair = await recordPairTimed(recorderPage,
+      { withMs: WITH_MS, withoutCutMs: CUT_MS }, recorderBrowser.pid);
+    writeFileSync(join(MEDIA, 'V-LAST-with.webm'), pair.withBuffer);
+    writeFileSync(join(MEDIA, 'V-LAST-without.webm'), pair.withoutBuffer);
+    const isoFromMs = (ms) => (Number.isFinite(ms) ? new Date(ms).toISOString() : null);
+    pairInfo = {
+      construction: 'same-stream-two-recorders',
+      startEpochMs: pair.meta.startEpochMs,
+      declaredCutMs: CUT_MS,
+      withMs: WITH_MS,
+      mimeType: pair.meta.mimeType,
+      videoBitsPerSecond: pair.meta.videoBitsPerSecond,
+      startedInSameTask: pair.meta.startedInSameTask === true,
+      withFile: 'V-LAST-with.webm',
+      withoutFile: 'V-LAST-without.webm',
+      withStopAtMs: pair.withStopAt,
+      withoutStopAtMs: pair.withoutStopAt,
+    };
     manifestClips.push({
-      file: 'V-LAST-with.webm', payload: payloadName,
-      requestedMs: lastWith.requestedMs, wallMs: lastWith.wallMs,
-      startedAt: lastWith.startedAt, stoppedAt: lastWith.stoppedAt,
+      file: 'V-LAST-with.webm', role: 'with', payload: payloadName,
+      requestedMs: WITH_MS, declaredCutMs: CUT_MS, startEpochMs: pair.meta.startEpochMs,
+      wallStopAt: isoFromMs(pair.withStopAt), wallStopAtMs: pair.withStopAt,
+      wallMs: pair.wallMs, startedAt: pair.startedAt, stoppedAt: pair.stoppedAt,
     });
-    console.log(`V-LAST-with recorded: ${lastWith.bytes} bytes`);
-    await reloadSender(senderPage, extFile);
-    const lastWithout = await recordTimed(recorderPage, WITHOUT_SECONDS * 1000, recorderBrowser.pid);
-    writeFileSync(join(MEDIA, 'V-LAST-without.webm'), lastWithout.buffer);
     manifestClips.push({
-      file: 'V-LAST-without.webm', payload: payloadName,
-      requestedMs: lastWithout.requestedMs, wallMs: lastWithout.wallMs,
-      startedAt: lastWithout.startedAt, stoppedAt: lastWithout.stoppedAt,
+      file: 'V-LAST-without.webm', role: 'without', payload: payloadName,
+      requestedMs: CUT_MS, declaredCutMs: CUT_MS, startEpochMs: pair.meta.startEpochMs,
+      wallStopAt: isoFromMs(pair.withoutStopAt), wallStopAtMs: pair.withoutStopAt,
+      wallMs: pair.wallMs, startedAt: pair.startedAt, stoppedAt: pair.stoppedAt,
     });
-    console.log(`V-LAST-without recorded: ${lastWithout.bytes} bytes`);
+    console.log(`V-LAST-with recorded: ${pair.withBuffer.length} bytes (declared ${WITH_MS} ms)`);
+    console.log(`V-LAST-without recorded: ${pair.withoutBuffer.length} bytes (declared cut ${CUT_MS} ms)`);
+    prefixCheck = runPrefixCheck(join(MEDIA, 'V-LAST-with.webm'),
+      join(MEDIA, 'V-LAST-without.webm'), CUT_MS);
     // --only last stops here: the pair and its manifest are complete, and the
     // byte-identical clips other journeys depend on are never touched.
     if (ONLY !== 'full') writeMediaManifest(payloadInfo);

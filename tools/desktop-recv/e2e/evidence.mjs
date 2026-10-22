@@ -62,8 +62,13 @@ function attachAttemptFields(record, { attemptId, measurement } = {}) {
 }
 
 // A file roundtrip record: PASS with real artifacts and external hashes.
+// Round-5: extraProofRefs appends more on-disk proof references AFTER the
+// canonical pair (proofRefs[0] stays the original, [1] the received file),
+// so a journey can attach the manifest/prefix/timeline proof without
+// breaking the artifact convention the gate re-hashes.
 export function roundtripRecord({
-  caseId, originalPath, receivedPath, runDir, notes = '', extra = {}, attemptId, measurement,
+  caseId, originalPath, receivedPath, runDir, notes = '', extra = {},
+  attemptId, measurement, extraProofRefs = [],
 }) {
   const original = copyArtifact(runDir, caseId, originalPath, 'original.bin');
   const received = copyArtifact(runDir, caseId, receivedPath, 'received.bin');
@@ -76,7 +81,7 @@ export function roundtripRecord({
     executedBy: 'executor',
     referenceSha256: original.sha256,
     receivedSha256: received.sha256,
-    proofRefs: [original.rel, received.rel],
+    proofRefs: [original.rel, received.rel, ...extraProofRefs],
     notes: notes || (equal
       ? `external SHA-256 equal (${original.bytes} bytes)`
       : `external SHA-256 differ (${original.sha256} vs ${received.sha256})`),

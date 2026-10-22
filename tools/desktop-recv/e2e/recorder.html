@@ -60,6 +60,121 @@ window.__startRecording = (ms) => new Promise((resolve) => {
     resolve({ ok: false, name: error.name, message: error.message });
   });
 });
+
+// Round-5 A-02: the V-LAST pair is recorded from ONE getDisplayMedia stream
+// by TWO MediaRecorders that are constructed and start()ed in the SAME task.
+// Both encoders therefore see the same frames from t=0, and the only
+// difference between the clips is the declared stop point:
+//   without stops at withoutCutMs (the declared cut),
+//   with    stops at withMs (its declared duration).
+// Neither clip is ever byte-truncated; video-prefix-check.py verifies the
+// shared head/tail on the produced files afterwards. The state is exposed as
+// window.__pairState = { with: {...}, without: {...}, meta: {...} } and the
+// chunks drain through it exactly like __recorderState (bounded base64).
+window.__pairState = null;
+window.__startPairRecording = ({ withMs, withoutCutMs }) => new Promise((resolve) => {
+  const out = document.getElementById('out');
+  const meta = {
+    startEpochMs: null,
+    declaredCutMs: withoutCutMs,
+    withStopMs: withMs,
+    mimeType: '',
+    videoBitsPerSecond: 16_000_000,
+    startedInSameTask: false,
+    error: null,
+  };
+  const side = () => ({ chunks: [], bytes: 0, done: false, error: null, stopAt: null });
+  window.__pairState = { with: side(), without: side(), meta };
+  const pickerTimer = setTimeout(() => {
+    meta.error = 'the capture picker never appeared within 90 s';
+    resolve({ ok: false, name: 'TimeoutError', message: meta.error });
+  }, 90000);
+  navigator.mediaDevices.getDisplayMedia({ video: { frameRate: window.__FPS || 30 } }).then((stream) => {
+    clearTimeout(pickerTimer);
+    const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    const mimeType = types.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    meta.mimeType = mimeType;
+    meta.startEpochMs = Date.now();
+    const recorders = {
+      with: new MediaRecorder(stream, { videoBitsPerSecond: meta.videoBitsPerSecond, mimeType }),
+      without: new MediaRecorder(stream, { videoBitsPerSecond: meta.videoBitsPerSecond, mimeType }),
+    };
+    const blobs = { with: [], without: [] };
+    const finished = { with: false, without: false };
+    let remaining = 2;
+    const finish = async (key) => {
+      if (finished[key]) return;
+      finished[key] = true;
+      const state = window.__pairState[key];
+      try {
+        const blob = new Blob(blobs[key], { type: mimeType });
+        const CH = 4 * 1024 * 1024;
+        for (let off = 0; off < blob.size; off += CH) {
+          const buf = await blob.slice(off, Math.min(off + CH, blob.size)).arrayBuffer();
+          let binary = '';
+          const bytes = new Uint8Array(buf);
+          for (let i = 0; i < bytes.length; i += 0x8000) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          }
+          state.chunks.push(btoa(binary));
+        }
+        state.bytes = blob.size;
+      } catch (error) {
+        state.error = error.message;
+      }
+      state.done = true;
+      remaining -= 1;
+      if (remaining === 0) {
+        stream.getTracks().forEach((t) => t.stop());
+        out.textContent = 'pair recorded ' + window.__pairState.with.bytes + ' / '
+          + window.__pairState.without.bytes + ' bytes';
+        resolve({
+          ok: true,
+          withBytes: window.__pairState.with.bytes,
+          withoutBytes: window.__pairState.without.bytes,
+          meta,
+        });
+      }
+    };
+    for (const key of ['with', 'without']) {
+      const recorder = recorders[key];
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size) blobs[key].push(event.data);
+      };
+      recorder.onstop = () => { void finish(key); };
+      recorder.onerror = (event) => {
+        const state = window.__pairState[key];
+        state.error = (event.error && event.error.message) || 'MediaRecorder error';
+        if (!state.done) { void finish(key); }
+      };
+    }
+    // Started in the same task, back to back: the encoders share the stream's
+    // frame sequence from this moment on.
+    recorders.with.start(500);
+    recorders.without.start(500);
+    meta.startedInSameTask = true;
+    setTimeout(() => {
+      if (recorders.without.state !== 'inactive') {
+        window.__pairState.without.stopAt = Date.now();
+        recorders.without.stop();
+      }
+    }, withoutCutMs);
+    setTimeout(() => {
+      if (recorders.with.state !== 'inactive') {
+        window.__pairState.with.stopAt = Date.now();
+        recorders.with.stop();
+      }
+    }, withMs);
+  }).catch((error) => {
+    clearTimeout(pickerTimer);
+    meta.error = error.message;
+    if (window.__pairState) {
+      window.__pairState.with.error = error.message;
+      window.__pairState.without.error = error.message;
+    }
+    resolve({ ok: false, name: error.name, message: error.message });
+  });
+});
 </script>
 </body>
 </html>

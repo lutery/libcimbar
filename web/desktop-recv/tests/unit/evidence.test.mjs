@@ -7,8 +7,15 @@ import { join } from 'node:path';
 
 import { validateCaseRecord, validateRunGate } from '../../src/evidence.js';
 import {
-  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
+  evaluateBudgetLeg, evaluateLastFramePair, evaluateRecoveryLeg, evaluateVideoFailureLeg,
+  expectedCodesForBadInput, rejectionPointForCode,
 } from '../../../../tools/desktop-recv/e2e/leg-verdict.mjs';
+import {
+  assertSaveTimingsComplete, computeLegTimings,
+} from '../../../../tools/desktop-recv/e2e/leg-timings.mjs';
+import {
+  PAIR_CONSTRUCTION, evaluatePairConstruction,
+} from '../../../../tools/desktop-recv/e2e/pair-evidence.mjs';
 import { lifecycleRecord, roundtripRecord } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
 const HASH = 'a'.repeat(64);
@@ -508,3 +515,208 @@ test('UT-102 record writers pass through attemptId and the measurement block', (
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// --- Round-5 A-01: per-exception recovery legs (evaluateRecoveryLeg) --------
+
+// Given the happy path of one recovery leg
+// When the verdict evaluates it
+// Then it passes with every criterion explicitly true
+test('UT-104 a real recovery leg passes on explicit criteria; a rig-limited helper is not a pass', () => {
+  const good = evaluateRecoveryLeg({
+    helperExit: 0, openIngested: true, attemptIdAdvanced: true, readyReached: true,
+    saveTimingsComplete: true, hashEqual: true,
+  });
+  assert.equal(good.ok, true, good.failures.join('; '));
+  assert.equal(good.checks.hashEqual, true);
+
+  // The dialog helper could not drive the real entry AND the app never
+  // ingested anything: a rig limitation (NOT_RUN-shaped), never a pass.
+  const rig = evaluateRecoveryLeg({
+    helperExit: 1, openIngested: false, attemptIdAdvanced: false, readyReached: false,
+    saveTimingsComplete: false, hashEqual: false,
+  });
+  assert.equal(rig.ok, false);
+  assert.equal(rig.rigLimited, true);
+  assert.ok(rig.failures.some((f) => f.includes('exit 1')));
+});
+
+// Given a fresh dispatch that recovered but with a wrong save (the app-side
+// evidence is real except the timings/hash), together with the OLD-LOG
+// rejection world (no fresh ingest at all) and undefined hooks
+// When evaluating
+// Then each defect is a named failure - never a silent pass
+test('UT-105 recovery defects fail with named failures (timings/hash/old-log)', () => {
+  const badSave = evaluateRecoveryLeg({
+    helperExit: 0, openIngested: true, attemptIdAdvanced: true, readyReached: true,
+    saveTimingsComplete: false, hashEqual: false,
+  });
+  assert.equal(badSave.ok, false);
+  assert.ok(badSave.failures.some((f) => f.includes('missing or unordered save timings')));
+  assert.ok(badSave.failures.some((f) => f.includes('external SHA-256 of the restored file')));
+
+  const oldLog = evaluateRecoveryLeg({
+    helperExit: 0, openIngested: false, attemptIdAdvanced: true, readyReached: true,
+    saveTimingsComplete: true, hashEqual: true,
+  });
+  assert.equal(oldLog.ok, false);
+  assert.ok(oldLog.failures.some((f) => f.includes("never logged 'recording:'")));
+  assert.equal(oldLog.rigLimited, false);
+});
+
+// --- Round-5 A-02: pair-integrity metadata (evaluatePairConstruction) -------
+
+function pairManifestBase() {
+  return {
+    construction: PAIR_CONSTRUCTION,
+    pair: {
+      startedInSameTask: true,
+      startEpochMs: 1729500000000,
+      declaredCutMs: 6500,
+      withMs: 9500,
+      mimeType: 'video/webm;codecs=vp9',
+      videoBitsPerSecond: 16000000,
+      withFile: 'with.webm', withoutFile: 'without.webm',
+    },
+    payload: { file: 'payload.bin', sha256: HASH },
+    clips: [
+      { file: 'with.webm', role: 'with', sha256: HASH },
+      { file: 'without.webm', role: 'without', sha256: HASH },
+    ],
+  };
+}
+
+const passingPrefixCheck = {
+  verdict: 'PASS',
+  head: { framesUsed: 30, bestOffset: 0, bestMeanAbsDiff: 1.2, pass: true },
+  tail: { mapping: 'cut-time-pts', windowFrames: 30,
+    frames: [{ withoutIndex: 12, matchedWithIndex: 12, meanAbsDiff: 1.4, found: true }], pass: true },
+};
+
+const passingDiskShas = (payloadSha) => ({
+  'with.webm': HASH,
+  'without.webm': HASH,
+  'payload.bin': payloadSha ?? HASH,
+});
+
+test('UT-106 a consistent same-stream pair manifest passes', () => {
+  const verdict = evaluatePairConstruction({
+    manifest: pairManifestBase(),
+    prefixCheck: passingPrefixCheck,
+    diskShas: passingDiskShas(HASH),
+  });
+  assert.equal(verdict.ok, true, verdict.failures.join('; '));
+  assert.equal(verdict.checks.declaredCutInsideWith, true);
+  assert.equal(verdict.checks.prefixVerdict, true);
+});
+
+// Given a manifest missing its declared cut
+// When validating the pair construction
+// Then it is refused with a named failure (same for shas, roles, checker)
+test('UT-107 pair-construction metadata negatives each name their defect', () => {
+  const mk = (patch, diskShas, prefixCheck) => evaluatePairConstruction({
+    manifest: { ...pairManifestBase(), ...patch },
+    prefixCheck,
+    diskShas,
+  });
+
+  const noCut = mk({ pair: { withMs: 9500 } }, passingDiskShas(HASH), passingPrefixCheck);
+  assert.equal(noCut.ok, false);
+  assert.ok(noCut.failures.some((f) => f.includes('0 < cut < withMs')));
+
+  const prefixFail = mk({}, passingDiskShas(HASH), {
+    verdict: 'FAIL',
+    head: { pass: false, bestMeanAbsDiff: 40, threshold: 10 },
+    tail: { pass: false },
+  });
+  assert.equal(prefixFail.ok, false);
+  assert.ok(prefixFail.failures.some((f) => f.includes('head.pass is not true')));
+  assert.ok(prefixFail.failures.some((f) => f.includes('tail.pass is not true')));
+
+  const payloadMismatch = mk({}, { 'with.webm': HASH, 'without.webm': HASH, 'payload.bin': HASH2 },
+    passingPrefixCheck);
+  assert.equal(payloadMismatch.ok, false);
+  assert.ok(payloadMismatch.failures.some((f) => f.includes('payload.bin: manifest sha256')));
+
+  const noRole = mk({ clips: [{ file: 'with.webm', sha256: HASH }] }, passingDiskShas(HASH),
+    passingPrefixCheck);
+  assert.equal(noRole.ok, false);
+  assert.ok(noRole.failures.some((f) => f.includes("exactly one clip with role 'with'")));
+});
+
+// --- Round-5 A-03/B-S1: leg timing decomposition (leg-timings.mjs) ----------
+
+test('UT-108 the save marks decompose into the promised intervals', () => {
+  const state = {
+    journey: {
+      initStartAt: 1000, initReadyAt: 1200, receivingAt: 1500, readyAt: 3000,
+      saveRequestAt: 3100, writeCloseAt: 4000,
+    },
+    writableAt: 3300,
+    createWritableAccessedAt: 3200,
+    lastSaveClickAt: 3050,
+  };
+  const t = computeLegTimings(state);
+  assert.equal(t.decoderInitMs, 200);
+  assert.equal(t.sourceWaitMs, 300);
+  assert.equal(t.initMs, 500);
+  assert.equal(t.reconstructMs, 1500);
+  assert.equal(t.totalToReadyMs, 2000);
+  assert.equal(t.pickerWaitMs, 100);
+  assert.equal(t.writableOpenMs, 100);
+  assert.equal(t.saveWaitMs, 200);
+  assert.equal(t.saveWriteMs, 700);
+  assert.equal(t.saveMs, 900);
+  const complete = assertSaveTimingsComplete(t);
+  assert.equal(complete.ok, true, complete.failures.join('; '));
+});
+
+test('UT-109 missing save marks yield null intervals and a failed assertion; out-of-order marks fail', () => {
+  const empty = computeLegTimings({});
+  assert.equal(empty.initMs, null);
+  assert.equal(empty.saveMs, null);
+  assert.equal(empty.pickerWaitMs, null);
+  const failed = assertSaveTimingsComplete(empty);
+  assert.equal(failed.ok, false);
+  assert.ok(failed.failures.some((f) => f.includes('saveRequestAt is missing')));
+  assert.ok(failed.failures.some((f) => f.includes('writableAt is missing')));
+  assert.ok(failed.failures.some((f) => f.includes('writeCloseAt is missing')));
+
+  const outOfOrder = assertSaveTimingsComplete(computeLegTimings({
+    journey: { initStartAt: 1000, receivingAt: 1100, readyAt: 1200,
+      saveRequestAt: 5000, writeCloseAt: 3900 },
+    writableAt: 4100,
+  }));
+  assert.equal(outOfOrder.ok, false);
+  assert.ok(outOfOrder.failures.some((f) => f.includes('saveRequestAt (5000) is after writableAt (4100)')));
+});
+
+// --- Round-5 A-02: the end-segment boundary (evaluateLastFramePair) ---------
+
+test('UT-110 the end-segment boundary is D-2.0 exactly: boundary passes, D-2.01 fails', () => {
+  const good = evaluateLastFramePair({
+    withTStarSec: 7.5, withDurationSec: 9.5, withMediaEnded: null,
+    withSaveHashEqual: true, withSaveTimingsComplete: true,
+    withoutEofFired: true, withoutEofMediaTimeSec: 6.5, withoutDeclaredCutSec: 6.5,
+    withoutArtifactAbsent: true, withoutDurationSec: 6.5,
+  });
+  assert.equal(good.ok, true, good.failures.join('; '));
+  assert.equal(good.checks.withLegOk, true);
+  assert.equal(good.checks.withoutLegOk, true);
+  assert.equal(good.checks.pairValidity, true);
+
+  // 7.49 = 9.5 - 2.01: one hundredth before the boundary fails, and the
+  // failure carries the RE-RECORD guidance with the measured T*.
+  const bad = evaluateLastFramePair({
+    withTStarSec: 7.49, withDurationSec: 9.5, withMediaEnded: null,
+    withSaveHashEqual: true, withSaveTimingsComplete: true,
+    withoutEofFired: true, withoutEofMediaTimeSec: 6.5, withoutDeclaredCutSec: 6.5,
+    withoutArtifactAbsent: true, withoutDurationSec: 6.5,
+  });
+  assert.equal(bad.ok, false);
+  assert.ok(bad.failures.some((f) => f.includes('did not complete in the end segment')));
+  assert.equal(bad.rerecord.measuredTStarSec, 7.49);
+  assert.equal(bad.rerecord.suggestedWithSeconds, 9);
+  assert.equal(bad.rerecord.suggestedCutSeconds, 6);
+  assert.equal(bad.rerecord.suggestedCutSeconds, 6);
+});
+

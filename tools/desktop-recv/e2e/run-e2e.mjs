@@ -22,9 +22,12 @@ import {
   copyArtifact, readResults, sha256File, upsertResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
-  evaluateBudgetLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
+  END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
+  evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
   RESTARTABLE_TERMINALS,
 } from './leg-verdict.mjs';
+import { assertSaveTimingsComplete, computeLegTimings as legTimings } from './leg-timings.mjs';
+import { evaluatePairConstruction } from './pair-evidence.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
@@ -118,6 +121,13 @@ async function pageState(page) {
       writableCreated: window.__writableCreated === true,
       writeSucceeded: window.__writeSucceeded === true,
       createWritableAccessed: window.__createWritableAccessed === true,
+      // Round-5 A-03/B-S1: the injected save marks already existed but were
+      // never exposed. They split the save wait (picker + writable open) from
+      // the actual write (see leg-timings.mjs).
+      createWritableAccessedAt: Number.isFinite(window.__createWritableAccessedAt)
+        ? window.__createWritableAccessedAt : null,
+      writableAt: Number.isFinite(window.__writableAt) ? window.__writableAt : null,
+      lastSaveClickAt: Number.isFinite(window.__lastSaveClickAt) ? window.__lastSaveClickAt : null,
       saveClicks: window.__saveClicks || 0,
       lastCaughtError: window.__lastCaughtError || null,
       stats: (window.__lastStats) || null,
@@ -240,33 +250,11 @@ async function waitVideoEntryReady(page, timeoutMs = 20000) {
   }, null, { timeout: timeoutMs });
 }
 
-// Wall-clock boundaries from the receiver's own hooks (see summarize.py for
-// the definitions). Field names are read with aliases because the hooks are
-// product-side; a missing hook yields null, never an estimate.
-function legTimings(state) {
-  const pick = (...values) => values.find((v) => v !== undefined && v !== null) ?? null;
-  const journey = state.journey || {};
-  // The product currently records the save marks on __journey; a dedicated
-  // __saveTimeline (if it ever appears) takes precedence.
-  const saveTimeline = Array.isArray(state.saveTimeline)
-    ? (state.saveTimeline[state.saveTimeline.length - 1] || {})
-    : (state.saveTimeline || {});
-  const timeline = state.videoTimeline || {};
-  const initStartAt = pick(journey.initStartAt, journey.initStart, journey.initStartedAt);
-  const initReadyAt = pick(journey.initReadyAt);
-  const validInputStartAt = pick(journey.receivingAt, journey.receivingFirstAt, timeline.presentedAt);
-  const reconstructionDoneAt = pick(journey.readyAt, journey.readyFirstAt);
-  const saveRequestAt = pick(saveTimeline.saveRequestAt, saveTimeline.requestAt, journey.saveRequestAt);
-  const writeCloseAt = pick(saveTimeline.writeCloseAt, saveTimeline.closeAt, journey.writeCloseAt);
-  const diff = (a, b) => (a != null && b != null ? a - b : null);
-  return {
-    initStartAt, initReadyAt, validInputStartAt, reconstructionDoneAt, saveRequestAt, writeCloseAt,
-    initMs: diff(validInputStartAt, initStartAt),
-    reconstructMs: diff(reconstructionDoneAt, validInputStartAt),
-    totalToReadyMs: diff(reconstructionDoneAt, initStartAt),
-    saveMs: diff(writeCloseAt, saveRequestAt),
-  };
-}
+// Wall-clock boundaries from the receiver's own hooks. Round-5 A-03/B-S1:
+// the decomposition now lives in the pure module leg-timings.mjs (imported
+// above as legTimings) and is asserted after every successful save by
+// assertSaveTimingsComplete - a saved file without the save marks fails the
+// leg instead of silently recording nulls.
 
 function legSizes(state, rawBytes) {
   const snapshot = state.contractSnapshot || {};
@@ -850,6 +838,39 @@ async function saveArtifact(page, targetPath, pid = 0) {
   return statSync(targetPath).size;
 }
 
+// Round-5 A-03/B-S1 (and verdict S-3): one shared tail for every executed
+// save leg. The old paths measured the leg from the PRE-save snapshot, which
+// is exactly how five recorded legs shipped with null saveRequestAt/
+// writeCloseAt/saveMs. This helper saves through the real dialog, re-reads
+// the page state AFTER the save, asserts the save marks are present and
+// ordered, and compares external SHA-256 values. A save whose marks are
+// missing fails the leg - never a null measurement.
+async function completeLegSave({ page, caseId, legDir, originalPath, pid = 0 }) {
+  const receivedPath = join(legDir, 'received.bin');
+  mkdirSync(dirname(receivedPath), { recursive: true });
+  const bytes = await saveArtifact(page, receivedPath, pid);
+  const after = await pageState(page);
+  const timings = legTimings(after);
+  const complete = assertSaveTimingsComplete(timings);
+  const originalSha = sha256File(originalPath);
+  const receivedSha = sha256File(receivedPath);
+  const equal = originalSha === receivedSha;
+  const failures = [...complete.failures];
+  if (!equal) failures.push(`external SHA-256 differ (${originalSha} vs ${receivedSha})`);
+  return {
+    caseId,
+    receivedPath,
+    bytes,
+    state: after,
+    timings,
+    saveTimingsComplete: complete.ok,
+    saveTimingsChecks: complete.checks,
+    hashes: { original: originalSha, received: receivedSha, equal },
+    ok: complete.ok && equal,
+    failures,
+  };
+}
+
 async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = false, readyTimeoutMs = 180000 }) {
   const fixture = isAbsolute(file) ? file : join(FIXTURES, file);
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
@@ -867,12 +888,25 @@ async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = 
   const state = await attachCapture(stack.receiver.page, source, stack.receiver.pid, { readyTimeoutMs });
   log(`round ${round}: ${state.status} artifact=${state.artifactName} ${state.artifactSize}`);
   await screenshot(stack.receiver.page, caseId, `round-${round}-ready.png`);
-  await saveArtifact(stack.receiver.page, received, stack.receiver.pid);
-  const after = await pageState(stack.receiver.page);
+  // Round-5 A-03/B-S1: the save leg is measured AFTER the save and asserted;
+  // a saved file without the save marks fails this roundtrip.
+  const save = await completeLegSave({
+    page: stack.receiver.page,
+    caseId,
+    legDir: dirname(received),
+    originalPath: fixture,
+    pid: stack.receiver.pid,
+  });
   await screenshot(stack.receiver.page, caseId, `round-${round}-saved.png`);
   writeProof(RUN, caseId, `round-${round}/log.txt`,
-    `status=${after.status}\nartifact=${after.artifactName} ${after.artifactSize}\nlog=${after.log}\n`);
-  return { fixture, received, state: after };
+    `status=${save.state.status}\nartifact=${save.state.artifactName} ${save.state.artifactSize}\n` +
+    `saveTimings=${JSON.stringify(save.timings)}\nsaveTimingsComplete=${save.saveTimingsComplete}\n` +
+    `sha256 original=${save.hashes.original} received=${save.hashes.received} equal=${save.hashes.equal}\n` +
+    `log=${save.state.log}\n`);
+  if (!save.ok) {
+    throw new Error(`live roundtrip save is not measurement-complete: ${save.failures.join('; ')}`);
+  }
+  return { fixture, received, state: save.state, save };
 }
 
 async function videoRoundtrip(stack, { caseId, videoPath, originalPath, round, readyTimeoutMs = 240000 }) {
@@ -1987,22 +2021,29 @@ const SCENARIOS = {
     });
     return equal;
   },
-  // E2E-15: bad recordings fail finitely PER LEG; the REAL entry cancels and
-  // reselects; a real recording recovers.
+  // E2E-15: bad recordings fail finitely PER LEG, and EVERY failure is
+  // followed by a REAL normal-file recovery before the next bad input
+  // (round-5 A-01; UAT-L15 "after each failure import V-GOOD and verify the
+  // save"). The round-4 journey only waited for the video entry to re-enable
+  // after empty/text/corrupt and recovered ONCE at the end.
   //
-  // Round-3 A-R3: every leg is judged against a baseline taken immediately
-  // before its dispatch (leg-verdict.mjs): attempt identity advanced, status
-  // trail left Idle, the LOG DELTA carries this leg's expected code, and the
-  // session returned to a restartable terminal with cleanup converged. The
-  // old waitFor scanned the cumulative log and accepted saveDisabled as an
-  // ending, so an OLD 13005 line let a still-Preparing import pass - the
-  // reviewer reproduced exactly that.
+  // Sequence: real-entry-cancel -> recovery-cancel -> empty -> recovery-empty
+  // -> text -> recovery-text -> corrupt -> recovery-corrupt.
   //
-  // The empty/text/corrupt legs dispatch through the hidden input with a
-  // DataTransfer change event: they are IMPORT-PATH-ONLY evidence (the app's
-  // import handling after the change event), NOT entry evidence. The
-  // open-cancel/open legs drive the real #btn-video entry and the real OS
-  // file dialog; the recovery roundtrip uses the dialog-selected file.
+  // The failure legs keep the round-3 per-leg verdicts (baseline taken
+  // immediately before the dispatch: attempt identity advanced, status trail
+  // left Idle, the LOG DELTA carries this leg's expected code, restartable
+  // terminal with converged cleanup). Each recovery leg drives the REAL
+  // #btn-video entry and the real OS open dialog, waits for the app-side
+  // 'recording:' delta (the helper's exit code alone is not evidence),
+  // waits Ready, saves through the real save dialog into its OWN proof dir,
+  // and compares external SHA-256 through completeLegSave (the save marks
+  // must be present and ordered). The empty/text/corrupt legs remain
+  // IMPORT-PATH-ONLY evidence (DataTransfer dispatch).
+  //
+  // The journey is PASS only when EVERY leg passed. A rig-limited dialog
+  // helper (non-zero exit AND no app-side ingest) records that recovery leg
+  // NOT_RUN with diagnostics - an unexecuted leg is never green.
   'E2E-15': async (stack) => {
     const media = join(RUN, 'fixtures-media');
     const badDir = join(media, 'bad');
@@ -2012,7 +2053,93 @@ const SCENARIOS = {
     writeFileSync(join(badDir, 'text.webm'), Buffer.from('this is not a video container'));
     writeFileSync(join(badDir, 'corrupt.webm'), realVideo.subarray(0, 40000));
     const page = stack.receiver.page;
+    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
+    const goodRecording = join(media, 'V-GOOD-C.webm');
     const legs = [];
+    const proofRefs = [];
+    let firstSave = null;
+    let canonical = null;
+
+    // One REAL recovery leg (round-5 A-01): reset the page-lifetime marks so
+    // the timings describe THIS leg, click the real #btn-video entry, let the
+    // OS open dialog select V-GOOD-C, require the app-side 'recording:'
+    // delta, wait Ready, save into proof/E2E-15/recovery-<suffix>/, and
+    // compare external hashes with the fixture.
+    const recoveryLeg = async (suffix) => {
+      const id = `recovery-${suffix}`;
+      const legDir = join(RUN, 'proof', 'E2E-15', id);
+      mkdirSync(legDir, { recursive: true });
+      await resetJourneyMarks(page);
+      const baseline = legBaseline(await pageState(page));
+      await waitVideoEntryReady(page).catch(() => {});
+      const helperPromise = runHelper(
+        ['-Action', 'open', '-Path', goodRecording, '-TimeoutSec', '40'], stack.receiver.pid);
+      await clickButton(page, '#btn-video', `video entry (${id})`);
+      const helper = await helperPromise;
+      let openState = await pageState(page);
+      let openIngested = false;
+      try {
+        openState = await waitFor(page, (s) => (s.log || '').slice(baseline.logLength).includes('recording:'),
+          60000, `${id}: dialog-selected import ingested`);
+        openIngested = true;
+      } catch (error) {
+        openState = await pageState(page);
+      }
+      const attemptIdAdvanced = openState.attemptId != null && openState.attemptId !== baseline.attemptId;
+      let readyReached = false;
+      let save = null;
+      let legError = null;
+      if (openIngested) {
+        try {
+          await waitFor(page, (s) => !s.saveDisabled, 240000, `${id}: V-GOOD-C Ready`);
+          readyReached = true;
+          save = await completeLegSave({
+            page, caseId: 'E2E-15', legDir, originalPath: fixture, pid: stack.receiver.pid,
+          });
+        } catch (error) {
+          legError = String(error.message || error).slice(0, 400);
+        }
+      }
+      const verdict = evaluateRecoveryLeg({
+        helperExit: helper.code,
+        openIngested,
+        attemptIdAdvanced,
+        readyReached,
+        saveTimingsComplete: save ? save.saveTimingsComplete : false,
+        hashEqual: save ? save.hashes.equal : false,
+      });
+      const status = verdict.ok ? 'PASS' : (verdict.rigLimited ? 'NOT_RUN' : 'FAIL');
+      const basis = verdict.ok ? null
+        : (verdict.rigLimited
+          ? `rig/input evidence: the OS open dialog could not be driven by the helper (exit ${helper.code}); `
+          : '') + verdict.failures.join('; ') + (legError ? `; ${legError}` : '');
+      const proofDir = `proof/E2E-15/${id}`;
+      if (save) proofRefs.push(`${proofDir}/received.bin`);
+      legs.push({
+        id,
+        path: 'real entry (#btn-video) + OS dialog open, normal-file recovery',
+        status,
+        basis,
+        helperExit: helper.code,
+        logDelta: logDelta(baseline, openState).slice(-400),
+        attemptId: openState.attemptId ?? null,
+        attemptIdAdvanced,
+        readyReached,
+        saveTimings: save ? save.timings : null,
+        saveTimingsComplete: save ? save.saveTimingsComplete : false,
+        saveTimingsFailures: save ? save.failures : null,
+        hashes: save ? save.hashes : null,
+        received: save ? `${proofDir}/received.bin` : null,
+        proofDir,
+        failures: verdict.failures,
+        notes: verdict.rigLimited
+          ? 'rig-limited: the real entry leg did NOT execute (automation limitation); NOT a product verdict'
+          : 'real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save',
+      });
+      if (save && !firstSave) firstSave = save;
+      if (save && save.ok && !canonical) canonical = save;
+      return status;
+    };
 
     // Real-entry cancel leg FIRST, while the page is genuinely Idle: click
     // #btn-video (the real entry), cancel the real OS file dialog. No change
@@ -2054,9 +2181,15 @@ const SCENARIOS = {
       notes: 'real entry (#btn-video click) + OS dialog cancel; no change event may fire',
     });
 
+    // Recovery #0: the cancelled entry is immediately followed by a real
+    // re-selection and a verified save (round-5 A-01: "cancelled, then pick
+    // again" is itself a recovery the journey must prove).
+    await recoveryLeg('cancel');
+
     // Bulk bad legs through the app's own import path (DataTransfer). They run
     // AFTER the cancel leg: the verdict module is what keeps them honest, not
-    // the order.
+    // the order. Each failure is followed by its own real recovery before the
+    // next bad input.
     for (const [name, kind] of [
       ['empty.webm', 'empty'], ['text.webm', 'text'], ['corrupt.webm', 'corrupt'],
     ]) {
@@ -2089,127 +2222,84 @@ const SCENARIOS = {
         attemptId: settled.state.attemptId,
         notes: 'import-path-only evidence (DataTransfer change event, not the entry)',
       });
-      // The next leg waits for the VIDEO ENTRY to be usable again, not a sleep.
+      // The next leg waits for the VIDEO ENTRY to be usable again, not a
+      // sleep; then THIS failure is recovered for real (normal-file import +
+      // system save + external hash) before the next bad input.
       await waitVideoEntryReady(page).catch(() => {});
+      await recoveryLeg(kind);
     }
 
-    // Real-entry open leg: click #btn-video again and drive the REAL open
-    // dialog to the good recording. Success is ONLY the app-side change
-    // event (a 'recording:' line in the delta); the helper's exit code alone
-    // never counts.
-    const openBaseline = legBaseline(await pageState(page));
-    const openHelperPromise = runHelper(['-Action', 'open', '-Path', join(media, 'V-GOOD-C.webm'), '-TimeoutSec', '40'], stack.receiver.pid);
-    await clickButton(page, '#btn-video', 'video entry (open)');
-    const openHelper = await openHelperPromise;
-    let openState = null;
-    let openIngested = false;
-    try {
-      openState = await waitFor(page, (s) => (s.log || '').slice(openBaseline.logLength).includes('recording:'),
-        60000, 'real-entry import ingested (recording: delta)');
-      openIngested = true;
-    } catch (error) {
-      openState = await pageState(page);
-    }
-    const openDelta = logDelta(openBaseline, openState);
-    const openFailures = [];
-    if (!openIngested) {
-      openFailures.push(`the app never logged 'recording:' after the open dialog (helper exit ${openHelper.code}); ` +
-        `the helper's output is not evidence of success (delta ${JSON.stringify(openDelta.slice(-200))})`);
-    }
-    if (openState.attemptId === openBaseline.attemptId) {
-      openFailures.push('the attempt identity did not advance for the dialog-selected import');
-    }
-    // Failure attribution (round-3 S-1/protocol): when the OS dialog helper
-    // could not drive the real entry (non-zero helper exit) AND the app saw
-    // no change event at all, this is a rig/automation limitation, not a
-    // product verdict: record NOT_RUN with the helper diagnostics. E2E-15
-    // still cannot PASS - an unexecuted leg is never green.
-    const openRigLimited = !openIngested && openHelper.code !== 0;
-    legs.push({
-      id: 'real-entry-open',
-      path: 'real entry (#btn-video) + OS dialog open, recovery recording',
-      status: openFailures.length === 0 ? 'PASS' : (openRigLimited ? 'NOT_RUN' : 'FAIL'),
-      basis: openFailures.length === 0 ? null
-        : (openRigLimited ? `rig/input evidence: the OS open dialog could not be driven by the helper (exit ${openHelper.code}); ` : '')
-          + openFailures.join('; '),
-      helperExit: openHelper.code,
-      logDelta: openDelta.slice(-400),
-      failures: openFailures,
-      attemptId: openState.attemptId,
-      notes: openRigLimited
-        ? 'real-entry leg NOT executed (automation limitation); NOT a product verdict'
-        : 'real entry (#btn-video click) + OS dialog open; success is only the app-side recording: delta',
-    });
-
-    const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
-    let receivedPath = null;
-    let equal = false;
-    let recoveryError = null;
-    if (openIngested) {
-      // Recovery roundtrip from the DIALOG-SELECTED import: wait for the
-      // artifact, save through the real save dialog, compare bytes.
-      try {
-        await waitFor(page, (s) => !s.saveDisabled, 240000, 'dialog-selected import Ready');
-        receivedPath = join(RUN, 'proof', 'E2E-15', 'recovery', 'received.bin');
-        mkdirSync(dirname(receivedPath), { recursive: true });
-        await saveArtifact(page, receivedPath, stack.receiver.pid);
-        equal = sha256File(fixture) === sha256File(receivedPath);
-      } catch (error) {
-        recoveryError = String(error.message || error);
-      }
-    }
-    const allLegs = legs.every((leg) => leg.status === 'PASS');
-    const pass = allLegs && equal && !recoveryError;
+    // Round-5 A-01 record tail: the journey is PASS only when every leg is
+    // PASS (a rig-limited NOT_RUN recovery keeps it non-PASS); the record's
+    // canonical pair comes from the first hash-clean, timing-complete
+    // recovery save (roundtripRecord copies original and received as
+    // proof/E2E-15/original.bin and received.bin; extraProofRefs carries the
+    // per-leg recovery proof refs).
+    const pass = !legs.some((leg) => leg.status !== 'PASS') && canonical != null;
     const measurement = { legs };
-    if (receivedPath && existsSync(receivedPath)) {
+    const saveForRecord = canonical || firstSave;
+    if (saveForRecord) {
       upsertResult(RUN, {
         ...roundtripRecord({
-          caseId: 'E2E-15', originalPath: fixture, receivedPath, runDir: RUN,
-          measurement,
-          notes: `per-leg verdicts (attempt identity + status trail + log delta + restartable terminal): ` +
-            legs.map((l) => `${l.id}=${l.status}`).join(', ') +
-            '; empty/text/corrupt legs are IMPORT-PATH-ONLY evidence (DataTransfer dispatch); the entry ' +
-            'legs used the real #btn-video click and the real OS file dialog; ' +
-            `recovery roundtrip from the dialog-selected recording equal=${equal}` +
-            (recoveryError ? `; recovery error: ${recoveryError}` : ''),
+          caseId: 'E2E-15', originalPath: fixture, receivedPath: saveForRecord.receivedPath,
+          runDir: RUN, measurement, extraProofRefs: proofRefs,
+          notes: `per-leg verdicts, then a REAL recovery after every failure ` +
+            `(${legs.map((l) => `${l.id}=${l.status}`).join(', ')}). ` +
+            'empty/text/corrupt legs are IMPORT-PATH-ONLY evidence (DataTransfer dispatch); the cancel leg ' +
+            'and every recovery used the real #btn-video click and the real OS dialogs; every recovery saved ' +
+            'into its own proof dir via completeLegSave (external SHA-256 + complete/ordered save marks)',
         }),
         result: pass ? 'PASS' : 'FAIL',
       });
       return pass;
     }
-    // No saveable artifact exists this attempt: keep an honest FAIL record
-    // with the attempt marker's zero received hash and an observation file.
+    // No hash-clean, timing-complete save happened this attempt: an honest
+    // FAIL with the attempt marker's zero received hash and an observation.
     const observation = join(RUN, 'proof', 'E2E-15', 'observation.txt');
     mkdirSync(dirname(observation), { recursive: true });
     writeFileSync(observation, [
       `E2E-15 observation (${new Date().toISOString()})`,
-      ...legs.map((l) => `${l.id}: ${l.status} ${(l.basis || '')}`),
-      recoveryError ? `recovery error: ${recoveryError}` : 'no dialog-selected import reached a save',
+      ...legs.map((l) => `${l.id}: ${l.status} ${l.basis || ''}`),
+      firstSave && !canonical
+        ? `a save happened but it is not measurement-complete: ${firstSave.failures.join('; ')}`
+        : 'no recovery leg reached a save',
     ].join('\n') + '\n');
     upsertResult(RUN, {
       caseId: 'E2E-15', scope: 'local_simulated', caseType: 'file_roundtrip', result: 'FAIL',
       executedBy: 'executor',
       referenceSha256: sha256File(fixture), receivedSha256: '0'.repeat(64),
       proofRefs: ['proof/E2E-15/observation.txt'], measurement,
-      notes: `no saveable artifact: ${legs.map((l) => `${l.id}=${l.status}`).join(', ')}` +
-        (recoveryError ? `; recovery error: ${recoveryError}` : ''),
+      notes: `no hash-clean, timing-complete recovery save: ` +
+        `${legs.map((l) => `${l.id}=${l.status}`).join(', ')}`,
     });
     return false;
   },
-  // E2E-16: recorded EOF and the final key frame, as a PAIRED construction.
+  // E2E-16: recorded EOF and the final key frame, as a SAME-STREAM PAIRED
+  // construction (round-5 A-02).
   //
-  // Round-3 A-R3: V-LAST-with and V-LAST-without are recorded from a
-  // RELOADED sender before each clip (record-sender.mjs), so both start at
-  // the sender's frame 0 and share the encoded trace prefix. That makes the
-  // causal claim checkable per leg:
-  //   with leg:    endReason='eof', completion media time T* = lastUs +
-  //                artifactFrameId, and __mediaEnded stays NULL (the session
-  //                stops at the artifact; no infinite replay), then save+hash.
-  //   without leg: REAL EOF (__mediaEnded fired), its own lastUs < T*, no
-  //                artifact.
-  //   validity:    T* > the without clip's own media duration; when that does
-  //                not hold the pair proves nothing and the journey fails
-  //                with the re-record instruction (raise --without-seconds).
+  // The pair is recorded from ONE getDisplayMedia stream by TWO MediaRecorders
+  // started in the same task (recorder.html __startPairRecording); the manifest
+  // declares that construction and embeds the cv2 video-prefix-check JSON.
+  // E2E-16 verifies it at case start with pair-evidence.mjs (pure checks: the
+  // construction text, same-stream fields, 0 < cut < withMs, the per-clip and
+  // payload sha256 vs disk, and the checker's head/tail PASS) - an unverifiable
+  // pair never goes on to run the legs.
+  //
+  // Criteria (UAT-L16 / verdict A-02), judged by evaluateLastFramePair after
+  // BOTH legs:
+  //   with:    T* = __videoTimeline.lastUs/1e6 (artifactFrameId is a frame
+  //            IDENTITY recorded separately - never added to time); T* >=
+  //            withDurationSec - 2.0, with the duration parsed from the
+  //            receiver's open-precheck line in the with-leg delta;
+  //            __mediaEnded stays null; the save is hash-clean with
+  //            complete/ordered save marks (completeLegSave).
+  //   without: __mediaEnded FIRED at a media time >= declaredCut - 1.0 s, and
+  //            no artifact exists.
+  //   pair:    T* > the without clip's own media duration.
+  // endReason stays a diagnostic. Real media time, frameId/presented,
+  // tailEvents, drain order and hashes are recorded per leg; the end-segment
+  // failure instructs RE-RECORD with the measured T* (the lane re-tunes
+  // withMs = T* + 1.5 s / cut = T* - 1.5 s; max 2 calibrations).
   'E2E-16': async (stack) => {
     const media = join(RUN, 'fixtures-media');
     const original = join(media, 'payload-128k-random.bin');
@@ -2227,14 +2317,76 @@ const SCENARIOS = {
       window.__mediaEnded = null;
     }).catch(() => {});
 
-    for (const required of ['V-SHORT.webm', 'V-LAST-with.webm', 'V-LAST-without.webm', 'payload-128k-random.bin']) {
-      if (!existsSync(join(media, required))) {
-        throw new Error(`${required} is missing from ${media}: record the pair first ` +
-          '(node record-sender.mjs --only last)');
+    // Round-5 A-02 pair-integrity gate FIRST (fail fast): the manifest and
+    // the embedded cv2 checker JSON are copied into the proof dir and
+    // verified with the pure module pair-evidence.mjs; the on-disk hashes
+    // come from this runner (never from the manifest's own claim).
+    let manifest = null;
+    let declaredCutSec = null;
+    const pairProofRefs = [];
+    let pairGate = { ok: false, failures: ['...'], checks: {} };
+    const gateFailures = [];
+    if (!existsSync(join(media, 'manifest.json'))) {
+      gateFailures.push('fixtures-media/manifest.json is missing: record the same-stream pair first ' +
+        '(node record-sender.mjs --only last)');
+    } else if (!existsSync(join(media, 'V-SHORT.webm'))) {
+      gateFailures.push('V-SHORT.webm is missing from fixtures-media; record the full rig once ' +
+        '(node record-sender.mjs) or restore it');
+    } else if (!existsSync(join(media, 'V-LAST-with.webm')) || !existsSync(join(media, 'V-LAST-without.webm'))) {
+      gateFailures.push('V-LAST-with/without are missing from fixtures-media; record the pair ' +
+        '(node record-sender.mjs --only last)');
+    } else {
+      try {
+        manifest = JSON.parse(readFileSync(join(media, 'manifest.json'), 'utf8'));
+      } catch (error) {
+        gateFailures.push(`manifest.json is not valid JSON: ${String(error.message || error)}`);
       }
     }
+    if (gateFailures.length === 0) {
+      // Copy before judging: the proof must keep the evidence E2E-16 judged.
+      writeFileSync(join(RUN, 'proof', 'E2E-16', 'manifest.json'),
+        `${JSON.stringify(manifest, null, 2)}\n`);
+      pairProofRefs.push('proof/E2E-16/manifest.json');
+      const prefixCheck = manifest.prefixCheck || null;
+      if (prefixCheck) {
+        const prefixRel = 'proof/E2E-16/prefix-check.json';
+        writeFileSync(join(RUN, prefixRel),
+          `${JSON.stringify(prefixCheck, null, 2)}\n`);
+        pairProofRefs.push(prefixRel);
+      }
+      const diskShas = {};
+      for (const clip of Array.isArray(manifest.clips) ? manifest.clips : []) {
+        if (clip && clip.file) {
+          try { diskShas[clip.file] = sha256File(join(media, clip.file)); }
+          catch (error) { diskShas[clip.file] = null; }
+        }
+      }
+      try { diskShas[manifest.payload.file] = sha256File(join(media, manifest.payload.file)); }
+      catch (error) { diskShas[manifest.payload.file] = null; }
+      pairGate = evaluatePairConstruction({ manifest, prefixCheck, diskShas });
+      if (Number.isFinite(manifest.pair.declaredCutMs) && manifest.pair.declaredCutMs > 0) {
+        declaredCutSec = manifest.pair.declaredCutMs / 1000;
+      }
+    }
+    if (!pairGate.ok) {
+      const obsRel = 'proof/E2E-16/pair-gate-observation.txt';
+      writeFileSync(join(RUN, obsRel), [
+        `E2E-16 pair-integrity gate failure (${new Date().toISOString()})`,
+        ...pairGate.failures,
+      ].join('\n') + '\n');
+      upsertResult(RUN, {
+        caseId: 'E2E-16', scope: 'local_simulated', caseType: 'file_roundtrip', result: 'FAIL',
+        executedBy: 'executor',
+        referenceSha256: existsSync(original) ? sha256File(original) : '0'.repeat(64),
+        receivedSha256: '0'.repeat(64),
+        proofRefs: [obsRel, ...pairProofRefs], measurement: { pairGate },
+        notes: `pair-integrity gate failed: ${pairGate.failures.join('; ')}`,
+      });
+      return false;
+    }
 
-    // Leg 1: V-SHORT must end finite without an artifact.
+    // Leg 1: V-SHORT must end finite without an artifact (unchanged criterion;
+    // import-path-only dispatch, the app's own change handler).
     await resetMediaHooks();
     await resetJourneyMarks(page);
     await importVideo(page, join(media, 'V-SHORT.webm'));
@@ -2244,14 +2396,13 @@ const SCENARIOS = {
     const shortOk = shortSettled.settled && shortState.saveDisabled === true && shortInternal !== 'Ready';
     const shortLeg = {
       id: 'v-short',
-      inputKind: 'video',
-      dataClass: 'compressible',
-      tier: 'V-SHORT (400 ms)',
+      inputKind: 'video', dataClass: 'compressible', tier: 'V-SHORT (400 ms)',
       status: shortOk ? 'PASS' : 'FAIL',
-      basis: shortOk ? null : `settled=${shortSettled.settled}, internal=${shortInternal}, saveDisabled=${shortState.saveDisabled}`,
+      basis: shortOk ? null : `settled=${shortSettled.settled}, internal=${shortInternal}, ` +
+        `saveDisabled=${shortState.saveDisabled}`,
       timings: legTimings(shortState),
       sizes: legSizes(shortState, null),
-      notes: 'a 400 ms real recording must not produce a saveable artifact',
+      notes: 'a 400 ms real recording must not produce a saveable artifact (import-path-only dispatch)',
     };
     writeTimeline('v-short.json', {
       leg: 'v-short', settled: shortSettled.settled, internal: shortInternal,
@@ -2260,10 +2411,12 @@ const SCENARIOS = {
     });
     await waitVideoEntryReady(page).catch(() => {});
 
-    // Leg 2: V-LAST-without must reach REAL EOF, present LESS media time than
-    // the with-leg's completion T*, and leave no artifact.
+    // Leg 2: V-LAST-without must reach REAL EOF at/after the declared cut and
+    // leave no artifact (the with-leg's T* and the pair validity are judged
+    // after both legs complete).
     await resetMediaHooks();
     await resetJourneyMarks(page);
+    const withoutBaseline = legBaseline(await pageState(page));
     await importVideo(page, join(media, 'V-LAST-without.webm'));
     let withoutEof = null;
     try {
@@ -2279,16 +2432,22 @@ const SCENARIOS = {
         ? withoutEnded.duration
         : (Number.isFinite(withoutEnded.currentTime) ? withoutEnded.currentTime : null))
       : null;
-    const withoutLastUs = withoutState.videoTimeline ? withoutState.videoTimeline.lastUs : null;
+    const withoutLastUs = withoutState.videoTimeline
+      ? withoutState.videoTimeline.lastUs : null;
+    const withoutTailEvents = Array.isArray((withoutState.videoTimeline || {}).tailEvents)
+      ? withoutState.videoTimeline.tailEvents : null;
 
-    // Leg 3: V-LAST-with must reach Ready and rebuild the payload.
+    // Leg 3: V-LAST-with must reach Ready and rebuild the payload; its media
+    // duration comes only from the receiver's own open-precheck line in the
+    // with-leg delta ("recording: WxH, D s").
     await resetMediaHooks();
     await resetJourneyMarks(page);
     const withBaseline = legBaseline(await pageState(page));
     await importVideo(page, join(media, 'V-LAST-with.webm'));
     let withState = null;
     try {
-      // Ready, or a settled terminal without an artifact (classified below).
+      // Ready, or a settled terminal without an artifact (classified below);
+      // both end ways are classified below the second read.
       withState = await waitFor(page, (s) => !s.saveDisabled
         || (RESTARTABLE_TERMINALS.includes(internalStateOf(s))
           && s.cleanupComplete === true && s.videoDisabled === false),
@@ -2297,59 +2456,78 @@ const SCENARIOS = {
       withState = await pageState(page);
     }
     const timeline = withState.videoTimeline || {};
-    const hasT = Number.isFinite(timeline.lastUs) && Number.isFinite(timeline.artifactFrameId);
-    const tStarUs = hasT ? timeline.lastUs + timeline.artifactFrameId : null;
-    const tStarSec = tStarUs != null ? tStarUs / 1e6 : null;
+    const tStarSec = Number.isFinite(timeline.lastUs) ? timeline.lastUs / 1e6 : null;
     const endReason = timeline.endReason ?? null;
     const withReady = !withState.saveDisabled;
-    const withEndedNull = withState.mediaEnded == null;
-
-    let receivedPath = null;
-    let equal = false;
+    const deltaText = logDelta(withBaseline, withState);
+    const recMatch = /recording:\s*\d+x\d+,\s*([\d.]+)s/.exec(deltaText);
+    const withDurationSec = recMatch ? Number(recMatch[1]) : null;
+    let save = null;
     let saveFailure = null;
     if (withReady) {
       try {
-        receivedPath = join(RUN, 'proof', 'E2E-16', 'round-with', 'received.bin');
-        mkdirSync(dirname(receivedPath), { recursive: true });
-        await saveArtifact(page, receivedPath, stack.receiver.pid);
-        equal = sha256File(original) === sha256File(receivedPath);
+        save = await completeLegSave({
+          page, caseId: 'E2E-16', legDir: join(RUN, 'proof', 'E2E-16', 'round-with'),
+          originalPath: original, pid: stack.receiver.pid,
+        });
       } catch (error) {
         saveFailure = String(error.message || error);
       }
     }
 
-    const withoutBeforeT = withoutLastUs != null && tStarUs != null && withoutLastUs < tStarUs;
-    const withoutOk = withoutEnded != null && withoutState.saveDisabled === true && withoutBeforeT;
-    // Criterion refined by the team-lead (round-3 lane decision): the run
-    // must settle FINITELY at the artifact - __mediaEnded stays null (the
-    // session never reaches the natural media end) and the artifact frame is
-    // the last presented frame. `endReason` is a recorded diagnostic only:
-    // on the artifact path app.js releaseInputs() synchronously stops the
-    // source before the run loop can label the ending, so 'eof' at artifact
-    // completion is structurally unobservable and the acceptance intent
-    // (UAT-L16: finish when the final-frame result arrives) is the finite
-    // settling itself.
-    const artifactAtLastFrame = Number.isFinite(timeline.artifactFrameId)
-      && timeline.artifactFrameId === timeline.presented;
-    const withOk = withReady && withEndedNull && artifactAtLastFrame && equal && !saveFailure;
-    const pairValid = tStarSec != null && withoutDurationSec != null && tStarSec > withoutDurationSec;
-    const suggestedWithoutSeconds = pairValid ? null : (tStarSec != null ? Math.ceil(tStarSec + 2) : null);
+    // Pair verdict after both legs, from the pure module; the runner derives
+    // leg statuses from its checks - no parallel criterion logic here.
+    const pairVerdict = evaluateLastFramePair({
+      withTStarSec: tStarSec,
+      withDurationSec,
+      withMediaEnded: (withState.mediaEnded === undefined ? null : withState.mediaEnded),
+      withSaveHashEqual: save ? save.hashes.equal : false,
+      withSaveTimingsComplete: save ? save.saveTimingsComplete : false,
+      withoutEofFired: withoutEnded != null,
+      withoutEofMediaTimeSec: withoutDurationSec,
+      withoutDeclaredCutSec: declaredCutSec,
+      withoutArtifactAbsent: withoutState.saveDisabled === true,
+      withoutDurationSec,
+    });
+    const checks = pairVerdict.checks;
+    const withOk = checks.withLegOk;
+    const withoutOk = checks.withoutLegOk;
+    const pairValid = checks.pairValidity;
 
     writeTimeline('v-last-without.json', {
       leg: 'v-last-without', settled: withoutSettled.settled,
       mediaEnded: withoutEnded, durationSec: withoutDurationSec,
+      lastUs: withoutLastUs, tailEvents: withoutTailEvents,
       videoTimeline: withoutState.videoTimeline, attemptId: withoutState.attemptId,
     });
     const withDeltaTail = logDelta(withBaseline, withState).slice(-400);
     writeTimeline('v-last-with.json', {
       leg: 'v-last-with', ready: withReady, endReason, endReasonDiagnostic: true,
-      artifactAtLastFrame,
       mediaEnded: withState.mediaEnded,
-      lastUs: timeline.lastUs ?? null, artifactFrameId: timeline.artifactFrameId ?? null,
+      lastUs: timeline.lastUs ?? null,
+      artifactFrameId: timeline.artifactFrameId ?? null,
       presented: timeline.presented ?? null,
-      tStarUs, tStarSec, formula: 'tStarUs = lastUs + artifactFrameId (plan Domain H)',
+      tStarSec,
+      formula: 'tStarSec = __videoTimeline.lastUs / 1e6 (round-5 dimensional fix; artifactFrameId is a frame identity, recorded separately)',
+      withDurationSec,
+      withDurationSource: 'open-precheck delta line',
+      criteria: checks,
+      drainOrder: {
+        productTailEvents: Array.isArray(timeline.tailEvents) ? timeline.tailEvents : null,
+        milestones: [
+          Number.isFinite(timeline.lastUs) ? { event: 'lastPresentedFrame', mediaTimeUs: timeline.lastUs } : null,
+          Number.isFinite(timeline.artifactFrameId) ? { event: 'artifactFrame', frameId: timeline.artifactFrameId } : null,
+          timeline.endReason ? { event: 'sourceEnd', reason: timeline.endReason } : null,
+          withState.mediaEnded ? { event: 'mediaEnded', at: withState.mediaEnded.at } : null,
+          save ? { event: 'saveRequest', at: save.timings.saveRequestAt } : null,
+          save ? { event: 'writableOpen', at: save.timings.writableAt } : null,
+          save ? { event: 'writeClose', at: save.timings.writeCloseAt } : null,
+        ].filter(Boolean),
+      },
       videoTimeline: withState.videoTimeline, attemptId: withState.attemptId,
-      saveFailure, logDelta: withDeltaTail,
+      hashes: save ? save.hashes : null,
+      saveFailure,
+      logDelta: withDeltaTail,
     });
 
     const legs = [
@@ -2358,65 +2536,77 @@ const SCENARIOS = {
         id: 'v-last-without',
         inputKind: 'video', dataClass: 'incompressible', tier: '128KiB (without)',
         status: withoutOk ? 'PASS' : 'FAIL',
-        basis: withoutOk ? null : `realEof=${withoutEnded != null}, saveDisabled=${withoutState.saveDisabled}, ` +
-          `lastUs=${String(withoutLastUs)} < T*=${String(tStarUs)} = ${withoutBeforeT}`,
+        basis: withoutOk ? null : `realEof=${withoutEnded != null}, EOF media time=${String(withoutDurationSec)}s, ` +
+          `boundary=${String(declaredCutSec != null ? declaredCutSec - 1.0 : null)}s, ` +
+          `saveDisabled=${withoutState.saveDisabled}`,
         timings: legTimings(withoutState), sizes: legSizes(withoutState, null),
-        notes: `real EOF duration ${withoutDurationSec}s; no artifact`,
+        notes: `real EOF media time ${String(withoutDurationSec)}s vs declared cut ${String(declaredCutSec)}s; no artifact`,
       },
       {
         id: 'v-last-with',
         inputKind: 'video', dataClass: 'incompressible', tier: '128KiB (with final segment)',
         status: withOk ? 'PASS' : 'FAIL',
-        basis: withOk ? null : `ready=${withReady}, mediaEndedNull=${withEndedNull}, ` +
-          `artifactAtLastFrame=${artifactAtLastFrame}, equal=${equal}, saveFailure=${String(saveFailure)}, ` +
-          `delta=${JSON.stringify(withDeltaTail)}`,
-        timings: legTimings(withState),
+        basis: withOk ? null : pairVerdict.failures.join('; ') +
+          (pairVerdict.rerecord ? `; ${pairVerdict.rerecord.instruction}` : '') +
+          (saveFailure ? `; save failed: ${saveFailure}` : ''),
+        timings: save ? save.timings : legTimings(withState),
         sizes: legSizes(withState, statSync(original).size),
-        hashes: { original: sha256File(original), received: receivedPath && existsSync(receivedPath) ? sha256File(receivedPath) : null, equal },
-        notes: `completion media time T*=${tStarSec}s from lastUs+artifactFrameId`,
+        hashes: save ? save.hashes : { original: sha256File(original), received: null, equal: false },
+        notes: `completion media time T*=${String(tStarSec)}s = lastUs/1e6 (dimensional fix); ` +
+          `withDuration=${String(withDurationSec)}s (open-precheck delta)`,
       },
     ];
-    const pair = {
-      tStarUs, tStarSec, withoutDurationSec, withoutLastUs,
-      validity: pairValid,
-      criterion: 'T* (with-leg completion media time) must exceed the without clip\'s own media duration',
-      suggestedWithoutSeconds,
+    const measurement = {
+      legs,
+      pair: {
+        tStarSec, withDurationSec, withoutDurationSec,
+        withoutEofMediaTimeSec: withoutDurationSec,
+        declaredCutSec,
+        pairValidity: pairValid,
+        endSegmentToleranceSec: END_SEGMENT_TOLERANCE_SEC,
+        withoutEofToleranceSec: WITHOUT_EOF_TOLERANCE_SEC,
+        rerecord: pairVerdict.rerecord,
+      },
+      pairEvidence: pairGate,
     };
-    const measurement = { legs, pair, timelines: timelineRefs };
     const pass = legs.every((leg) => leg.status === 'PASS') && pairValid;
 
-    if (receivedPath && existsSync(receivedPath)) {
+    if (save) {
       upsertResult(RUN, {
         ...roundtripRecord({
-          caseId: 'E2E-16', originalPath: original, receivedPath, runDir: RUN, measurement,
-          notes: `V-SHORT not Ready; V-LAST-without real EOF (duration ${withoutDurationSec}s, lastUs ${withoutLastUs}) ` +
-            `with no artifact and lastUs < T*=${tStarSec}s; V-LAST-with endReason=${String(endReason)} (diagnostic; ` +
-            `artifact completed on frame ${String(timeline.artifactFrameId)} = last presented ${String(timeline.presented)}), ` +
-            `__mediaEnded=${withEndedNull ? 'null' : 'FIRED'}, save hash-clean=${equal}; ` +
-            `pair validity T*>without duration=${pairValid}` +
-            (pairValid ? '' : `; RE-RECORD: raise --without-seconds to at least ${suggestedWithoutSeconds}`),
+          caseId: 'E2E-16', originalPath: original, receivedPath: save.receivedPath,
+          runDir: RUN, measurement, extraProofRefs: [...pairProofRefs, ...timelineRefs],
+          notes: `V-SHORT not Ready; V-LAST-without real EOF (media time ${String(withoutDurationSec)}s >= ` +
+            `declared cut ${String(declaredCutSec)}s minus its 1.0 s tolerance) with no artifact; ` +
+            `V-LAST-with T*=${String(tStarSec)}s = lastUs/1e6 vs duration ${String(withDurationSec)}s ` +
+            `(end segment requires >= ${String(checks.endSegmentBoundarySec)}s), ` +
+            `__mediaEnded=${checks.mediaEndedNull ? 'null' : 'FIRED'}, save hash-clean=${checks.saveHashEqual} ` +
+            'with complete/ordered save marks; pair validity T*>without duration=' + String(pairValid) +
+            (pairVerdict.rerecord ? `; ${pairVerdict.rerecord.instruction}` : ''),
         }),
         result: pass ? 'PASS' : 'FAIL',
       });
       return pass;
     }
-    // No artifact: write an honest FAIL record with an observation and the
-    // attempt marker's zero received hash.
+    // No artifact: an honest FAIL record with an observation and the attempt
+    // marker's zero received hash.
     const observation = join(RUN, 'proof', 'E2E-16', 'observation.txt');
     mkdirSync(dirname(observation), { recursive: true });
     writeFileSync(observation, [
       `E2E-16 observation (${new Date().toISOString()})`,
       ...legs.map((leg) => `${leg.id}: ${leg.status} ${leg.basis || ''}`),
-      `pair: ${JSON.stringify(pair)}`,
-      saveFailure ? `save failure: ${saveFailure}` : 'the with leg never reached Ready',
+      `pair: ${JSON.stringify({ tStarSec, withDurationSec, withoutDurationSec, declaredCutSec, validity: pairValid })}`,
+      pairVerdict.rerecord ? pairVerdict.rerecord.instruction
+        : (saveFailure ? `save failure: ${saveFailure}` : 'the with leg never reached Ready'),
     ].join('\n') + '\n');
     upsertResult(RUN, {
       caseId: 'E2E-16', scope: 'local_simulated', caseType: 'file_roundtrip', result: 'FAIL',
       executedBy: 'executor',
       referenceSha256: sha256File(original), receivedSha256: '0'.repeat(64),
-      proofRefs: ['proof/E2E-16/observation.txt', ...timelineRefs], measurement,
-      notes: `no saveable artifact this attempt: ${legs.map((leg) => `${leg.id}=${leg.status}`).join(', ')}; ` +
-        `T*=${String(tStarSec)}s vs without duration ${String(withoutDurationSec)}s`,
+      proofRefs: ['proof/E2E-16/observation.txt', ...pairProofRefs, ...timelineRefs], measurement,
+      notes: `no saveable artifact this attempt: ${legs.map((l) => `${l.id}=${l.status}`).join(', ')}; ` +
+        `T*=${String(tStarSec)}s vs without media time ${String(withoutDurationSec)}s (declared cut ${String(declaredCutSec)}s)` +
+        (pairVerdict.rerecord ? `; ${pairVerdict.rerecord.instruction}` : ''),
     });
     return false;
   },
@@ -2821,18 +3011,24 @@ const SCENARIOS = {
           // 180 s default (live delivery of that class is minutes on this rig).
           readyTimeoutMs: 600000,
         });
-        const after = await pageState(page);
-        const originalSha = sha256File(round.fixture);
-        const receivedSha = sha256File(round.received);
-        const equal = originalSha === receivedSha;
+        const after = round.state;
+        const save = round.save;
+        const originalSha = save.hashes.original;
+        const receivedSha = save.hashes.received;
+        const equal = save.hashes.equal;
+        const timingComplete = save.saveTimingsComplete;
         if (!canonicalRound && equal) canonicalRound = round;
         legs.push({
           id, inputKind: 'live', dataClass, tier,
-          status: equal ? 'PASS' : 'FAIL',
-          basis: equal ? null : 'roundtrip hashes differ',
+          status: (equal && timingComplete) ? 'PASS' : 'FAIL',
+          basis: (equal && timingComplete) ? null : [
+            equal ? null : 'roundtrip hashes differ',
+            timingComplete ? null : 'roundtrip save timings incomplete',
+          ].filter(Boolean).join('; '),
           sizes: legSizes(after, statBytes(round.fixture)),
-          timings: legTimings(after),
+          timings: save.timings,
           hashes: { original: originalSha, received: receivedSha, equal },
+          saveTimingsComplete: timingComplete,
           notes: `live capture roundtrip; proof proof/E2E-18/round-${id}/received.bin`,
         });
       } catch (error) {
@@ -2891,20 +3087,22 @@ const SCENARIOS = {
       const presented = Number.isFinite(timeline.presented) ? timeline.presented : null;
       const lastUs = timeline.lastUs ?? null;
       if (readyState.saveDisabled === false) {
+        // Round-5 A-03/B-S1: the success path saves through completeLegSave;
+        // timings come from the POST-save state and are asserted (a saved
+        // file without complete/ordered marks fails the leg).
         try {
-          const received = join(RUN, 'proof', 'E2E-18', `round-${id}`, 'received.bin');
-          mkdirSync(dirname(received), { recursive: true });
-          await saveArtifact(page, received, stack.receiver.pid);
-          const originalSha = sha256File(payloadPath);
-          const receivedSha = sha256File(received);
-          const equal = originalSha === receivedSha;
-          if (!canonicalRound && equal) canonicalRound = { fixture: payloadPath, received };
+          const save = await completeLegSave({
+            page, caseId: 'E2E-18', legDir: join(RUN, 'proof', 'E2E-18', `round-${id}`),
+            originalPath: payloadPath, pid: stack.receiver.pid,
+          });
+          if (save.ok && !canonicalRound) canonicalRound = { fixture: payloadPath, received: save.receivedPath };
           legs.push({
-            ...legBase, status: equal ? 'PASS' : 'FAIL',
-            basis: equal ? null : 'roundtrip hashes differ',
+            ...legBase, status: save.ok ? 'PASS' : 'FAIL',
+            basis: save.ok ? null : save.failures.join('; '),
             sizes: legSizes(readyState, statBytes(payloadPath)),
-            timings: legTimings(readyState),
-            hashes: { original: originalSha, received: receivedSha, equal },
+            timings: save.timings,
+            hashes: save.hashes,
+            saveTimingsComplete: save.saveTimingsComplete,
             notes: `recorded import roundtrip; presented frames=${String(presented)}, lastUs=${String(lastUs)}`,
           });
         } catch (error) {
@@ -3177,15 +3375,15 @@ const SCENARIOS = {
         const round = await liveRoundtrip(stack, {
           caseId: 'E2E-18', file: join('compressible', 'sample-text-2.bin'), round: 'budget-recovery', source: 'window',
         });
-        const after = await pageState(page);
-        const originalSha = sha256File(round.fixture);
-        const receivedSha = sha256File(round.received);
-        const equal = originalSha === receivedSha;
+        const after = round.state;
+        const originalSha = round.save.hashes.original;
+        const receivedSha = round.save.hashes.received;
+        const equal = round.save.hashes.equal;
         leg.recovery = {
           equal, original: originalSha, received: receivedSha,
           streamBytes: legSizes(after, null).streamBytes,
           artifactBytes: legSizes(after, null).artifactBytes,
-          timings: legTimings(after),
+          timings: round.save.timings,
         };
         if (!canonicalRound && equal) canonicalRound = round;
         leg.hashes = { original: originalSha, received: receivedSha, equal };

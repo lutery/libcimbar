@@ -223,3 +223,196 @@ export function rejectionPointForCode(code) {
   if (String(code) === '13002' || String(code) === '13003') return 'decode_or_step';
   return null;
 }
+
+// --- Round-5 A-01: per-exception recovery legs -----------------------------
+//
+// After EVERY failed recording the same page (no reload) must actually
+// rebuild and save a known-good recording before the next bad input
+// (UAT-L15). The old journey waited for the video entry to re-enable after
+// empty/text/corrupt and recovered ONCE at the end, which the round-5
+// verdict rejected. A recovery leg is judged from the app's own evidence:
+// the real entry click opened the OS dialog, the app ingested the chosen
+// file (a 'recording:' delta), the attempt identity advanced, the session
+// reached Ready, the save produced complete/ordered save marks, and the
+// external SHA-256 of the saved file equals the fixture. The dialog helper's
+// exit code alone is NEVER product evidence (round-3 S-1 protocol): when the
+// helper failed AND the app never ingested anything, the leg is a rig
+// limitation (NOT_RUN with diagnostics), which still keeps the journey from
+// passing.
+export function evaluateRecoveryLeg({
+  helperExit, openIngested, attemptIdAdvanced, readyReached,
+  saveTimingsComplete, hashEqual,
+}) {
+  const failures = [];
+  if (helperExit !== 0) {
+    failures.push(`the OS open dialog helper did not exit 0 (exit ${String(helperExit)}): the real entry was not driven`);
+  }
+  if (openIngested !== true) {
+    failures.push("the app never logged 'recording:' for this dispatch: the dialog-selected file was not ingested " +
+      '(the helper exit code is not product evidence)');
+  }
+  if (attemptIdAdvanced !== true) {
+    failures.push('the attempt identity did not advance for the recovery import');
+  }
+  if (readyReached !== true) {
+    failures.push('the recovery import never reached Ready (no saveable artifact)');
+  }
+  if (saveTimingsComplete !== true) {
+    failures.push('the successful save has missing or unordered save timings ' +
+      '(saveRequestAt/writableAt/writeCloseAt)');
+  }
+  if (hashEqual !== true) {
+    failures.push('the external SHA-256 of the restored file does not equal the fixture');
+  }
+  const rigLimited = openIngested !== true && helperExit !== 0;
+  return {
+    ok: failures.length === 0,
+    failures,
+    rigLimited,
+    checks: {
+      helperExit,
+      openIngested: openIngested === true,
+      attemptIdAdvanced: attemptIdAdvanced === true,
+      readyReached: readyReached === true,
+      saveTimingsComplete: saveTimingsComplete === true,
+      hashEqual: hashEqual === true,
+    },
+  };
+}
+
+// --- Round-5 A-02: the recorded last-frame pair -----------------------------
+//
+// The pair is now ONE getDisplayMedia stream captured by TWO MediaRecorders
+// started in the same task (recorder.html __startPairRecording; the shared
+// head/tail is proven by video-prefix-check.py and pair-evidence.mjs). The
+// acceptance question is no longer "artifactFrameId === presented" (which
+// holds structurally on the artifact path) but whether the critical data
+// completed in the END SEGMENT of the with clip, while the without clip
+// genuinely reached EOF earlier and produced nothing:
+//
+//   with leg:    real completion media time T* = __videoTimeline.lastUs/1e6
+//                (artifactFrameId is a frame IDENTITY, never added to time),
+//                T* within END_SEGMENT_TOLERANCE_SEC of the clip's own media
+//                duration (parsed from the receiver's open-precheck line),
+//                __mediaEnded stays null, the save is hash-clean and its
+//                timings are complete/ordered.
+//   without leg: __mediaEnded FIRED, the EOF media time is within
+//                WITHOUT_EOF_TOLERANCE_SEC of the declared cut, and no
+//                artifact exists.
+//   pair:        T* > the without clip's own media duration.
+//
+// Missing hooks are explicit failures, never silent passes. endReason stays
+// a diagnostic (releaseInputs stops the source before the run loop can label
+// the ending), so it is not a criterion here.
+export const END_SEGMENT_TOLERANCE_SEC = 2.0;
+export const WITHOUT_EOF_TOLERANCE_SEC = 1.0;
+
+const finiteOrNull = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
+const round1 = (value) => Math.round(value * 10) / 10;
+
+export function evaluateLastFramePair({
+  withTStarSec, withDurationSec, withMediaEnded, withSaveHashEqual, withSaveTimingsComplete,
+  withoutEofFired, withoutEofMediaTimeSec, withoutDeclaredCutSec, withoutArtifactAbsent,
+  withoutDurationSec,
+}) {
+  const failures = [];
+  const tStar = finiteOrNull(withTStarSec);
+  const withDuration = finiteOrNull(withDurationSec);
+  const eofTime = finiteOrNull(withoutEofMediaTimeSec);
+  const declaredCut = finiteOrNull(withoutDeclaredCutSec);
+  const withoutDuration = finiteOrNull(withoutDurationSec);
+
+  if (tStar === null) {
+    failures.push('the with leg has no real completion media time (__videoTimeline.lastUs missing)');
+  }
+  if (withDuration === null || withDuration <= 0) {
+    failures.push('the with leg has no parsed recording duration (the open-precheck "recording: WxH, D s" line is missing)');
+  }
+  const endSegmentBoundary = withDuration != null ? withDuration - END_SEGMENT_TOLERANCE_SEC : null;
+  const endSegmentOk = tStar != null && endSegmentBoundary != null && tStar >= endSegmentBoundary;
+  if (tStar != null && endSegmentBoundary != null && !endSegmentOk) {
+    failures.push(`the with leg completed at T*=${tStar}s, more than ${END_SEGMENT_TOLERANCE_SEC}s before the end of its ` +
+      `own ${withDuration}s media (boundary ${endSegmentBoundary}s): the critical data did not complete in the end segment`);
+  }
+  if (withMediaEnded !== null) {
+    failures.push(`__mediaEnded must stay null on the with leg (got ${JSON.stringify(withMediaEnded)}): ` +
+      'the session must settle at the artifact, not at the natural media end');
+  }
+  if (withSaveHashEqual !== true) {
+    failures.push('the with-leg save is not hash-clean (external SHA-256 of original vs received)');
+  }
+  if (withSaveTimingsComplete !== true) {
+    failures.push('the with-leg save has missing or unordered save timings (saveRequestAt/writableAt/writeCloseAt)');
+  }
+  if (withoutEofFired !== true) {
+    failures.push('the without leg never fired __mediaEnded: it did not reach real EOF');
+  }
+  if (eofTime === null) {
+    failures.push('the without leg has no EOF media time');
+  }
+  if (declaredCut === null || declaredCut <= 0) {
+    failures.push('the pair manifest does not declare a positive cut time (declaredCutMs)');
+  }
+  const eofBoundary = declaredCut != null ? declaredCut - WITHOUT_EOF_TOLERANCE_SEC : null;
+  if (eofTime != null && eofBoundary != null && eofTime < eofBoundary) {
+    failures.push(`the without EOF media time ${eofTime}s is more than ${WITHOUT_EOF_TOLERANCE_SEC}s before the declared ` +
+      `cut ${declaredCut}s (boundary ${eofBoundary}s): the without clip was truncated, not stopped at the cut`);
+  }
+  if (withoutArtifactAbsent !== true) {
+    failures.push('the without leg left a saveable artifact');
+  }
+  if (tStar != null && withoutDuration != null && !(tStar > withoutDuration)) {
+    failures.push(`pair validity: T*=${tStar}s must exceed the without clip's own media duration ${withoutDuration}s`);
+  } else if (withoutDuration === null) {
+    failures.push('the without leg has no measured media duration');
+  }
+
+  // Leg-level aggregates: the runner derives leg statuses from these (no
+  // parallel criterion logic in the runner).
+  const saveOk = withSaveHashEqual === true && withSaveTimingsComplete === true;
+  const pairValid = tStar != null && withoutDuration != null && tStar > withoutDuration;
+  const withLegOk = tStar != null && withDuration != null && endSegmentOk
+    && withMediaEnded === null && saveOk;
+  const withoutLegOk = withoutEofFired === true && eofTime != null && eofBoundary != null
+    && eofTime >= eofBoundary && withoutArtifactAbsent === true;
+
+  // Re-record guidance: the lane re-tunes the declared stop points from the
+  // MEASURED T* (withMs = T* + 1.5 s, cut = T* - 1.5 s; at most two
+  // calibrations). Produced when end-segment OR pair-validity failed while a
+  // real, positive T* exists - a made-up suggestion would be worse than none.
+  let rerecord = null;
+  if (tStar != null && tStar > 0
+      && ((endSegmentBoundary != null && !endSegmentOk)
+        || (withoutDuration != null && !pairValid))) {
+    rerecord = {
+      measuredTStarSec: tStar,
+      suggestedWithSeconds: round1(tStar + 1.5),
+      suggestedCutSeconds: round1(Math.max(0.5, tStar - 1.5)),
+      instruction: `RE-RECORD the pair with --with-seconds ${round1(tStar + 1.5)} --cut-seconds ` +
+        `${round1(Math.max(0.5, tStar - 1.5))} (measured T*=${tStar}s)`,
+    };
+  }
+
+  return {
+    ok: failures.length === 0,
+    failures,
+    rerecord,
+    checks: {
+      tStarSec: tStar,
+      withDurationSec: withDuration,
+      endSegmentBoundarySec: endSegmentBoundary,
+      endSegment: endSegmentOk,
+      mediaEndedNull: withMediaEnded === null,
+      saveHashEqual: withSaveHashEqual === true,
+      saveTimingsComplete: withSaveTimingsComplete === true,
+      withoutEofFired: withoutEofFired === true,
+      withoutEofMediaTimeSec: eofTime,
+      withoutDeclaredCutSec: declaredCut,
+      withoutArtifactAbsent: withoutArtifactAbsent === true,
+      pairValidity: pairValid,
+      saveOk,
+      withLegOk,
+      withoutLegOk,
+    },
+  };
+}
