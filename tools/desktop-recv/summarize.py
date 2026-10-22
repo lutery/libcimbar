@@ -79,9 +79,26 @@ def leg_rows(records):
         measurement = record.get("measurement") or {}
         legs = measurement.get("legs") or []
         for leg in legs:
-            timings = leg.get("timings") or {}
+            # R11-B2: legs that carry their timing block only under
+            # `saveTimings` (E2E-15 recovery legs) contribute the same
+            # decomposition keys as legs that use `timings`.
+            timings = leg.get("timings") or leg.get("saveTimings") or {}
             sizes = leg.get("sizes") or {}
             hashes = leg.get("hashes") or {}
+            # saveTimingsComplete: prefer the leg's own assertion; when a save
+            # clearly happened but the field is absent (E2E-16's with-leg),
+            # derive it from the marks; legs with no save marks at all keep
+            # None (an explicit '-', never a fabricated verdict).
+            save_complete = leg.get("saveTimingsComplete")
+            if save_complete is None:
+                marks = [timings.get("saveRequestAt"),
+                         timings.get("writableAt"),
+                         timings.get("writeCloseAt")]
+                if any(mark is not None for mark in marks):
+                    save_complete = (all(mark is not None for mark in marks)
+                                     and marks[0] <= marks[1] <= marks[2])
+                else:
+                    save_complete = None
             rows.append({
                 "caseId": record.get("caseId"),
                 "attemptId": record.get("attemptId"),
@@ -108,7 +125,7 @@ def leg_rows(records):
                     "saveWriteMs": timings.get("saveWriteMs"),
                     "saveMs": timings.get("saveMs"),
                 },
-                "saveTimingsComplete": leg.get("saveTimingsComplete"),
+                "saveTimingsComplete": save_complete,
                 "rejectionTimings": leg.get("rejectionTimings"),
                 "rawTimings": timings,
                 "hashes": {

@@ -2429,7 +2429,6 @@ const SCENARIOS = {
     // after both legs complete).
     await resetMediaHooks();
     await resetJourneyMarks(page);
-    const withoutBaseline = legBaseline(await pageState(page));
     await importVideo(page, join(media, 'V-LAST-without.webm'));
     let withoutEof = null;
     try {
@@ -2563,6 +2562,7 @@ const SCENARIOS = {
           (pairVerdict.rerecord ? `; ${pairVerdict.rerecord.instruction}` : '') +
           (saveFailure ? `; save failed: ${saveFailure}` : ''),
         timings: save ? save.timings : legTimings(withState),
+        saveTimingsComplete: save ? save.saveTimingsComplete : false,
         sizes: legSizes(withState, statSync(original).size),
         hashes: save ? save.hashes : { original: sha256File(original), received: null, equal: false },
         notes: `completion media time T*=${String(tStarSec)}s = lastUs/1e6 (dimensional fix); ` +
@@ -3006,7 +3006,12 @@ const SCENARIOS = {
       const existing = readResults(RUN).find((entry) => entry.caseId === 'E2E-18');
       const existingLegs = (existing && existing.measurement && existing.measurement.legs) || [];
       for (const leg of existingLegs) {
-        if (!ONLY_LEGS.includes(leg.id)) legs.push(leg);
+        if (!ONLY_LEGS.includes(leg.id)) {
+          // R11-B3: a carried leg keeps the identity of the attempt that
+          // actually executed it; the record-level attemptId names the merge
+          // attempt, and must not re-attribute the carried executions.
+          legs.push({ ...leg, executedInAttempt: leg.executedInAttempt || existing.attemptId || null });
+        }
       }
       const artifacts = join(RUN, 'proof', 'E2E-18');
       if (existsSync(join(artifacts, 'original.bin')) && existsSync(join(artifacts, 'received.bin'))) {

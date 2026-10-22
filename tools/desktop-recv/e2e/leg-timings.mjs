@@ -84,6 +84,12 @@ export function computeLegTimings(state = {}) {
 // The post-save assertion: after a successful save, the request, the writable
 // open and the write-close must all be real timestamps, in that order. The
 // three failures are named individually so a record can cite them.
+//
+// Round-11 S-2 (noted, deliberately not changed): createWritableAccessedAt -
+// the picker boundary - is NOT in the required set, so a leg whose picker
+// mark went missing would still pass here while pickerWaitMs/saveWaitMs stay
+// null. All save legs observed so far carried the mark. Making it required is
+// a criteria change that belongs to a review decision, not this file.
 export function assertSaveTimingsComplete(timings) {
   const t = timings || {};
   const failures = [];

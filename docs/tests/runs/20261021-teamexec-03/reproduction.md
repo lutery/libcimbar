@@ -14,10 +14,10 @@
 - `.gitignore` 第 32 行：`docs/tests/runs/*/fixtures-media/`。
 - 因此 run-03 的 `fixtures-media/`（真实发送端窗口录像 `V-LAST-with.webm`、`V-LAST-without.webm`、随行 payload 等）**不入库**。
 - 干净克隆**不能直接重放**任何录像导入类旅程（E2E-1 的 recorded 腿、E2E-14、E2E-15、E2E-16、E2E-18 的录像腿等）——必须先按第 3 节重建媒体，且重建需要真实 Windows 桌面会话。
-- 媒体目录内的 `manifest.json`（录制清单，含各段 sha256）随目录一起不入库。对录像的哈希核对，第三方只能依赖：
+- round-5 起，`fixtures-media/manifest.json` 的**入库文本副本**已留档在非忽略路径 `proof/E2E-16/manifest.json`（含内嵌 video-prefix-check 结果；另有 `proof/E2E-16/prefix-check.json` 单独副本），第三方无需持有媒体即可核对 pair 构造声明、payload sha256 与逐段 clip sha256。对录像的哈希核对，第三方可以依赖：
   1. 本清单第 2 节的确定性 fixtures 哈希（可逐字节复现）；
   2. 已提交 `results.json` 各记录 notes 中引用的视频 sha256 前缀（如 E2E-14 的 `video sha256 …`）；
-  3. 需要完整核对录像哈希时，向运行方索取 `fixtures-media/manifest.json` 内容，或要求其在非忽略路径（如 `proof/`）留档文本副本。
+  3. 已提交的 `proof/E2E-16/manifest.json`（pair 清单：payload sha、两段 clip 的 sha256/bytes/声明停点）。
 - 本清单不把任何二进制媒体复制进仓库。
 
 ### 1.2 其余目录的入库状态
@@ -69,6 +69,8 @@ Get-ChildItem -Recurse -File $root -Filter *.bin | ForEach-Object {
 
 ## 3. 非确定性输入：真实录像（record-sender）
 
+> round-5（D-20/D-21）起，V-LAST 对的构造改为**同流双录制器**（一次 `getDisplayMedia`、同一任务内启动的两个 `MediaRecorder`、声明停点），并用 `video-prefix-check.py` 在产物文件上证明共享头/尾。round-3 时代的"每段录制前 reload 发送端以共享编码前缀"协议已被 round-5 外审以像素实测否决（reload 不是帧 0 同步：首帧平均差 79.054/255），仅作历史记录，**不得再引用**。
+
 ### 3.1 命令行
 
 ```text
@@ -80,23 +82,30 @@ node tools\desktop-recv\e2e\record-sender.mjs --only last
 | 参数 | 默认 | 说明 |
 |---|---|---|
 | `--only` | full | `last` 只录 V-LAST 对；`full` 录全套（会重录 V-GOOD-C/N 与 V-SHORT，禁止在保留历史证据的目录使用） |
-| `--payload-bytes` | 131072 | V-LAST 对的 payload 字节数（crypto 随机字节，写入 `fixtures-media/payload-<n>k-random.bin`） |
-| `--with-seconds` | 40 | V-LAST-with 请求的录制秒数 |
-| `--without-seconds` | 6 | V-LAST-without 请求的录制秒数（E2E-16 有效性判据不满足时调大重录） |
+| `--payload-bytes` | 131072 | V-LAST 对的 payload 字节数（`fixtures-media/payload-<n>k-random.bin`；**文件已存在且尺寸一致时字节被复用、不重新生成**，见 3.4） |
+| `--with-seconds` | 9.5 | with 片段声明的录制时长（秒）。9.5 为探针调优默认（run-03 实测 T\*≈8.0–8.9 s，满足 E2E-16 末段判据 `T* ≥ withDuration − 2.0 s`） |
+| `--cut-seconds` | 6.5 | without 片段声明的裁停时刻（秒）。6.5 为探针调优默认（≈T\*−1.5 s）；`--without-seconds` 是它的旧名兼容别名 |
 
 ### 3.2 输出与 manifest
 
-run-03 的 `fixtures-media/` 下产出 `V-LAST-with.webm`、`V-LAST-without.webm`、`payload-<n>k-random.bin` 与 `manifest.json`。manifest 记录：run 路径、生成时间、**完整命令行**、构造说明（两段同起点）、payload（bytes/sha256）、每个 clip 的 `requestedMs/wallMs/startedAt/stoppedAt/sha256/bytes`。
+run-03 的 `fixtures-media/` 下产出 `V-LAST-with.webm`、`V-LAST-without.webm`、`payload-<n>k-random.bin`、`prefix-check.json` 与 `manifest.json`（另写一份带时间戳的 `manifest-<ISO>.json` 副本）。manifest 记录：run 路径、生成时间、**完整命令行**、同流构造声明（"ONE getDisplayMedia stream; two MediaRecorders started in the same task at startEpochMs; without stops at the declared cut; with stops at its declared duration; never byte-truncated; shared head/tail verified by video-prefix-check.py"）、`pair` 块（`startEpochMs/declaredCutMs/withMs/mimeType/videoBitsPerSecond/startedInSameTask/payloadReused/payloadSha256` 与两段停点时刻）、内嵌 `prefixCheck` JSON，以及每个 clip 的 `role/requestedMs/declaredCutMs/startEpochMs/wallStopAt/sha256/bytes`。录制后装置自动运行 `video-prefix-check.py`（`--cut-ms` 取声明值）并把结果嵌入 manifest：head 在 verdict 量测区域 `[160:940:8, 430:1180:8]` ±6 帧偏移搜索、阈值 `max(10.0, 2×片内连续帧底线)`；tail 要求 without 末 3 帧在声明裁停对应的 PTS 位置于 with 片内命中。独立复跑：
 
-### 3.3 构造协议（equivalent-traceable 对）
+```powershell
+python tools\desktop-recv\e2e\video-prefix-check.py --selftest
+python tools\desktop-recv\e2e\video-prefix-check.py --with <V-LAST-with.webm> --without <V-LAST-without.webm> --cut-ms 6500
+```
 
-每段 V-LAST 录制前**先 reload 发送端并重新加载同一 payload**：两段都从发送端第 0 帧开始，共享同一条编码轨迹前缀；两段的唯一差异是录制停止时刻。E2E-16 的配对判据依赖这一点（`T*` 以 with 腿完成时刻估计且要求 `T* > without` 时长；不成立时先调大 `--without-seconds` 重录，仍不成立则 E2E-16 如实 FAIL）。
+已提交的 run-03 结果：head bestOffset=0、bestMeanAbsDiff=0.000（阈值 10.0），tail 3/3 命中（cut-time-pts 映射），verdict PASS。
 
-### 3.4 诚实边界：录像哈希不是可预知常量
+### 3.3 构造协议（同流双录制器配对）
 
-- 真实屏幕录制逐帧受窗口合成器与采样时刻影响，**不可字节级复现**；V-LAST payload 用 `crypto.randomBytes` 亦非确定。
-- 因此对媒体而言"期望输出哈希"不是本清单能预先给出的固定值，而是**生成时刻 `manifest.json` 中的实测值**；重录得到的是新的一对（新哈希），须以新 manifest 为准并同步更新依赖该媒体的记录——不得宣称与原录像同哈希，也不得把旧哈希粘贴进新记录。
-- 第三方核对方式：以 manifest 与实际文件做 Get-FileHash 比对（见 3.5）。
+发送端加载 payload 后**单次连续播放**；录制页 `recorder.html` 的 `__startPairRecording` 只调用**一次** `getDisplayMedia`，把同一条流交给**两个** `MediaRecorder`，二者在同一任务内背靠背 `start()`（`meta.startedInSameTask=true`），因此两个编码器从同一时刻起看到同一帧序列。without 片段在 `cut` 声明值定时停止，with 片段在 `withMs` 声明值定时停止（声明停点，非动态触发）；两段均不做任何字节截断。E2E-16 在旅程开始处用 `pair-evidence.mjs` 对 manifest+盘上哈希+前缀检查做配对门禁，随后才运行三腿判据：with 腿 `T* = __videoTimeline.lastUs/1e6` 落在其自身媒体时长的末段（`T* ≥ withDurationSec − 2.0 s`，时长取接收端 open-precheck 行）、`__mediaEnded` 保持 null、保存哈希一致；without 腿真实 EOF（媒体时间 ≥ `declaredCut − 1.0 s`）且无产物；配对有效性 `T* > without` 时长。若末段判据不满足，失败依据会给出 RE-RECORD 指示（`withMs = T*_实测 + 1.5 s`、`cut = T*_实测 − 1.5 s`，校准预算 2 次）；run-03 车道首轮即通过，未消耗校准。
+
+### 3.4 诚实边界：payload 字节复用与录像哈希不可预知
+
+- **payload REUSE**：`record-sender` 在 `fixtures-media/payload-<n>k-random.bin` 已存在且尺寸一致时**复用原字节**（manifest `payloadReused=true` 并记录 `payloadSha256`，run-03 为 `b59e5ec5…`），只在文件缺失时才以 `crypto.randomBytes` 生成——T\* 是针对这批字节实测的，静默换字节会使配对与判据失锚。
+- 真实屏幕录制逐帧受窗口合成器与采样时刻影响，**不可字节级复现**；因此对媒体而言"期望输出哈希"不是本清单能预先给出的固定值，而是**生成时刻 `manifest.json` 中的实测值**；重录得到的是新的一对（新哈希），须以新 manifest 为准并同步更新依赖该媒体的记录——不得宣称与原录像同哈希，也不得把旧哈希粘贴进新记录。
+- 第三方核对方式：以已提交的 `proof/E2E-16/manifest.json` 与重建后的实际文件做 Get-FileHash 比对（见 3.5；注意重建得到的是**新**的一对，与已提交 manifest 的哈希不同属预期，构造与判据的可比性由 prefix-check 而非字节相等保证）。
 
 ### 3.5 媒体哈希复核命令
 
@@ -107,7 +116,7 @@ Get-ChildItem -File $media | ForEach-Object {
 }
 ```
 
-与 `fixtures-media/manifest.json` 的 payload 与 clips 条目逐项比对（文件、字节数、sha256）。
+与 `fixtures-media/manifest.json` 的 payload 与 clips 条目逐项比对（文件、字节数、sha256）；pair 构造声明与已提交的 `proof/E2E-16/manifest.json` 应逐字一致（E2E-16 会把判据所用副本落盘在 proof/）。
 
 ### 3.6 运行前置条件
 
@@ -174,10 +183,10 @@ V-GOOD-C / V-GOOD-N / V-SHORT 在 `--only last` 模式下被明确跳过（源�
 | 各旅程 attemptId、逐腿状态、NOT_RUN 依据 | 可：读 results.json 与 proof/ | — |
 | E2E-16 配对因果（T* 与 without 时长） | 可读时间线记录 | 重放需媒体 |
 | 录像导入类旅程重放（E2E-1 recorded 腿、E2E-14/15/16/18 录像腿） | 不可 | 需按第 3 节重建媒体，且需真实桌面会话 |
-| 录像文件及其 manifest 的字节核对 | 部分：results.json notes 有视频 sha256 前缀；完整核对需 media manifest 副本 | 需媒体文件 |
+| 录像文件及其 manifest 的字节核对 | pair 清单可：`proof/E2E-16/manifest.json`（含 prefix-check JSON、payload sha、逐段 clip sha256/bytes）已提交；其余录像仅 notes 有 sha 前缀 | clip 字节本身的核对需媒体文件 |
 | 性能结论 | 不可得：性能保持 NOT_EVALUATED（阈值未冻结），无可复核的吞吐主张 | — |
 
-补充说明：`fixtures-media/manifest.json` 若由运行方转存文本副本到非忽略路径（如 `proof/`），第三方即可在不持有媒体的前提下核对录像哈希；本清单不代为转存。
+补充说明：round-5 车道已把 pair 清单文本副本留档到非忽略路径 `proof/E2E-16/manifest.json`（含 `prefix-check.json`），第三方在不持有媒体的前提下即可核对 pair 构造、payload 与两段 clip 的哈希声明；其余媒体的完整字节核对仍需向运行方索取。
 
 ## 6. run-01 支持矩阵：历史快照声明
 

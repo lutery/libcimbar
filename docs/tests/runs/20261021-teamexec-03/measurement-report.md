@@ -67,13 +67,13 @@ Performance: NOT_EVALUATED (thresholds not frozen (V-002/V-003 pending); this to
 | case | attempt | leg | status | raw B | stream B | artifact B | decoder init ms | source wait ms | init ms | reconstruct ms | total->ready ms | picker wait ms | writable open ms | save wait ms | save write ms | save ms | save timings | hash equal | note / basis |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | real-entry-cancel | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | real entry (#btn-video click) + OS dialog cancel; no change event may fire |
-| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-cancel | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
+| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-cancel | PASS | - | - | - | 172 | 295 | 467 | 315 | 782 | 4788 | 7 | 4795 | 112 | 4907 | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
 | E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | empty-import | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | import-path-only evidence (DataTransfer change event, not the entry) |
-| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-empty | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
+| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-empty | PASS | - | - | - | 457 | 0 | 457 | 300 | 757 | 4537 | 4 | 4541 | 96 | 4637 | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
 | E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | text-import | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | import-path-only evidence (DataTransfer change event, not the entry) |
-| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-text | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
+| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-text | PASS | - | - | - | 118 | 200 | 318 | 254 | 572 | 6700 | 8 | 6708 | 96 | 6804 | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
 | E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | corrupt-import | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | import-path-only evidence (DataTransfer change event, not the entry) |
-| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-corrupt | PASS | - | - | - | - | - | - | - | - | - | - | - | - | - | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
+| E2E-15 | E2E-15-2026-10-22T06-13-41-332Z-a78e7f | recovery-corrupt | PASS | - | - | - | 99 | 171 | 270 | 210 | 480 | 4153 | 6 | 4159 | 97 | 4256 | True | True | real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save |
 
 ### video / compressible / 4MiB
 
@@ -97,7 +97,7 @@ Performance: NOT_EVALUATED (thresholds not frozen (V-002/V-003 pending); this to
 
 | case | attempt | leg | status | raw B | stream B | artifact B | decoder init ms | source wait ms | init ms | reconstruct ms | total->ready ms | picker wait ms | writable open ms | save wait ms | save write ms | save ms | save timings | hash equal | note / basis |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| E2E-16 | E2E-16-2026-10-22T06-16-42-556Z-9bdbbd | v-last-with | PASS | 131072 | 131184 | 131072 | 111 | 96 | 207 | 17238 | 17445 | 5402 | 4 | 5406 | 100 | 5506 | - | True | completion media time T*=8.869s = lastUs/1e6 (dimensional fix); withDuration=9.3s (open-precheck delta) |
+| E2E-16 | E2E-16-2026-10-22T06-16-42-556Z-9bdbbd | v-last-with | PASS | 131072 | 131184 | 131072 | 111 | 96 | 207 | 17238 | 17445 | 5402 | 4 | 5406 | 100 | 5506 | True | True | completion media time T*=8.869s = lastUs/1e6 (dimensional fix); withDuration=9.3s (open-precheck delta) |
 
 ### video / incompressible / 128KiB (without)
 
