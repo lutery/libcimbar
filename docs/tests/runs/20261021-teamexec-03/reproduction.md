@@ -95,7 +95,16 @@ python tools\desktop-recv\e2e\video-prefix-check.py --selftest
 python tools\desktop-recv\e2e\video-prefix-check.py --with <V-LAST-with.webm> --without <V-LAST-without.webm> --cut-ms 6500
 ```
 
-已提交的 run-03 结果：head bestOffset=0、bestMeanAbsDiff=0.000（阈值 10.0），tail 3/3 命中（cut-time-pts 映射），verdict PASS。
+已提交的 run-03 结果：head bestOffset=0、bestMeanAbsDiff=0.000（阈值 10.0），tail 3/3 命中（cut-time-pts 映射），verdict PASS。独立复跑（2026-10-22，审查方，对现存媒体执行）：
+
+```powershell
+python tools\desktop-recv\e2e\video-prefix-check.py `
+  --with docs\tests\runs\20261021-teamexec-03\fixtures-media\V-LAST-with.webm `
+  --without docs\tests\runs\20261021-teamexec-03\fixtures-media\V-LAST-without.webm `
+  --cut-ms 6500
+```
+
+输出与已提交的 `proof/E2E-16/prefix-check.json` 及 manifest 内嵌 JSON 逐字一致。
 
 ### 3.3 构造协议（同流双录制器配对）
 

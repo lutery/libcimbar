@@ -19,7 +19,8 @@ import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  copyArtifact, readResults, sha256File, upsertResult, roundtripRecord, writeProof, writeResults,
+  copyArtifact, readResults, sha256File, stampLegAttempts, upsertResult, roundtripRecord,
+  writeProof, writeResults,
 } from './evidence.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -3006,12 +3007,7 @@ const SCENARIOS = {
       const existing = readResults(RUN).find((entry) => entry.caseId === 'E2E-18');
       const existingLegs = (existing && existing.measurement && existing.measurement.legs) || [];
       for (const leg of existingLegs) {
-        if (!ONLY_LEGS.includes(leg.id)) {
-          // R11-B3: a carried leg keeps the identity of the attempt that
-          // actually executed it; the record-level attemptId names the merge
-          // attempt, and must not re-attribute the carried executions.
-          legs.push({ ...leg, executedInAttempt: leg.executedInAttempt || existing.attemptId || null });
-        }
+        if (!ONLY_LEGS.includes(leg.id)) legs.push(leg);
       }
       const artifacts = join(RUN, 'proof', 'E2E-18');
       if (existsSync(join(artifacts, 'original.bin')) && existsSync(join(artifacts, 'received.bin'))) {
@@ -3825,6 +3821,14 @@ function stampAttemptId(caseId, attemptId) {
   const record = records.find((entry) => entry.caseId === caseId);
   if (!record) return;
   record.attemptId = attemptId;
+  // Round-12 S-1: attribute per-leg executions at the FINAL record write,
+  // never in the --legs merge path (writeAttemptMarker has already replaced
+  // the record's attemptId with THIS attempt's id before the scenario runs,
+  // so `existing.attemptId` there is always the merge attempt - stamping
+  // there re-attributed carried legs to the merger). A leg that already
+  // carries executedInAttempt was executed in an earlier attempt and keeps
+  // it; a freshly executed leg receives the current attempt id.
+  stampLegAttempts(record, attemptId);
   writeResults(RUN, records);
 }
 

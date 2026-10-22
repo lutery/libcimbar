@@ -16,7 +16,7 @@ import {
 import {
   PAIR_CONSTRUCTION, evaluatePairConstruction,
 } from '../../../../tools/desktop-recv/e2e/pair-evidence.mjs';
-import { lifecycleRecord, roundtripRecord } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
+import { lifecycleRecord, roundtripRecord, stampLegAttempts } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
 const HASH = 'a'.repeat(64);
 const HASH2 = 'b'.repeat(64);
@@ -717,6 +717,34 @@ test('UT-110 the end-segment boundary is D-2.0 exactly: boundary passes, D-2.01 
   assert.equal(bad.rerecord.measuredTStarSec, 7.49);
   assert.equal(bad.rerecord.suggestedWithSeconds, 9);
   assert.equal(bad.rerecord.suggestedCutSeconds, 6);
-  assert.equal(bad.rerecord.suggestedCutSeconds, 6);
+});
+
+// --- Round-12 S-1: per-leg execution attribution at the final record write ---
+
+// Given a merged record whose legs were carried from an earlier attempt
+// (executedInAttempt already set) plus legs executed in the current attempt
+// (no field, or null)
+// When the final record write stamps the attempt
+// Then carried legs keep their origin and fresh legs get the current attempt;
+// a record without a measurement is returned unchanged
+test('UT-111 leg execution attribution: carried legs keep their origin, fresh legs get the current attempt', () => {
+  const record = {
+    caseId: 'E2E-18',
+    measurement: {
+      legs: [
+        { id: 'carried', executedInAttempt: 'att-origin' },
+        { id: 'fresh' },
+        { id: 'fresh-null', executedInAttempt: null },
+      ],
+    },
+  };
+  stampLegAttempts(record, 'att-merge');
+  assert.equal(record.measurement.legs[0].executedInAttempt, 'att-origin');
+  assert.equal(record.measurement.legs[1].executedInAttempt, 'att-merge');
+  assert.equal(record.measurement.legs[2].executedInAttempt, 'att-merge');
+
+  const plain = { caseId: 'E2E-15', attemptId: 'att-x' };
+  assert.equal(stampLegAttempts(plain, 'att-y'), plain);
+  assert.equal(plain.attemptId, 'att-x');
 });
 

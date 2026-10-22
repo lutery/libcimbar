@@ -108,3 +108,19 @@ export function lifecycleRecord({
 export function ensureDir(path) {
   mkdirSync(dirname(path), { recursive: true });
 }
+
+// Round-12 S-1: per-leg execution attribution, applied at the FINAL record
+// write (the S-1 attempt wrapper in run-e2e.mjs). A leg that already carries
+// executedInAttempt was executed in an earlier attempt (carried through a
+// --legs merge) and keeps its origin; a freshly executed leg receives the
+// current attempt id. The record-level attemptId names the attempt that
+// wrote the record (the merge attempt), never the carried executions.
+// Mutates and returns the record; a record without legs is returned as-is.
+export function stampLegAttempts(record, attemptId) {
+  const legs = record && record.measurement && Array.isArray(record.measurement.legs)
+    ? record.measurement.legs : [];
+  for (const leg of legs) {
+    if (leg && !leg.executedInAttempt) leg.executedInAttempt = attemptId;
+  }
+  return record;
+}
