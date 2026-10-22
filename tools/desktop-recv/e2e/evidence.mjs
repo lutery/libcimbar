@@ -139,6 +139,28 @@ export function tagCarriedLegs(legs, reexecutedIds, attemptId) {
   return carried;
 }
 
+// Round-9 B-R1 (exception path): the attempt marker carries the PRIOR
+// measurement verbatim. Those legs were NOT executed by this attempt, so
+// every one of them is tagged carried/origin before the scenario runs -
+// otherwise an early failure (e.g. ensureExtendedFixtures throwing before the
+// --legs merge) would let the final stamp treat the historical legs as this
+// attempt's executions, and later merges would inherit the polluted origin.
+// Idempotent: an existing carriedInAttempt is never overwritten (a leg
+// already tagged in-scenario keeps its tag).
+export function markMarkerLegsCarried(record, attemptId) {
+  const legs = record && record.measurement && Array.isArray(record.measurement.legs)
+    ? record.measurement.legs : [];
+  for (const leg of legs) {
+    if (!leg || leg.carriedInAttempt) continue;
+    leg.carriedInAttempt = {
+      into: attemptId,
+      origin: leg.executedInAttempt || 'unknown',
+      basis: "carried into this attempt's marker from the prior record; not executed in this attempt",
+    };
+  }
+  return record;
+}
+
 // The final-record-write stamp: ONLY a leg with neither an origin
 // (executedInAttempt) nor an explicit carried fact is treated as freshly
 // executed. Carried legs keep executedInAttempt absent plus their

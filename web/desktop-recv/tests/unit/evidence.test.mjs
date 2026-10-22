@@ -16,7 +16,9 @@ import {
 import {
   PAIR_CONSTRUCTION, evaluatePairConstruction,
 } from '../../../../tools/desktop-recv/e2e/pair-evidence.mjs';
-import { lifecycleRecord, roundtripRecord, stampLegAttempts, tagCarriedLegs } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
+import {
+  lifecycleRecord, markMarkerLegsCarried, roundtripRecord, stampLegAttempts, tagCarriedLegs,
+} from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
 const HASH = 'a'.repeat(64);
 const HASH2 = 'b'.repeat(64);
@@ -812,5 +814,85 @@ test('UT-113 tagCarriedLegs tags only legs outside the re-execution set; empty s
   assert.equal(carriedAgain[0].carriedInAttempt.origin, 'att-first');
   assert.equal(carriedAgain[0].carriedInAttempt.into, 'att-second');
   assert.equal(carriedAgain[0].executedInAttempt, 'att-first');
+});
+
+// --- Round-9 B-R1: the exception exits (marker-carried base isolated) -------
+
+// Exception shape A: the attempt marker carries the PRIOR 10-leg measurement
+// verbatim; the scenario then throws before the --legs merge (e.g. fixture
+// generation fails) and the final stamp still runs. The historical legs must
+// NOT be attributed to the failed attempt, and the NEXT normal merge must
+// keep their origin 'unknown' (not the failed attempt's id).
+test('UT-114 exception shape A: a marker-carried legacy base is never stamped by a failed attempt; the next merge keeps origin unknown', () => {
+  const legacyIds = [
+    'live-c-1mib', 'live-c-4mib', 'live-n-1mib', 'live-n-4mib',
+    'video-c-4mib', 'video-n-128kib', 'video-n-1mib-probe', 'video-n-4mib',
+    'live-c-20mib-over-budget', 'live-n-20mib-over-budget',
+  ];
+  const prior = {
+    caseId: 'E2E-18',
+    attemptId: 'att-origin',
+    measurement: { legs: legacyIds.map((id) => ({ id, status: id.endsWith('over-budget') && id.startsWith('live-n') ? 'NOT_RUN' : 'PASS' })) },
+  };
+  // writeAttemptMarker semantics: copy the prior measurement + tag carried.
+  const marker = {
+    caseId: 'E2E-18', result: 'FAIL', attemptId: 'att-failed',
+    measurement: { legs: prior.measurement.legs.map((leg) => ({ ...leg })) },
+  };
+  markMarkerLegsCarried(marker, 'att-failed');
+  // Idempotent: a second call must not overwrite the existing tag.
+  markMarkerLegsCarried(marker, 'att-failed-2');
+  for (const leg of marker.measurement.legs) {
+    assert.equal(leg.carriedInAttempt.into, 'att-failed');
+    assert.equal(leg.carriedInAttempt.origin, 'unknown');
+  }
+  // Early throw before the merge; the finally still stamps the marker.
+  stampLegAttempts(marker, 'att-failed');
+  for (const leg of marker.measurement.legs) {
+    assert.equal(leg.executedInAttempt, undefined,
+      `${leg.id} must not be attributed to the failed attempt`);
+    assert.deepEqual(leg.carriedInAttempt, {
+      into: 'att-failed',
+      origin: 'unknown',
+      basis: "carried into this attempt's marker from the prior record; not executed in this attempt",
+    });
+  }
+  // A genuinely fresh leg appended in that attempt IS stamped (it executed).
+  const withFresh = { caseId: 'E2E-18', measurement: { legs: [...marker.measurement.legs, { id: 'fresh-leg' }] } };
+  stampLegAttempts(withFresh, 'att-failed');
+  assert.equal(withFresh.measurement.legs[withFresh.measurement.legs.length - 1].executedInAttempt, 'att-failed');
+
+  // The NEXT normal --legs merge carries the same base: origin stays unknown,
+  // never the failed attempt's id.
+  const nextCarried = tagCarriedLegs(marker.measurement.legs, ['live-c-20mib-over-budget'], 'att-next');
+  assert.equal(nextCarried.length, 9);
+  for (const leg of nextCarried) {
+    assert.equal(leg.carriedInAttempt.into, 'att-next');
+    assert.equal(leg.carriedInAttempt.origin, 'unknown');
+    assert.equal(leg.executedInAttempt, undefined);
+  }
+});
+
+// Exception shape B: legs already tagged in-scenario via tagCarriedLegs, then
+// the scenario throws before writing its record. The final stamp re-runs on
+// the marker record and must not reattribute the carried tags; only the
+// freshly executed leg of that attempt is stamped.
+test('UT-115 exception shape B: in-scenario carried tags survive a throw before the record write', () => {
+  const legs = [{ id: 'live-c-1mib' }, { id: 'live-n-4mib' }];
+  tagCarriedLegs(legs, ['live-c-20mib-over-budget'], 'att-failed');
+  assert.equal(legs[0].carriedInAttempt.origin, 'unknown');
+  assert.equal(legs[0].carriedInAttempt.into, 'att-failed');
+
+  // Scenario throws before upsert; the marker record holds the same shapes.
+  const marker = {
+    caseId: 'E2E-18',
+    measurement: { legs: [...legs, { id: 'live-c-20mib-over-budget' }] },
+  };
+  stampLegAttempts(marker, 'att-failed');
+  assert.equal(legs[0].executedInAttempt, undefined);
+  assert.equal(legs[0].carriedInAttempt.origin, 'unknown');
+  assert.equal(legs[1].executedInAttempt, undefined);
+  assert.equal(marker.measurement.legs[2].executedInAttempt, 'att-failed');
+  assert.equal(marker.measurement.legs[2].carriedInAttempt, undefined);
 });
 

@@ -19,8 +19,8 @@ import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  copyArtifact, readResults, sha256File, stampLegAttempts, tagCarriedLegs, upsertResult,
-  roundtripRecord, writeProof, writeResults,
+  copyArtifact, markMarkerLegsCarried, readResults, sha256File, stampLegAttempts, tagCarriedLegs,
+  upsertResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -3809,6 +3809,13 @@ function writeAttemptMarker(caseId, attemptId) {
     attemptId,
   };
   if (existing && existing.measurement) record.measurement = existing.measurement;
+  // Round-9 B-R1: the marker carries the PRIOR measurement. Tag every carried
+  // leg NOW so an early scenario failure (before the --legs merge) cannot get
+  // the historical legs stamped as this attempt's executions at the final
+  // write; later merges keep origin 'unknown' instead of inheriting the
+  // failed attempt. The scenario path is unchanged: fresh legs have no tag,
+  // merge-carried legs get tagCarriedLegs.
+  markMarkerLegsCarried(record, attemptId);
   if (caseType === 'file_roundtrip') {
     record.referenceSha256 = '0'.repeat(64);
     record.receivedSha256 = '0'.repeat(64);
