@@ -4,7 +4,7 @@
   "current_phase": "release-packaging",
   "tdd_mode": true,
   "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-22T21:55:00+08:00",
+  "updated_at": "2026-10-22T22:58:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -329,16 +329,19 @@
     {
       "name": "release-packaging",
       "display": "打包构建交付",
-      "status": "pending",
+      "status": "completed",
       "output_dir": "product/",
       "output_files": [],
-      "delivery_name": "",
-      "product_dir": "",
-      "artifacts": [],
-      "release_notes": "",
-      "started_at": null,
-      "completed_at": null,
-      "notes": "",
+      "delivery_name": "libcimbar-desktop-receiver-1.0.0-20261022-2252",
+      "product_dir": "product/libcimbar-desktop-receiver-1.0.0-20261022-2252",
+      "artifacts": [
+        "product/libcimbar-desktop-receiver-1.0.0-20261022-2252",
+        "product/libcimbar-desktop-receiver-1.0.0-20261022-2252.zip"
+      ],
+      "release_notes": "RELEASE-NOTES.md + CHANGELOG.md inside the package; 27-file delivery manifest; WASM d1080cdc...; candidate-mode build (stage.ps1 -Mode candidate), assets PASS, local gate PASS(20); zip validated by extraction (45 files incl. tests tree).",
+      "started_at": "2026-10-22T21:55:00+08:00",
+      "completed_at": "2026-10-22T22:58:00+08:00",
+      "notes": "Stage 8 complete. Package = candidate-mode staged receiver v1.0.0. Known boundaries: field E2E-21..26 user-side (NOT_RUN); performance NOT_EVALUATED; environment.json refreshed? (historical snapshot retained per verdict; final package manifest binds its own hashes). Root-cause of the strict-EOF digest failure fixed: core.autocrlf rewrote run-01 evidence logs on checkout; docs/tests/runs/20261018-teamexec-01/** pinned -text.",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     }
@@ -346,6 +349,6 @@
   "team_mode": "auto",
   "_orchestrator": "codex",
   "_handoff": "节点5前全部完成后交Claude dev-pipeline从阶段5（team-exec）续接执行",
-  "pipeline_state": "in_progress",
+  "pipeline_state": "completed",
   "_handoff_mode": "standard"
 }

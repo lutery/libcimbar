@@ -6,3 +6,7 @@ LICENSE text eol=lf
 # writes CRLF, which makes docs/src/tools/verify.py report a false failure.
 docs/**/*.md text eol=lf
 docs/**/*.py text eol=lf
+
+# E2E run evidence: byte-exact checkouts. core.autocrlf=true would rewrite
+# the gate logs to CRLF and break the recorded SHA-256 (same trap as docs/src).
+docs/tests/runs/20261018-teamexec-01/** -text

@@ -1,7 +1,7 @@
 {
   "name": "cimbar-desktop-recv",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Isolated local desktop receiver for libcimbar",
   "scripts": {
