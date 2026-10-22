@@ -28,9 +28,12 @@ hooks, __journey / __saveTimeline, captured per leg by run-e2e.mjs):
   reconstruction              valid-input start -> artifact delivered
                               (state -> Ready): fountain decode + decompress
   save request + write-close  the save click / picker request -> the writable
-                              stream closed after the last byte. The OS
-                              picker interval is included and not separated
-                              by the current hooks.
+                              stream closed after the last byte. Round-5
+                              A-03/B-S1 splits this into pickerWait,
+                              writableOpen, saveWait (picker + open, no
+                              write) and saveWrite (the actual write+close);
+                              every save-bearing leg carries the marks and
+                              saveTimingsComplete.
 """
 import argparse
 import json
@@ -41,10 +44,23 @@ PERFORMANCE_STATUS = "NOT_EVALUATED"
 PERFORMANCE_REASON = "thresholds not frozen (V-002/V-003 pending); this tool reports measurements only"
 
 BOUNDARIES = {
-    "init": "decoder-client init start (before the Worker is created) -> first valid input frame accepted",
+    "initStartAt": "decoder-client init start (__journey.initStartAt, before the Worker is created)",
+    "initReadyAt": "decoder client.init() resolved (__journey.initReadyAt)",
+    "decoderInit": "decoderInitMs = initReadyAt - initStartAt",
+    "sourceWait": "sourceWaitMs = validInputStartAt - initReadyAt (capture/recording start, picker included)",
     "validInputStart": "the first frame from the selected source accepted by the session (state -> Receiving; for a recording, the first frame actually presented)",
-    "reconstruction": "valid-input start -> artifact delivered (state -> Ready): fountain decode + decompress",
-    "save": "save click / picker request -> writable stream closed after the last byte (the OS picker interval is included, not separated)",
+    "initTotal": "initMs = validInputStartAt - initStartAt (decoder init + source wait)",
+    "reconstruction": "reconstructMs = reconstructionDoneAt - validInputStartAt: fountain decode + decompress",
+    "totalToReady": "totalToReadyMs = reconstructionDoneAt - initStartAt",
+    "saveRequestAt": "SaveController 'selecting' fired (__journey.saveRequestAt) - the save click moment",
+    "createWritableAccessedAt": "the save handle's createWritable getter was accessed (picker resolved)",
+    "writableAt": "createWritable() promise settled (the writable stream exists)",
+    "writeCloseAt": "'saved' event: write() and close() both resolved",
+    "pickerWait": "pickerWaitMs = createWritableAccessedAt - saveRequestAt (the user picks a path)",
+    "writableOpen": "writableOpenMs = writableAt - createWritableAccessedAt",
+    "saveWait": "saveWaitMs = writableAt - saveRequestAt (picker + open, NO write)",
+    "saveWrite": "saveWriteMs = writeCloseAt - writableAt (the actual write + close)",
+    "save": "saveMs = writeCloseAt - saveRequestAt (whole save = saveWait + saveWrite)",
 }
 
 
@@ -68,6 +84,7 @@ def leg_rows(records):
             hashes = leg.get("hashes") or {}
             rows.append({
                 "caseId": record.get("caseId"),
+                "attemptId": record.get("attemptId"),
                 "legId": leg.get("id"),
                 "inputKind": leg.get("inputKind"),
                 "dataClass": leg.get("dataClass") or leg.get("class"),
@@ -80,11 +97,19 @@ def leg_rows(records):
                     "artifactBytes": sizes.get("artifactBytes"),
                 },
                 "timings": {
+                    "decoderInitMs": timings.get("decoderInitMs"),
+                    "sourceWaitMs": timings.get("sourceWaitMs"),
                     "initMs": timings.get("initMs"),
                     "reconstructMs": timings.get("reconstructMs"),
                     "totalToReadyMs": timings.get("totalToReadyMs"),
+                    "pickerWaitMs": timings.get("pickerWaitMs"),
+                    "writableOpenMs": timings.get("writableOpenMs"),
+                    "saveWaitMs": timings.get("saveWaitMs"),
+                    "saveWriteMs": timings.get("saveWriteMs"),
                     "saveMs": timings.get("saveMs"),
                 },
+                "saveTimingsComplete": leg.get("saveTimingsComplete"),
+                "rejectionTimings": leg.get("rejectionTimings"),
                 "rawTimings": timings,
                 "hashes": {
                     "original": hashes.get("original"),
@@ -155,17 +180,21 @@ def write_report(run_dir, rows, grouped, counts):
     for group in grouped:
         lines.append(f"### {group['inputKind']} / {group['dataClass']} / {group['tier']}")
         lines.append("")
-        lines.append("| case | leg | status | raw B | stream B | artifact B | init ms | reconstruct ms | total->ready ms | save ms | hash equal | note / basis |")
-        lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+        lines.append("| case | attempt | leg | status | raw B | stream B | artifact B | decoder init ms | source wait ms | init ms | reconstruct ms | total->ready ms | picker wait ms | writable open ms | save wait ms | save write ms | save ms | save timings | hash equal | note / basis |")
+        lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for row in group["legs"]:
             note = row.get("basis") or row.get("notes") or ""
             note = str(note).replace("|", "/").replace("\n", " ")
             lines.append(
-                f"| {row['caseId']} | {row['legId']} | {row['status']} "
+                f"| {row['caseId']} | {fmt(row.get('attemptId'))} | {row['legId']} | {row['status']} "
                 f"| {fmt(row['sizes']['rawBytes'])} | {fmt(row['sizes']['streamBytes'])} "
                 f"| {fmt(row['sizes']['artifactBytes'])} "
+                f"| {fmt(row['timings']['decoderInitMs'])} | {fmt(row['timings']['sourceWaitMs'])} "
                 f"| {fmt(row['timings']['initMs'])} | {fmt(row['timings']['reconstructMs'])} "
-                f"| {fmt(row['timings']['totalToReadyMs'])} | {fmt(row['timings']['saveMs'])} "
+                f"| {fmt(row['timings']['totalToReadyMs'])} "
+                f"| {fmt(row['timings']['pickerWaitMs'])} | {fmt(row['timings']['writableOpenMs'])} "
+                f"| {fmt(row['timings']['saveWaitMs'])} | {fmt(row['timings']['saveWriteMs'])} "
+                f"| {fmt(row['timings']['saveMs'])} | {fmt(row.get('saveTimingsComplete'))} "
                 f"| {fmt(row['hashes']['equal'])} | {note} |")
         lines.append("")
     lines.append("## Totals")
@@ -199,6 +228,7 @@ def main():
             continue
         entry = {
             "caseId": record.get("caseId"),
+            "attemptId": record.get("attemptId"),
             "scope": record.get("scope"),
             "result": record.get("result"),
         }

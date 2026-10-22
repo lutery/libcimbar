@@ -2049,9 +2049,22 @@ const SCENARIOS = {
     const badDir = join(media, 'bad');
     mkdirSync(badDir, { recursive: true });
     const realVideo = readFileSync(join(media, 'V-GOOD-C.webm'));
-    writeFileSync(join(badDir, 'empty.webm'), Buffer.alloc(0));
-    writeFileSync(join(badDir, 'text.webm'), Buffer.from('this is not a video container'));
-    writeFileSync(join(badDir, 'corrupt.webm'), realVideo.subarray(0, 40000));
+    // Windows can briefly hold a file another process just read (observed:
+    // writeFileSync threw UNKNOWN/-4094 for bad/corrupt.webm on the first
+    // re-run, before any leg executed). Retry with a short backoff instead of
+    // aborting the journey on a transient lock.
+    const writeFixtureWithRetry = async (name, data, attempts = 6) => {
+      const target = join(badDir, name);
+      for (let attempt = 1; ; attempt += 1) {
+        try { writeFileSync(target, data); return; } catch (error) {
+          if (attempt >= attempts) throw error;
+          await sleep(300 * attempt);
+        }
+      }
+    };
+    await writeFixtureWithRetry('empty.webm', Buffer.alloc(0));
+    await writeFixtureWithRetry('text.webm', Buffer.from('this is not a video container'));
+    await writeFixtureWithRetry('corrupt.webm', realVideo.subarray(0, 40000));
     const page = stack.receiver.page;
     const fixture = join(FIXTURES, 'compressible', 'sample-text-2.bin');
     const goodRecording = join(media, 'V-GOOD-C.webm');
@@ -3387,9 +3400,21 @@ const SCENARIOS = {
         };
         if (!canonicalRound && equal) canonicalRound = round;
         leg.hashes = { original: originalSha, received: receivedSha, equal };
-        leg.status = verdict.ok && equal ? 'PASS' : 'FAIL';
+        // Round-5 A-03/B-S1 (team-lead): this leg EXECUTES a real save (its
+        // recovery roundtrip), so the save discipline applies to the LEG's own
+        // record, exactly like every other save-bearing leg: attach the
+        // POST-save timings and the explicit timings assertion. The rejection
+        // session's own timings stay under rejectionTimings.
+        leg.rejectionTimings = leg.timings;
+        leg.timings = round.save.timings;
+        leg.saveTimingsComplete = round.save.saveTimingsComplete;
+        leg.saveTimingsChecks = round.save.saveTimingsChecks;
+        leg.status = verdict.ok && equal && round.save.saveTimingsComplete ? 'PASS' : 'FAIL';
         leg.basis = leg.status === 'PASS' ? null
-          : [...verdict.failures, equal ? null : 'recovery roundtrip hashes differ'].filter(Boolean).join('; ');
+          : [...verdict.failures,
+            equal ? null : 'recovery roundtrip hashes differ',
+            round.save.saveTimingsComplete ? null : 'recovery save timings incomplete',
+          ].filter(Boolean).join('; ');
         leg.notes = `budget ${String(budget.maxArtifactBytes)} (${budget.source}); rejection then stop then ` +
           'hash-clean normal-file recovery';
       } catch (error) {

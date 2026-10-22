@@ -192,6 +192,50 @@ public class ConfirmDrive {
     SendMessage(editHwnd, 0x000D, (IntPtr)(len + 1), sb); // WM_GETTEXT
     return sb.ToString();
   }
+  // Round-5 lane (helper hardening): the OPEN dialog on this host exposes
+  // neither win32 edit 1001 nor a UIA-named edit, so the tier-3 paste path is
+  // verified best-effort: probe the focused control and every 'Edit' child
+  // with the same WM_GETTEXT technique used for the save dialog. The dialog
+  // CLOSING after Enter remains the hard, mandatory gate for exit 0.
+  [StructLayout(LayoutKind.Sequential)]
+  public struct GUITHREADINFO {
+    public int cbSize; public int flags;
+    public IntPtr hwndActive; public IntPtr hwndFocus; public IntPtr hwndCapture;
+    public IntPtr hwndMenuOwner; public IntPtr hwndMoveSize; public IntPtr hwndCaret;
+    public int rcCaretLeft; public int rcCaretTop; public int rcCaretRight; public int rcCaretBottom;
+  }
+  [DllImport("user32.dll")] public static extern bool GetGUIThreadInfo(uint threadId, ref GUITHREADINFO info);
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+  public static string GetFocusedControlText(IntPtr dialog) {
+    uint pid;
+    uint tid = GetWindowThreadProcessId(dialog, out pid);
+    if (tid == 0) return null;
+    var info = new GUITHREADINFO();
+    info.cbSize = Marshal.SizeOf(typeof(GUITHREADINFO));
+    if (!GetGUIThreadInfo(tid, ref info) || info.hwndFocus == IntPtr.Zero) return null;
+    var cls = new StringBuilder(64);
+    GetClassName(info.hwndFocus, cls, 64);
+    return cls.ToString() + "|" + GetEditText(info.hwndFocus);
+  }
+  public static string FindEditTextContaining(IntPtr dialog, string needle) {
+    string found = null;
+    string file = System.IO.Path.GetFileName(needle);
+    EnumChildWindows(dialog, (child, l) => {
+      if (found == null) {
+        var cls = new StringBuilder(64);
+        GetClassName(child, cls, 64);
+        if (cls.ToString() == "Edit") {
+          var text = GetEditText(child);
+          if (!string.IsNullOrEmpty(text) && (text == needle || text.EndsWith(file, StringComparison.OrdinalIgnoreCase))) {
+            found = text;
+            return false;
+          }
+        }
+      }
+      return true;
+    }, IntPtr.Zero);
+    return found;
+  }
   public static IntPtr FindButtonById(IntPtr dialog, int id) {
     IntPtr found = IntPtr.Zero;
     EnumChildWindows(dialog, (child, l) => {
@@ -877,23 +921,54 @@ if ($Action -eq 'save') {
     Start-Sleep -Milliseconds 150
     [System.Windows.Forms.SendKeys]::SendWait('^v')
     Start-Sleep -Milliseconds 400
-    Write-Output 'open tier 3: focus+paste (unverified)'
+    # Best-effort text probe (round-5 helper hardening): the open dialog has
+    # no verified edit handle, so probe the focused control and any Edit child
+    # with WM_GETTEXT. This is diagnostics only - dialog closure is the hard
+    # gate and the app-side change event remains the runner's criterion.
+    $probe = [ConfirmDrive]::FindEditTextContaining($hwnd, $Path)
+    if (-not $probe) {
+      $focused = [ConfirmDrive]::GetFocusedControlText($hwnd)
+      if ($focused -and $focused.EndsWith([System.IO.Path]::GetFileName($Path))) { $probe = $focused }
+      elseif ($focused) { Write-Output "open tier 3: focused control '$focused'" }
+    }
+    if ($probe) {
+      Write-Output "open tier 3: text probe verified '$probe'"
+    } else {
+      Write-Output 'open tier 3: focus+paste (no text probe hit; closure is the hard gate)'
+    }
   }
 
-  [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-  Start-Sleep -Milliseconds 500
-  if ((Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
+  # Exit 0 requires CLOSURE EVIDENCE: the dialog must disappear after Enter.
+  # If it stays open, retry the tier-3 path once (re-focus, Ctrl+A, paste,
+  # pause, Enter, poll again); if it is still open, exit 1 with diagnostics.
+  $closed = $false
+  for ($attempt = 1; $attempt -le 2 -and -not $closed; $attempt += 1) {
     [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+    $closeDeadline = (Get-Date).AddSeconds(3)
+    while ((Get-Date) -lt $closeDeadline) {
+      if ((Find-OpenDialogHwnd) -eq [IntPtr]::Zero) { $closed = $true; break }
+      Start-Sleep -Milliseconds 200
+    }
+    if (-not $closed -and $attempt -eq 1) {
+      Write-Output 'open: dialog still open after Enter; retrying the tier-3 path once'
+      [NativeMouse]::ForceForeground($hwnd) | Out-Null
+      Start-Sleep -Milliseconds 300
+      Set-Clipboard -Value $Path
+      Start-Sleep -Milliseconds 200
+      [System.Windows.Forms.SendKeys]::SendWait('^a')
+      Start-Sleep -Milliseconds 150
+      [System.Windows.Forms.SendKeys]::SendWait('^v')
+      Start-Sleep -Milliseconds 400
+      $retryProbe = [ConfirmDrive]::FindEditTextContaining($hwnd, $Path)
+      if ($retryProbe) { Write-Output "open retry: text probe verified '$retryProbe'" }
+      else { Write-Output 'open retry: no text probe hit' }
+    }
   }
-  $closeDeadline = (Get-Date).AddSeconds(5)
-  while ((Get-Date) -lt $closeDeadline -and (Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
-    Start-Sleep -Milliseconds 250
-  }
-  if ((Find-OpenDialogHwnd) -ne [IntPtr]::Zero) {
-    [Console]::Error.WriteLine('the open dialog did not close after Enter')
+  if (-not $closed) {
+    [Console]::Error.WriteLine('the open dialog did not close after Enter (tier-3 retry included)')
     exit 1
   }
-  Write-Output 'open dialog confirmed (informational; the app-side change event decides)'
+  Write-Output 'open dialog closed after Enter (closure observed; the app-side change event decides)'
   exit 0
 } else {
   Write-Output "dialog: $($dialog.Current.Name) pid=$($dialog.Current.ProcessId)"

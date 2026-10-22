@@ -461,7 +461,18 @@ async function main() {
     // intact (TD-15), so the default is 128 KiB - the feasible class.
     const payloadName = `payload-${Math.round(PAYLOAD_BYTES / 1024)}k-random.bin`;
     const extFile = join(MEDIA, payloadName);
-    writeFileSync(extFile, randomBytes(PAYLOAD_BYTES));
+    // Round-5 lane: the payload bytes are REUSED when the file already exists
+    // (T* was measured against exactly those bytes; regenerating would change
+    // them silently). Only a missing file is generated fresh, and that is
+    // recorded in the manifest like any regeneration.
+    let payloadReused = false;
+    if (existsSync(extFile) && statSync(extFile).size === PAYLOAD_BYTES) {
+      payloadReused = true;
+      console.log(`payload REUSED (not regenerated): ${payloadName}`);
+    } else {
+      writeFileSync(extFile, randomBytes(PAYLOAD_BYTES));
+      console.log(`payload generated: ${payloadName}`);
+    }
     payloadInfo = {
       file: payloadName,
       bytes: statSync(extFile).size,
@@ -490,6 +501,11 @@ async function main() {
       withoutFile: 'V-LAST-without.webm',
       withStopAtMs: pair.withStopAt,
       withoutStopAtMs: pair.withoutStopAt,
+      // Provenance: the payload bytes were REUSED from the on-disk file (not
+      // regenerated), so the pair was recorded against the same bytes T* was
+      // measured on. The sha256 makes that claim checkable in the manifest.
+      payloadReused,
+      payloadSha256: payloadInfo ? payloadInfo.sha256 : null,
     };
     manifestClips.push({
       file: 'V-LAST-with.webm', role: 'with', payload: payloadName,
