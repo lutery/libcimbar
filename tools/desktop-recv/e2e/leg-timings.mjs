@@ -31,11 +31,12 @@
 //     saveMs           = writeCloseAt - saveRequestAt         (whole save)
 //
 // A missing mark yields a null interval - never an estimate. After a
-// SUCCESSFUL save the three save marks must exist and be ordered; a leg that
-// saved a file but cannot name those moments is a measurement failure and
-// must fail the leg (assertSaveTimingsComplete), not silently record nulls.
+// SUCCESSFUL save the four save marks (request, picker access, writable open,
+// write close) must exist and be ordered; a leg that saved a file but cannot
+// name those moments is a measurement failure and must fail the leg
+// (assertSaveTimingsComplete), not silently record nulls.
 
-export const SAVE_TIMING_FIELDS = ['saveRequestAt', 'writableAt', 'writeCloseAt'];
+export const SAVE_TIMING_FIELDS = ['saveRequestAt', 'createWritableAccessedAt', 'writableAt', 'writeCloseAt'];
 
 const pick = (...values) => values.find((v) => v !== undefined && v !== null) ?? null;
 const diff = (a, b) => (a != null && b != null ? a - b : null);
@@ -81,15 +82,15 @@ export function computeLegTimings(state = {}) {
   };
 }
 
-// The post-save assertion: after a successful save, the request, the writable
-// open and the write-close must all be real timestamps, in that order. The
-// three failures are named individually so a record can cite them.
+// The post-save assertion: after a successful save, the request, the picker
+// resolution (createWritable access), the writable open and the write-close
+// must all be real timestamps, in that order. The four failures are named
+// individually so a record can cite them.
 //
-// Round-11 S-2 (noted, deliberately not changed): createWritableAccessedAt -
-// the picker boundary - is NOT in the required set, so a leg whose picker
-// mark went missing would still pass here while pickerWaitMs/saveWaitMs stay
-// null. All save legs observed so far carried the mark. Making it required is
-// a criteria change that belongs to a review decision, not this file.
+// Round-7 S-1 (adopted): createWritableAccessedAt - the picker boundary - is
+// part of the required set, so a leg cannot pass while pickerWaitMs /
+// saveWaitMs stay null. Round-11 S-2 had noted the gap; all 14 save-bearing
+// legs of run-03 carried the mark when this was tightened.
 export function assertSaveTimingsComplete(timings) {
   const t = timings || {};
   const failures = [];
@@ -99,8 +100,11 @@ export function assertSaveTimingsComplete(timings) {
     }
   }
   if (failures.length === 0) {
-    if (!(t.saveRequestAt <= t.writableAt)) {
-      failures.push(`saveRequestAt (${t.saveRequestAt}) is after writableAt (${t.writableAt})`);
+    if (!(t.saveRequestAt <= t.createWritableAccessedAt)) {
+      failures.push(`saveRequestAt (${t.saveRequestAt}) is after createWritableAccessedAt (${t.createWritableAccessedAt})`);
+    }
+    if (!(t.createWritableAccessedAt <= t.writableAt)) {
+      failures.push(`createWritableAccessedAt (${t.createWritableAccessedAt}) is after writableAt (${t.writableAt})`);
     }
     if (!(t.writableAt <= t.writeCloseAt)) {
       failures.push(`writableAt (${t.writableAt}) is after writeCloseAt (${t.writeCloseAt})`);
@@ -111,6 +115,7 @@ export function assertSaveTimingsComplete(timings) {
     failures,
     checks: {
       saveRequestAt: typeof t.saveRequestAt === 'number' && Number.isFinite(t.saveRequestAt),
+      createWritableAccessedAt: typeof t.createWritableAccessedAt === 'number' && Number.isFinite(t.createWritableAccessedAt),
       writableAt: typeof t.writableAt === 'number' && Number.isFinite(t.writableAt),
       writeCloseAt: typeof t.writeCloseAt === 'number' && Number.isFinite(t.writeCloseAt),
       ordered: failures.length === 0,

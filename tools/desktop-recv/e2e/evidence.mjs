@@ -109,18 +109,45 @@ export function ensureDir(path) {
   mkdirSync(dirname(path), { recursive: true });
 }
 
-// Round-12 S-1: per-leg execution attribution, applied at the FINAL record
-// write (the S-1 attempt wrapper in run-e2e.mjs). A leg that already carries
-// executedInAttempt was executed in an earlier attempt (carried through a
-// --legs merge) and keeps its origin; a freshly executed leg receives the
-// current attempt id. The record-level attemptId names the attempt that
-// wrote the record (the merge attempt), never the carried executions.
+// Round-12 S-1 / Round-7 B-R1: per-leg execution attribution.
+//
+// At a --legs merge, every leg NOT in the re-execution set was carried from
+// the record that existed before this attempt. Its origin is NOT recoverable
+// from the record (the attempt marker already replaced the record-level
+// attemptId), so it is tagged with an explicit carried fact: origin
+// 'unknown', into the current (merging) attempt - never treated as executed
+// by this attempt. Legs inside the re-execution set are left untouched; they
+// are executed now and stamped at the final record write. An empty
+// re-execution set means a full rerun: nothing is carried, nothing is tagged.
+// Returns the carried subset (mutated in place).
+export function tagCarriedLegs(legs, reexecutedIds, attemptId) {
+  const reexecuted = new Set(Array.isArray(reexecutedIds) ? reexecutedIds : []);
+  if (reexecuted.size === 0) return [];
+  const carried = [];
+  for (const leg of Array.isArray(legs) ? legs : []) {
+    if (!leg || reexecuted.has(leg.id)) continue;
+    leg.carriedInAttempt = {
+      into: attemptId,
+      origin: 'unknown',
+      basis: 'present in the record before this attempt; excluded from the --legs re-execution set',
+    };
+    carried.push(leg);
+  }
+  return carried;
+}
+
+// The final-record-write stamp: ONLY a leg with neither an origin
+// (executedInAttempt) nor an explicit carried fact is treated as freshly
+// executed. Carried legs keep executedInAttempt absent plus their
+// carriedInAttempt fact - fail-closed, never defaulted to the merging
+// attempt. The record-level attemptId names the attempt that wrote the
+// record (the merge attempt), never the carried executions.
 // Mutates and returns the record; a record without legs is returned as-is.
 export function stampLegAttempts(record, attemptId) {
   const legs = record && record.measurement && Array.isArray(record.measurement.legs)
     ? record.measurement.legs : [];
   for (const leg of legs) {
-    if (leg && !leg.executedInAttempt) leg.executedInAttempt = attemptId;
+    if (leg && !leg.executedInAttempt && !leg.carriedInAttempt) leg.executedInAttempt = attemptId;
   }
   return record;
 }

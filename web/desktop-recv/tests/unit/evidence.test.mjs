@@ -16,7 +16,7 @@ import {
 import {
   PAIR_CONSTRUCTION, evaluatePairConstruction,
 } from '../../../../tools/desktop-recv/e2e/pair-evidence.mjs';
-import { lifecycleRecord, roundtripRecord, stampLegAttempts } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
+import { lifecycleRecord, roundtripRecord, stampLegAttempts, tagCarriedLegs } from '../../../../tools/desktop-recv/e2e/evidence.mjs';
 
 const HASH = 'a'.repeat(64);
 const HASH2 = 'b'.repeat(64);
@@ -678,16 +678,19 @@ test('UT-109 missing save marks yield null intervals and a failed assertion; out
   const failed = assertSaveTimingsComplete(empty);
   assert.equal(failed.ok, false);
   assert.ok(failed.failures.some((f) => f.includes('saveRequestAt is missing')));
+  assert.ok(failed.failures.some((f) => f.includes('createWritableAccessedAt is missing')));
   assert.ok(failed.failures.some((f) => f.includes('writableAt is missing')));
   assert.ok(failed.failures.some((f) => f.includes('writeCloseAt is missing')));
 
   const outOfOrder = assertSaveTimingsComplete(computeLegTimings({
     journey: { initStartAt: 1000, receivingAt: 1100, readyAt: 1200,
       saveRequestAt: 5000, writeCloseAt: 3900 },
+    createWritableAccessedAt: 4000,
     writableAt: 4100,
   }));
   assert.equal(outOfOrder.ok, false);
-  assert.ok(outOfOrder.failures.some((f) => f.includes('saveRequestAt (5000) is after writableAt (4100)')));
+  assert.ok(outOfOrder.failures.some((f) => f.includes('saveRequestAt (5000) is after createWritableAccessedAt (4000)')));
+  assert.ok(outOfOrder.failures.some((f) => f.includes('writableAt (4100) is after writeCloseAt (3900)')));
 });
 
 // --- Round-5 A-02: the end-segment boundary (evaluateLastFramePair) ---------
@@ -746,5 +749,58 @@ test('UT-111 leg execution attribution: carried legs keep their origin, fresh le
   const plain = { caseId: 'E2E-15', attemptId: 'att-x' };
   assert.equal(stampLegAttempts(plain, 'att-y'), plain);
   assert.equal(plain.attemptId, 'att-x');
+});
+
+// --- Round-7 B-R1: carried legs are tagged, never reattributed --------------
+
+// The reviewer's exact counter-example: the CURRENT run-03 E2E-18 record has
+// nine legs with NO executedInAttempt (eight executed in 3e34f2 + one
+// sanctioned NOT_RUN) and the next --legs rerun re-executes only the budget
+// leg. The merge tags the nine as carried/origin-unknown; the final stamp
+// must mark ONLY the fresh budget leg as executed by this attempt.
+test('UT-112 current-shape regression: 9 origin-less carried legs + 1 fresh leg; only the fresh leg is stamped', () => {
+  const legacyIds = [
+    'live-c-1mib', 'live-c-4mib', 'live-n-1mib', 'live-n-4mib',
+    'video-c-4mib', 'video-n-128kib', 'video-n-1mib-probe', 'video-n-4mib',
+    'live-n-20mib-over-budget',
+  ];
+  const existingLegs = legacyIds.map((id) => ({
+    id, status: id === 'live-n-20mib-over-budget' ? 'NOT_RUN' : 'PASS',
+  }));
+  const carried = tagCarriedLegs(existingLegs, ['live-c-20mib-over-budget'], 'att-merge');
+  assert.equal(carried.length, 9);
+  const legs = [...carried, { id: 'live-c-20mib-over-budget', status: 'PASS' }];
+  const record = { caseId: 'E2E-18', measurement: { legs } };
+  stampLegAttempts(record, 'att-merge');
+
+  for (const leg of carried) {
+    assert.equal(leg.executedInAttempt, undefined,
+      `${leg.id} must NOT be attributed to the merging attempt`);
+    assert.deepEqual(leg.carriedInAttempt, {
+      into: 'att-merge',
+      origin: 'unknown',
+      basis: 'present in the record before this attempt; excluded from the --legs re-execution set',
+    });
+  }
+  const fresh = legs.find((leg) => leg.id === 'live-c-20mib-over-budget');
+  assert.equal(fresh.executedInAttempt, 'att-merge');
+  assert.equal(fresh.carriedInAttempt, undefined);
+});
+
+// tagCarriedLegs itself: ids inside the re-execution set stay untouched, ids
+// outside get the carried fact, and an empty set means a full rerun (nothing
+// is carried, nothing is tagged).
+test('UT-113 tagCarriedLegs tags only legs outside the re-execution set; empty set = full rerun', () => {
+  const legs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const carried = tagCarriedLegs(legs, ['b'], 'att-merge');
+  assert.deepEqual(carried.map((leg) => leg.id), ['a', 'c']);
+  assert.equal(legs.find((leg) => leg.id === 'b').carriedInAttempt, undefined);
+  assert.ok(legs.find((leg) => leg.id === 'a').carriedInAttempt);
+  assert.equal(legs.find((leg) => leg.id === 'a').carriedInAttempt.into, 'att-merge');
+
+  const full = [{ id: 'x' }, { id: 'y' }];
+  assert.deepEqual(tagCarriedLegs(full, [], 'att-full'), []);
+  assert.equal(full[0].carriedInAttempt, undefined);
+  assert.equal(full[1].carriedInAttempt, undefined);
 });
 

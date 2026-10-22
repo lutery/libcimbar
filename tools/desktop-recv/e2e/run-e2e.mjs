@@ -19,8 +19,8 @@ import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  copyArtifact, readResults, sha256File, stampLegAttempts, upsertResult, roundtripRecord,
-  writeProof, writeResults,
+  copyArtifact, readResults, sha256File, stampLegAttempts, tagCarriedLegs, upsertResult,
+  roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -57,6 +57,12 @@ if (!CASE) { console.error('usage: node run-e2e.mjs --case <CASE> [--source wind
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...parts) => console.log(new Date().toISOString(), ...parts);
+
+// Round-7 B-R1: the attempt identity of the run in flight, set by main()
+// before any scenario executes. The --legs merge path uses it as the
+// receiving attempt for carried legs (their origin is unknown and never
+// filled with this value as an execution).
+let ACTIVE_ATTEMPT_ID = null;
 
 function startServer(command, argv, name) {
   const child = spawn(command, argv, { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -3006,9 +3012,12 @@ const SCENARIOS = {
     if (ONLY_LEGS.length > 0) {
       const existing = readResults(RUN).find((entry) => entry.caseId === 'E2E-18');
       const existingLegs = (existing && existing.measurement && existing.measurement.legs) || [];
-      for (const leg of existingLegs) {
-        if (!ONLY_LEGS.includes(leg.id)) legs.push(leg);
-      }
+      // Round-7 B-R1: carried legs are explicitly tagged carried/origin-
+      // unknown at merge time (the record's attemptId has already been
+      // replaced by the attempt marker, so their origin is not recoverable
+      // here); only the re-executed legs will be stamped as this attempt.
+      const carried = tagCarriedLegs(existingLegs, ONLY_LEGS, ACTIVE_ATTEMPT_ID);
+      for (const leg of carried) legs.push(leg);
       const artifacts = join(RUN, 'proof', 'E2E-18');
       if (existsSync(join(artifacts, 'original.bin')) && existsSync(join(artifacts, 'received.bin'))) {
         canonicalRound = { fixture: join(artifacts, 'original.bin'), received: join(artifacts, 'received.bin') };
@@ -3846,6 +3855,7 @@ async function main() {
   const scenario = SCENARIOS[CASE];
   if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
   const ATTEMPT_ID = `${CASE}-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
+  ACTIVE_ATTEMPT_ID = ATTEMPT_ID;
   // Planned gate cases get the S-1 attempt marker; diagnostics do not.
   const plannedCase = loadPlanningCase(CASE);
   if (plannedCase) writeAttemptMarker(CASE, ATTEMPT_ID);
