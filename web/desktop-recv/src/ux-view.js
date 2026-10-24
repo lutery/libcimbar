@@ -77,7 +77,7 @@ function isValidControls(controls) {
 // Validates the context's mediaPosition shape; value-level problems (negative
 // position, unusable duration) degrade to null + 19011 instead of rejecting.
 function normalizeMedia(context, diagnostics) {
-  if (context.mediaDiagnosticCode === 19011) return null;
+  if (context.mediaDiagnosticCode === 19011) return invalid(diagnostics);
   if (context.inputKind !== 'video' || context.mediaPosition === null) return null;
   const media = context.mediaPosition;
   if (typeof media !== 'object'
