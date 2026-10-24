@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path';
 import { SessionCoordinator } from '../../src/session.js';
 import { toContractSnapshot } from '../../src/contract-snapshot.js';
 import { ReceiverTelemetry } from '../../src/ux-telemetry.js';
+import { SaveController } from '../../src/save-controller.js';
 import { readView } from '../../src/ux-view.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -1515,4 +1516,165 @@ test('T20 a save during Stopping stays observed while the business state freezes
   assert.deepEqual(h.coordinator.uxTelemetry().snapshot().save,
     { phase: 'failed', attemptId: '1', artifactId: '42', errorCode: 16005 },
     'the write failure is still observed through the frozen state');
+});
+
+
+// --- T22: the real SaveController drives the session end to end --------------
+
+test('T22 a cancelled then retried save keeps the artifact and lands Saved', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  const saved = new Blob([new Uint8Array([1, 2, 3, 4, 5])]);
+  let picker;
+  const controller = new SaveController({
+    showSaveFilePicker: () => picker(),
+    onEvent: (event) => h.coordinator.saveEvent(event),
+  });
+  h.coordinator.attachSave(controller);
+
+  // walk 1: the picker is cancelled; the artifact must survive
+  picker = () => Promise.reject(Object.assign(new Error('x'), { name: 'AbortError' }));
+  h.coordinator.uxSaveIntent();
+  controller.start({ artifact: { blob: saved, suggestedName: 'a.bin' }, suggestedName: 'a.bin' });
+  await tick();
+  assert.equal(h.coordinator.snapshot().state, 'Retryable');
+  assert.equal(h.coordinator.snapshot().artifact.artifactId, '42',
+    'the received artifact is untouched by the cancel');
+  assert.equal(saved.size, 5, 'the blob is unchanged');
+
+  // walk 2: the retry writes the same bytes and lands Saved
+  const writable = {
+    written: 0, closed: false,
+    write(blob) { this.written = blob.size; return Promise.resolve(); },
+    close() { this.closed = true; return Promise.resolve(); },
+  };
+  picker = () => Promise.resolve({ createWritable: () => Promise.resolve(writable) });
+  h.coordinator.uxSaveIntent();
+  controller.start({ artifact: { blob: saved, suggestedName: 'a.bin' }, suggestedName: 'a.bin' });
+  await tick();
+  assert.equal(h.coordinator.snapshot().state, 'Saved');
+  assert.equal(writable.written, 5, 'the same bytes, no re-receive');
+  assert.equal(writable.closed, true, 'both write and close succeeded');
+  assert.equal(h.coordinator.uxTelemetry().snapshot().save.phase, 'saved');
+});
+
+test('T22 a close failure is never Saved and stays retryable', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  const saved = new Blob([new Uint8Array([9, 8, 7])]);
+  const failing = {
+    written: 0, closed: false,
+    write(blob) { this.written = blob.size; return Promise.resolve(); },
+    close() { return Promise.reject(new Error('close failed')); },
+  };
+  const controller = new SaveController({
+    showSaveFilePicker: () => Promise.resolve({ createWritable: () => Promise.resolve(failing) }),
+    onEvent: (event) => h.coordinator.saveEvent(event),
+  });
+  h.coordinator.uxSaveIntent();
+  controller.start({ artifact: { blob: saved, suggestedName: 'b.bin' }, suggestedName: 'b.bin' });
+  await tick();
+
+  assert.equal(h.coordinator.snapshot().state, 'Retryable', 'not Saved after a close failure');
+  assert.equal(h.coordinator.uxTelemetry().snapshot().save.errorCode, 16006);
+  assert.equal(h.coordinator.snapshot().artifact.artifactId, '42');
+  assert.equal(saved.size, 3, 'the artifact blob survives for the retry');
+});
+
+test('T22 a pending write never reopens and settles honestly', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  let releaseWrite;
+  const slow = {
+    closed: false,
+    write(blob) { return new Promise((resolve) => { releaseWrite = () => { slow.written = blob.size; resolve(); }; }); },
+    close() { this.closed = true; return Promise.resolve(); },
+  };
+  let pickerCalls = 0;
+  const controller = new SaveController({
+    showSaveFilePicker: () => { pickerCalls += 1; return Promise.resolve({ createWritable: () => Promise.resolve(slow) }); },
+    onEvent: (event) => h.coordinator.saveEvent(event),
+    pendingMs: 5,
+  });
+  h.coordinator.uxSaveIntent();
+  controller.start({ artifact: { blob: new Blob([new Uint8Array([2])]), suggestedName: 'c.bin' }, suggestedName: 'c.bin' });
+  await tick(40);
+
+  assert.equal(h.coordinator.snapshot().state, 'Saving');
+  assert.equal(h.coordinator.uxTelemetry().snapshot().save.phase, 'pending');
+  const second = controller.start({ artifact: { blob: new Blob([new Uint8Array([2])]), suggestedName: 'c.bin' }, suggestedName: 'c.bin' });
+  assert.equal(second, false, 'the busy guard refuses a second picker');
+  assert.equal(pickerCalls, 1);
+
+  releaseWrite();
+  await tick();
+  assert.equal(h.coordinator.snapshot().state, 'Saved');
+  assert.equal(slow.written, 1);
+  assert.equal(slow.closed, true);
+});
+
+test('T22 an old save owner never disturbs a new receiving session', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  h.coordinator.uxSaveIntent();
+  h.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 3 });
+  h.coordinator.stop();
+  await tick();
+
+  h.coordinator.startVideo({ requestId: 'fresh', openSource: () => Promise.resolve({ stop() {} }) });
+  await tick(5);
+  assert.equal(h.coordinator.snapshot().state, 'Receiving');
+  const before = h.coordinator.uxTelemetry().snapshot();
+
+  // the stale attempt settles while the new session receives real frames
+  h.coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  h.clients[1].deliver({ frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  await tick(5);
+  h.coordinator.saveEvent({ saveStatus: 'failed', attemptId: 3, lastError: 16005 });
+
+  const after = h.coordinator.uxTelemetry().snapshot();
+  assert.equal(after.save.phase, 'none', 'the stale save binds nothing here');
+  assert.equal(after.observationRevision, before.observationRevision + 1,
+    'only the real frame lifted the revision');
+  assert.equal(after.rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625);
+  assert.equal(h.coordinator.snapshot().state, 'Receiving',
+    'the business state machine ignores the stale save');
+});
+
+test('T22 a video session reclaims exactly one source at stop and at EOF', async () => {
+  const makeSource = () => {
+    const source = { stops: 0, stop() { this.stops += 1; } };
+    return source;
+  };
+  const clients = [];
+  const sources = [];
+  const pickers = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+  });
+
+  // A: the user stops mid-receive
+  coordinator.startVideo({ requestId: 'a', openSource: () => { const s = makeSource(); sources.push(s); return Promise.resolve(s); } });
+  await tick(5);
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  coordinator.stop();
+  await tick();
+  assert.equal(sources[0].stops, 1, 'stop() reclaimed the source exactly once');
+  assert.equal(clients[0].closed, true);
+
+  // B: the recording reaches EOF without an artifact
+  coordinator.startVideo({ requestId: 'b', openSource: () => { const s = makeSource(); sources.push(s); return Promise.resolve(s); } });
+  await tick(5);
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  await coordinator.finishStream({ takeFinalSample: () => null });
+  assert.equal(coordinator.snapshot().state, 'Incomplete');
+  assert.equal(sources[1].stops, 1, 'the EOF drain reclaimed the new source once');
+  assert.equal(clients[1].closed, true);
+  assert.equal(sources[0].stops, 1, 'the old source was not touched again');
 });

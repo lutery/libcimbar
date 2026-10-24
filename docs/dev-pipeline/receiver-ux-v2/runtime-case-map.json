@@ -277,6 +277,16 @@
           "suite": "UX-IAT",
           "case": "UX-IAT-06",
           "phase": "iat"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T20 the media position normalizes independently of the file estimate",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a video session reclaims exactly one source at stop and at EOF",
+          "phase": "unit"
         }
       ],
       "caseBindings": [],
@@ -384,8 +394,44 @@
         "T25",
         "T34"
       ],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "save",
+          "case": "T20 the raw event shapes the session binding consumes",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "T14-S2 the save normalization matrix maps every raw shape",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T12-S1 save events drive Saving/Saved/Retryable observations through a real save",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a cancelled then retried save keeps the artifact and lands Saved",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a close failure is never Saved and stays retryable",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a pending write never reopens and settles honestly",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 an old save owner never disturbs a new receiving session",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
