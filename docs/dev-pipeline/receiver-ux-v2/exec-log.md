@@ -47,4 +47,12 @@
 - Blocking 2 关闭：README「Run」改为 stage-5 context 入口 + 新增 Historical diagnostics（do not run）节；smoke-live.mjs 头部 historical + 无 `--legacy-write-frozen-run` 即 exit 2。
 - 采纳：S2（stage 退出码可达 2/3/4）、S3（历史守卫大小写折叠）、S4（Python realpath containment + 判别性 junction 反例）、S5（`stageVerifiedSender` 按 DELIVERY-MANIFEST 校验后只读复制发送端包到 `<stagingRoot>/sender`，幂等/漂移拒绝）、S6、S7（UX-UI=E2E-35..38）、S8（恒真 check 改真断言）、S10（node 子进程 30s 超时）。S1 不采纳（README 写明 v2 一律显式 -StagingRoot）。
 - 复跑（lead 独立确认）：run-context 9/9、process-guard 6/6、ux 自测 55、旧自测 14/14、prefix 3/3、契约 PASS、unit 120；旧 run/product/staging 零改动。
-- 提交：`fix: resolve UX runner review findings`。
+- 提交：`fix: resolve UX runner review findings`（8a1ef74）。
+
+## B1-T6 — 基线/样本/预检锁定（dev-v2-tools → lead 提交）
+- 起止：2026-10-24 16:48 ～ 17:34 (+08:00)；报告：b1-t6-report.md；日志：red-logs/t6-verify.txt、t6-preflight.log、t6-record2、t6-record-attempt1-sendermanifest-red.log
+- 产物：baseline 根 20261024-teamexec-04（run-context/product-manifest/input-manifest/environment/baseline-observation/pids.json + fixtures/ + fixtures-ext/（seed 20261018，哈希与 哨兵表一致）+ fixtures/fixtures-media/ 真实同流配对 V-LAST-with 14,330,428 B / V-LAST-without 9,807,013 B + prefix-check PASS（head 0.0，tail 3/3））+ candidate 占位根 20261024-teamexec-05（context/manifest/输入清单；T34 另立最终根）。
+- 基线预检：baseline-preflight.mjs 实测 READY_OBSERVED（readyMs=15012，101 帧 ≥30，131072 B 完整重建；非阈值判定）。
+- 断言先行修复：readSenderManifest 接受冻结包的注释/空行/裸 ISO 时间戳三种非条目行；新测试第 10 例先 RED（t6-record-attempt1-sendermanifest-red.log）后 GREEN（10/10）。verify-assets PASS；旧目录 760 项 UNCHANGED。
+- 提交：`docs: record receiver UX baseline and fixtures`。
+

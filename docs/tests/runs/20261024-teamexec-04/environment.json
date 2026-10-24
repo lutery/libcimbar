@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261024-teamexec-04",
+  "capturedAt": "2026-10-24T09:25:59.001Z",
+  "os": {
+    "name": "Microsoft Windows NT 10.0.22631.0",
+    "build": "22631",
+    "timezone": "China Standard Time"
+  },
+  "browser": {
+    "name": "Microsoft Edge",
+    "version": "156.0.4314.42",
+    "launch": "normally launched instance attached over CDP; --lang=en-US; window 1180x900 (recorder/sender) and 1280x900 (receiver preflight)"
+  },
+  "display": {
+    "primary": "2048x1152",
+    "dpiScalingRegistryLogPixels": null,
+    "note": "LogPixels absent means the default 96 DPI (100%); CSS viewport/DPR are read from the page at journey time, not assumed"
+  },
+  "locale": {
+    "windows": "zh-CN",
+    "culture": "zh-CN",
+    "browserFlag": "en-US"
+  },
+  "runtime": {
+    "node": "v22.23.1",
+    "python": "3.11.7",
+    "opencv": "4.11.0"
+  },
+  "revisions": {
+    "sourceRevision": "d77cf229100039f3beaf11bb7fac719efa92f9da",
+    "harnessRevision": "d77cf229100039f3beaf11bb7fac719efa92f9da"
+  },
+  "ports": {
+    "receiverHttp": 8771,
+    "senderHttp": 8811,
+    "recorderHttp": 8790,
+    "receiverCdp": 9445,
+    "recorderCdp": 9452,
+    "e2eRecorderCdp": 9453
+  },
+  "notes": [
+    "T6 environment snapshot for the baseline preflight; not a candidate acceptance environment.",
+    "All HTTP endpoints are loopback-only python servers started by the tools; no external services."
+  ]
+}

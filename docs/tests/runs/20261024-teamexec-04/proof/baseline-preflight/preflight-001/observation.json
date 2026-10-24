@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261024-teamexec-04",
+  "attemptId": "preflight-001",
+  "caseId": "baseline-preflight",
+  "startedAt": "2026-10-24T09:23:45.445Z",
+  "video": {
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/fixtures-media/V-LAST-with.webm",
+    "proofRef": "proof/baseline-preflight/preflight-001/imported.webm",
+    "sha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+    "bytes": 14330428
+  },
+  "observedState": "Ready",
+  "statusText": "File ready to save",
+  "journey": {
+    "initStartAt": 1792833869270,
+    "initReadyAt": 1792833869388,
+    "receivingAt": 1792833869629,
+    "readyAt": 1792833884641
+  },
+  "timing": {
+    "initStartAt": 1792833869270,
+    "initReadyAt": 1792833869388,
+    "receivingAt": 1792833869629,
+    "readyAt": 1792833884641,
+    "initMs": 118,
+    "readyMs": 15012,
+    "wallMs": 25194
+  },
+  "stats": {
+    "capturedFrames": 101,
+    "submittedFrames": 101,
+    "processedFrames": 101,
+    "droppedFrames": 0,
+    "inflight": 0,
+    "elapsedMs": null
+  },
+  "processedFrames": 101,
+  "artifact": {
+    "byteCount": 131072,
+    "suggestedName": "primary-input-128k.bin",
+    "mime": "application/octet-stream"
+  },
+  "statusTrail": [
+    {
+      "state": "Idle",
+      "t": 1792833826494
+    },
+    {
+      "state": "Preparing",
+      "t": 1792833869270
+    },
+    {
+      "state": "Receiving",
+      "t": 1792833869629
+    },
+    {
+      "state": "Ready",
+      "t": 1792833884641
+    }
+  ],
+  "contractSnapshot": {
+    "sessionId": "s1",
+    "inputKind": "video",
+    "mode": "B",
+    "state": "Ready",
+    "revision": 3,
+    "inputEnded": false,
+    "cleanupComplete": true,
+    "pendingExternal": [],
+    "artifact": {
+      "artifactId": "1862271598",
+      "fountainFileId": "6f00026e",
+      "suggestedName": "primary-input-128k.bin",
+      "byteCount": 131072,
+      "compressedBytes": 131183,
+      "mime": "application/octet-stream"
+    },
+    "saveAttemptId": null,
+    "lastError": null,
+    "stats": {
+      "capturedFrames": 101,
+      "submittedFrames": 101,
+      "processedFrames": 101,
+      "droppedFrames": 0,
+      "inflight": 0,
+      "elapsedMs": null
+    },
+    "saveStatus": "none"
+  },
+  "finishedAt": "2026-10-24T09:24:48.404Z",
+  "result": "READY_OBSERVED"
+}

@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "base": "receiver",
+  "files": [
+    {
+      "path": "config/errors.json",
+      "sha256": "5a93bf224108509565fc8d630741a1442c77455df211b18d9d253131cf6c2f7f",
+      "bytes": 24043
+    },
+    {
+      "path": "config/profile.json",
+      "sha256": "4eb957e66bb24009d1ff42b2aa365d2bf377e63eaf64a7406adf66145fd6eb4d",
+      "bytes": 299
+    },
+    {
+      "path": "index.html",
+      "sha256": "a365760a4e3d9fccbf8dc1555f2beed506ff2f07c9fe7fffe678235806088865",
+      "bytes": 1253
+    },
+    {
+      "path": "launch.cmd",
+      "sha256": "2474e80463de493f12bc0fde1b4d8c9a31424478d1ba9e8245b0fc8b42e8ee64",
+      "bytes": 576
+    },
+    {
+      "path": "launch.ps1",
+      "sha256": "d39bdbfdb8c7d575cec7e3710a89a7539d6a0bbc8f8e2a44cd628fb4caaa3756",
+      "bytes": 4656
+    },
+    {
+      "path": "package.json",
+      "sha256": "1beff5c779a11b22a2263cad9413f8e0c70bde5619d3c450aeeec7d802620eba",
+      "bytes": 246
+    },
+    {
+      "path": "server.py",
+      "sha256": "4f0ef533936372b6c795faf302c2d2eab9addc9d996b2a859d2df4b5f8667294",
+      "bytes": 1540
+    },
+    {
+      "path": "src/app.js",
+      "sha256": "0f2b75901c0b68388cc5d90ae87405673a97ba8f783c32038f5cdb67b95c9a38",
+      "bytes": 17773
+    },
+    {
+      "path": "src/capabilities.js",
+      "sha256": "f5b99efabbfdd108a7d6a488751d47297e4930e017d725250634990a3e8e33e6",
+      "bytes": 1685
+    },
+    {
+      "path": "src/contract-snapshot.js",
+      "sha256": "283b4abc07ac109829f3c144f9d628c3a9598108ea0d972a18855935f068442f",
+      "bytes": 2941
+    },
+    {
+      "path": "src/contracts.js",
+      "sha256": "77b485bfc17d5e3de40faa8b70b495183e23b2f8ce7e40811269e2cadb920d48",
+      "bytes": 5124
+    },
+    {
+      "path": "src/decoder-client.js",
+      "sha256": "ae1eb8025151b3f7142eb74f74857a94db5d194d9ff0c6f531c0b051c24aab58",
+      "bytes": 6965
+    },
+    {
+      "path": "src/evidence.js",
+      "sha256": "ac4b64726830a4d976480db8c4da6831fe550f8b3e6c26dbfb409af252335e19",
+      "bytes": 8393
+    },
+    {
+      "path": "src/frame-scheduler.js",
+      "sha256": "5d899ec926aeb338cd297023df593199413aedd4a9294e0550a090cdde01a3f4",
+      "bytes": 4316
+    },
+    {
+      "path": "src/live-source.js",
+      "sha256": "2a47e91d7850ce5116007132170700f41ce9bcf0d4cdb1a11ea4e422fc84d7c6",
+      "bytes": 1646
+    },
+    {
+      "path": "src/save-controller.js",
+      "sha256": "a51177e4f79a99053df601f0da34358e844da3fb6144d20934e7c10403340e21",
+      "bytes": 5327
+    },
+    {
+      "path": "src/session.js",
+      "sha256": "bbd9a54eeb823b055a2c8d1a95b34994d71086d1f3fbce248ea26e6059ace1d3",
+      "bytes": 15859
+    },
+    {
+      "path": "src/ui.js",
+      "sha256": "4da244d542481f047f76a64a632caba560b09bd9b51727692cba77236ca31bc2",
+      "bytes": 5101
+    },
+    {
+      "path": "src/video-source.js",
+      "sha256": "b9431e0645c2c00c5225c79a0a00052408deee95611a12a96d3bd6a123be1eca",
+      "bytes": 14109
+    },
+    {
+      "path": "styles.css",
+      "sha256": "d6442fdaec97c9ce71685f3de1e044fdc4f4168f5a146ede2acb752b4c2f364c",
+      "bytes": 2021
+    },
+    {
+      "path": "worker/decoder-worker.js",
+      "sha256": "ba816c06576127010d43f2b7205b9cb2a24ad36dfca8f847adf50e73c831e863",
+      "bytes": 12223
+    }
+  ]
+}

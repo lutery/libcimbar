@@ -42,6 +42,10 @@ const IDENTITY_FIELDS = ['runId', 'phase', 'productManifestSha256', 'attemptId']
 const RUN_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 const REVISION_RE = /^[0-9a-f]{7,64}$/;
 const SHA_RE = /^[0-9a-f]{64}$/;
+// The FROZEN cimbar-sender package's DELIVERY-MANIFEST drops the generated
+// timestamp on its own line (stage.ps1 precandidate-generate quirk); the
+// parser accepts that exact historical shape and refuses other junk.
+const ISO_LINE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 export class RunContextError extends Error {
   constructor(code, message) {
@@ -489,8 +493,9 @@ function readSenderManifest(sourceDir) {
   const manifestBytes = readFileSync(manifestPath);
   const entries = [];
   for (const line of manifestBytes.toString('utf8').split(/\r?\n/)) {
-    if (!line.trim() || line.startsWith('#')) continue;
-    const match = /^([0-9a-f]{64})\s+(\d+)\s+(.+)$/.exec(line.trim());
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || ISO_LINE_RE.test(trimmed)) continue;
+    const match = /^([0-9a-f]{64})\s+(\d+)\s+(.+)$/.exec(trimmed);
     if (!match) throw new RunContextError('E_SENDER_MANIFEST', `unparsable delivery manifest line: ${line}`);
     const rel = match[3].trim().replace(/\\/g, '/');
     assertCanonicalRepoPath('DELIVERY-MANIFEST entry', rel);

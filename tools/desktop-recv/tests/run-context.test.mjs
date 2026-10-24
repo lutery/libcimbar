@@ -767,3 +767,43 @@ test('T5 guard: case-folded history and verified sender staging', (t) => {
     (error) => error instanceof RunContextError && error.code === 'E_SENDER_STAGED_MISMATCH',
   );
 });
+
+// T6 real-world shape: the FROZEN cimbar-sender package's DELIVERY-MANIFEST
+// carries the generated timestamp on its own line. The parser must accept
+// exactly this historical shape while refusing anything entry-shaped that is
+// malformed (T5 stageVerifiedSender hardening, RED: real package exited 1).
+test('T6 sender manifest: frozen package shape accepted, junk refused', (t) => {
+  const repo = makeRepo(t, 't6');
+  const built = contextFixture(repo, { runId: '20261024-uxt6' });
+  const context = loadRunContext(built.contextPath, { repoRoot: repo });
+  initializeRunRoot(context);
+  const sourceDir = join(repo, 'product', 'cimbar-sender-1.0.0-realshape');
+  const bytes = Buffer.from('real sender page\n');
+  const wasm = Buffer.from([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00]);
+  put(sourceDir, 'index.html', bytes);
+  put(sourceDir, 'vendor/cimbar_js.wasm', wasm);
+  put(sourceDir, 'DELIVERY-MANIFEST.txt', [
+    '# cimbar-sender delivery manifest',
+    '# generated',
+    '2026-10-23T14:58:57+08:00',
+    '',
+    sha256(bytes) + '  ' + bytes.length + '  index.html',
+    sha256(wasm) + '  ' + wasm.length + '  vendor/cimbar_js.wasm',
+  ].join('\n') + '\n');
+  const staged = stageVerifiedSender(context, { sourceDir });
+  assert.equal(staged.reused, false);
+  assert.deepEqual(staged.files, ['index.html', 'vendor/cimbar_js.wasm']);
+
+  // A junk line that is neither comment, bare timestamp nor entry is refused.
+  const junk = contextFixture(repo, { runId: '20261024-uxt6', contextRel: 'docs/tests/receiver-ux-v2/variants/t6-junk.json' });
+  const junkContext = loadRunContext(junk.contextPath, { repoRoot: repo });
+  put(sourceDir, 'DELIVERY-MANIFEST.txt', [
+    '# header',
+    'not an entry line',
+    sha256(bytes) + '  ' + bytes.length + '  index.html',
+  ].join('\n') + '\n');
+  assert.throws(
+    () => stageVerifiedSender(junkContext, { sourceDir }),
+    (error) => error instanceof RunContextError && error.code === 'E_SENDER_MANIFEST',
+  );
+});

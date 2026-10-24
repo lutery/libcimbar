@@ -1,0 +1,6 @@
+RIG FAILED: RunContextError: E_SENDER_MANIFEST: unparsable delivery manifest line: 2026-10-23T14:58:57+08:00
+    at readSenderManifest (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-context.mjs:494:23)
+    at stageVerifiedSender (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-context.mjs:511:39)
+    at main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/record-sender.mjs:519:3) {
+  code: 'E_SENDER_MANIFEST'
+}
