@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-08",
+  "attemptId": "media-20261025-01",
+  "phase": "media",
+  "runRoot": "docs/tests/runs/20261025-teamexec-08",
+  "stagingRoot": "build-desktop-recv/runs/20261025-teamexec-08",
+  "fixtureRoot": "docs/tests/runs/20261025-teamexec-08/fixtures",
+  "planningFile": "docs/tests/receiver-ux-v2/planning-cases.json",
+  "methodFile": "docs/plans/receiver-ux-v2/performance-method.json",
+  "productManifest": "docs/tests/runs/20261025-teamexec-08/product-manifest.json",
+  "productManifestSha256": "8fad37c86ac1e54c129173bbeac9dcc036e6be292373f3d52a17e486f95918f3",
+  "sourceRevision": "9bc6af701035fe989d3a8ffa66ddd8f0088c388d",
+  "harnessRevision": "9bc6af701035fe989d3a8ffa66ddd8f0088c388d",
+  "inputManifest": "docs/tests/runs/20261025-teamexec-08/input-manifest.json",
+  "inputManifestSha256": "3de4a6fdf585e628918a031d760415496061fe4c24d081945188f9982743ec09",
+  "legacyThresholdFile": null
+}

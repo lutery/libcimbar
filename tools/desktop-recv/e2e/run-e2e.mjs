@@ -28,6 +28,7 @@ import {
 } from './run-context.mjs';
 import { SourceScene, sha256FileBytes } from './source-scene.mjs';
 import { runIatSuite } from './iat-suite.mjs';
+import { createMediaJourneys } from './media-journeys.mjs';
 import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -296,6 +297,25 @@ async function settleVideoLeg(page, { timeoutMs = 45000 } = {}) {
 // that leg alone. Diagnostics-only field: product behavior is untouched.
 async function resetJourneyMarks(page) {
   await page.evaluate(() => { window.__journey = {}; }).catch(() => {});
+}
+
+// Reload the receiver page so the NEXT save leg starts with fresh page-level
+// diagnostics hooks (__journey firsts, __createWritableAccessedAt, __writableAt).
+// The page-lifetime hooks never reset on their own, so a second save on the
+// same page would produce stale picker/writable times ordered BEFORE the new
+// request (the v1 matrix reloads between legs for exactly this reason).
+async function reloadReceiverPage(stack) {
+  const page = stack.receiver.page;
+  await page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    const ready = await page.evaluate(() => typeof window.__state === 'string').catch(() => false);
+    if (ready) {
+      await sleep(400);
+      return page;
+    }
+    await sleep(250);
+  }
+  throw new Error('receiver page did not re-initialize after reload');
 }
 
 // The receiver's renderer can die mid-matrix (observed twice right after the
@@ -4187,6 +4207,20 @@ const SCENARIOS = {
   },
 };
 
+// receiver-ux-v2 media/save journeys (T25): E2E-30..34 as real desktop
+// journeys writing recipe-A ux-results records on the media run root. The
+// context/fixture roots are read lazily - they are assigned by
+// applyContextRoots() at run time, after this module-level assignment.
+Object.assign(SCENARIOS, createMediaJourneys({
+  sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
+  importVideo, completeLegSave, saveArtifact, runHelper, captureDesktop,
+  clickButton, ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
+  externalSha256, sha256File,
+  CONTEXT: () => CONTEXT,
+  FIXTURES: () => FIXTURES,
+  attemptId: () => ACTIVE_ATTEMPT_ID,
+}));
+
 // --- Round-3 S-1: one attempt identity per invocation ----------------------
 //
 // A journey that throws must never leave an OLDER PASS standing in
@@ -4342,11 +4376,29 @@ async function main() {
       );
       process.exit(4);
     }
-    if (ids.length !== 1) {
-      console.error(`group ${CASE} has ${ids.length} implemented scenarios; multi-scenario groups are not run yet`);
-      process.exit(4);
+    if (ids.length === 1) {
+      scenarioId = ids[0];
+    } else {
+      // A fully implemented multi-id group runs its members serially under
+      // one invocation identity; the group result is the AND of its cases.
+      scenarioId = CASE;
+      SCENARIOS[CASE] = async (groupStack, groupSource) => {
+        let allOk = true;
+        for (const memberId of ids) {
+          log(`group ${CASE}: running ${memberId}`);
+          const ok = await SCENARIOS[memberId](groupStack, groupSource);
+          log(`group ${CASE}: ${memberId} ${ok ? 'PASS' : 'FAIL'}`);
+          allOk = allOk && ok;
+          if (memberId !== ids[ids.length - 1]) {
+            // Fresh page-level save diagnostics per case: the page-lifetime
+            // hooks never reset on their own (v1 matrix reloads between legs
+            // for exactly this reason).
+            await reloadReceiverPage(groupStack);
+          }
+        }
+        return allOk;
+      };
     }
-    scenarioId = ids[0];
   }
   const scenario = SCENARIOS[scenarioId];
   if (!scenario && !UX_PLACEHOLDER_CASES.has(CASE)) {
@@ -4382,11 +4434,15 @@ async function main() {
   // ux-results.json, never in the v1 results.json.
   const plannedCase = isUxCase(scenarioId) ? null : loadPlanningCase(scenarioId);
   if (plannedCase) writeAttemptMarker(scenarioId, ATTEMPT_ID);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-30']);
   // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
   // stack receiver would clash on the shared CDP debug port (9445).
   const selfManaged = new Set(['E2E-1', 'E2E-2']);
-  const stack = selfManaged.has(scenarioId) ? null : await launchStack({ withSender: needsSender.has(scenarioId) });
+  const groupIds = UX_ENTRY_GROUPS[CASE] || null;
+  const withSender = groupIds
+    ? groupIds.some((id) => needsSender.has(id))
+    : needsSender.has(scenarioId);
+  const stack = selfManaged.has(scenarioId) ? null : await launchStack({ withSender });
   try {
     const ok = await scenario(stack, SOURCE);
     log(`CASE ${CASE} ${ok ? 'PASS' : 'FAIL'} (attempt ${ATTEMPT_ID})`);

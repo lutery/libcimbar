@@ -137,3 +137,11 @@
 
 
 - 2026-10-25（T24）：T21 计划中的「点击后焦点」验收裁定归 **T31**（真实键盘/焦点 E2E 批）承接——lead 决定；T22 的 ux-observation.mjs 已预留 receivingDriven 驱动态断言面，届时由 T31 浏览器执行面覆盖。登记人：dev-v2-prod。
+
+## B7-T25 — 真实录像/保存闭环（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-25 05:02 ～ 06:25 (+08:00)；报告：b7-t25-report.md；留痕：red-logs/t25-attempt1-save-hooks-sessionid.log、t25-green.txt、t25-oldruns-after.sha（UNCHANGED）
+- E2E-30..34 全 PASS（21 断言；attempt-2；attempt-1 两处测试侧根因如实修复留档：同页多存需每腿重载页面=v1 既有语义、两处断言读取自误）。
+- 亮点：双向停止/切换 owner 更新计时清零；native 文件选择器 tier-3 探针；三时点「录像位置/用时/速率/估计」四行分列；EOF 不足→Incomplete 不可保存→with 恢复；真实取消（对话框停留 4944ms）→Retryable 文案→重存四时点+SHA；哨兵 FileShare.None 锁→如实分支→释放→恢复保存。
+- 产物：media-journeys.mjs（新）、run-e2e 媒体工厂接线、media 根 20261025-teamexec-08（ux-results PARTIAL phase=media）。
+- 提交：`docs: record real video and save recovery evidence`。

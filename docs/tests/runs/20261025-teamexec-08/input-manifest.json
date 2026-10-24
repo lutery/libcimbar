@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-08",
+  "phase": "media",
+  "lockedAt": "2026-10-24T21:07:23.393Z",
+  "note": "T25 media inputs: read-only copies of the T6-locked primary 128KiB input and the V-LAST pair (with/without) plus its pair manifest/prefix-check reference. The pair construction and prefix verdict come from the T6 attempt; see baseline input-manifest.",
+  "primaryInput": {
+    "path": "docs/tests/runs/20261025-teamexec-08/fixtures/primary-input-128k.bin",
+    "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+    "bytes": 131072,
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/primary-input-128k.bin"
+  },
+  "pair": {
+    "withSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+    "withoutSha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+    "manifestPath": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/manifest.json",
+    "prefixCheckPath": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/prefix-check.json",
+    "sourceRun": "docs/tests/runs/20261024-teamexec-04"
+  },
+  "files": [
+    {
+      "path": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/V-LAST-with.webm",
+      "sha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+      "bytes": 14330428,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/V-LAST-without.webm",
+      "sha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+      "bytes": 9807013,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/manifest.json",
+      "sha256": "873598ef1ca7a0e4da7180d218252ac6a924716ede28688dbe5d8170c84f56ed",
+      "bytes": 5076,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-08/fixtures/fixtures-media/prefix-check.json",
+      "sha256": "d43dfa8b445bbf72405ed69bff28957c0b0af67f50c509bb983dd18244e094e0",
+      "bytes": 2283,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-08/fixtures/primary-input-128k.bin",
+      "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "bytes": 131072,
+      "role": "fixture-copy"
+    }
+  ]
+}
