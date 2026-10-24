@@ -208,8 +208,12 @@ def load_plan(planning_path, gate, violations):
     """Read the frozen machine plan and derive the per-gate required lists."""
     if not os.path.isfile(planning_path):
         raise ContextError("planning file not found: %s" % planning_path)
-    with open(planning_path, encoding="utf-8") as handle:
-        plan = json.load(handle)
+    try:
+        with open(planning_path, encoding="utf-8") as handle:
+            plan = json.load(handle)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ContextError("planning file is not a readable JSON file: %s (%s)"
+                           % (planning_path, error))
     gate_config = (plan.get("gates") or {}).get(gate)
     if not isinstance(gate_config, dict):
         violations.append("plan has no gate configuration for %s" % gate)
@@ -508,7 +512,11 @@ def main():
     except ContextError as error:
         print("CONTEXT REFUSED: %s" % error, file=sys.stderr)
         return 3
-    violations = run_gate(context_payload, args.gate)
+    try:
+        violations = run_gate(context_payload, args.gate)
+    except ContextError as error:
+        print("CONTEXT REFUSED: %s" % error, file=sys.stderr)
+        return 3
     if violations:
         print("UX GATE %s: FAIL (%d violation(s))" % (args.gate, len(violations)))
         for violation in violations:

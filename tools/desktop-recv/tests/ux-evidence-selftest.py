@@ -632,6 +632,62 @@ def main():
                run, "local", 1,
                expect_text="caseType must be file_roundtrip per the plan")
 
+        # ---- T3 adversarial: borrowed, forged and mis-bound evidence ----
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        ux[0]["startedAt"] = "2026-10-24T10:00:09Z"
+        ux[0]["finishedAt"] = "2026-10-24T10:00:01Z"
+        write_results(run, legacy, ux)
+        expect("reversed claim timeline is refused", run, "local", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        ux[0].update({"result": "NOT_RUN", "executedBy": None, "startedAt": None,
+                      "finishedAt": None, "referenceSha256": None,
+                      "receivedSha256": "a" * 64})
+        write_results(run, legacy, ux)
+        expect("NOT_RUN with a received hash is refused", run, "local", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        borrowed = ux_record("E2E-27", run, attempt_id="attempt-002")
+        ux[0]["proofRefs"] = borrowed["proofRefs"]
+        ux[0]["assertions"] = borrowed["assertions"]
+        write_results(run, legacy, ux)
+        expect("proof borrowed from another attempt is refused", run, "local", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        ux[0]["caseId"] = "e2e-27"
+        write_results(run, legacy, ux)
+        expect("case-folded caseId is not the planned case", run, "local", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        ux[0]["proofRefs"] = [ref.replace("/", "\\") for ref in ux[0]["proofRefs"]]
+        write_results(run, legacy, ux)
+        expect("backslash proofRefs are refused", run, "local", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_field(adv_repo)
+        ux[0]["scope"] = "local_simulated"
+        write_results(run, legacy, ux)
+        expect("field record claiming the local scope is refused", run, "field", 1)
+
+        adv_repo = repo()
+        run, legacy, ux = complete_local(adv_repo)
+        second = ux_record("E2E-27", run, attempt_id="attempt-002")
+        write_results(run, legacy, ux + [second])
+        expect("same case executed twice is a duplicate, not a merge", run, "local", 1)
+
+        env_repo = repo()
+        run, legacy, ux = complete_local(env_repo)
+        plan_path = os.path.join(env_repo, *PLAN_REL.split("/"))
+        os.remove(plan_path)
+        os.makedirs(plan_path)
+        expect("planning path that is a directory is an environment refusal",
+               run, "local", 3)
+
         passed = sum(1 for ok in CHECKS if ok)
         if passed == len(CHECKS):
             print("SELFTEST PASS (%d cases)" % len(CHECKS))

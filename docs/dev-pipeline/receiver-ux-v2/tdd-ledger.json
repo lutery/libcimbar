@@ -79,6 +79,24 @@
       "productManifestSha256": null,
       "productNote": "tooling-only task; product untouched",
       "date": "2026-10-24"
+    },
+    {
+      "taskId": "T3",
+      "caseIds": [
+        "UX-UT-081..086 (adversarial extension)",
+        "UX-UT-088..095 (+8 adversarial)"
+      ],
+      "suite": "tools/desktop-recv/tests/run-context.test.mjs; tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "phase": "green",
+      "command": "node --test .../run-context.test.mjs; python .../ux-evidence-selftest.py",
+      "exitCode": 0,
+      "failureReason": null,
+      "passed": "8/8 tests; 54 cases; old runs UNCHANGED (760-entry SHA before/after)",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t3-green-tools.txt",
+      "sourceRevision": "747ce02",
+      "productManifestSha256": null,
+      "productNote": "tooling-only task; product untouched",
+      "date": "2026-10-24"
     }
   ]
 }

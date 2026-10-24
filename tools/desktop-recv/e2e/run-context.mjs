@@ -191,7 +191,12 @@ export function loadRunContext(contextPath, options = {}) {
   if (!existsSync(absoluteContext)) {
     throw new RunContextError('E_CONTEXT_MISSING', `run context not found: ${absoluteContext}`);
   }
-  const bytes = readFileSync(absoluteContext);
+  let bytes;
+  try {
+    bytes = readFileSync(absoluteContext);
+  } catch (error) {
+    throw new RunContextError('E_CONTEXT_MISSING', `run context is not a readable file: ${absoluteContext} (${error.code || error.message})`);
+  }
   let raw;
   try {
     raw = JSON.parse(bytes.toString('utf8'));

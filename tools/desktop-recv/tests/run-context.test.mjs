@@ -606,3 +606,88 @@ test('UX-UT-086 product manifest and tool revision are bound separately', (t) =>
   assert.equal(toolContext.productManifestSha256, toolOnly.context.productManifestSha256);
   assert.doesNotThrow(() => verifyProductManifest(toolContext));
 });
+
+// T3 adversarial matrix: risks the T1 cases do not cover. Nothing here is a
+// line-by-line mirror of the implementation; each case names a real way an
+// operator or a crashed script could cross two builds or borrow history.
+test('T3 adversarial: case-folded twins, separators, history and forged identities', (t) => {
+  const repo = makeRepo(t, 'adversarial');
+
+  // Windows case-folding: two roots that differ only by case are THE SAME
+  // directory on this host, so they can never stand for two builds.
+  const lower = contextFixture(repo, {
+    runId: '20261024-uxcase', attemptId: 'attempt-001', phase: 'baseline',
+  });
+  const upper = contextFixture(repo, {
+    runId: '20261024-UXCASE', attemptId: 'attempt-002', phase: 'final',
+    contextRel: 'docs/tests/receiver-ux-v2/variants/case-twin.json',
+  });
+  assert.doesNotThrow(() => loadRunContext(lower.contextPath, { repoRoot: repo }));
+  assert.doesNotThrow(() => loadRunContext(upper.contextPath, { repoRoot: repo }));
+  assert.throws(
+    () => assertDistinctContexts(
+      loadRunContext(lower.contextPath, { repoRoot: repo }),
+      loadRunContext(upper.contextPath, { repoRoot: repo }),
+    ),
+    (error) => error instanceof RunContextError
+      && (error.code === 'E_CONTEXT_ROOTS_EQUAL' || error.code === 'E_CONTEXT_ROOTS_OVERLAP'),
+  );
+
+  // Backslash separators leak through every root, not just runRoot.
+  const backslash = contextFixture(repo, {
+    runId: '20261024-uxbs',
+    mutate: (context) => { context.stagingRoot = 'build-desktop-recv\\runs\\20261024-uxbs'; },
+  });
+  assert.throws(
+    () => loadRunContext(backslash.contextPath, { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_PATH'),
+  );
+
+  // Identity stays ASCII: Chinese/space runIds never become directory names.
+  const cjkId = contextFixture(repo, { runId: '20261024 中文' });
+  assert.throws(
+    () => loadRunContext(cjkId.contextPath, { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_RUN_ID'),
+  );
+
+  // stagingRoot pointed at a historical run is refused.
+  const histStaging = contextFixture(repo, {
+    runId: '20261024-uxhist',
+    mutate: (context) => { context.stagingRoot = 'docs/tests/runs/20261021-teamexec-03/staging'; },
+  });
+  assert.throws(
+    () => loadRunContext(histStaging.contextPath, { repoRoot: repo }),
+    (error) => error instanceof RunContextError
+      && ['E_CONTEXT_STAGING_ROOT', 'E_CONTEXT_HISTORY'].includes(error.code),
+  );
+
+  // A fictional historical root inside the temp repo refuses a load AND the
+  // load attempt itself leaves its bytes untouched.
+  contextFixture(repo, { runId: '20261021-teamexec-03', attemptId: 'attempt-001', phase: 'final' });
+  const historicalDir = join(repo, 'docs', 'tests', 'runs', '20261021-teamexec-03');
+  const historicalBefore = treeDigest(historicalDir);
+  assert.throws(
+    () => loadRunContext(join(historicalDir, 'run-context.json'), { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_HISTORY'),
+  );
+  assert.equal(treeDigest(historicalDir), historicalBefore);
+
+  // A directory passed as the context file is a refusal, not a stack trace.
+  assert.throws(
+    () => loadRunContext(repo, { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_MISSING'),
+  );
+
+  // Case-folded attempt names are the same attempt directory on this host:
+  // reopening it stays an overwrite attempt and is refused.
+  const plain = contextFixture(repo, { runId: '20261024-uxfold' });
+  const foldedContext = loadRunContext(plain.contextPath, { repoRoot: repo });
+  initializeRunRoot(foldedContext);
+  const attempt = ensureAttemptDir(foldedContext, 'E2E-27', 'attempt-001');
+  writeFileSync(join(attempt, 'original.bin'), 'sealed');
+  assert.throws(
+    () => ensureAttemptDir(foldedContext, 'E2E-27', 'ATTEMPT-001'),
+    isRunContextError('E_ATTEMPT_EXISTS'),
+  );
+  assert.equal(readFileSync(join(attempt, 'original.bin'), 'utf8'), 'sealed');
+});

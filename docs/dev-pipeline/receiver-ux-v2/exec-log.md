@@ -31,3 +31,11 @@
 - 产物：`e2e/run-context.mjs`（单一解析器+--validate；runner/recorder/verifier 共用事实源）、`verify-ux-evidence.py`（--context/--gate local|field/--repo-root；46 例自测）、runner/recorder `--context` 必需 + `--validate-only`/`--repo-root`/`--resume`/`--help`，未知 case 启动前 exit 2、UX 占位 exit 4、manifest/run-root guard exit 3/5；`stage.ps1 -StagingRoot`；evidence.mjs 增 ux 出口（v1 导出不变）；e2e/README.md 命令契约。
 - GREEN（lead 独立复跑确认）：run-context 7/7；ux-evidence 自测 46 例；旧自测 14/14；prefix 3/3；run-unit --all 9 套 120 全绿。旧 run 零字节改动。
 - 偏差（已记录，未放宽断言）：缺 --context 退出码定为 2（参数错误）；T1 夹具两处自身缺陷修正；UX 场景仅注册 exit-4 占位（KISS——场景实现在 T13/T19/T25/T31/T35）。
+
+## B1-T3 — 隔离工具对抗与旧契约回归（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-24 15:22 ～ 15:31 (+08:00)；报告：`b1-t3-report.md`；GREEN：`red-logs/t3-green-tools.txt`；旧 run 指纹：`red-logs/t3-oldruns-{before,after}.sha`（760 项，Compare-Object=UNCHANGED）
+- 新增对抗：run-context 第 8 用例（大小写孪生根/分隔符/中文 runId/staging 指历史/伪造历史根零写入/目录 context 明确报错/大小写 attempt 密封）；selftest +8（时间倒序、NOT_RUN 带 SHA、跨 attempt 借 proof、caseId 折叠、反斜杠 proofRef、field 冒 local、同 case 双 attempt、planning 目录）。
+- 两处抗对抗加固（断言先行）：context 路径为目录→E_CONTEXT_MISSING；planning 不可读→ContextError exit 3。
+- 复跑（lead 独立确认）：8/8、54 cases、14/14、prefix 3/3、check-contracts PASS、unit 9 套 120；旧 run/staging/product 零改动。
+- 提交：`test: reject stale and incomplete UX run claims`。
