@@ -8,18 +8,19 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PAIR_CONSTRUCTION } from './pair-evidence.mjs';
+import {
+  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, RunContextError,
+} from './run-context.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
-const STAGING = join(REPO, 'build-desktop-recv', 'staging');
-const FIXTURES = join(REPO, 'docs', 'tests', 'runs', '20261018-teamexec-01', 'fixtures');
-// Round-3 rectification: the user decided on a NEW run directory with a full
-// re-run, so the media fixtures land in run-03 (run-02 is preserved unchanged).
-const RUN = join(REPO, 'docs', 'tests', 'runs', '20261021-teamexec-03');
-const MEDIA = join(RUN, 'fixtures-media');
+let STAGING = null;
+let FIXTURES = null;
+let RUN = null;
+let MEDIA = null;
 const SENDER_PORT = 8811;
 const RECORDER_PORT = 8790; // the e2e dir is already served there
 const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
@@ -40,11 +41,87 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // (6.5 < 8.028). If E2E-16 fails the end-segment criterion, re-record with
 // withMs = T* + 1.5 s and cut = T* - 1.5 s (the runner prints the measured
 // values; at most two calibrations).
-const cliArgs = new Map();
-for (let i = 2; i < process.argv.length; i += 2) {
-  cliArgs.set(String(process.argv[i]).replace(/^--/, ''), process.argv[i + 1]);
+const VALUE_FLAGS = new Set(['only', 'payload-bytes', 'with-seconds', 'cut-seconds', 'without-seconds', 'payload-file', 'context', 'repo-root']);
+const BARE_FLAGS = new Set(['validate-only', 'resume', 'help']);
+
+function parseArguments(argv) {
+  const parsed = { args: new Map(), flags: new Set() };
+  let index = 0;
+  while (index < argv.length) {
+    const arg = argv[index];
+    if (!arg.startsWith('--')) return { error: `unexpected argument: ${arg}` };
+    const name = arg.slice(2);
+    if (BARE_FLAGS.has(name)) { parsed.flags.add(name); index += 1; continue; }
+    if (VALUE_FLAGS.has(name)) {
+      const value = argv[index + 1];
+      if (value === undefined || value.startsWith('--')) return { error: `--${name} needs a value` };
+      parsed.args.set(name, value);
+      index += 2;
+      continue;
+    }
+    return { error: `unknown argument: ${arg}` };
+  }
+  return parsed;
 }
+const HELP = `usage: node tools/desktop-recv/e2e/record-sender.mjs --context <run-context.json> [--only full|last] [options]
+
+  --context <json>    REQUIRED. Validated run context owning every output
+                      root; no fallback to the historical run-03 media root.
+  --only full|last    full = whole rig; last = the V-LAST pair only.
+  --payload-file <f>  --only last records the pair against this real input
+                      file instead of generating a payload.
+  --with-seconds, --cut-seconds, --without-seconds, --payload-bytes
+                      declared stop points and payload size (see notes above).
+  --validate-only     parse + validate the context and print its identity
+                      JSON; no file write, no browser, no server.
+  --repo-root <dir>   resolve repo-relative context paths against <dir>
+                      (development/fixture use; default: this checkout).
+  --resume            explicitly resume the named run identity.
+
+  Exit: 0 recorded, 1 rig failure, 2 bad/missing arguments,
+        3 invalid context/refused build, 5 run-root guard.`;
+
+const cliArgs = new Map();
+const cliFlags = new Set();
+{
+  const parsed = parseArguments(process.argv.slice(2));
+  if (parsed.error) {
+    console.error(parsed.error);
+    console.error(HELP);
+    process.exit(2);
+  }
+  for (const [name, value] of parsed.args) cliArgs.set(name, value);
+  for (const flag of parsed.flags) cliFlags.add(flag);
+}
+if (cliFlags.has('help')) { console.log(HELP); process.exit(0); }
+
+let CONTEXT = null;
+if (!cliArgs.get('context')) {
+  console.error('missing required --context <run-context.json>; the recorder never falls back to a historical root');
+  console.error(HELP);
+  process.exit(2);
+}
+try {
+  CONTEXT = loadRunContext(cliArgs.get('context'), { repoRoot: cliArgs.get('repo-root') });
+} catch (error) {
+  console.error(error && error.message ? error.message : String(error));
+  process.exit(3);
+}
+if (cliFlags.has('validate-only')) {
+  console.log(JSON.stringify(describeContext(CONTEXT)));
+  process.exit(0);
+}
+
 const ONLY = cliArgs.get('only') || 'full';
+if (ONLY !== 'full' && ONLY !== 'last') {
+  console.error(`--only must be full or last (got ${ONLY})`);
+  process.exit(2);
+}
+const PAYLOAD_FILE = cliArgs.get('payload-file') || null;
+if (PAYLOAD_FILE && !existsSync(resolve(PAYLOAD_FILE))) {
+  console.error(`--payload-file not found: ${PAYLOAD_FILE}`);
+  process.exit(2);
+}
 const PAYLOAD_BYTES = Number(cliArgs.get('payload-bytes') || '131072');
 const WITH_SECONDS = Number(cliArgs.get('with-seconds') || '9.5');
 // --without-seconds is the pre-round-5 name of the same declared stop point;
@@ -52,6 +129,14 @@ const WITH_SECONDS = Number(cliArgs.get('with-seconds') || '9.5');
 const CUT_SECONDS = Number(cliArgs.get('cut-seconds') || cliArgs.get('without-seconds') || '6.5');
 const WITH_MS = Math.round(WITH_SECONDS * 1000);
 const CUT_MS = Math.round(CUT_SECONDS * 1000);
+
+// All output roots come from the validated context; there is no default.
+function applyContextRoots(context) {
+  RUN = context.abs.runRoot;
+  STAGING = context.abs.stagingRoot;
+  FIXTURES = context.abs.fixtureRoot;
+  MEDIA = join(context.abs.fixtureRoot, 'fixtures-media');
+}
 
 // A normally launched Edge (CDP-attached) is required: Playwright-launched
 // Edge instances cannot start cross-window capture on this host.
@@ -411,6 +496,20 @@ async function reloadSender(page, filePath) {
 }
 
 async function main() {
+  // Refuse an invalid build or a foreign run root before starting anything.
+  try {
+    verifyProductManifest(CONTEXT);
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(3);
+  }
+  try {
+    initializeRunRoot(CONTEXT, { resume: cliFlags.has('resume') });
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(5);
+  }
+  applyContextRoots(CONTEXT);
   mkdirSync(MEDIA, { recursive: true });
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
@@ -459,14 +558,19 @@ async function main() {
     // sufficient. Size and durations are CLI-tunable; the original 4 MiB
     // payload (mislabeled 512k) exceeded what real recordings deliver
     // intact (TD-15), so the default is 128 KiB - the feasible class.
-    const payloadName = `payload-${Math.round(PAYLOAD_BYTES / 1024)}k-random.bin`;
+    const payloadName = PAYLOAD_FILE
+      ? basename(resolve(PAYLOAD_FILE))
+      : `payload-${Math.round(PAYLOAD_BYTES / 1024)}k-random.bin`;
     const extFile = join(MEDIA, payloadName);
     // Round-5 lane: the payload bytes are REUSED when the file already exists
     // (T* was measured against exactly those bytes; regenerating would change
     // them silently). Only a missing file is generated fresh, and that is
     // recorded in the manifest like any regeneration.
     let payloadReused = false;
-    if (existsSync(extFile) && statSync(extFile).size === PAYLOAD_BYTES) {
+    if (PAYLOAD_FILE) {
+      writeFileSync(extFile, readFileSync(resolve(PAYLOAD_FILE)));
+      console.log(`payload COPIED from --payload-file: ${PAYLOAD_FILE} -> ${payloadName}`);
+    } else if (existsSync(extFile) && statSync(extFile).size === PAYLOAD_BYTES) {
       payloadReused = true;
       console.log(`payload REUSED (not regenerated): ${payloadName}`);
     } else {

@@ -176,3 +176,70 @@ export function stampLegAttempts(record, attemptId) {
   }
   return record;
 }
+
+// ---- receiver-ux-v2 evidence (separate file, separate schema) -------------
+// The v1 Evidence file stays exactly as approved (E2E-1..26 / AC-001..014).
+// UX evidence lives in ux-results.json with the recipe-A structure and is
+// validated by verify-ux-evidence.py; these helpers only write what the
+// validator later re-checks on disk.
+export function readUxResults(runDir) {
+  const path = join(runDir, 'ux-results.json');
+  if (!existsSync(path)) return null;
+  return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+export function writeUxResults(runDir, payload) {
+  mkdirSync(runDir, { recursive: true });
+  const path = join(runDir, 'ux-results.json');
+  writeFileSync(path, `${JSON.stringify(payload, null, 2)}\n`);
+  return path;
+}
+
+// Insert or replace ONE case record for the current attempt. Older attempts'
+// proof directories are untouched (proof/<caseId>/<attemptId>/ is immutable);
+// only the index entry for the case points at the newest valid attempt.
+export function upsertUxResult(runDir, { runId, productManifestSha256, record }) {
+  const existing = readUxResults(runDir) || {
+    version: 1,
+    iterationId: 'receiver-ux-v2',
+    runId,
+    productManifestSha256,
+    records: [],
+  };
+  if (existing.runId !== runId || existing.productManifestSha256 !== productManifestSha256) {
+    throw new Error('ux-results.json belongs to another run identity; refusing cross-build overwrite');
+  }
+  existing.records = existing.records.filter((entry) => entry.caseId !== record.caseId);
+  existing.records.push(record);
+  existing.records.sort((a, b) => String(a.caseId).localeCompare(String(b.caseId), 'en', { numeric: true }));
+  writeUxResults(runDir, existing);
+  return record;
+}
+
+// A UX file-roundtrip record. The first two proofRefs are ALWAYS the actual
+// original and received files (the gate re-hashes them); assertions carry
+// their own proof files. The caller supplies real attempt paths.
+export function uxRoundtripRecord({
+  caseId, attemptId, runId, productManifestSha256, acceptanceIds, scope,
+  caseType, executedBy, startedAt, finishedAt, proofRefs, assertions,
+  referenceSha256, receivedSha256, notes = '', result = 'PASS', extra = {},
+}) {
+  return {
+    caseId,
+    attemptId,
+    scope,
+    caseType,
+    result,
+    executedBy,
+    acceptanceIds,
+    productManifestSha256,
+    startedAt,
+    finishedAt,
+    proofRefs,
+    assertions,
+    referenceSha256,
+    receivedSha256,
+    notes,
+    ...extra,
+  };
+}

@@ -33,6 +33,7 @@ param(
   [string]$Mode = 'assets',
   [string]$WasmBuildDir = '',
   [string]$GateLog = '',
+  [string]$StagingRoot = '',
   [switch]$Help
 )
 
@@ -47,8 +48,17 @@ usage: pwsh -NoProfile -File tools/desktop-recv/stage.ps1 -RunId <id> -Mode <dev
                     copies JS/WASM, writes config/asset-set.json and the
                     strict-EOF evidence bound to the gate log digest.
 
-  -Mode development copies web/desktop-recv source and tests into staging.
+  -Mode development copies web/desktop-recv source and tests into the
+                    receiver root (default: the shared build-desktop-recv/
+                    staging/receiver; override with -StagingRoot <dir>).
   -Mode candidate   requires a complete user entry point (packaging task).
+
+  -StagingRoot <dir>  copy the receiver into this directory instead of the
+                      shared staging area. Only the receiver copy location
+                      moves; sender staging is copied read-only from the
+                      verified sender package into stagingRoot/sender by the
+                      runner. The directory may not be inside product/ or a
+                      docs/tests/runs/ run output.
 
   Exit codes: 0 ok, 2 bad arguments, 3 missing input, 4 verification failed.
 '@
@@ -66,7 +76,30 @@ if (-not (Test-Path (Join-Path $repoRoot 'CMakeLists.txt'))) {
   exit 2
 }
 
-$staging = Join-Path $repoRoot 'build-desktop-recv/staging/receiver'
+$historicalRunIds = @('20261018-teamexec-01', '20261019-teamexec-02', '20261021-teamexec-03')
+if ($historicalRunIds -contains $RunId) {
+  Write-Error "refusing to stage or write evidence into historical run '$RunId' (read-only)"
+  exit 2
+}
+
+if ([string]::IsNullOrWhiteSpace($StagingRoot)) {
+  $staging = Join-Path $repoRoot 'build-desktop-recv/staging/receiver'
+} else {
+  $candidate = if ([IO.Path]::IsPathRooted($StagingRoot)) { $StagingRoot } else { Join-Path $repoRoot $StagingRoot }
+  $staging = [IO.Path]::GetFullPath($candidate)
+  $forbidden = @(
+    [IO.Path]::GetFullPath((Join-Path $repoRoot 'product')),
+    [IO.Path]::GetFullPath((Join-Path $repoRoot 'docs/tests/runs'))
+  )
+  foreach ($prefix in $forbidden) {
+    $sep = [IO.Path]::DirectorySeparatorChar
+    if ($staging.Equals($prefix, [StringComparison]::OrdinalIgnoreCase) -or
+        $staging.StartsWith($prefix + $sep, [StringComparison]::OrdinalIgnoreCase)) {
+      Write-Error "refusing -StagingRoot inside a read-only area: $staging"
+      exit 2
+    }
+  }
+}
 $vendor = Join-Path $staging 'vendor'
 $config = Join-Path $staging 'config'
 $runDir = Join-Path $repoRoot "docs/tests/runs/$RunId"

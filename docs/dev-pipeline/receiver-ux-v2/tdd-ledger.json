@@ -4,7 +4,14 @@
   "entries": [
     {
       "taskId": "T1",
-      "caseIds": ["UX-UT-081", "UX-UT-082", "UX-UT-083", "UX-UT-084", "UX-UT-085", "UX-UT-086"],
+      "caseIds": [
+        "UX-UT-081",
+        "UX-UT-082",
+        "UX-UT-083",
+        "UX-UT-084",
+        "UX-UT-085",
+        "UX-UT-086"
+      ],
       "suite": "tools/desktop-recv/tests/run-context.test.mjs",
       "phase": "red",
       "command": "node --test tools/desktop-recv/tests/run-context.test.mjs",
@@ -18,7 +25,16 @@
     },
     {
       "taskId": "T1",
-      "caseIds": ["UX-UT-088", "UX-UT-089", "UX-UT-090", "UX-UT-091", "UX-UT-092", "UX-UT-093", "UX-UT-094", "UX-UT-095"],
+      "caseIds": [
+        "UX-UT-088",
+        "UX-UT-089",
+        "UX-UT-090",
+        "UX-UT-091",
+        "UX-UT-092",
+        "UX-UT-093",
+        "UX-UT-094",
+        "UX-UT-095"
+      ],
       "suite": "tools/desktop-recv/tests/ux-evidence-selftest.py",
       "phase": "red",
       "command": "python tools/desktop-recv/tests/ux-evidence-selftest.py",
@@ -28,6 +44,40 @@
       "sourceRevision": "b0d1223",
       "productManifestSha256": null,
       "productNote": "pre-product phase: tooling-only task",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T2",
+      "caseIds": [
+        "UX-UT-081..086"
+      ],
+      "suite": "tools/desktop-recv/tests/run-context.test.mjs",
+      "phase": "green",
+      "command": "node --test tools/desktop-recv/tests/run-context.test.mjs",
+      "exitCode": 0,
+      "failureReason": null,
+      "passed": "7/7",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t2-green-tools.txt",
+      "sourceRevision": "81e057f",
+      "productManifestSha256": null,
+      "productNote": "tooling-only task; product untouched",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T2",
+      "caseIds": [
+        "UX-UT-088..095"
+      ],
+      "suite": "tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "phase": "green",
+      "command": "python tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "exitCode": 0,
+      "failureReason": null,
+      "passed": "46 cases",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t2-green-tools.txt",
+      "sourceRevision": "81e057f",
+      "productManifestSha256": null,
+      "productNote": "tooling-only task; product untouched",
       "date": "2026-10-24"
     }
   ]

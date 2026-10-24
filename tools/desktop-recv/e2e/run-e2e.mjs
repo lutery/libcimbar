@@ -23,6 +23,9 @@ import {
   upsertResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
+  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, RunContextError,
+} from './run-context.mjs';
+import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
   evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
   RESTARTABLE_TERMINALS,
@@ -32,12 +35,14 @@ import { evaluatePairConstruction } from './pair-evidence.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
-const STAGING = join(REPO, 'build-desktop-recv', 'staging');
-// Round-3 rectification: the user decided on a new run directory and a full
-// re-run; run-02 is preserved untouched and no PASS is copied forward.
-const RUN = join(REPO, 'docs', 'tests', 'runs', '20261021-teamexec-03');
-const FIXTURES = join(REPO, 'docs', 'tests', 'runs', '20261018-teamexec-01', 'fixtures');
-const PLANNING = join(REPO, 'docs', 'tests', 'planning-cases.json');
+// Stage-5: no hardcoded default roots. RUN/STAGING/FIXTURES/PLANNING are
+// assigned from the validated run context in applyContextRoots() before any
+// scenario or side effect; without --context the runner refuses to start.
+let RUN = null;
+let STAGING = null;
+let FIXTURES = null;
+let PLANNING = null;
+let CONTEXT = null;
 const SENDER_PORT = 8811;
 const RECEIVER_PORT = 8771;
 const DEBUG_PORT = 9445;
@@ -47,13 +52,87 @@ const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
 const NATIVE_HELPER = join(HERE, 'native-dialog.ps1');
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
+const HELP = `usage: node tools/desktop-recv/e2e/run-e2e.mjs --context <run-context.json> --case <id|group> [options]
+
+  --context <json>   REQUIRED. Validated run context that owns every output
+                     root; there is no fallback to the historical run-03 root.
+  --case <id|group>  one scenario id, or one of the UX entry points
+                     (UX-SLICE/UX-IAT/UX-MEDIA-SAVE/UX-UI/UX-ALL), which
+                     expand to concrete scenario ids.
+  --source window|screen        capture source for live journeys (default window)
+  --video <file> --stopms <ms>  E2E-19 options
+  --legs <a,b>                  E2E-18 leg selection
+  --validate-only    parse + validate the context and print its identity JSON;
+                     no file is written, no browser or server is started.
+  --repo-root <dir>  resolve repo-relative context paths against <dir>
+                     (development/fixture use; default: this checkout).
+  --resume           explicitly resume the named run identity; runId, phase,
+                     product manifest and attempt must all match.
+
+  Exit: 0 PASS, 1 FAIL, 2 bad/missing arguments, 3 invalid context or refused
+        build, 4 registered-but-not-implemented UX case, 5 run-root guard.
+  Historical diagnostics (SMOKE, probe-*, smoke-live) predate receiver-ux-v2
+  and are never v2 acceptance entry points.`;
+
+const VALUE_FLAGS = new Set(['case', 'source', 'video', 'stopms', 'legs', 'context', 'repo-root']);
+const BARE_FLAGS = new Set(['validate-only', 'resume', 'help']);
+
+function parseArguments(argv) {
+  const parsed = { args: new Map(), flags: new Set() };
+  let index = 0;
+  while (index < argv.length) {
+    const arg = argv[index];
+    if (!arg.startsWith('--')) return { error: `unexpected argument: ${arg}` };
+    const name = arg.slice(2);
+    if (BARE_FLAGS.has(name)) { parsed.flags.add(name); index += 1; continue; }
+    if (VALUE_FLAGS.has(name)) {
+      const value = argv[index + 1];
+      if (value === undefined || value.startsWith('--')) return { error: `--${name} needs a value` };
+      parsed.args.set(name, value);
+      index += 2;
+      continue;
+    }
+    return { error: `unknown argument: ${arg}` };
+  }
+  return parsed;
+}
+
 const args = new Map();
-for (let i = 2; i < process.argv.length; i += 2) {
-  args.set(process.argv[i].replace(/^--/, ''), process.argv[i + 1]);
+const flags = new Set();
+{
+  const parsed = parseArguments(process.argv.slice(2));
+  if (parsed.error) {
+    console.error(parsed.error);
+    console.error(HELP);
+    process.exit(2);
+  }
+  for (const [name, value] of parsed.args) args.set(name, value);
+  for (const flag of parsed.flags) flags.add(flag);
+}
+if (flags.has('help')) { console.log(HELP); process.exit(0); }
+
+if (!args.get('context')) {
+  console.error('missing required --context <run-context.json>; this runner never falls back to a historical root');
+  console.error(HELP);
+  process.exit(2);
+}
+try {
+  CONTEXT = loadRunContext(args.get('context'), { repoRoot: args.get('repo-root') });
+} catch (error) {
+  console.error(error && error.message ? error.message : String(error));
+  process.exit(3);
+}
+if (flags.has('validate-only')) {
+  console.log(JSON.stringify(describeContext(CONTEXT)));
+  process.exit(0);
 }
 const CASE = args.get('case');
 const SOURCE = args.get('source') || 'window';
-if (!CASE) { console.error('usage: node run-e2e.mjs --case <CASE> [--source window|screen]'); process.exit(2); }
+if (!CASE) {
+  console.error('--case <id|group> is required');
+  console.error(HELP);
+  process.exit(2);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...parts) => console.log(new Date().toISOString(), ...parts);
@@ -3848,7 +3927,62 @@ function stampAttemptId(caseId, attemptId) {
   writeResults(RUN, records);
 }
 
+// The receiver-ux-v2 UX entry points, frozen by the v2 machine plan. Group
+// names expand to concrete scenario ids; every id is registered so a request
+// fails with an explicit "not implemented" exit instead of an empty handler
+// fabricating a PASS. Later stage-5 tasks attach the real journeys.
+const UX_ENTRY_GROUPS = {
+  'UX-SLICE': ['E2E-27'],
+  'UX-IAT': ['UX-IAT-01', 'UX-IAT-02', 'UX-IAT-03', 'UX-IAT-04', 'UX-IAT-05', 'UX-IAT-06', 'UX-IAT-07', 'UX-IAT-08'],
+  'UX-MEDIA-SAVE': ['E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34'],
+  'UX-UI': ['E2E-35', 'E2E-36', 'E2E-37'],
+  'UX-ALL': ['E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34', 'E2E-35', 'E2E-36', 'E2E-37', 'E2E-38'],
+};
+const UX_PLACEHOLDER_CASES = new Set([
+  'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34',
+  'E2E-35', 'E2E-36', 'E2E-37', 'E2E-38', 'E2E-39',
+  ...Object.keys(UX_ENTRY_GROUPS),
+  ...Object.values(UX_ENTRY_GROUPS).flat(),
+]);
+
+// All output roots come from the validated context; there is no default.
+function applyContextRoots(context) {
+  RUN = context.abs.runRoot;
+  STAGING = context.abs.stagingRoot;
+  FIXTURES = context.abs.fixtureRoot;
+  PLANNING = context.abs.planningFile;
+}
+
 async function main() {
+  // Everything that can refuse the run happens BEFORE the first write or
+  // process: the product manifest is re-hashed from disk, the scenario and
+  // UX placeholder registry is checked, and the run-root guard runs. An
+  // invalid build or an unknown case never starts a browser or a server.
+  try {
+    verifyProductManifest(CONTEXT);
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(3);
+  }
+  const scenario = SCENARIOS[CASE];
+  if (!scenario && !UX_PLACEHOLDER_CASES.has(CASE)) {
+    console.error(`scenario ${CASE} is not implemented in this runner yet`);
+    process.exit(2);
+  }
+  if (!scenario) {
+    console.error(
+      `case ${CASE} is registered for receiver-ux-v2 but its real handler is not implemented yet; ` +
+      'refusing to fabricate a PASS',
+    );
+    process.exit(4);
+  }
+  try {
+    initializeRunRoot(CONTEXT, { resume: flags.has('resume') });
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(5);
+  }
+  applyContextRoots(CONTEXT);
   mkdirSync(RUN, { recursive: true });
   // A crashed earlier run can leave Edge instances (some holding an active
   // share) or a listener on the receiver/recorder ports; both poison the
@@ -3859,8 +3993,6 @@ async function main() {
     { stdio: 'ignore' });
     ps.on('exit', resolveCleanup);
   });
-  const scenario = SCENARIOS[CASE];
-  if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
   const ATTEMPT_ID = `${CASE}-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
   ACTIVE_ATTEMPT_ID = ATTEMPT_ID;
   // Planned gate cases get the S-1 attempt marker; diagnostics do not.

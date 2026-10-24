@@ -145,7 +145,9 @@ function contextFixture(repo, options = {}) {
     legacyThresholdFile: null,
   };
   if (mutate) mutate(context, product, repo);
-  const rel = contextRel || `${context.runRoot}/run-context.json`;
+  // The fixture file itself always stays inside the temp repo, even when a
+  // negative case mutates runRoot to an escaping value.
+  const rel = contextRel || `docs/tests/runs/${runId}/run-context.json`;
   const contextPath = join(repo, ...rel.split('/'));
   if (writeContext) put(repo, rel, `${JSON.stringify(context, null, 2)}\n`);
   return { repo, context, contextPath, product, contextRel: rel };

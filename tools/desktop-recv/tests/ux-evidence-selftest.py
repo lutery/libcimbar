@@ -520,11 +520,13 @@ def main():
         fake_repo = repo()
         run, legacy, ux = complete_local(fake_repo)
         ux[0]["proofRefs"] = ["../20261021-teamexec-03/results.json"]
+        write_results(run, legacy, ux)
         expect("escaping proofRef is refused", run, "local", 1)
 
         fake_repo = repo()
         run, legacy, ux = complete_local(fake_repo)
         ux[0]["proofRefs"] = []
+        write_results(run, legacy, ux)
         expect("empty proofRefs on PASS is refused", run, "local", 1)
 
         # ---- UX-UT-092: scope/executor/caseType upgrades ----------------

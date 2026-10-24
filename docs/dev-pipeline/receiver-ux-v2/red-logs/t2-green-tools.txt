@@ -1,0 +1,25 @@
+== node --test run-context.test.mjs (exit 0) ==
+ok 1 - run context field set is exactly the frozen recipe-A contract
+ok 2 - UX-UT-081 missing run context is refused before any side effect
+ok 3 - UX-UT-082 Chinese and space roots propagate to every writer
+ok 4 - UX-UT-083 path escapes and historical output roots are refused
+ok 5 - UX-UT-084 baseline/candidate staging are separate and the old package stays read-only
+ok 6 - UX-UT-085 resume accepts only the same run identity and keeps old attempts
+ok 7 - UX-UT-086 product manifest and tool revision are bound separately
+# tests 7
+# pass 7
+# fail 0
+== ux-evidence-selftest.py (exit 0) ==
+ok   v1 results.json still follows the legacy gate rules
+SELFTEST PASS (46 cases)
+== verify-evidence-selftest.py (exit 0) ==
+ok   plan without a caseType is refused: exit=1 expected=1
+SELFTEST PASS (14 cases)
+== video-prefix selftest (exit 0) ==
+[selftest] tail-truncated negative: PASS - head=True (0.0 vs threshold 10.0, offset 0); tail=False; verdict=FAIL
+SELFTEST PASS (3/3 cases: positive, head-shifted negative, tail-truncated negative)
+== node tools/desktop-recv/run-unit.mjs --all (exit 0) ==
+contracts: 7, session: 25, scheduler: 6, worker: 6, client: 11, save: 7, video: 15, ui: 7, evidence: 36 -> 120 tests, 0 failed/todo/skipped; UNIT SUITES PASS (9 suites)
+== valid context + unknown/placeholder case refusals (exit codes 2 / 4) ==
+- E2E-999 -> exit 2 "scenario E2E-999 is not implemented in this runner yet"; no proof/, no results.json written
+- UX-ALL -> exit 4 "case UX-ALL is registered for receiver-ux-v2 but its real handler is not implemented yet; refusing to fabricate a PASS"; no proof/, no results.json written
