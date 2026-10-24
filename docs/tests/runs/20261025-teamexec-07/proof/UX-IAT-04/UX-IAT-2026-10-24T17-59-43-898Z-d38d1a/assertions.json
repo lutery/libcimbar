@@ -1,0 +1,30 @@
+[
+  {
+    "id": "UX-IAT-04-A1",
+    "expected": "business changes paint immediately (not throttled by the display clock)",
+    "observed": "{\"immediatePaints\":0,\"paints\":11}",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A2",
+    "expected": "telemetry numeric refresh stays <=4Hz under a 25Hz snapshot stream (250ms clock)",
+    "observed": "{\"paintsAfterLoop\":11,\"elapsedMs\":1154}",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A3",
+    "expected": "dispose() stops every display timer (no paint after dispose)",
+    "observed": "{\"disposedAt\":11,\"paintsAfterDispose\":11}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A4",
+    "expected": "a throwing paint degrades inside the UX layer and never escapes to the app",
+    "observed": "null",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

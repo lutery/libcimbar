@@ -1,0 +1,37 @@
+[
+  {
+    "id": "UX-IAT-06-A1",
+    "expected": "picker cancel maps to 16002 (cancelled, not failed) and stays retryable",
+    "observed": "{\"events\":[{\"saveStatus\":\"selecting\",\"attemptId\":1,\"lastError\":null},{\"saveStatus\":\"failed\",\"attemptId\":1,\"lastError\":16002}],\"snapshot\":{\"saveStatus\":\"failed\",\"attemptId\":1,\"lastError\":16002}}",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-06-A2",
+    "expected": "write failure and close failure both end failed/retryable (16003)",
+    "observed": "{\"failWrite\":\"selecting/null|writing/null|failed/16005\",\"failClose\":\"selecting/null|writing/null|failed/16006\"}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-06-A3",
+    "expected": "a slow write surfaces the pending phase and ONLY write+close success reaches saved",
+    "observed": "{\"pendingSeen\":true,\"slowSaved\":{\"saveStatus\":\"saved\",\"attemptId\":1,\"lastError\":null}}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-06-A4",
+    "expected": "a second start during an in-flight attempt is refused busy (16008)",
+    "observed": "{\"secondStart\":false,\"snapshot\":{\"saveStatus\":\"selecting\",\"attemptId\":1,\"lastError\":16008}}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-06-A5",
+    "expected": "after failures the same artifact saves cleanly on a new attempt",
+    "observed": "{\"saveStatus\":\"saved\",\"attemptId\":1,\"lastError\":null}",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

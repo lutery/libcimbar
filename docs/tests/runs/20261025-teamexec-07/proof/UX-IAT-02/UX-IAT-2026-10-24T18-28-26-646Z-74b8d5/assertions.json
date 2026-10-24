@@ -1,0 +1,37 @@
+[
+  {
+    "id": "UX-IAT-02-A1",
+    "expected": "pending metadata is stamped just before the post with the owner identity and manual clock",
+    "observed": "{\"stamped\":{\"sessionId\":\"iat02\",\"sessionSeq\":7,\"frameId\":1,\"submittedAtMs\":2500},\"postedFrameId\":1,\"clockAtPost\":2500}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-02-A2",
+    "expected": "a duplicate frame result counts exactly once in the observation model",
+    "observed": "{\"acceptOne\":{\"ok\":true,\"code\":0,\"data\":{\"sessionSeq\":7,\"applied\":true,\"observationRevision\":2}},\"acceptDup\":{\"ok\":false,\"code\":19007,\"data\":null}}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-02-A3",
+    "expected": "a stale-seq feed after a newer begin is refused (old results never raise the new session)",
+    "observed": "{\"ok\":false,\"code\":19007,\"data\":null}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-02-A4",
+    "expected": "finish closes the observation window; later feeds are refused",
+    "observed": "{\"finish\":{\"ok\":false,\"code\":19008,\"data\":null},\"postFinish\":{\"ok\":true,\"code\":0,\"data\":{\"sessionSeq\":8,\"applied\":true,\"observationRevision\":2}}}",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-02-A5",
+    "expected": "client close clears the pending submission metadata",
+    "observed": "null",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

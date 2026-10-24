@@ -119,3 +119,11 @@
 - worker +1 真实资产 IAT 测试（交付包 JS/WASM 经 VM 桥接、scan stub 注入合成包、真实 fountain/report 链路，单流 [0.030303] 与探针记录一致）；负例缺口核对=无缺口；runtime-case-map R-01..08 → UNIT_VERIFIED + testBindings（JSON 合法）。
 - 复跑（lead 独立确认）：worker 14/14；--all 12 套 171 全绿；probe exit0。
 - 提交：`test: bind R-01..08 to unit cases and verify real report IAT`。
+
+## B6-T19 — 浏览器 IAT 8 组（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-24 23:52 ～ 2026-10-25 02:55 (+08:00)；报告：b6-t19-report.md；留痕：red-logs/t19-attempt2-worker-enum-finish-keys.log、t19-green.txt、t19-oldruns-after.sha（UNCHANGED）
+- UX-IAT-01..07 全 PASS（30 断言；attempt-3，前两次为 IAT 测试侧缺陷如实留痕：page.evaluate 语法/独立算例自误/paint 键分类、worker 枚举 API）；08 NOT_RUN（T28 measure-ux 未交付，不伪造）。
+- 亮点：组 01 真实 WASM+真实 worker 内 CDP 故障注入（frame 不变仅报告降级）；组 03 独立手算 32.727B/s；组 05 真实录像 import + 严格 EOF；组 06 注入保存链全相位；组 07 55 例门禁链路。
+- 产物：iat-browser.mjs/iat-suite.mjs（新）、run-e2e UX-IAT scenario、runtime-case-map R-01..12 IAT 绑定（47 testBindings）、metrics 根 20261025-teamexec-07。
+- 提交：`test: verify receiver UX integration in a real browser (IAT)`。

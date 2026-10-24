@@ -1,0 +1,9 @@
+== UX-IAT attempt-3 (exit 0) ==
+run: node tools/desktop-recv/e2e/run-e2e.mjs --context docs/tests/runs/20261025-teamexec-07/run-context.json --case UX-IAT
+result: UX-IAT-01..07 PASS (30 assertions), UX-IAT-08 NOT_RUN (T28 tool pending), CASE UX-IAT PASS attempt UX-IAT-2026-10-24T18-38-00-909Z-184ff0
+ux-view: 13 tests, 0 failed, 0 todo, 0 skipped
+ux-display: 5 tests, 0 failed, 0 todo, 0 skipped
+UNIT SUITES PASS (12 suite(s))
+exit=0
+SELFTEST PASS (55 cases)
+SELFTEST PASS (14 cases)

@@ -35,6 +35,11 @@
           "suite": "session",
           "case": "T10 a duplicate result from either entry counts exactly once",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -70,6 +75,21 @@
           "suite": "session",
           "case": "UX-UT-012 the video entry and reversed readiness order also begin exactly once",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -109,6 +129,16 @@
           "suite": "ux-telemetry",
           "case": "UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -147,6 +177,11 @@
           "suite": "ux-view",
           "case": "T14 the view rate follows the frozen window boundaries",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -181,6 +216,16 @@
           "suite": "ux-view",
           "case": "T14-R05 data with degraded reports hides the ratio but keeps the rate",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -212,6 +257,26 @@
           "suite": "ux-view",
           "case": "UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-06",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -247,6 +312,11 @@
           "suite": "ux-view",
           "case": "T14 every notice threshold flips exactly at its millisecond",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -281,6 +351,21 @@
           "suite": "ux-display",
           "case": "UX-UT-051 returning from the background re-projects by the real clock",
           "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
         }
       ],
       "caseBindings": [],
@@ -319,7 +404,23 @@
         "T31"
       ],
       "status": "NOT_RUN",
-      "testBindings": [],
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-06",
+          "phase": "iat"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -338,7 +439,13 @@
         "T31"
       ],
       "status": "NOT_RUN",
-      "testBindings": [],
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -362,7 +469,13 @@
         "T36"
       ],
       "status": "NOT_RUN",
-      "testBindings": [],
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-07",
+          "phase": "iat"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,

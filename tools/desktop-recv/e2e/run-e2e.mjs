@@ -27,6 +27,7 @@ import {
   stageVerifiedSender, RunContextError,
 } from './run-context.mjs';
 import { SourceScene, sha256FileBytes } from './source-scene.mjs';
+import { runIatSuite } from './iat-suite.mjs';
 import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -1827,6 +1828,25 @@ const SCENARIOS = {
       // here prevents the run-02-style day-long port leak.
       await stopPackagedServer(cleanServerPid, STAGING).catch(() => {});
     }
+  },
+  // UX-IAT: all eight receiver-ux-v2 browser integration groups. Group 01-07
+  // execute in the real receiver page (real modules + real vendor WASM; every
+  // injection is an explicit IAT adapter); UX-IAT-08 stays NOT_RUN until the
+  // T28 observer tool exists. Results land in iat-results.json.
+  'UX-IAT': async (stack) => {
+    const attemptId = ACTIVE_ATTEMPT_ID;
+    const proofDir = ensureAttemptDir(CONTEXT, 'UX-IAT', attemptId);
+    const deps = {
+      codeFrameBase64: readFileSync(join(FIXTURES, 'src01-code-frame.png')).toString('base64'),
+      mediaWithPath: join(REPO, 'docs', 'tests', 'runs', '20261024-teamexec-04', 'fixtures', 'fixtures-media', 'V-LAST-with.webm'),
+      mediaWithoutPath: join(REPO, 'docs', 'tests', 'runs', '20261024-teamexec-04', 'fixtures', 'fixtures-media', 'V-LAST-without.webm'),
+      importVideo,
+      python: 'python',
+      selftestPath: join(REPO, 'tools', 'desktop-recv', 'tests', 'ux-evidence-selftest.py'),
+      proofDir,
+    };
+    const ok = await runIatSuite({ stack, context: CONTEXT, attemptId, deps, log });
+    return ok;
   },
   // E2E-27: receiver-ux-v2 slice journey (wait -> data -> Ready -> real save).
   // SRC-01 changes only the source window pixels; UX evidence is written to
@@ -4306,11 +4326,13 @@ async function main() {
     console.error(error && error.message ? error.message : String(error));
     process.exit(3);
   }
-  // Group entry points expand to concrete scenario ids. A group whose ids are
-  // not all implemented still refuses (exit 4); it never becomes a hollow
-  // PASS. Single-id groups (UX-SLICE -> E2E-27) run the real handler.
-  let scenarioId = CASE;
-  if (UX_ENTRY_GROUPS[CASE]) {
+  // Scenario-first lookup: a group id with its own full-suite scenario
+  // (UX-SLICE, UX-IAT) runs directly; other group ids expand to scenario ids.
+  // A group whose members are not all implemented still refuses (exit 4); it
+  // never becomes a hollow PASS. Single-id groups (UX-SLICE -> E2E-27) run
+  // the real handler.
+  let scenarioId = SCENARIOS[CASE] ? CASE : null;
+  if (!scenarioId && UX_ENTRY_GROUPS[CASE]) {
     const ids = UX_ENTRY_GROUPS[CASE];
     const unimplemented = ids.filter((id) => !SCENARIOS[id]);
     if (unimplemented.length > 0) {
