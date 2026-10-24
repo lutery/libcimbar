@@ -24,9 +24,10 @@ const REPO = resolve(HERE, '..', '..');
 const UNIT = join(REPO, 'web', 'desktop-recv', 'tests', 'unit');
 
 // The suites promised by the test plan plus the client suite added by the
-// round-1 external-review rectification (A-03 watchdog convergence).
+// round-1 external-review rectification (A-03 watchdog convergence) and the
+// receiver-ux-v2 observation suites (T10: ux-telemetry, ux-view, ux-display).
 // `--all` requires all of them; partial runs use --suite until later tasks land.
-const ALL_SUITES = ['contracts', 'session', 'scheduler', 'worker', 'client', 'save', 'video', 'ui', 'evidence'];
+const ALL_SUITES = ['contracts', 'session', 'scheduler', 'worker', 'client', 'save', 'video', 'ui', 'evidence', 'ux-telemetry', 'ux-view', 'ux-display'];
 
 const HELP = `usage: node tools/desktop-recv/run-unit.mjs (--all | --suite <name>...) [--help]
 

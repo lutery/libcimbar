@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 
 import { SessionCoordinator } from '../../src/session.js';
 import { toContractSnapshot } from '../../src/contract-snapshot.js';
+import { ReceiverTelemetry } from '../../src/ux-telemetry.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCHEMA = JSON.parse(
@@ -1216,4 +1217,78 @@ test('UX-UT-016 data-frame results never churn the business snapshot revision', 
   assert.equal(acceptsOf(model).length, 5, 'each frame observed exactly once');
   assert.equal(callsNamed(model, 'observeSave').length, 0,
     'no save observation without a genuine save event');
+});
+
+// --- T10: duplicate injection from both callable entries (real model) --------
+
+test('T10 a duplicate result from either entry counts exactly once', async () => {
+  const clients = [];
+  const pickers = [];
+  const observations = [];
+  const clock = { now: 100 };
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+    createUx: () => { const model = new ReceiverTelemetry(); observations.push(model); return model; },
+    nowMs: () => clock.now,
+  });
+
+  // live session: the real onResult path delivers once
+  coordinator.startLive({ requestId: 'live-1' });
+  pickers[0](fakeStream());
+  await tick(5);
+  const liveSeq = coordinator.snapshot().sessionSeq;
+
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  clients[0].deliver({ frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  await tick(5);
+
+  let snap = coordinator.uxTelemetry().snapshot();
+  const liveRevision = snap.observationRevision;
+  const liveBytes = snap.rate.buckets.reduce((sum, b) => sum + b.bytes, 0);
+  assert.equal(liveBytes, 625, 'the live frame is counted once');
+
+  // the artificial duplicate through the same entry (live onResult path)
+  clock.now = 200;
+  coordinator._onFrameResult(liveSeq, { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  coordinator._onFrameResult(liveSeq, { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  snap = coordinator.uxTelemetry().snapshot();
+  assert.equal(snap.observationRevision, liveRevision,
+    'duplicates never lift the observation revision');
+  assert.equal(snap.rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625,
+    'duplicates never double the counted bytes');
+
+  await coordinator.finishStream({ takeFinalSample: () => null });
+  assert.equal(coordinator.snapshot().state, 'Incomplete');
+
+  // video session: the submitAndWait await path also delivers once
+  coordinator.startVideo({
+    requestId: 'video-1',
+    openSource: () => Promise.resolve({ stop() {} }),
+  });
+  await tick(5);
+  const videoSeq = coordinator.snapshot().sessionSeq;
+  const submission = coordinator.submitVideoFrame(
+    { width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  clients[1].deliver({ frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  const videoResult = await submission;
+  assert.equal(videoResult.outcome, 'data');
+
+  snap = coordinator.uxTelemetry().snapshot();
+  const videoRevision = snap.observationRevision;
+  assert.equal(snap.rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625,
+    'the video frame is counted once');
+
+  // the artificial duplicate through the await path entry
+  clock.now = 400;
+  coordinator._onFrameResult(videoSeq, { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  snap = coordinator.uxTelemetry().snapshot();
+  assert.equal(snap.observationRevision, videoRevision);
+  assert.equal(snap.rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625);
+
+  // the scheduler never double-fires either: one submission, one await result
+  assert.equal(coordinator.snapshot().stats.submitted, 1,
+    'the video session submitted exactly one frame');
 });

@@ -74,3 +74,10 @@
 - 复跑（lead 独立确认）：view 9 + display 5 + telemetry 16 = 30/30；run-unit 9 套 137 全绿；node --check 全 0。
 - 偏差（如实）：T7 漏写 034（T9 补齐并按契约修正子断言，无放宽）；progress.kind=unavailable 需 snapshot 增 lastReport（T12/T15 处理）；setVisible 为最小扩展；新增 #ux-save 元素；麻雀文案（完整矩阵 T27）。
 - 提交：`feat: show Chinese receiver activity and elapsed time`。
+
+## B2-T10 — 套件注册与切片集成（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 20:05 ～ 20:18 (+08:00)；报告：b2-t10-report.md；GREEN：red-logs/b2-t10-run-unit-all.txt
+- run-unit.mjs ALL_SUITES 9→12（ux-telemetry/ux-view/ux-display 显式注册）；session.test.mjs 增 T10 集成用例（双入口重复注入只计一次，真实 ReceiverTelemetry）。
+- --all 实测 12 套 168 tests 全绿（旧 137 保持；session 31→32）。拒绝路径自证（临时副本）：缺套件=3、含 skip=1、崩溃=1；零用例护栏在 node --test 文件级计数语义下不可达（如实记录，转 T11 审查关注）。
+- 提交：`test: register and integrate UX observation suites`。
