@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path';
 import { SessionCoordinator } from '../../src/session.js';
 import { toContractSnapshot } from '../../src/contract-snapshot.js';
 import { ReceiverTelemetry } from '../../src/ux-telemetry.js';
+import { readView } from '../../src/ux-view.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCHEMA = JSON.parse(
@@ -1123,6 +1124,11 @@ test('UX-UT-014 stale results never feed the model of the next session', async (
     { frameId: 1, outcome: 'data', bytesDecoded: 625 });
   assert.equal(acceptsOf(observations[0]).length, 1);
 
+  // a second submission stays genuinely in flight (controlled pending promise)
+  // while the user stops the session and a new one begins
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+
   coordinator.stop();
   await tick();
   assert.equal(coordinator.snapshot().state, 'Stopped');
@@ -1153,6 +1159,136 @@ test('UX-UT-014 stale results never feed the model of the next session', async (
   await tick(5);
   assert.equal(acceptsOf(observations[1]).length, 1, 'the current frame is counted exactly once');
   assert.equal(acceptsOf(observations[1])[0].input.frameId, 1);
+});
+
+test('T12-S1 save events drive Saving/Saved/Retryable observations through a real save', async () => {
+  const makeReady = async () => {
+    const clients = [];
+    const pickers = [];
+    const clock = { now: 100 };
+    const coordinator = new SessionCoordinator({
+      getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+      createClient: () => {
+        const client = fakeClient();
+        clients.push(client);
+        return Promise.resolve(client);
+      },
+      createUx: () => new ReceiverTelemetry(),
+      nowMs: () => clock.now,
+    });
+    coordinator.startLive({ requestId: 'T12-S1' });
+    pickers[0](fakeStream());
+    await tick(5);
+    clock.now = 500;
+    coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+    await tick(1);
+    clients[0].deliver({ frameId: 1, outcome: 'artifact', bytesDecoded: 625,
+      artifact: { artifactId: '42', byteCount: 128 } });
+    await tick(5);
+    return { coordinator, clients, clock };
+  };
+  const requestAt = (coordinator, nowMs) => {
+    const snap = coordinator.snapshot();
+    const context = {
+      state: snap.state,
+      businessRevision: snap.revision,
+      inputKind: snap.inputKind,
+      cleanupComplete: snap.cleanupComplete,
+      artifactId: snap.artifact ? '42' : null,
+      controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: true },
+      inFlight: false,
+      inFlightSinceMs: null,
+      mediaPosition: null,
+      mediaDiagnosticCode: 0,
+    };
+    return { version: 1, sessionId: 's1', sessionSeq: 1, nowMs, context };
+  };
+  const statusAt = (harness, nowMs) => {
+    const result = readView(harness.coordinator.uxTelemetry().snapshot(),
+      requestAt(harness.coordinator, nowMs));
+    return result;
+  };
+
+  // the successful walk: selecting -> writing -> pending -> saved
+  const ok = await makeReady();
+  assert.equal(ok.coordinator.snapshot().state, 'Ready');
+  assert.equal(typeof ok.coordinator.uxSaveIntent, 'function',
+    'the save click hook exists');
+  ok.coordinator.uxSaveIntent();
+
+  ok.clock.now = 800;
+  ok.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 7 });
+  let view = statusAt(ok, 800);
+  assert.equal(view.ok, true, 'the saving projection must be complete during the save');
+  assert.equal(view.data.state, 'Saving');
+  assert.equal(view.data.statusKey, 'saving_selecting');
+
+  ok.clock.now = 850;
+  ok.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 7, lastError: null });
+  view = statusAt(ok, 850);
+  assert.equal(view.data.statusKey, 'saving_writing');
+
+  ok.clock.now = 900;
+  ok.coordinator.saveEvent({ saveStatus: 'pending', attemptId: 7 });
+  view = statusAt(ok, 900);
+  assert.equal(view.data.statusKey, 'saving_pending');
+
+  ok.clock.now = 950;
+  ok.coordinator.saveEvent({ saveStatus: 'saved', attemptId: 7 });
+  view = statusAt(ok, 950);
+  assert.equal(view.data.statusKey, 'saved');
+  assert.equal(view.data.save.phase, 'saved');
+  assert.equal(view.data.save.attemptId, '7');
+  assert.equal(view.data.elapsedMs, 400,
+    'frozen at the artifact (500-100); the save time is not receiving time');
+  // a late writing event for the settled attempt never rewrites the save view
+  ok.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 7, lastError: null });
+  view = statusAt(ok, 960);
+  assert.equal(view.ok, true, 'Saved stays projectable after a late event');
+  assert.equal(view.data.statusKey, 'saved');
+
+  // the cancelled walk: failed+16002 -> Retryable, a retryable save can restart
+  const cancel = await makeReady();
+  cancel.coordinator.uxSaveIntent();
+  cancel.clock.now = 800;
+  cancel.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 8 });
+  view = statusAt(cancel, 800);
+  assert.equal(view.data.statusKey, 'saving_selecting');
+
+  cancel.clock.now = 850;
+  cancel.coordinator.saveEvent({ saveStatus: 'failed', attemptId: 8, lastError: 16002 });
+  view = statusAt(cancel, 850);
+  assert.equal(view.data.state, 'Retryable');
+  assert.equal(view.data.statusKey, 'save_cancelled',
+    'failed+16002 normalizes to a cancel for the user');
+  assert.equal(view.data.save.artifactId, '42', 'the owner artifact is kept');
+
+  // the retry after the cancel goes through Saving again (a new attempt)
+  cancel.coordinator.uxSaveIntent();
+  cancel.clock.now = 900;
+  cancel.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 9 });
+  view = statusAt(cancel, 900);
+  assert.equal(view.data.state, 'Saving');
+  assert.equal(view.data.statusKey, 'saving_selecting',
+    'Retryable re-enters Saving with the fresh attempt');
+
+  // a real busy guard during the write is still the writing phase
+  cancel.clock.now = 950;
+  cancel.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 9, lastError: null });
+  cancel.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 9, lastError: 16008 });
+  view = statusAt(cancel, 950);
+  assert.equal(view.data.statusKey, 'saving_writing');
+  assert.equal(view.data.save.errorCode, 16008,
+    'the busy guard stays writing, never a fake failure');
+
+  // a stale event of the already settled attempt 8 is ignored by the ux
+  // observation; the original business bookkeeping is untouched
+  cancel.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 8, lastError: null });
+  view = statusAt(cancel, 1000);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.save.attemptId, '9',
+    'the stale attempt never takes over the save view');
+  assert.equal(view.data.statusKey, 'saving_writing');
 });
 
 test('UX-UT-015 every genuine terminal finishes with its own reason', async () => {

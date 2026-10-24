@@ -4,6 +4,12 @@
 // cleaned up against the token of the session that created them.
 import { FrameScheduler } from './frame-scheduler.js';
 
+const RAW_SAVE_STATUSES = new Set([
+  'selecting', 'writing', 'pending', 'saved', 'cancelled', 'failed', 'aborted',
+]);
+const TERMINAL_SAVE_STATUSES = new Set(['saved', 'cancelled', 'failed', 'aborted']);
+const SAVE_BINDINGS_CAP = 16;
+
 // Restartable terminal states. Kept in lockstep with the UI's IDLE_LIKE set
 // (ui.js): a session that ended Incomplete must accept a fresh start through
 // both entries instead of dead-ending the user (round-1 review A-02).
@@ -25,6 +31,8 @@ export class SessionCoordinator {
     this._ux = null;
     this._uxSeq = 0;
     this._uxFinished = false;
+    this._uxSaveOwner = null;
+    this._saveAttemptBindings = new Map();
 
     this._counter = 0;
     this._eventSeq = 0;
@@ -135,6 +143,8 @@ export class SessionCoordinator {
     this._ux = null;
     this._uxSeq = 0;
     this._uxFinished = false;
+    this._uxSaveOwner = null;
+    this._saveAttemptBindings.clear();
     this._eventSeq += 1;
     this._onSnapshot(this.snapshot());
     return seq;
@@ -485,7 +495,72 @@ export class SessionCoordinator {
     this._saveWhenSettled = () => controller.whenSettled();
   }
 
+  // --- save observation boundary (recipe E; bypass only) ---------------------
+
+  // Called synchronously inside the user's save click, before the picker: it
+  // captures the immutable owner {sessionId, sessionSeq, artifactId} that the
+  // coming attempt's events belong to. The picker is never awaited here.
+  uxSaveIntent() {
+    if (!this._session) return;
+    const artifact = this._session.artifact;
+    this._uxSaveOwner = {
+      sessionId: this._session.id,
+      sessionSeq: this._session.seq,
+      artifactId: artifact && artifact.artifactId != null
+        ? String(artifact.artifactId)
+        : null,
+    };
+  }
+
+  _observeSaveEvent(event) {
+    if (!this._ux) return;
+    try {
+      const rawStatus = event && event.saveStatus;
+      if (!RAW_SAVE_STATUSES.has(rawStatus)) return;
+      const attemptId = event.attemptId == null ? null : String(event.attemptId);
+      if (rawStatus === 'selecting') {
+        // the first genuine event of the attempt binds the captured owner to
+        // the real attemptId; an already-bound attempt keeps its owner
+        if (attemptId && this._uxSaveOwner && this._uxSaveOwner.artifactId != null) {
+          const bound = this._saveAttemptBindings.get(attemptId);
+          if (!bound) {
+            if (this._saveAttemptBindings.size >= SAVE_BINDINGS_CAP) {
+              this._saveAttemptBindings.clear();
+            }
+            this._saveAttemptBindings.set(attemptId, { ...this._uxSaveOwner });
+            this._uxSaveOwner = null; // consumed exactly once
+          }
+        }
+        const owner = attemptId ? this._saveAttemptBindings.get(attemptId) : null;
+        if (owner) this._sendSaveObservation(owner, attemptId, rawStatus, event.lastError);
+        return;
+      }
+      if (!attemptId) return; // a null attempt can never be bound
+      const owner = this._saveAttemptBindings.get(attemptId);
+      if (!owner) return; // an unbound attempt stays silent (recipe E)
+      this._sendSaveObservation(owner, attemptId, rawStatus, event.lastError);
+      if (TERMINAL_SAVE_STATUSES.has(rawStatus)) {
+        this._saveAttemptBindings.delete(attemptId); // settled: cleanup
+      }
+    } catch (error) { /* the save observation bypass never blocks the session */ }
+  }
+
+  _sendSaveObservation(owner, attemptId, rawStatus, errorCode) {
+    try {
+      this._ux.observeSave({
+        version: 1,
+        sessionId: owner.sessionId,
+        sessionSeq: owner.sessionSeq,
+        artifactId: owner.artifactId,
+        attemptId,
+        rawStatus,
+        errorCode: errorCode == null ? null : Number(errorCode),
+      });
+    } catch (error) { /* bypass only */ }
+  }
+
   saveEvent(event) {
+    this._observeSaveEvent(event); // ux bypass first, never blocks the state machine
     if (!this._session || !this._isCurrent(this._session.seq)) return;
     if (this._isStopping()) return; // the state is frozen; the save settles honestly
 

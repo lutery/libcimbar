@@ -148,3 +148,45 @@ VM 测试是否真覆盖（web/desktop-recv/tests/unit/worker.test.mjs）：
 ## 审查者
 
 review-v2-slice（独立审查代理，未参与 bb198d9/9bc9867/2650d0c/8e739d5 的实现）。审查时间：2026-10-24。所有结论均基于本报告所列命令输出与源码行号；未执行构建、浏览器或 E2E 验证（不在 T11 范围）。
+
+---
+
+# 第 1 次整改结果（T12）
+
+整改者：dev-v2-prod（实现者车道）。基线：63f953f。范围由 lead 裁定：Suggestion 1（save 观测接线，必须）与 T8 遗留 UX-UT-014 强化（必须）；S2/S3/S4 已排 T14，不在本次。
+
+## S1（高优先级）save 观测接线 — 已修复
+
+实现（web/desktop-recv/src/session.js）：
+- `uxSaveIntent()`：用户点击保存时同步捕获不可变 owner `{sessionId, sessionSeq, artifactId}`（app.js 在 `saveController.start` 前调用；不 await picker）。
+- `saveEvent(event)` 首行旁路调用 `_observeSaveEvent(event)`（在停止冻结/业务 switch 之前，不阻塞原结算）：
+  - 首个真实 `selecting` 事件把捕获的 owner 与真实 attemptId 绑定（已绑定 attempt 沿原 owner；busy 的 writing+16008 不会重新绑定，因为不是 selecting）；
+  - 后续事件只查该 attemptId 的固定绑定送 `telemetry.observeSave`；无绑定（未点击/旧 attempt）静默丢弃；
+  - 终态（saved/cancelled/failed/aborted）即删除绑定（单在途 Map 有界，另设 16 条防御上限）；
+  - 归一规则沿用模型（failed/cancelled+16002→cancelled、writing+16008→writing、pending、saved 仅两步成功）；旧 owner/attempt 由模型以 19007 拒绝，仅拒 UX。
+- 未改 SaveController、未改业务 saveEvent 的任何结算分支；app.js 仅在保存点击处增加一行 `coordinator.uxSaveIntent()`。
+
+测试（先 RED 后 GREEN，web/desktop-recv/tests/unit/session.test.mjs，新增 T12-S1）：
+- RED：`coordinator.uxSaveIntent` undefined（接线缺失），日志 red-logs/b2-t12-s1-red.log。
+- GREEN 断言：Ready 后 selecting/writing/pending/saved 四步的 readView 均 ok 且 statusKey=saving_selecting/saving_writing/saving_pending/saved，save.attemptId 为真实 attempt，elapsed 冻结于 artifact（400ms，保存耗时不计）；failed+16002→Retryable/save_cancelled（artifactId 保留）；writing+16008 忙帧仍为 saving_writing 且 errorCode=16008；Retryable 重试经新 selecting 回到 saving_selecting；已结算 attempt 的迟到事件不夺取保存视图。
+
+## UX-UT-014 强化（受控 pending promise）— 已完成
+
+- 实时会话 A 的第二帧提交以真实未决 Promise 跨 stop 停留在途；B 会话开始后其迟到回执才返回。断言：B 模型零 accept、A 冻结模型不追溯计数、B 业务 revision/会话身份不变、A 迟到 frameId 不入任何模型（19007 语义）。原「no-op fake」注入已替换，断言强度提升。
+
+## 复验命令（实际执行）
+
+| 命令 | exit | 输出 |
+|---|---|---|
+| `node --test web/desktop-recv/tests/unit/session.test.mjs` | 0 | 33/33（新增 T12-S1） |
+| `node tools/desktop-recv/run-unit.mjs --all` | 0 | 12 套 169 tests / 0 fail / 0 todo / 0 skip（session 33，其余计数不变） |
+| `node --check web/desktop-recv/src/session.js` / `session.test.mjs` | 0 | OK |
+| `git diff --check` | 0 | OK |
+
+日志：red-logs/b2-t12-s1-red.log、red-logs/b2-t12-run-unit-all.txt。
+
+## 未在本任务处理（lead 已排 T14）
+
+- S2：observeSave 归一/幂等/终态不回写/新 attempt 仅 selecting 四类模型用例；
+- S3：UX-UT-034 的 test-cases.md Target 文档对齐；
+- S4：receivedAt/submittedAt 交错与同毫秒双帧的时钟边界用例。

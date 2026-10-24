@@ -81,3 +81,12 @@
 - run-unit.mjs ALL_SUITES 9→12（ux-telemetry/ux-view/ux-display 显式注册）；session.test.mjs 增 T10 集成用例（双入口重复注入只计一次，真实 ReceiverTelemetry）。
 - --all 实测 12 套 168 tests 全绿（旧 137 保持；session 31→32）。拒绝路径自证（临时副本）：缺套件=3、含 skip=1、崩溃=1；零用例护栏在 node --test 文件级计数语义下不可达（如实记录，转 T11 审查关注）。
 - 提交：`test: register and integrate UX observation suites`。
+
+## B2-T12 — 切片审查整改（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 20:40 ～ 21:06 (+08:00)；报告：b2-t12-report.md；RED：b2-t12-s1-red.log；GREEN：b2-t12-run-unit-all.txt
+- S1 修复：session.js uxSaveIntent（点击捕获不可变 owner）+ saveEvent 旁路 _observeSaveEvent（selecting 绑定真实 attempt、固定 owner、终态清绑定、16 条防御上限）；app.js saveArtifact 同步调用；不改业务结算。验收断言四链（saved/saving_pending、cancelled、busy 16008、Retryable 重试）+ 迟到旧 attempt 不夺取保存视图。
+- UX-UT-014 强化：真实未决 Promise 跨 stop() 的迟到回执注入（B 模型零 accept）。
+- 复跑（lead 独立确认）：12 套 169 全绿（session 33）；node --check 0。
+- review-slice.md 已追加「第 1 次整改结果（T12）」。S2/S3/S4 留 T14。
+- 提交：`fix: converge real-time receiver UX review`。

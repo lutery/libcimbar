@@ -474,6 +474,10 @@ async function saveArtifact() {
   }
 
   const fallback = snapshot.sessionId || 'cimbar-recv';
+  // receiver-ux: capture the immutable save owner synchronously in the click,
+  // before the picker; the first genuine selecting event binds it to the
+  // real attempt id. The original start call below is untouched.
+  coordinator.uxSaveIntent();
   saveController.start({
     artifact: { blob: artifact.blob, suggestedName: artifact.suggestedName },
     suggestedName: safeSuggestedName(artifact.suggestedName, fallback),
