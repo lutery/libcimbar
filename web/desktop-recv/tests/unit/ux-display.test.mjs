@@ -462,3 +462,75 @@ test('T20 the cancel and retry texts paint and the interlocks stay with deriveCo
   assert.equal(retryPaint.save, '请选择保存位置');
   assert.equal(timers.size(), 0, 'Saving never rebuilds the receiving timer');
 });
+
+
+// --- T26: the semantic copies never carry digits (walks the full matrix) -----
+
+// Given every business state the walk touches
+// When the display paints
+// Then primary, secondary, nextAction and announcement never contain a digit:
+// numbers live only in the throttled metric region (UX-UT-049/032 keep the
+// frequency side; this pins the copy side)
+test('T26 semantic copies stay digit-free across the full state walk', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: null,
+    observation: observation({ sessionId: null, sessionSeq: 0, inputKind: null,
+      observationRevision: 0, receivingAtMs: null }),
+    context: context({ state: 'Idle', businessRevision: 0, inputKind: null,
+      controls: { canStartLive: true, canImportVideo: true, canStop: false, canSave: false } }),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+
+  const steps = [
+    { state: 'Preparing', businessRevision: 1, controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: false } },
+    { state: 'Receiving', businessRevision: 2, controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: false } },
+    { state: 'Ready', businessRevision: 3, artifactId: '42', controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: true } },
+    { state: 'Saving', businessRevision: 4, artifactId: '42', controls: { canStartLive: false, canImportVideo: false, canStop: false, canSave: false } },
+    { state: 'Saved', businessRevision: 5, artifactId: '42', controls: { canStartLive: true, canImportVideo: true, canStop: false, canSave: false } },
+    { state: 'Retryable', businessRevision: 6, artifactId: '42', controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: true } },
+    { state: 'Stopped', businessRevision: 7, controls: { canStartLive: true, canImportVideo: true, canStop: false, canSave: false } },
+  ];
+  clock.now = 1500;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 1 },
+    observation: observation({ receivingAtMs: 100, endedAtMs: 1400,
+      save: { phase: 'none', attemptId: null, artifactId: null, errorCode: null } }),
+    context: context({ state: steps[0].state, businessRevision: steps[0].businessRevision,
+      artifactId: null, controls: steps[0].controls }),
+  };
+  display.syncBusiness();
+
+  let index = 0;
+  for (const step of steps.slice(1)) {
+    clock.now += 100;
+    const save = step.state === 'Saving' || step.state === 'Saved'
+      ? { phase: step.state === 'Saved' ? 'saved' : 'writing', attemptId: 'save-1', artifactId: '42', errorCode: null }
+      : step.state === 'Retryable'
+        ? { phase: 'cancelled', attemptId: 'save-1', artifactId: '42', errorCode: 16002 }
+        : { phase: 'none', attemptId: null, artifactId: null, errorCode: null };
+    current.value = {
+      owner: { sessionId: 's1', sessionSeq: 1 },
+      observation: observation({ receivingAtMs: 100, endedAtMs: 1400, save }),
+      context: context({ state: step.state, businessRevision: step.businessRevision,
+        artifactId: step.artifactId || null, controls: step.controls }),
+    };
+    display.syncBusiness();
+    index += 1;
+  }
+
+  const semantic = spy.calls.filter((call) => 'primary' in call || 'announcement' in call
+    || 'secondary' in call || 'nextAction' in call);
+  assert.ok(semantic.length >= 7, `the walk painted every step (${semantic.length})`);
+  for (const call of semantic) {
+    for (const key of ['primary', 'secondary', 'nextAction', 'announcement']) {
+      if (key in call) {
+        assert.doesNotMatch(call[key], /\d/,
+          `${key} copy stays digit-free, got "${call[key]}"`);
+      }
+    }
+  }
+});
