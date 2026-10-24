@@ -112,3 +112,10 @@
 - ux-view.js：REPORT_DEGRADATION_CODES（19001/19002/19003/19004/19015）+ projectProgress unavailable 分支（ratio/asOfMs=null、diagnosticCode=集合内最新降级码，歧义码分流）；formatRate 微小速率边界以直接断言固化。
 - 复跑（lead 独立确认）：ux-view 13/13；--all 12 套 **170** 全绿（T14 RED 窗口关闭）。
 - 提交：`feat: project unavailable progress from degraded report reads`。
+
+## B6-T16 — R-01..08 单元绑定与真实 WASM IAT（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 23:38 ～ 00:03 (+08:00)；报告：b6-t16-report.md；日志：red-logs/b6-t16-{probe,run-unit-all,ux-telemetry,ux-view}.txt
+- worker +1 真实资产 IAT 测试（交付包 JS/WASM 经 VM 桥接、scan stub 注入合成包、真实 fountain/report 链路，单流 [0.030303] 与探针记录一致）；负例缺口核对=无缺口；runtime-case-map R-01..08 → UNIT_VERIFIED + testBindings（JSON 合法）。
+- 复跑（lead 独立确认）：worker 14/14；--all 12 套 171 全绿；probe exit0。
+- 提交：`test: bind R-01..08 to unit cases and verify real report IAT`。

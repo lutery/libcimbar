@@ -611,3 +611,107 @@ test('UX-UT-007 report failures stay local and never mask core decode errors', a
   assert.equal(zeroMalloc.results().length, 1, 'one business result per frame');
   assert.equal(throwing.results().length, 1);
 });
+
+// --- T16: the real shipped vendor assets exercise the report IAT -------------
+//
+// The requirements probe (docs/requirements/receiver-ux-v2/probes/
+// report-capability.cjs) proved the shipped WASM exposes _cimbard_get_report
+// and behaves per its record. This test drives the worker's own read_report
+// against those REAL assets: only scan is stubbed (it needs a real cimbar
+// image), the fountain decode and the report read are the real IAT exports.
+import vm from 'node:vm';
+import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REAL_VENDOR_DIR = join(HERE, '..', '..', '..', '..', 'product',
+  'libcimbar-desktop-receiver-1.0.0-20261022-2252', 'vendor');
+
+async function loadRealReportModule() {
+  const jsSource = readFileSync(join(REAL_VENDOR_DIR, 'cimbar_js.js'), 'utf8');
+  const wasmBinary = readFileSync(join(REAL_VENDOR_DIR, 'cimbar_js.wasm'));
+  let resolveReady;
+  let rejectReady;
+  const ready = new Promise((resolve, reject) => {
+    resolveReady = resolve;
+    rejectReady = reject;
+  });
+  const realModule = {
+    wasmBinary,
+    locateFile: (file) => join(REAL_VENDOR_DIR, file),
+    print: () => {},
+    printErr: () => {},
+    onRuntimeInitialized: () => resolveReady(),
+    onAbort: (reason) => rejectReady(new Error(String(reason))),
+  };
+  const context = {
+    Module: realModule, require: createRequire(join(REAL_VENDOR_DIR, 'probe.cjs')),
+    process, __dirname: REAL_VENDOR_DIR,
+    __filename: join(REAL_VENDOR_DIR, 'cimbar_js.js'),
+    console, WebAssembly, TextDecoder, TextEncoder,
+    setTimeout, clearTimeout, performance, URL, Buffer,
+  };
+  vm.createContext(context);
+  vm.runInContext(jsSource, context);
+  const timer = setTimeout(() => rejectReady(new Error('WASM init timeout')), 12000);
+  try {
+    await ready;
+  } finally {
+    clearTimeout(timer);
+  }
+  // Bridge for the worker harness: every real export and the real heap, but
+  // the worker keeps its own runtime hooks (the harness fires them itself).
+  const { onRuntimeInitialized, onAbort, ...bridge } = context.Module;
+  return bridge;
+}
+
+test('T16 real shipped assets: report IAT behaves through the worker read path', { timeout: 30000 }, async () => {
+  assert.equal(existsSync(join(REAL_VENDOR_DIR, 'cimbar_js.wasm')), true,
+    'the shipped vendor assets must exist (T6 baseline)');
+  const bridge = await loadRealReportModule();
+  assert.equal(typeof bridge._cimbard_get_report, 'function',
+    'the shipped WASM exposes the report export');
+
+  bridge._cimbard_configure_decode(68);
+  const chunkSize = bridge._cimbard_get_bufsize() / 12;
+  assert.equal(chunkSize, 625, 'mode B chunk size matches the probe record');
+
+  // the probe's synthetic packet layout, one block at a time
+  let blockId = 0;
+  bridge._cimbard_scan_extract_decode = (imgPtr, w, h, bpp, outPtr) => {
+    const packet = new Uint8Array(chunkSize);
+    const size = 20000;
+    packet[0] = (3 & 0x7f) | ((size >> 17) & 0x80);
+    packet[1] = (size >> 16) & 0xff;
+    packet[2] = (size >> 8) & 0xff;
+    packet[3] = size & 0xff;
+    packet[4] = blockId >> 8;
+    packet[5] = blockId & 0xff;
+    bridge.HEAPU8.set(packet, outPtr);
+    return chunkSize;
+  };
+
+  const h = createHarness({ module: bridge });
+  h.send(h.makeInit());
+  await h.settle();
+
+  const readRatios = (result) => JSON.parse(JSON.stringify(result.uxObservation.report));
+
+  h.send(frameMessage({ frameId: 1 }));
+  const first = readRatios(h.results()[0]);
+  assert.equal(h.results()[0].outcome, 'data');
+  assert.deepEqual(first, { state: 'single', ratios: [0.030303], diagnosticCode: 0 },
+    'the first real packet reads exactly the probe-recorded ratio');
+
+  h.send(frameMessage({ frameId: 2 }));
+  const repeated = readRatios(h.results()[1]);
+  assert.deepEqual(repeated, first, 'a repeated block does not advance');
+
+  blockId = 1;
+  h.send(frameMessage({ frameId: 3 }));
+  const next = readRatios(h.results()[2]);
+  assert.ok(next.ratios[0] > first.ratios[0], 'a fresh block advances');
+  assert.deepEqual(next, { state: 'single', ratios: [0.0606061], diagnosticCode: 0 });
+});

@@ -12,9 +12,31 @@
       "id": "R-01",
       "scenario": "旧seq、相同frameId或冻结后的当前帧",
       "expected": "UX-03返回19007且bytes/revision/lastData不变；原业务结果独立处理",
-      "responsibilityTasks": ["T7", "T8", "T10", "T16", "T34"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T10",
+        "T16",
+        "T34"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-014 stale results never feed the model of the next session",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T10 a duplicate result from either entry counts exactly once",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -24,9 +46,32 @@
       "id": "R-02",
       "scenario": "相同begin重复与新seq开始",
       "expected": "重复不清零；新seq所有UX字段和桶清空；旧tick无效",
-      "responsibilityTasks": ["T7", "T8", "T16", "T22", "T25", "T34"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T16",
+        "T22",
+        "T25",
+        "T34"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-017 begin is idempotent per owner and fully resets on a newer seq",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-012 Receiving begins the observation once with the real owner and clock",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-012 the video entry and reversed readiness order also begin exactly once",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -36,9 +81,36 @@
       "id": "R-03",
       "scenario": "同流重复比例、增加、多流后回single、有效比例回退",
       "expected": "重复无增；新值推进；多流/回退锁歧义至新会话",
-      "responsibilityTasks": ["T14", "T15", "T16", "T19", "T34"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T19",
+        "T34"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-020 repeated single ratios do not fake progress though bytes still count",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-021 multiple stream reports lock ambiguity until a new seq",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -48,9 +120,35 @@
       "id": "R-04",
       "scenario": "数据落于0/249.9/250/2999.9/3000ms桶边界",
       "expected": "按12桶原点定义精确归属；无数据后不超3秒归零",
-      "responsibilityTasks": ["T14", "T15", "T16", "T34"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T34"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-026 the warmup boundary uses the actual coverage window",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-027 after the data stops the rate reaches zero within three seconds",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14 the view rate follows the frozen window boundaries",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -60,9 +158,31 @@
       "id": "R-05",
       "scenario": "收到data但report缺失或格式失败",
       "expected": "字节速率可更新，百分比隐藏；不改frame outcome或业务错误",
-      "responsibilityTasks": ["T7", "T8", "T16", "T19", "T34"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T16",
+        "T19",
+        "T34"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "worker",
+          "case": "UX-UT-004 invalid JSON and UTF-8 reject the whole report without partial trust",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14-R05 data with degraded reports hides the ratio but keeps the rate",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -72,9 +192,28 @@
       "id": "R-06",
       "scenario": "原artifact或写盘尚未成功，仅比例>=1或录像EOF",
       "expected": "不得Ready/Saved，不得启用保存；沿原完成条件",
-      "responsibilityTasks": ["T14", "T15", "T20", "T21", "T22", "T25", "T35"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T20",
+        "T21",
+        "T22",
+        "T25",
+        "T35"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-024 ratios at or above one stay non-completed until a real artifact",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -84,9 +223,32 @@
       "id": "R-07",
       "scenario": "普通短inFlight与>=1500ms慢帧",
       "expected": "普通帧不覆盖receiving提示；仅真实主线程提交时点支撑processing",
-      "responsibilityTasks": ["T7", "T8", "T14", "T15", "T19", "T31"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T14",
+        "T15",
+        "T19",
+        "T31"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "client",
+          "case": "UX-UT-008 pending submittedAtMs comes from the real main-thread post",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "UX-UT-043 the processing hint appears only at a real 1500ms pending age",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14 every notice threshold flips exactly at its millisecond",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -96,9 +258,31 @@
       "id": "R-08",
       "scenario": "倒退/非有限时钟、数值溢出、页面后台后返回",
       "expected": "错误UX不应用或速率重新预热；业务继续；返回按当前时钟计算",
-      "responsibilityTasks": ["T14", "T15", "T16", "T19", "T31"],
-      "status": "NOT_RUN",
-      "testBindings": [],
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T19",
+        "T31"
+      ],
+      "status": "UNIT_VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-031 regressed and non-finite clocks are refused and later recover honestly",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-029 a safe-integer overflow resets only the rate domain",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-display",
+          "case": "UX-UT-051 returning from the background re-projects by the real clock",
+          "phase": "unit"
+        }
+      ],
       "caseBindings": [],
       "manifestSha256": null,
       "attemptId": null,
@@ -108,7 +292,13 @@
       "id": "R-09",
       "scenario": "raw failed+16002、writing+16008、pending与迟到旧保存事件",
       "expected": "分别取消/仍写入/等待；旧owner不串入；无需重接收",
-      "responsibilityTasks": ["T20", "T21", "T22", "T25", "T34"],
+      "responsibilityTasks": [
+        "T20",
+        "T21",
+        "T22",
+        "T25",
+        "T34"
+      ],
       "status": "NOT_RUN",
       "testBindings": [],
       "caseBindings": [],
@@ -120,7 +310,14 @@
       "id": "R-10",
       "scenario": "事件观测revision不变但时钟前进",
       "expected": "时长和窗口速率仍更新；不伪造业务revision或重复播报",
-      "responsibilityTasks": ["T7", "T9", "T10", "T19", "T22", "T31"],
+      "responsibilityTasks": [
+        "T7",
+        "T9",
+        "T10",
+        "T19",
+        "T22",
+        "T31"
+      ],
       "status": "NOT_RUN",
       "testBindings": [],
       "caseBindings": [],
@@ -132,7 +329,14 @@
       "id": "R-11",
       "scenario": "onSnapshot频繁触发与250ms时钟并存",
       "expected": "遥测DOM写入≤4Hz；业务终态/按钮可及时更新；不触发额外抓帧",
-      "responsibilityTasks": ["T9", "T10", "T26", "T27", "T28", "T31"],
+      "responsibilityTasks": [
+        "T9",
+        "T10",
+        "T26",
+        "T27",
+        "T28",
+        "T31"
+      ],
       "status": "NOT_RUN",
       "testBindings": [],
       "caseBindings": [],
@@ -144,7 +348,19 @@
       "id": "R-12",
       "scenario": "真实抓屏/录像/保存恢复与旧关键旅程",
       "expected": "使用原发送端、真实选择器与外部SHA；本地和现场证据分列",
-      "responsibilityTasks": ["T1", "T2", "T3", "T4", "T5", "T6", "T13", "T25", "T31", "T35", "T36"],
+      "responsibilityTasks": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T13",
+        "T25",
+        "T31",
+        "T35",
+        "T36"
+      ],
       "status": "NOT_RUN",
       "testBindings": [],
       "caseBindings": [],
