@@ -1,5 +1,34 @@
 {
   "version": 1,
   "iterationId": "receiver-ux-v2",
-  "entries": []
+  "entries": [
+    {
+      "taskId": "T1",
+      "caseIds": ["UX-UT-081", "UX-UT-082", "UX-UT-083", "UX-UT-084", "UX-UT-085", "UX-UT-086"],
+      "suite": "tools/desktop-recv/tests/run-context.test.mjs",
+      "phase": "red",
+      "command": "node --test tools/desktop-recv/tests/run-context.test.mjs",
+      "exitCode": 1,
+      "failureReason": "ERR_MODULE_NOT_FOUND tools/desktop-recv/e2e/run-context.mjs (target module not implemented; import-time RED per plan T1 Step 3, not skeleton guard / environment / syntax)",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/b1-t1-node.log",
+      "sourceRevision": "b0d1223",
+      "productManifestSha256": null,
+      "productNote": "pre-product phase: T1 only adds tooling tests; no product byte changed",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T1",
+      "caseIds": ["UX-UT-088", "UX-UT-089", "UX-UT-090", "UX-UT-091", "UX-UT-092", "UX-UT-093", "UX-UT-094", "UX-UT-095"],
+      "suite": "tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "phase": "red",
+      "command": "python tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "exitCode": 1,
+      "failureReason": "preflight: missing tools/desktop-recv/verify-ux-evidence.py and tools/desktop-recv/e2e/run-context.mjs (target modules not implemented; intended stage-5 RED)",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/b1-t1-python.log",
+      "sourceRevision": "b0d1223",
+      "productManifestSha256": null,
+      "productNote": "pre-product phase: tooling-only task",
+      "date": "2026-10-24"
+    }
+  ]
 }
