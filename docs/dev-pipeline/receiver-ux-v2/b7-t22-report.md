@@ -44,3 +44,10 @@ save/video/ux-display 三套经核对**无需新增**：save 的事件形状契�
 - Step 2 录像切换/停止/EOF 清理、preview 呈现、IAT 单列：✓（源回收例 + browser 模块补齐 + T20 结构钉引用）
 - Step 3 --all 全绿 + 映射更新 + 系统操作留 T25/T35：✓（180 如实）
 - 提交边界（lead 决定）：session.test.mjs + tests/browser/ux-observation.mjs + runtime-case-map.json + red-logs；建议 commit message `test: cover save and media lifecycle integration`。
+
+
+---
+
+## 勘误（T24）：总数应为 192（明细合计/复跑一致）
+
+本报告「运行」表中 `--all` 总数写作 180，属汇总算术错（系统性少 12：漏加 evidence 套件 36 例）。各 per-suite 明细（contracts 7 / session 40 / scheduler 6 / worker 14 / client 15 / save 8 / video 17 / ui 7 / evidence 36 / ux-telemetry 22 / ux-view 14 / ux-display 6）与 red-logs/b7-t22-run-unit-all.txt 相互一致；明细合计 = **192**。原 180 不改；本节为唯一勘误来源。

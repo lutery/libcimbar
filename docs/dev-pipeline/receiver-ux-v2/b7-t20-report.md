@@ -59,3 +59,10 @@ Expected values to be strictly deep-equal:
 - Step 2 异常矩阵/旧 attempt/停止后迟到回调/产物保留：✓（固化 + 事件形状契约钉）
 - Step 3 定向 RED 记录 + 旧 IO 断言保持（save 7 旧例、video 15 旧例全绿）：✓
 - 提交边界（lead 决定）：5 个测试文件 + red-logs 两份；建议 commit message `test: specify media and save feedback ownership`。
+
+
+---
+
+## 勘误（T24）：总数应为 187（明细合计/复跑一致）
+
+本报告「运行」表中 `--all` 总数写作 175，属汇总算术错（系统性少 12：漏加 evidence 套件 36 例）。各 per-suite 明细（contracts 7 / session 35 / scheduler 6 / worker 14 / client 15 / save 8 / video 17 / ui 7 / evidence 36 / ux-telemetry 22 / ux-view 14 / ux-display 6）与 red-logs/b7-t20-run-unit-all.txt 相互一致；明细合计 = **187**。原 175 不改；本节为唯一勘误来源。

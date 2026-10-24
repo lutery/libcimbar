@@ -44,3 +44,10 @@ R-06（原 artifact/写盘未成功时仅比例/EOF 不得 Ready/保存）顺带
 2. `run-unit --all` → 12 套 175 全绿 exit 0（完成判据）✓；`node --check` ✓
 3. 其他 R-06 接线缺口：无 ✓（如实记录）
 - 提交边界（lead 决定）：src/ux-view.js + red-logs/b7-t21-run-unit-all.txt；建议 commit message `fix: surface the media position diagnostic through the ux view`。
+
+
+---
+
+## 勘误（T24）：总数应为 187（明细合计/复跑一致）
+
+本报告「运行」表中 `--all` 总数写作 175，属汇总算术错（系统性少 12：漏加 evidence 套件 36 例）。各 per-suite 明细（contracts 7 / session 35 / scheduler 6 / worker 14 / client 15 / save 8 / video 17 / ui 7 / evidence 36 / ux-telemetry 22 / ux-view 14 / ux-display 6）与 red-logs/b7-t21-run-unit-all.txt 相互一致；明细合计 = **187**。原 175 不改；本节为唯一勘误来源。

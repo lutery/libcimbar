@@ -47,12 +47,24 @@ export async function runUxObservation(record = {}) {
       `#${id} carries no live role (numbers are not announced)`);
   }
 
-  // 3. the preview stays structurally presentable while a session may run
+  // 3. the preview hides only through the app's own hidden attribute at
+  //    rest (Idle/Stopped keep it hidden — expected business behavior), and
+  //    a caller that drove a receiving session verifies real presence. The
+  //    UA stylesheet maps [hidden] to display:none, so a computed-style
+  //    check is only meaningful in the driven state.
   const preview = el('preview');
   assert(preview && preview.tagName === 'VIDEO', '#preview is the video element');
-  const shown = getComputedStyle(preview);
-  assert(shown.display !== 'none', 'the preview is never display:none');
-  assert(!preview.hidden, 'the preview element is not marked hidden at rest');
+  if (record.receivingDriven === true) {
+    assert(preview.hidden === false,
+      'a driven receiving session keeps the preview presented');
+    assert(getComputedStyle(preview).display !== 'none',
+      'presentation is not display:none while receiving');
+    record.previewComputedDisplay = getComputedStyle(preview).display;
+  } else {
+    assert(preview.hasAttribute('hidden'),
+      'at rest the preview is hidden via the app attribute (expected)');
+    record.previewHidesViaAttributeAtRest = true;
+  }
 
   // 4. the buttons keep their original activation surface
   for (const id of ['btn-live', 'btn-video', 'btn-stop', 'btn-save', 'file-input']) {
@@ -64,7 +76,6 @@ export async function runUxObservation(record = {}) {
   assert(typeof idle === 'string', '#ux-primary is readable text content');
   record.uxPrimaryIdle = idle;
   record.announcementEmptyAtRest = announcement.textContent === '';
-  record.previewComputedDisplay = shown.display;
 
   // 6. optional injected walk (IAT adapter): a caller may supply snapshot
   //    writers through window hooks; the module itself never fabricates a

@@ -134,3 +134,6 @@
 - 5 套 +7 例（video 源快照有界+preview 结构钉；save 事件形状契约钉；session 停止后迟到回调零污染+Stopping 期观测连续；ux-view 媒体独立性矩阵含**唯一真 RED**（19011 诊断未并 diagnosticCodes）；ux-display Retryable 文案/timer 约束）。接线面缺口核对=仅 1（其余已被 T12/T14 覆盖，如实标注）。
 - 核验（lead）：五套定向 17/8/35/6/13-of-14（唯一失败=T20 RED，预期窗口）。
 - 提交：`test: specify media and save feedback ownership`（RED 窗口至 T21）。
+
+
+- 2026-10-25（T24）：T21 计划中的「点击后焦点」验收裁定归 **T31**（真实键盘/焦点 E2E 批）承接——lead 决定；T22 的 ux-observation.mjs 已预留 receivingDriven 驱动态断言面，届时由 T31 浏览器执行面覆盖。登记人：dev-v2-prod。
