@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "part": "b2",
+  "note": "Supplement ledger for B1-T6 and B2 entries; merged into tdd-ledger.json at T36. Sources: b1-t6-report.md, b2-t7-report.md, exec-log.md, red-logs/.",
+  "entries": [
+    {
+      "taskId": "T6",
+      "caseIds": ["T6 sender manifest fix (new test case 10)"],
+      "phase": "red",
+      "command": "node --test tools/desktop-recv/tests/run-context.test.mjs",
+      "exitCode": 1,
+      "failureReason": "readSenderManifest rejected frozen package DELIVERY-MANIFEST third non-entry line form (bare ISO timestamp); recording blocked; test-first fix per recipe R",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t6-record-attempt1-sendermanifest-red.log",
+      "sourceRevision": "d77cf22",
+      "productManifestSha256": null,
+      "productNote": "tooling-only fix; product untouched",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T6",
+      "caseIds": ["baseline-preflight READY_OBSERVED", "run-context 10/10"],
+      "phase": "green",
+      "command": "node --test run-context (10/10); node e2e/baseline-preflight.mjs --context 04 --video V-LAST-with --attempt preflight-001",
+      "exitCode": 0,
+      "passed": "READY_OBSERVED readyMs=15012 frames=101 artifact=131072B; prefix PASS; verify-assets PASS; old runs UNCHANGED",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t6-verify.txt",
+      "sourceRevision": "d77cf22",
+      "productManifestSha256": "b8c78a1851e05e8558a3a7b7582c5f67f5df82f3b5429cff3749e472367e6e0d",
+      "productNote": "baseline staging copied read-only from delivered v1.0.0 package; product bytes unchanged",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T7",
+      "caseIds": ["UX-UT-001..011,012..016,017..033,032/034,041..047"],
+      "phase": "red",
+      "command": "node --test worker/client/session/ux-telemetry/ux-view suites",
+      "exitCode": 1,
+      "failureReason": "worker 7 fail (no uxObservation), client 4 fail (no pendingSubmission), session 6 fail (no createUx), ux-telemetry/ux-view ERR_MODULE_NOT_FOUND",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/b2-t7-worker.log (+ client/session/ux-telemetry/ux-view logs)",
+      "sourceRevision": "259539e",
+      "productManifestSha256": null,
+      "productNote": "tests only; product untouched",
+      "date": "2026-10-24"
+    }
+  ]
+}
