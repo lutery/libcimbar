@@ -665,7 +665,7 @@
 
 ## UX-UT-034 — 1500/5000/8000ms状态边界与忙帧优先级
 
-- Target: `web/desktop-recv/src/ux-telemetry.js`；[规划骨架](unit-test-skeletons/ux-telemetry.test.mjs)。
+- Target: `web/desktop-recv/src/ux-view.js`；[规划骨架](unit-test-skeletons/ux-view.test.mjs)（T7 迁移时按 readView 归属落入 ux-view 套件，见 b2-t7-report 偏差 1；T14 对齐本文档）。
 - Trace: T7, T8, T14, T15, T16；AC-015, AC-016, AC-018；R-07, R-08, R-10。
 - Given: 通过计划readView投影三个独立模型：无data begin0；曾有data@1000；single0.25首次增长@1000且之后持续收到等比例data。busy context使用真实pending submittedAt=500。
 - When: 分别查询4999.9/5000、5999.9/6000、8999.9/9000及忙帧年龄1499.9/1500ms。

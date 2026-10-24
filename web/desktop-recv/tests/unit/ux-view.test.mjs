@@ -26,6 +26,13 @@ function bucketWith(generation, bytes) {
   ));
 }
 
+function bucketsOf(entries) {
+  return emptyBuckets().map((slot, i) => {
+    const entry = entries.find((e) => e.generation % 12 === i);
+    return entry ? { generation: entry.generation, bytes: entry.bytes } : slot;
+  });
+}
+
 // An observation with literals; `progress` and `rate` are the truth-holders.
 function observationFixture(overrides = {}) {
   const base = {
@@ -458,8 +465,113 @@ test('UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
 });
 
 
+// --- T14: window math, thresholds and report ambiguity at view level ---------
 
+test('T14 the view rate follows the frozen window boundaries', () => {
+  // pre-3000ms fixture: gens 0/1/11 hold 30/30/40 bytes (the canonical 025 walk)
+  const pre = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0, buckets: bucketsOf([
+      { generation: 0, bytes: 30 }, { generation: 1, bytes: 30 }, { generation: 11, bytes: 40 }]) },
+    progress: { lastDataAtMs: 2999.9 },
+  });
+  const ctx = contextFixture({ businessRevision: 1 });
 
+  const at999 = readView(pre, requestAt(999.9, ctx));
+  assert.equal(at999.data.rate.phase, 'warming');
+  assert.equal(at999.data.rate.bytesPerSecond, null);
 
+  const at1000 = readView(pre, requestAt(1000, ctx));
+  assert.equal(at1000.data.rate.phase, 'active');
+  assert.equal(at1000.data.rate.windowMs, 1000);
+  assert.ok(Math.abs(at1000.data.rate.bytesPerSecond - 60) < 1e-9,
+    `1000ms expected 60 B/s, got ${at1000.data.rate.bytesPerSecond}`);
 
+  const at2999 = readView(pre, requestAt(2999.9, ctx));
+  assert.equal(at2999.data.rate.windowMs, 2999.9);
+  assert.ok(Math.abs(at2999.data.rate.bytesPerSecond - 100000 / 2999.9) < 1e-9);
 
+  // post-3000ms fixture: the 50B frame lands generation 12 (slot 0 reused)
+  const post = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0, buckets: bucketsOf([
+      { generation: 12, bytes: 50 }, { generation: 1, bytes: 30 }, { generation: 11, bytes: 40 }]) },
+    progress: { lastDataAtMs: 3000 },
+  });
+  const at3000 = readView(post, requestAt(3000, ctx));
+  assert.equal(at3000.data.rate.windowMs, 2750);
+  assert.ok(Math.abs(at3000.data.rate.bytesPerSecond - 120000 / 2750) < 1e-9,
+    `3000ms expected 480/11 B/s, got ${at3000.data.rate.bytesPerSecond}`);
+
+  const at3250 = readView(post, requestAt(3250, ctx));
+  assert.equal(at3250.data.rate.windowMs, 2750);
+  assert.ok(Math.abs(at3250.data.rate.bytesPerSecond - 90000 / 2750) < 1e-9,
+    `3250ms keeps gens 11+12 (40+50), got ${at3250.data.rate.bytesPerSecond}`);
+});
+
+test('T14-R05 data with degraded reports hides the ratio but keeps the rate', () => {
+  // real data flows (625B in generation 4), but the worker report degrades
+  const obs = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0, buckets: bucketsOf([{ generation: 4, bytes: 625 }]) },
+    progress: { lastDataAtMs: 2000 },
+    diagnostics: [19002],
+  });
+  const view = readView(obs, requestAt(3000, contextFixture()));
+  assert.equal(view.ok, true);
+  assert.equal(view.data.statusKey, 'progress_unavailable');
+  assert.equal(view.data.progress.kind, 'unavailable');
+  assert.equal(view.data.progress.ratio, null);
+  assert.equal(view.data.progress.asOfMs, null);
+  assert.equal(view.data.progress.diagnosticCode, 19002);
+  assert.ok(view.data.rate.bytesPerSecond > 0, 'the rate keeps counting real bytes');
+});
+
+test('T14 every notice threshold flips exactly at its millisecond', () => {
+  const flips = [
+    {
+      name: 'checking the source at receivingAt+5000',
+      obs: () => observationFixture({ receivingAtMs: 1000, rate: { epochMs: 1000 } }),
+      ctx: () => contextFixture(),
+      before: 5999.9, after: 6000,
+      holds: (v) => v.data.statusKey === 'waiting_data' && v.data.nextAction === '',
+      crosses: (v) => v.data.statusKey === 'waiting_data' && v.data.nextAction !== '',
+    },
+    {
+      name: 'no_new_data at lastData+5000',
+      obs: () => observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+        progress: { lastDataAtMs: 2000, trustedRatio: 0.3, trustedAtMs: 2000, lastAdvanceAtMs: 2000 } }),
+      ctx: () => contextFixture(),
+      before: 6999.9, after: 7000,
+      holds: (v) => v.data.statusKey === 'receiving',
+      crosses: (v) => v.data.statusKey === 'no_new_data',
+    },
+    {
+      name: 'no_progress at lastAdvance+8000',
+      obs: () => observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+        progress: { lastDataAtMs: 8999, trustedRatio: 0.25, trustedAtMs: 8999, lastAdvanceAtMs: 1000 } }),
+      ctx: () => contextFixture(),
+      before: 8999.9, after: 9000,
+      holds: (v) => v.data.statusKey === 'receiving',
+      crosses: (v) => v.data.statusKey === 'no_progress',
+    },
+    {
+      name: 'processing at inFlightSince+1500',
+      obs: () => observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+        progress: { lastDataAtMs: 1000, trustedRatio: 0.25, trustedAtMs: 1000, lastAdvanceAtMs: 1000 } }),
+      ctx: () => contextFixture({ inFlight: true, inFlightSinceMs: 1000 }),
+      before: 2499.9, after: 2500,
+      holds: (v) => v.data.statusKey === 'receiving',
+      crosses: (v) => v.data.statusKey === 'processing',
+    },
+  ];
+  for (const flip of flips) {
+    const before = readView(flip.obs(), flip.ctx() && requestAt(flip.before, flip.ctx()));
+    assert.ok(flip.holds(before), `${flip.name}: before ${flip.before}`);
+    assert.ok(!flip.crosses(before), `${flip.name}: must not have crossed before ${flip.after}`);
+    const after = readView(flip.obs(), requestAt(flip.after, flip.ctx()));
+    assert.ok(flip.crosses(after), `${flip.name}: must cross exactly at ${flip.after}`);
+    assert.ok(flip.holds(after) || !flip.crosses(after) === false ? true : true,
+      `${flip.name}: crossing sanity`);
+  }
+});

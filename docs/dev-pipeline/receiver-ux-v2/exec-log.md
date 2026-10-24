@@ -98,3 +98,10 @@
 - SRC-01 校准 CAL01-05 全 PASS（真实码帧 PNG、静止层≥10s、空白层全覆盖）；S01-S06 全 PASS：等待≥6s（用时走表/0 伪造进度）→ 首数据 revision 2→3 + 41.7 KiB/s → Ready 131072B + 用时冻结 → 真实系统保存 saveTimingsComplete → 外部 SHA 相等（certutil）。
 - 产物：source-scene.mjs（新）、run-e2e.mjs（E2E-27 handler/UX-SLICE 展开/waitForReady 选项）、run 根 20261024-teamexec-06（ux-results.json phase=slice PARTIAL、proof 全套、manifest sha=adb59205…）。
 - 提交：`docs: record first real receiver UX roundtrip`。
+
+## B6-T14 — 窗口数学/阈值/歧义 RED + 补课（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 22:48 ～ 23:14 (+08:00)；报告：b6-t14-report.md；日志：red-logs/b6-t14-ux-telemetry-green.txt、b6-t14-ux-view-red.log
+- ux-telemetry +6（S2 save 归一/幂等/终态不回写/新 attempt 仅 selecting 4 例 + S4 同毫秒双帧/倒退时钟 2 例，均固化既有行为直接 GREEN）；ux-view +3（视图速率窗口边界 5 点 + 四阈值 ±0.1ms 参数表 + **T14-R05 唯一真 RED**：有 data 但报告降级时应 unavailable 而现投影 none）；test-cases.md 034 Target 对齐（S3）。
+- 核验（lead）：telemetry 22/22；view 11/12（R05 预期 RED）。
+- 提交：`test: pin window math, thresholds and save/clock bounds`（RED 窗口期：--all 在 T15 前为红，属 TDD 预期）。

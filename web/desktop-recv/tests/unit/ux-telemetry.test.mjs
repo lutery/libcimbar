@@ -57,6 +57,11 @@ function finishRequest(seq, { nowMs, reason, artifactId = null, id = 's1', versi
   return { version, sessionId: id, sessionSeq: seq, nowMs, reason, artifactId };
 }
 
+function saveRequest(seq, { attemptId = 'save-1', rawStatus, errorCode = null,
+  artifactId = '42', id = 's1' } = {}) {
+  return { version: 1, sessionId: id, sessionSeq: seq, artifactId, attemptId, rawStatus, errorCode };
+}
+
 // The frozen window math, computed here from the raw bucket state — the test
 // owns the formula and the literals; the model only owns the buckets.
 function expectedRate(rate, nowMs) {
@@ -584,4 +589,122 @@ test('UX-UT-033 finish freezes the endpoint, repeats are idempotent, cleanup can
   const coldSnap = cold.snapshot();
   assert.equal(coldSnap.receivingAtMs, null, 'no receiving time was ever set');
   assert.equal(coldSnap.endedAtMs, null);
+});
+
+// --- T14 (S2 backfill): observeSave model behavior ---------------------------
+
+test('T14-S2 the save normalization matrix maps every raw shape', () => {
+  const cases = [
+    ['failed+16002 is cancelled', 'failed', 16002, 'cancelled', 16002],
+    ['cancelled+16002 is cancelled', 'cancelled', 16002, 'cancelled', 16002],
+    ['writing+16008 stays writing', 'writing', 16008, 'writing', 16008],
+    ['pending stays pending', 'pending', null, 'pending', null],
+    ['write failure is failed', 'failed', 16005, 'failed', 16005],
+    ['close failure is failed', 'failed', 16006, 'failed', 16006],
+    ['saved forces a null code', 'saved', null, 'saved', null],
+  ];
+  for (const [name, rawStatus, errorCode, phase, expectedCode] of cases) {
+    const t = new ReceiverTelemetry();
+    t.begin(beginRequest(1, { nowMs: 0 }));
+    t.observeSave(saveRequest(1, { rawStatus: 'selecting' }));
+    const ack = t.observeSave(saveRequest(1, { rawStatus, errorCode }));
+    assert.equal(ack.ok, true, name);
+    const save = t.snapshot().save;
+    assert.equal(save.phase, phase, name);
+    assert.equal(save.errorCode, expectedCode, name);
+    assert.equal(save.artifactId, '42', name);
+    assert.equal(save.attemptId, 'save-1', name);
+  }
+
+  // saved with a failure code is refused: a completed save has no error
+  const bad = new ReceiverTelemetry();
+  bad.begin(beginRequest(1, { nowMs: 0 }));
+  bad.observeSave(saveRequest(1, { rawStatus: 'selecting' }));
+  assert.deepEqual(bad.observeSave(saveRequest(1, { rawStatus: 'saved', errorCode: 16002 })),
+    { ok: false, code: 19008, data: null });
+  assert.equal(bad.snapshot().save.phase, 'selecting');
+});
+
+test('T14-S2 identical save events are idempotent and terminals never regress', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.observeSave(saveRequest(1, { rawStatus: 'selecting' }));
+  t.observeSave(saveRequest(1, { rawStatus: 'writing' }));
+  const revision = t.snapshot().observationRevision;
+
+  const repeat = t.observeSave(saveRequest(1, { rawStatus: 'writing' }));
+  assert.equal(repeat.ok, true);
+  assert.equal(repeat.data.applied, false, 'the identical event lifts nothing');
+  assert.equal(t.snapshot().observationRevision, revision);
+
+  t.observeSave(saveRequest(1, { rawStatus: 'saved' }));
+  assert.equal(t.snapshot().save.phase, 'saved');
+  const settledRevision = t.snapshot().observationRevision;
+  assert.deepEqual(t.observeSave(saveRequest(1, { rawStatus: 'writing' })),
+    { ok: false, code: 19007, data: null }, 'a settled attempt never regresses');
+  assert.equal(t.snapshot().save.phase, 'saved');
+  assert.equal(t.snapshot().observationRevision, settledRevision);
+});
+
+test('T14-S2 a new attempt is established only by selecting', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.observeSave(saveRequest(1, { attemptId: 'save-1', rawStatus: 'selecting' }));
+  t.observeSave(saveRequest(1, { attemptId: 'save-1', rawStatus: 'saved' }));
+  assert.equal(t.snapshot().save.phase, 'saved');
+
+  for (const rawStatus of ['writing', 'pending', 'saved']) {
+    assert.deepEqual(t.observeSave(saveRequest(1, { attemptId: 'save-2', rawStatus })),
+      { ok: false, code: 19007, data: null }, `save-2 cannot start with ${rawStatus}`);
+  }
+  assert.equal(t.snapshot().save.attemptId, 'save-1', 'the unbound attempt took nothing');
+
+  const ack = t.observeSave(saveRequest(1, { attemptId: 'save-2', rawStatus: 'selecting' }));
+  assert.equal(ack.ok, true);
+  assert.equal(t.snapshot().save.attemptId, 'save-2');
+  assert.equal(t.snapshot().save.phase, 'selecting');
+});
+
+test('T14-S2 stale owners and attempts are refused with 19007/19008', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(2, { nowMs: 0 }));
+  assert.deepEqual(t.observeSave(saveRequest(1, { rawStatus: 'selecting' })),
+    { ok: false, code: 19007, data: null }, 'an older seq is stale');
+  assert.deepEqual(t.observeSave(saveRequest(3, { rawStatus: 'selecting' })),
+    { ok: false, code: 19008, data: null }, 'a newer seq is a conflict');
+  assert.deepEqual(t.observeSave(saveRequest(2, { id: 's2', rawStatus: 'selecting' })),
+    { ok: false, code: 19008, data: null }, 'another owner id at the same seq');
+  assert.equal(t.snapshot().save.phase, 'none', 'nothing was applied');
+});
+
+// --- T14 (S4 backfill): clock boundaries --------------------------------------
+
+test('T14-S4 two frames in the same millisecond both count', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 100 }));
+  const first = t.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: 400, report: rSingle(0.25) }));
+  const second = t.acceptFrame(frameInput(1, { frameId: 2, at: 250, bytes: 225, report: rSingle(0.25) }));
+  assert.equal(first.ok, true);
+  assert.equal(second.ok, true, 'an equal receivedAtMs is not a rollback');
+  const snap = t.snapshot();
+  assert.equal(snap.rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625);
+  assert.equal(snap.progress.lastAdvanceAtMs, 250, 'the equal ratio does not advance again');
+  assert.equal(snap.progress.trustedRatio, 0.25);
+});
+
+test('T14-S4 a rollback clock is refused and counts nothing', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 100 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 300, bytes: 625, report: rSingle(0.25) }));
+  const baseline = deepFreeze(t.snapshot());
+
+  assert.deepEqual(t.acceptFrame(frameInput(1, { frameId: 2, at: 299, bytes: 625, report: rSingle(0.3) })),
+    { ok: false, code: 19009, data: null });
+  assert.deepEqual(t.snapshot(), baseline, 'neither bytes nor revision moved');
+  assert.equal(t.snapshot().rate.buckets.reduce((sum, b) => sum + b.bytes, 0), 625);
+
+  // recovery after the rollback continues honestly
+  const later = t.acceptFrame(frameInput(1, { frameId: 2, at: 400, bytes: 100, report: rSingle(0.3) }));
+  assert.equal(later.ok, true);
+  assert.equal(t.snapshot().progress.trustedRatio, 0.3);
 });
