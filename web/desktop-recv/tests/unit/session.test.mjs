@@ -844,3 +844,373 @@ test('T3.2.b stop during a pending save converges after settlement', async () =>
   assert.equal(coordinator.snapshot().state, 'Stopped');
   assert.equal(coordinator.snapshot().cleanupComplete, true);
 });
+
+// --- T7 receiver UX observation hooks (UX-UT-012..016) ----------------------
+//
+// The coordinator gains an optional observation path: a fresh ux model per
+// session comes in via options.createUx, a monotonic clock via options.nowMs,
+// and the真实 createClient factory receives the captured owner. The legacy
+// paths are untouched: every assertion below pins a UX hook, never state.
+
+// A ux model double: records every action call and answers with a cheap
+// ok Ack. The session must drive the actions; nothing here decides state.
+function uxModelDouble() {
+  const calls = [];
+  const ack = (seq, revision) => ({
+    ok: true, code: 0,
+    data: { sessionSeq: seq, applied: true, observationRevision: revision },
+  });
+  return {
+    calls,
+    begin(request) { calls.push({ name: 'begin', request }); return ack(request.sessionSeq, 1); },
+    acceptFrame(input) { calls.push({ name: 'acceptFrame', input }); return ack(input.sessionSeq, calls.length); },
+    observeSave(request) { calls.push({ name: 'observeSave', request }); return ack(request.sessionSeq, calls.length); },
+    finish(request) { calls.push({ name: 'finish', request }); return ack(request.sessionSeq, calls.length); },
+  };
+}
+
+function uxSessionHarness() {
+  const clients = [];
+  const pickers = [];
+  const observations = [];
+  const snapshotEvents = [];
+  const clock = { now: 100 };
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: (owner) => {
+      const client = fakeClient();
+      clients.push({ client, owner });
+      return Promise.resolve(client);
+    },
+    createUx: () => { const model = uxModelDouble(); observations.push(model); return model; },
+    nowMs: () => clock.now,
+    onSnapshot: (snapshot) => snapshotEvents.push(snapshot),
+  });
+  return { coordinator, clients, pickers, observations, snapshotEvents, clock };
+}
+
+const acceptsOf = (model) => model.calls.filter((c) => c.name === 'acceptFrame');
+const callsNamed = (model, name) => model.calls.filter((c) => c.name === name);
+
+// Start a session and converge it to Receiving; `clock.now` is set to 600
+// before the last readiness dependency resolves, so a model begin carries it.
+async function reachReceiving(harness, kind = 'live') {
+  const { coordinator, pickers, clock } = harness;
+  if (kind === 'live') {
+    coordinator.startLive({ requestId: 'ux-live-1' });
+    clock.now = 600;
+    pickers[0](fakeStream());
+  } else {
+    coordinator.startVideo({
+      requestId: 'ux-video-1',
+      openSource: () => Promise.resolve({ stop() {} }),
+    });
+    clock.now = 600;
+  }
+  await tick(5);
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  assert.equal(observationsOf(harness).length, 1, 'one fresh ux model for this session');
+  return harness.observations[0];
+}
+
+function observationsOf(harness) {
+  return harness.observations;
+}
+
+// Push a frame through the live scheduler and resolve its real reply.
+async function deliverFrame(harness, index, result) {
+  const { coordinator } = harness;
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  harness.clients[index].client.deliver(result);
+  await tick(5);
+}
+
+test('UX-UT-012 Receiving begins the observation once with the real owner and clock', async () => {
+  const h = uxSessionHarness();
+  h.coordinator.startLive({ requestId: 'ux-live-1' });
+  await tick();
+
+  assert.equal(h.coordinator.snapshot().state, 'Preparing');
+  assert.equal(observationsOf(h).length, 0,
+    'no ux model and no begin while the session is still Preparing');
+
+  h.clock.now = 600; // the readiness that finishes last resolves here
+  h.pickers[0](fakeStream());
+  await tick(5);
+
+  assert.equal(h.coordinator.snapshot().state, 'Receiving');
+  const model = observationsOf(h)[0];
+  assert.equal(callsNamed(model, 'begin').length, 1,
+    'one begin, not one per readiness dependency');
+  const begin = callsNamed(model, 'begin')[0].request;
+  assert.equal(begin.version, 1);
+  assert.equal(begin.sessionId, 's1');
+  assert.equal(begin.sessionSeq, 1);
+  assert.equal(begin.inputKind, 'live');
+  assert.equal(begin.nowMs, 600, 'the begin carries the real Receiving-entry time');
+
+  // the client factory was given the owner captured at creation time
+  assert.deepEqual(h.clients[0].owner, { sessionId: 's1', sessionSeq: 1 });
+
+  // a real data frame reaches the model exactly once, stamped on this clock
+  h.clock.now = 800;
+  await deliverFrame(h, 0, { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  const accept = callsNamed(model, 'acceptFrame');
+  assert.equal(accept.length, 1);
+  const input = accept[0].input;
+  assert.equal(input.version, 1);
+  assert.equal(input.sessionId, 's1');
+  assert.equal(input.sessionSeq, 1);
+  assert.equal(input.frameId, 1);
+  assert.equal(input.receivedAtMs, 800, 'receivedAt taken on the main thread clock');
+  assert.equal(input.outcome, 'data');
+  assert.equal(input.bytesDecoded, 625, 'the decoded bytes from the original result');
+  assert.deepEqual(input.report,
+    { state: 'unavailable', ratios: [], diagnosticCode: 19015 },
+    'an old worker without the observation drops to 19015, keeping the data path');
+
+  // stopping lands exactly one genuine stopped finish
+  h.clock.now = 900;
+  h.coordinator.stop();
+  await tick(5);
+  const finishes = callsNamed(model, 'finish');
+  assert.equal(finishes.length, 1, 'one finish for one genuine terminal');
+  assert.deepEqual(finishes[0].request,
+    { version: 1, sessionId: 's1', sessionSeq: 1, nowMs: 900, reason: 'stopped', artifactId: null });
+});
+
+test('UX-UT-012 the video entry and reversed readiness order also begin exactly once', async () => {
+  // video kind, decoder first, source second: no begin while the source is pending
+  const h = uxSessionHarness();
+  let resolveSource;
+  h.coordinator.startVideo({
+    requestId: 'ux-video-1',
+    openSource: () => new Promise((resolve) => { resolveSource = resolve; }),
+  });
+  await tick();
+  assert.equal(h.coordinator.snapshot().state, 'Preparing');
+  assert.equal(observationsOf(h).length, 0, 'no begin before both dependencies are ready');
+
+  h.clock.now = 700;
+  resolveSource({ stop() {} });
+  await tick(5);
+  assert.equal(h.coordinator.snapshot().state, 'Receiving');
+  const model = observationsOf(h)[0];
+  assert.equal(callsNamed(model, 'begin').length, 1);
+  assert.equal(callsNamed(model, 'begin')[0].request.inputKind, 'video');
+  assert.equal(callsNamed(model, 'begin')[0].request.nowMs, 700);
+
+  // live kind, source first and decoder second: still exactly one begin
+  const pickers = [];
+  const observations = [];
+  const clock = { now: 100 };
+  let resolveClient;
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => new Promise((resolve) => { resolveClient = resolve; }),
+    createUx: () => { const extra = uxModelDouble(); observations.push(extra); return extra; },
+    nowMs: () => clock.now,
+  });
+  coordinator.startLive({ requestId: 'ux-live-2' });
+  await tick();
+  pickers[0](fakeStream()); // media ready first, decoder still pending
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Preparing');
+  assert.equal(observations.length, 0, 'no begin from the source alone');
+
+  clock.now = 650;
+  resolveClient(fakeClient());
+  await tick(5);
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  assert.equal(observations.length, 1);
+  assert.equal(callsNamed(observations[0], 'begin').length, 1,
+    'the reversed readiness order still begins exactly once');
+  assert.equal(callsNamed(observations[0], 'begin')[0].request.inputKind, 'live');
+  assert.equal(callsNamed(observations[0], 'begin')[0].request.nowMs, 650);
+});
+
+test('UX-UT-013 the observation maps the bypass, never the core result', async () => {
+  const h = uxSessionHarness();
+  const model = await reachReceiving(h);
+  const fakeObservation = (patch) => Object.assign({
+    version: 1,
+    report: { state: 'single', ratios: [0.426], diagnosticCode: 0 },
+  }, patch);
+
+  // (1) no observation on a real data frame: 19015, bytes kept
+  await deliverFrame(h, 0, { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  let accept = acceptsOf(model).at(-1).input;
+  assert.deepEqual(accept.report, { state: 'unavailable', ratios: [], diagnosticCode: 19015 });
+  assert.equal(accept.bytesDecoded, 625);
+
+  // (2) an unsupported observation version: 19013
+  await deliverFrame(h, 0, { frameId: 2, outcome: 'data', bytesDecoded: 625, uxObservation: fakeObservation({ version: 2 }) });
+  accept = acceptsOf(model).at(-1).input;
+  assert.deepEqual(accept.report, { state: 'unavailable', ratios: [], diagnosticCode: 19013 });
+  assert.equal(accept.bytesDecoded, 625);
+
+  // (3) a structurally invalid observation: 19008
+  await deliverFrame(h, 0, {
+    frameId: 3, outcome: 'data', bytesDecoded: 625,
+    uxObservation: { version: 1, report: { state: 'single', ratios: 'oops', diagnosticCode: 0 } },
+  });
+  accept = acceptsOf(model).at(-1).input;
+  assert.deepEqual(accept.report, { state: 'unavailable', ratios: [], diagnosticCode: 19008 });
+
+  // (4) a valid observation flows through unchanged
+  await deliverFrame(h, 0, { frameId: 4, outcome: 'data', bytesDecoded: 625, uxObservation: fakeObservation({}) });
+  accept = acceptsOf(model).at(-1).input;
+  assert.deepEqual(accept.report, { state: 'single', ratios: [0.426], diagnosticCode: 0 });
+
+  // (5) no_data and error always carry not_sampled and zero bytes
+  await deliverFrame(h, 0, { frameId: 5, outcome: 'no_data', bytesDecoded: 0 });
+  accept = acceptsOf(model).at(-1).input;
+  assert.equal(accept.outcome, 'no_data');
+  assert.equal(accept.bytesDecoded, 0);
+  assert.deepEqual(accept.report, { state: 'not_sampled', ratios: [], diagnosticCode: 0 });
+
+  await deliverFrame(h, 0, { frameId: 6, outcome: 'error', errorCode: 15005 });
+  accept = acceptsOf(model).at(-1).input;
+  assert.equal(accept.outcome, 'error');
+  assert.equal(accept.bytesDecoded, 0);
+  assert.deepEqual(accept.report, { state: 'not_sampled', ratios: [], diagnosticCode: 0 });
+
+  // (6) a real artifact keeps its business landing AND feeds the model:
+  // both the accept and one artifact finish, with the artifact identity
+  await deliverFrame(h, 0, { frameId: 7, outcome: 'artifact', bytesDecoded: 625, artifact: { artifactId: '42', byteCount: 5 } });
+  assert.equal(h.coordinator.snapshot().state, 'Ready',
+    'the artifact path is the original business behavior');
+  accept = acceptsOf(model).at(-1).input;
+  assert.equal(accept.outcome, 'artifact');
+  assert.equal(accept.bytesDecoded, 625);
+  const finishes = callsNamed(model, 'finish');
+  assert.equal(finishes.length, 1, 'the artifact terminal finishes the observation');
+  assert.equal(finishes[0].request.reason, 'artifact');
+  assert.equal(finishes[0].request.artifactId, '42');
+
+  // a later stop must not move the frozen endpoint with a second finish
+  await deliverFrame(h, 0, { frameId: 8, outcome: 'data', bytesDecoded: 625 });
+  h.coordinator.stop();
+  await tick(5);
+  assert.equal(callsNamed(model, 'finish').length, 1,
+    'stays one finish after a terminal, whether or not the model freezes it');
+});
+
+test('UX-UT-014 stale results never feed the model of the next session', async () => {
+  const clients = [];
+  const pickers = [];
+  const observations = [];
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => {
+      const client = fakeClient();
+      clients.push(client);
+      return Promise.resolve(client);
+    },
+    createUx: () => { const model = uxModelDouble(); observations.push(model); return model; },
+  });
+
+  // session A (live) receives a real data frame
+  coordinator.startLive({ requestId: 'a' });
+  pickers[0](fakeStream());
+  await tick(5);
+  await deliverFrame({ coordinator, clients, pickers, observations }, 0,
+    { frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  assert.equal(acceptsOf(observations[0]).length, 1);
+
+  coordinator.stop();
+  await tick();
+  assert.equal(coordinator.snapshot().state, 'Stopped');
+
+  // session B (video) via the cleanup gate; the sequencing never crosses
+  coordinator.startVideo({ requestId: 'b', openSource: () => Promise.resolve({ stop() {} }) });
+  await tick(5);
+  assert.equal(coordinator.snapshot().state, 'Receiving');
+  assert.equal(observations.length, 2, 'a fresh model per session');
+  assert.equal(callsNamed(observations[1], 'begin').length, 1);
+
+  // a late A result now arrives: it must not touch B's model or snapshot
+  const before = coordinator.snapshot();
+  clients[0].deliver({ frameId: 99, outcome: 'data', bytesDecoded: 12345 });
+  await tick(5);
+  const after = coordinator.snapshot();
+  assert.equal(acceptsOf(observations[1]).length, 0,
+    "a late frame from session A does not feed session B's model");
+  assert.equal(acceptsOf(observations[0]).length, 1,
+    'and does not retroactively feed the frozen A model either');
+  assert.equal(after.revision, before.revision, 'the business revision is untouched');
+  assert.equal(after.sessionSeq, 2, 'the current session stays B');
+
+  // B's own fresh frame is accepted once
+  coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  clients[1].deliver({ frameId: 1, outcome: 'data', bytesDecoded: 625 });
+  await tick(5);
+  assert.equal(acceptsOf(observations[1]).length, 1, 'the current frame is counted exactly once');
+  assert.equal(acceptsOf(observations[1])[0].input.frameId, 1);
+});
+
+test('UX-UT-015 every genuine terminal finishes with its own reason', async () => {
+  // (a) Ready through a real artifact
+  const ready = uxSessionHarness();
+  const readyModel = await reachReceiving(ready);
+  await deliverFrame(ready, 0,
+    { frameId: 1, outcome: 'artifact', bytesDecoded: 625, artifact: { artifactId: '42', byteCount: 5 } });
+  const readyFinish = callsNamed(readyModel, 'finish').at(-1).request;
+  assert.equal(readyFinish.reason, 'artifact');
+  assert.equal(readyFinish.artifactId, '42');
+
+  // (b) Incomplete through the end-of-input drain
+  const stopping = uxSessionHarness();
+  const stoppingModel = await reachReceiving(stopping);
+  await stopping.coordinator.finishStream({ takeFinalSample: () => null });
+  const stoppingFinish = callsNamed(stoppingModel, 'finish').at(-1).request;
+  assert.equal(stoppingFinish.reason, 'incomplete');
+  assert.equal(stoppingFinish.artifactId, null);
+  assert.equal(stoppingFinish.nowMs, 600, 'the finish carries this main-thread clock');
+
+  // (c) Stopped via the user
+  const stopped = uxSessionHarness();
+  const stoppedModel = await reachReceiving(stopped);
+  stopped.clock.now = 1200;
+  stopped.coordinator.stop();
+  await tick(5);
+  assert.equal(callsNamed(stoppedModel, 'finish').length, 1);
+  assert.equal(callsNamed(stoppedModel, 'finish')[0].request.reason, 'stopped');
+
+  // (d) error through the real failure hook
+  const failed = uxSessionHarness();
+  const failedModel = await reachReceiving(failed);
+  failed.clock.now = 1400;
+  failed.clients[0].client.onFailure(
+    Object.assign(new Error('worker died'), { code: 15010 }));
+  await tick(5);
+  const failedFinish = callsNamed(failedModel, 'finish').at(-1).request;
+  assert.equal(failedFinish.reason, 'error');
+  assert.equal(failedFinish.artifactId, null);
+});
+
+test('UX-UT-016 data-frame results never churn the business snapshot revision', async () => {
+  const h = uxSessionHarness();
+  const model = await reachReceiving(h);
+  const snapshotsBeforeBusiness = h.snapshotEvents.length;
+  const revisionBefore = h.coordinator.snapshot().revision;
+
+  // five real data frames: no state transition, so no business revision churn —
+  // and precisely one observation accept each
+  for (let i = 2; i <= 6; i += 1) {
+    await deliverFrame(h, 0, { frameId: i, outcome: 'data', bytesDecoded: 625 });
+  }
+  const snapshotAfter = h.coordinator.snapshot();
+  assert.equal(snapshotAfter.revision, revisionBefore,
+    'data frames are not business state transitions');
+  assert.equal(h.snapshotEvents.length, snapshotsBeforeBusiness,
+    'the business event stream stays silent during frame counts');
+
+  // ux reads out of the exact Double: no pushes, and the projected model state
+  // cannot invent business revisions in either direction
+  assert.equal(acceptsOf(model).length, 5, 'each frame observed exactly once');
+  assert.equal(callsNamed(model, 'observeSave').length, 0,
+    'no save observation without a genuine save event');
+});

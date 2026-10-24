@@ -1,0 +1,163 @@
+TAP version 13
+# Subtest: UT-055 worker error before ready rejects init with 15010
+ok 1 - UT-055 worker error before ready rejects init with 15010
+  ---
+  duration_ms: 2.1874
+  type: 'test'
+  ...
+# Subtest: UT-056 messageerror rejects pending frames with 15010
+ok 2 - UT-056 messageerror rejects pending frames with 15010
+  ---
+  duration_ms: 1.3412
+  type: 'test'
+  ...
+# Subtest: UT-057 close during pending init settles the init promise
+ok 3 - UT-057 close during pending init settles the init promise
+  ---
+  duration_ms: 0.3237
+  type: 'test'
+  ...
+# Subtest: UT-058 init watchdog times out with 15011
+ok 4 - UT-058 init watchdog times out with 15011
+  ---
+  duration_ms: 33.8559
+  type: 'test'
+  ...
+# Subtest: UT-059 frame watchdog times out with 14003 and fails the channel
+ok 5 - UT-059 frame watchdog times out with 14003 and fails the channel
+  ---
+  duration_ms: 15.3635
+  type: 'test'
+  ...
+# Subtest: UT-060 a throwing postMessage rejects the frame with 15010
+ok 6 - UT-060 a throwing postMessage rejects the frame with 15010
+  ---
+  duration_ms: 0.5876
+  type: 'test'
+  ...
+# Subtest: UT-061 channel failures settle exactly once
+ok 7 - UT-061 channel failures settle exactly once
+  ---
+  duration_ms: 30.1482
+  type: 'test'
+  ...
+# Subtest: UT-062 the healthy path still works
+ok 8 - UT-062 the healthy path still works
+  ---
+  duration_ms: 0.4777
+  type: 'test'
+  ...
+# Subtest: UT-085 protocol init-failed terminates the worker and rejects init
+ok 9 - UT-085 protocol init-failed terminates the worker and rejects init
+  ---
+  duration_ms: 0.697
+  type: 'test'
+  ...
+# Subtest: UT-086 a throwing init postMessage terminates the worker
+ok 10 - UT-086 a throwing init postMessage terminates the worker
+  ---
+  duration_ms: 0.6507
+  type: 'test'
+  ...
+# Subtest: UT-087 a throwing frame postMessage converges the whole channel
+ok 11 - UT-087 a throwing frame postMessage converges the whole channel
+  ---
+  duration_ms: 0.6382
+  type: 'test'
+  ...
+# Subtest: UX-UT-008 pending submittedAtMs comes from the real main-thread post
+not ok 12 - UX-UT-008 pending submittedAtMs comes from the real main-thread post
+  ---
+  duration_ms: 1.702
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\client.test.mjs:256:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    the metadata already exists inside postMessage, stamped before the post
+    + actual - expected
+    
+    + null
+    - {
+    -   frameId: 1,
+    -   sessionId: 's1',
+    -   sessionSeq: 1,
+    -   submittedAtMs: 100
+    - }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    sessionId: 's1'
+    sessionSeq: 1
+    frameId: 1
+    submittedAtMs: 100
+  actual: ~
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/client.test.mjs:273:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-009 a wrong frameId clears nothing and a stale reply restores nothing
+not ok 13 - UX-UT-009 a wrong frameId clears nothing and a stale reply restores nothing
+  ---
+  duration_ms: 0.3114
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\client.test.mjs:297:1'
+  failureType: 'testCodeFailure'
+  error: 'client.pendingSubmission is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/client.test.mjs:303:27)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-010 every original failure exit clears the ux pending metadata
+not ok 14 - UX-UT-010 every original failure exit clears the ux pending metadata
+  ---
+  duration_ms: 509.3232
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\client.test.mjs:331:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    Error: frame reply timed out
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    async rejectsAndClears (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/client.test.mjs:341:5)
+    async TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/client.test.mjs:349:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-011 observation queries carry no channel cost
+not ok 15 - UX-UT-011 observation queries carry no channel cost
+  ---
+  duration_ms: 0.9504
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\client.test.mjs:385:1'
+  failureType: 'testCodeFailure'
+  error: 'client.pendingSubmission is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/client.test.mjs:393:19)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Error: Test "UX-UT-008 pending submittedAtMs comes from the real main-thread post" at web\\desktop-recv\\tests\\unit\\client.test.mjs:256:1 generated asynchronous activity after the test ended. This activity created the error "Error: worker postMessage failed" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+# Error: Test "UX-UT-009 a wrong frameId clears nothing and a stale reply restores nothing" at web\\desktop-recv\\tests\\unit\\client.test.mjs:297:1 generated asynchronous activity after the test ended. This activity created the error "Error: frame reply timed out" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+# Error: Test "UX-UT-011 observation queries carry no channel cost" at web\\desktop-recv\\tests\\unit\\client.test.mjs:385:1 generated asynchronous activity after the test ended. This activity created the error "Error: frame reply timed out" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+1..15
+# tests 15
+# suites 0
+# pass 11
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1225.1727

@@ -1,0 +1,277 @@
+TAP version 13
+# Subtest: UT-007 reserve synchronously, picker before client
+ok 1 - UT-007 reserve synchronously, picker before client
+  ---
+  duration_ms: 23.817
+  type: 'test'
+  ...
+# Subtest: UT-008 duplicate start is idempotent
+ok 2 - UT-008 duplicate start is idempotent
+  ---
+  duration_ms: 29.4511
+  type: 'test'
+  ...
+# Subtest: UT-009 late results from a stopped session are ignored
+ok 3 - UT-009 late results from a stopped session are ignored
+  ---
+  duration_ms: 138.0822
+  type: 'test'
+  ...
+# Subtest: UT-010 a late capture stream is stopped immediately
+ok 4 - UT-010 a late capture stream is stopped immediately
+  ---
+  duration_ms: 31.2093
+  type: 'test'
+  ...
+# Subtest: UT-011 stopping reports cleanupComplete until settled
+ok 5 - UT-011 stopping reports cleanupComplete until settled
+  ---
+  duration_ms: 31.0051
+  type: 'test'
+  ...
+# Subtest: UT-012 a new session starts clean
+ok 6 - UT-012 a new session starts clean
+  ---
+  duration_ms: 109.9284
+  type: 'test'
+  ...
+# Subtest: TD-13 a mapped snapshot conforms to receiver-v1 Snapshot
+ok 7 - TD-13 a mapped snapshot conforms to receiver-v1 Snapshot
+  ---
+  duration_ms: 0.7284
+  type: 'test'
+  ...
+# Subtest: TD-13 a Ready artifact drops the Blob and keeps the contract fields
+ok 8 - TD-13 a Ready artifact drops the Blob and keeps the contract fields
+  ---
+  duration_ms: 0.5347
+  type: 'test'
+  ...
+# Subtest: TD-13 unknown internal states fall back to Stopped, never invent
+ok 9 - TD-13 unknown internal states fall back to Stopped, never invent
+  ---
+  duration_ms: 0.4975
+  type: 'test'
+  ...
+# Subtest: TD-13 no session maps to null (IF-003)
+ok 10 - TD-13 no session maps to null (IF-003)
+  ---
+  duration_ms: 0.4222
+  type: 'test'
+  ...
+# Subtest: T2.2.a-1 a rejection after stop never leaves Stopping
+ok 11 - T2.2.a-1 a rejection after stop never leaves Stopping
+  ---
+  duration_ms: 28.4811
+  type: 'test'
+  ...
+# Subtest: T2.2.a-2 decoder init failure converges to Stopped
+ok 12 - T2.2.a-2 decoder init failure converges to Stopped
+  ---
+  duration_ms: 31.013
+  type: 'test'
+  ...
+# Subtest: T2.2.b-6 an Incomplete session releases its resources
+ok 13 - T2.2.b-6 an Incomplete session releases its resources
+  ---
+  duration_ms: 31.1726
+  type: 'test'
+  ...
+# Subtest: UT-063 an Incomplete session restarts through both entries
+ok 14 - UT-063 an Incomplete session restarts through both entries
+  ---
+  duration_ms: 93.3153
+  type: 'test'
+  ...
+# Subtest: UT-064 picker rejection closes the already-ready client
+ok 15 - UT-064 picker rejection closes the already-ready client
+  ---
+  duration_ms: 62.2473
+  type: 'test'
+  ...
+# Subtest: UT-065 a late client after rejection is closed by the cleanup token
+ok 16 - UT-065 a late client after rejection is closed by the cleanup token
+  ---
+  duration_ms: 60.8356
+  type: 'test'
+  ...
+# Subtest: UT-089 repeated cancellations release every late client
+ok 17 - UT-089 repeated cancellations release every late client
+  ---
+  duration_ms: 186.7627
+  type: 'test'
+  ...
+# Subtest: UT-088 a cancel during init blocks restart until cleanup converges
+ok 18 - UT-088 a cancel during init blocks restart until cleanup converges
+  ---
+  duration_ms: 90.8958
+  type: 'test'
+  ...
+# Subtest: UT-090 a pending init rejection after stop stays silent
+ok 19 - UT-090 a pending init rejection after stop stays silent
+  ---
+  duration_ms: 62.6525
+  type: 'test'
+  ...
+# Subtest: UT-091 startVideo honours the same cleanup gate as startLive
+ok 20 - UT-091 startVideo honours the same cleanup gate as startLive
+  ---
+  duration_ms: 94.7343
+  type: 'test'
+  ...
+# Subtest: UT-067 stop during pending init converges to Stopped silently
+ok 21 - UT-067 stop during pending init converges to Stopped silently
+  ---
+  duration_ms: 61.8805
+  type: 'test'
+  ...
+# Subtest: UT-068 a post-ready channel failure lands in Stopped
+ok 22 - UT-068 a post-ready channel failure lands in Stopped
+  ---
+  duration_ms: 60.9083
+  type: 'test'
+  ...
+# Subtest: T3.2.a save events drive Ready -> Saving -> Saved
+ok 23 - T3.2.a save events drive Ready -> Saving -> Saved
+  ---
+  duration_ms: 78.3975
+  type: 'test'
+  ...
+# Subtest: T3.2.a a failed save lands Retryable and can retry
+ok 24 - T3.2.a a failed save lands Retryable and can retry
+  ---
+  duration_ms: 77.9425
+  type: 'test'
+  ...
+# Subtest: T3.2.b stop during a pending save converges after settlement
+ok 25 - T3.2.b stop during a pending save converges after settlement
+  ---
+  duration_ms: 108.2969
+  type: 'test'
+  ...
+# Subtest: UX-UT-012 Receiving begins the observation once with the real owner and clock
+not ok 26 - UX-UT-012 Receiving begins the observation once with the real owner and clock
+  ---
+  duration_ms: 47.8273
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:929:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'calls')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    callsNamed (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:893:43)
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:944:16)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-012 the video entry and reversed readiness order also begin exactly once
+not ok 27 - UX-UT-012 the video entry and reversed readiness order also begin exactly once
+  ---
+  duration_ms: 46.6692
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:983:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'calls')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    callsNamed (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:893:43)
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:1000:16)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-013 the observation maps the bypass, never the core result
+not ok 28 - UX-UT-013 the observation maps the bypass, never the core result
+  ---
+  duration_ms: 16.1168
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:1033:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    one fresh ux model for this session
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    reachReceiving (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:912:10)
+    async TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:1035:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-014 stale results never feed the model of the next session
+not ok 29 - UX-UT-014 stale results never feed the model of the next session
+  ---
+  duration_ms: 29.168
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:1100:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'deliver')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    deliverFrame (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:925:33)
+    async TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:1118:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-015 every genuine terminal finishes with its own reason
+not ok 30 - UX-UT-015 every genuine terminal finishes with its own reason
+  ---
+  duration_ms: 15.4722
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:1154:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    one fresh ux model for this session
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    reachReceiving (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:912:10)
+    async TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:1157:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-016 data-frame results never churn the business snapshot revision
+not ok 31 - UX-UT-016 data-frame results never churn the business snapshot revision
+  ---
+  duration_ms: 15.3722
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\session.test.mjs:1194:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    one fresh ux model for this session
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    reachReceiving (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:912:10)
+    async TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/session.test.mjs:1196:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 25
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1799.6902
