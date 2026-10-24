@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: UX-UT-017 begin is idempotent per owner and fully resets on a newer seq
+ok 1 - UX-UT-017 begin is idempotent per owner and fully resets on a newer seq
+  ---
+  duration_ms: 3.2908
+  type: 'test'
+  ...
+# Subtest: UX-UT-018 invalid FrameInput is refused before any ux state moves
+ok 2 - UX-UT-018 invalid FrameInput is refused before any ux state moves
+  ---
+  duration_ms: 1.3335
+  type: 'test'
+  ...
+# Subtest: UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007
+ok 3 - UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007
+  ---
+  duration_ms: 0.4879
+  type: 'test'
+  ...
+# Subtest: UX-UT-020 repeated single ratios do not fake progress though bytes still count
+ok 4 - UX-UT-020 repeated single ratios do not fake progress though bytes still count
+  ---
+  duration_ms: 0.359
+  type: 'test'
+  ...
+# Subtest: UX-UT-021 multiple stream reports lock ambiguity until a new seq
+ok 5 - UX-UT-021 multiple stream reports lock ambiguity until a new seq
+  ---
+  duration_ms: 0.3721
+  type: 'test'
+  ...
+# Subtest: UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped
+ok 6 - UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped
+  ---
+  duration_ms: 1.153
+  type: 'test'
+  ...
+# Subtest: UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history
+ok 7 - UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history
+  ---
+  duration_ms: 0.5393
+  type: 'test'
+  ...
+# Subtest: UX-UT-024 ratios at or above one stay non-completed until a real artifact
+ok 8 - UX-UT-024 ratios at or above one stay non-completed until a real artifact
+  ---
+  duration_ms: 0.2089
+  type: 'test'
+  ...
+# Subtest: UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable
+ok 9 - UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable
+  ---
+  duration_ms: 0.6298
+  type: 'test'
+  ...
+# Subtest: UX-UT-026 the warmup boundary uses the actual coverage window
+ok 10 - UX-UT-026 the warmup boundary uses the actual coverage window
+  ---
+  duration_ms: 0.5264
+  type: 'test'
+  ...
+# Subtest: UX-UT-027 after the data stops the rate reaches zero within three seconds
+ok 11 - UX-UT-027 after the data stops the rate reaches zero within three seconds
+  ---
+  duration_ms: 0.3477
+  type: 'test'
+  ...
+# Subtest: UX-UT-028 only real decoded bytes are counted and redundancy is explicit
+ok 12 - UX-UT-028 only real decoded bytes are counted and redundancy is explicit
+  ---
+  duration_ms: 0.2075
+  type: 'test'
+  ...
+# Subtest: UX-UT-029 a safe-integer overflow resets only the rate domain
+ok 13 - UX-UT-029 a safe-integer overflow resets only the rate domain
+  ---
+  duration_ms: 0.4004
+  type: 'test'
+  ...
+# Subtest: UX-UT-030 big time jumps and long sequences keep fixed bounded state
+ok 14 - UX-UT-030 big time jumps and long sequences keep fixed bounded state
+  ---
+  duration_ms: 0.4977
+  type: 'test'
+  ...
+# Subtest: UX-UT-031 regressed and non-finite clocks are refused and later recover honestly
+ok 15 - UX-UT-031 regressed and non-finite clocks are refused and later recover honestly
+  ---
+  duration_ms: 0.5
+  type: 'test'
+  ...
+# Subtest: UX-UT-033 finish freezes the endpoint, repeats are idempotent, cleanup cannot erase
+ok 16 - UX-UT-033 finish freezes the endpoint, repeats are idempotent, cleanup cannot erase
+  ---
+  duration_ms: 0.5073
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 142.7239

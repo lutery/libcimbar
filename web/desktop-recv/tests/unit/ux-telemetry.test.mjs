@@ -336,10 +336,10 @@ test('UX-UT-024 ratios at or above one stay non-completed until a real artifact'
 test('UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable', () => {
   const t = new ReceiverTelemetry();
   t.begin(beginRequest(1, { nowMs: 0 }));
-  t.acceptFrame(frameInput(1, { frameId: 1, at: 0, bytes: 10 }));
-  t.acceptFrame(frameInput(1, { frameId: 2, at: 249.9, bytes: 20 }));
-  t.acceptFrame(frameInput(1, { frameId: 3, at: 250, bytes: 30 }));
-  t.acceptFrame(frameInput(1, { frameId: 4, at: 2999.9, bytes: 40 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 0, bytes: 10, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 249.9, bytes: 20, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 3, at: 250, bytes: 30, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 4, at: 2999.9, bytes: 40, report: rEmpty() }));
 
   const snap = t.snapshot();
   assert.equal(snap.rate.buckets.length, 12, 'the model always keeps exactly 12 slots');
@@ -352,7 +352,7 @@ test('UX-UT-025 twelve buckets place boundary bytes exactly and keep the denomin
   assert.ok(Math.abs(at2999.perSecond - 100000 / 2999.9) < 1e-9);
 
   // t=3000: q=12, the window starts at 250: bucket 0 (30B) is out
-  t.acceptFrame(frameInput(1, { frameId: 5, at: 3000, bytes: 50 }));
+  t.acceptFrame(frameInput(1, { frameId: 5, at: 3000, bytes: 50, report: rEmpty() }));
   const at3000 = expectedRate(t.snapshot().rate, 3000);
   assert.equal(at3000.bytes, 120, '30 + 40 + 50 retained');
   assert.equal(at3000.windowMs, 2750);
@@ -364,7 +364,7 @@ test('UX-UT-025 twelve buckets place boundary bytes exactly and keep the denomin
 test('UX-UT-026 the warmup boundary uses the actual coverage window', () => {
   const t = new ReceiverTelemetry();
   t.begin(beginRequest(1, { nowMs: 0 }));
-  t.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: 1024 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: 1024, report: rEmpty() }));
   const snap = t.snapshot();
 
   const at999 = expectedRate(snap.rate, 999.9);
@@ -399,7 +399,7 @@ test('UX-UT-027 after the data stops the rate reaches zero within three seconds'
   // branch A: the last sample at 249.9ms (bucket 0)
   const a = new ReceiverTelemetry();
   a.begin(beginRequest(1, { nowMs: 0 }));
-  a.acceptFrame(frameInput(1, { frameId: 1, at: 249.9, bytes: 625 }));
+  a.acceptFrame(frameInput(1, { frameId: 1, at: 249.9, bytes: 625, report: rEmpty() }));
   const aAlive = expectedRate(a.snapshot().rate, 2999.9);
   assert.equal(aAlive.bytes, 625);
   assert.ok(aAlive.perSecond > 0, 'still visible just before 3000ms');
@@ -410,7 +410,7 @@ test('UX-UT-027 after the data stops the rate reaches zero within three seconds'
   // branch B: the last sample at 250ms (bucket 1) survives until 3250
   const b = new ReceiverTelemetry();
   b.begin(beginRequest(1, { nowMs: 0 }));
-  b.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: 625 }));
+  b.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: 625, report: rEmpty() }));
   const bAlive = expectedRate(b.snapshot().rate, 3249.9);
   assert.equal(bAlive.bytes, 625);
   const bDone = expectedRate(b.snapshot().rate, 3250);
@@ -429,9 +429,9 @@ test('UX-UT-028 only real decoded bytes are counted and redundancy is explicit',
   const t = new ReceiverTelemetry();
   t.begin(beginRequest(1, { nowMs: 0 }));
   t.acceptFrame(frameInput(1, { frameId: 1, at: 100, report: rSingle(0.25) }));
-  t.acceptFrame(frameInput(1, { frameId: 2, at: 250, outcome: 'no_data' }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 250, outcome: 'no_data', bytes: 0 }));
   t.acceptFrame(frameInput(1, { frameId: 3, at: 500, report: rSingle(0.25) }));
-  t.acceptFrame(frameInput(1, { frameId: 4, at: 750, outcome: 'error' }));
+  t.acceptFrame(frameInput(1, { frameId: 4, at: 750, outcome: 'error', bytes: 0 }));
 
   const at1000 = expectedRate(t.snapshot().rate, 1000);
   assert.equal(at1000.bytes, 1250, 'exactly the two data frames, no error/no_data bytes');
@@ -450,7 +450,7 @@ test('UX-UT-029 a safe-integer overflow resets only the rate domain', () => {
   // layout A: both frames in the same bucket
   const a = new ReceiverTelemetry();
   a.begin(beginRequest(1, { nowMs: 0 }));
-  a.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: MAX_SAFE_INTEGER }));
+  a.acceptFrame(frameInput(1, { frameId: 1, at: 250, bytes: MAX_SAFE_INTEGER, report: rEmpty() }));
   a.acceptFrame(frameInput(1, { frameId: 2, at: 250, bytes: 1, report: rSingle(0.5) }));
 
   let snap = a.snapshot();
@@ -467,7 +467,7 @@ test('UX-UT-029 a safe-integer overflow resets only the rate domain', () => {
   assert.equal(aZero.phase, 'active');
   assert.equal(aZero.perSecond, 0);
 
-  a.acceptFrame(frameInput(1, { frameId: 3, at: 2000, bytes: 100 }));
+  a.acceptFrame(frameInput(1, { frameId: 3, at: 2000, bytes: 100, report: rEmpty() }));
   const aCounting = expectedRate(a.snapshot().rate, 2000);
   assert.equal(aCounting.bytes, 100);
   assert.ok(aCounting.perSecond > 0, 'normal bytes count again after the reset');
@@ -475,7 +475,7 @@ test('UX-UT-029 a safe-integer overflow resets only the rate domain', () => {
   // layout B: the same frame times spread across two buckets
   const b = new ReceiverTelemetry();
   b.begin(beginRequest(1, { nowMs: 0 }));
-  b.acceptFrame(frameInput(1, { frameId: 1, at: 0, bytes: MAX_SAFE_INTEGER }));
+  b.acceptFrame(frameInput(1, { frameId: 1, at: 0, bytes: MAX_SAFE_INTEGER, report: rEmpty() }));
   b.acceptFrame(frameInput(1, { frameId: 2, at: 250, bytes: 1, report: rSingle(0.5) }));
   const bSnap = b.snapshot();
   assert.deepEqual(bSnap.diagnostics, [19010]);
@@ -493,8 +493,8 @@ test('UX-UT-029 a safe-integer overflow resets only the rate domain', () => {
 test('UX-UT-030 big time jumps and long sequences keep fixed bounded state', () => {
   const t = new ReceiverTelemetry();
   t.begin(beginRequest(1, { nowMs: 0 }));
-  t.acceptFrame(frameInput(1, { frameId: 1, at: 100, bytes: 625 }));
-  t.acceptFrame(frameInput(1, { frameId: 2, at: 900000000, bytes: 625 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 100, bytes: 625, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 900000000, bytes: 625, report: rEmpty() }));
 
   const snap = t.snapshot();
   assert.equal(snap.rate.buckets.length, 12, 'the model never grows buckets');
@@ -520,18 +520,20 @@ test('UX-UT-031 regressed and non-finite clocks are refused and later recover ho
   for (const at of [99, 199, -1, NaN, Infinity]) {
     const t = new ReceiverTelemetry();
     t.begin(beginRequest(1, { nowMs: 100 }));
-    t.acceptFrame(frameInput(1, { frameId: 1, at: 200, bytes: 625 }));
+    t.acceptFrame(frameInput(1, { frameId: 1, at: 200, bytes: 625, report: rEmpty() }));
     const baseline = deepFreeze(t.snapshot());
     assert.deepEqual(t.acceptFrame(frameInput(1, { frameId: 2, at, bytes: 625 })),
       { ok: false, code: 19009, data: null }, `invalid time ${at}`);
     assert.deepEqual(t.snapshot(), baseline, `nothing applied for time ${at}`);
 
-    // after the recovery the old buckets age out naturally
+    // after the recovery: elapsed 4900 and the @200 sample aged out of the
+    // sliding window (q=19, start 2100) — the new @5000 sample is the only one
     t.acceptFrame(frameInput(1, { frameId: 2, at: 5000, bytes: 625, report: rSingle(0.1) }));
     assert.equal(t.snapshot().progress.trustedRatio, 0.1);
     const recovered = expectedRate(t.snapshot().rate, 5000);
-    assert.equal(recovered.windowMs, 4900);
-    assert.equal(recovered.bytes, 1250);
+    assert.equal(recovered.windowMs, 2900, 'the frozen sliding window at q=19');
+    assert.equal(recovered.bytes, 625);
+    assert.ok(Math.abs(recovered.perSecond - 625000 / 2900) < 1e-9);
   }
 });
 

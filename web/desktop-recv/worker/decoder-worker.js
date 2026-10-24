@@ -88,7 +88,7 @@ var _ready = false;
 var _initTimer = null;
 var _lastFrameId = 0;
 var _inFlight = false;
-var _buffers = { img: null, fountain: null, dec: null, name: null };
+var _buffers = { img: null, fountain: null, dec: null, name: null, uxReport: null };
 
 function post(msg, transfer) { self.postMessage(msg, transfer || []); }
 
@@ -265,6 +265,53 @@ function build_artifact(fileId) {
   };
 }
 
+// Optional UX report read (UX-01, receiver-ux-v2). The recipe is literal:
+// local catches only — a read failure degrades the report and must never
+// reach the original frame_error path. One 1024-byte buffer is reused for
+// the worker lifetime per the bivalent ensure_buffer lifecycle.
+function read_report() {
+  function unavailable(code) {
+    return { state: 'unavailable', ratios: [], diagnosticCode: code };
+  }
+  if (typeof Module._cimbard_get_report !== 'function') return unavailable(19001);
+  var text;
+  var bytes;
+  try {
+    var buff = ensure_buffer('uxReport', 1024);
+    var n = Module._cimbard_get_report(buff.byteOffset, 1024);
+    if (!Number.isSafeInteger(n) || n < 0) return unavailable(19002);
+    if (n >= 1024) return unavailable(19003);
+    if (n === 0) return { state: 'empty', ratios: [], diagnosticCode: 0 };
+    // get_report may have re-grown the heap; re-copy from the CURRENT heap
+    // by the returned length; NUL termination is not assumed.
+    bytes = Module.HEAPU8.slice(buff.byteOffset, buff.byteOffset + n);
+    if (bytes.length !== n) return unavailable(19002);
+  } catch (error) { return unavailable(19002); }
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    var ratios = JSON.parse(text);
+    if (!Array.isArray(ratios) || ratios.length > 8 ||
+        !ratios.every(function (v) { return Number.isFinite(v) && v >= 0; })) {
+      return unavailable(19004);
+    }
+    return {
+      state: ratios.length === 0 ? 'empty' : ratios.length === 1 ? 'single' : 'multiple',
+      ratios: ratios,
+      diagnosticCode: ratios.length > 1 ? 19005 : 0,
+    };
+  } catch (error) { return unavailable(19004); }
+}
+
+// Attach the observation only after a non-negative fountain result and only
+// before build_artifact touches the stream; no_data/error never sample.
+function sample_ux_observation() {
+  try {
+    return { version: 1, report: read_report() };
+  } catch (error) {
+    return { version: 1, report: { state: 'unavailable', ratios: [], diagnosticCode: 19002 } };
+  }
+}
+
 function frame_error(frameId, code) {
   post({ type: 'frame-result', frameId: frameId, outcome: 'error', errorCode: code });
 }
@@ -326,11 +373,18 @@ function handle_frame(msg) {
       return;
     }
     if (fountainResult === 0n) {
-      post({ type: 'frame-result', frameId: frameId, outcome: 'data', bytesDecoded: len });
+      post({
+        type: 'frame-result',
+        frameId: frameId,
+        outcome: 'data',
+        bytesDecoded: len,
+        uxObservation: sample_ux_observation(),
+      });
       return;
     }
 
     var fileId = Number(BigInt.asUintN(32, fountainResult));
+    var uxObservation = sample_ux_observation();
     var artifact = build_artifact(fileId);
     if (artifact.error) {
       frame_error(frameId, artifact.error);
@@ -342,6 +396,7 @@ function handle_frame(msg) {
       outcome: 'artifact',
       bytesDecoded: len,
       artifact: artifact.value,
+      uxObservation: uxObservation,
     });
   } catch (e) {
     // frame-stage unexpected failure is a runtime failure, not an init failure

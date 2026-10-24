@@ -917,12 +917,15 @@ function observationsOf(harness) {
   return harness.observations;
 }
 
-// Push a frame through the live scheduler and resolve its real reply.
+// Push a frame through the live scheduler and resolve its real reply. Accepts
+// either a uxSessionHarness ({client,...} pairs) or a raw client list.
 async function deliverFrame(harness, index, result) {
   const { coordinator } = harness;
   coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
   await tick(1);
-  harness.clients[index].client.deliver(result);
+  const entry = harness.clients[index];
+  const client = entry && entry.client ? entry.client : entry;
+  client.deliver(result);
   await tick(5);
 }
 

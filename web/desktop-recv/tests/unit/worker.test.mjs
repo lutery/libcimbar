@@ -213,6 +213,10 @@ test('UT-024 asset, digest, export and timeout failures', async () => {
 
 const utf8Bytes = (text) => new TextEncoder().encode(text);
 
+// The VM posts realm-local objects; assert.deepEqual compares prototypes, so
+// observations cross the boundary through a JSON round-trip first.
+const plain = (value) => JSON.parse(JSON.stringify(value));
+
 // A harness whose _cimbard_get_report writes an answer into the 1024-byte
 // buffer and returns a caller-chosen length. `answer(module, ptr, callIndex)`
 // runs inside the fake export, so it may swap Module.HEAPU8 to simulate heap
@@ -284,7 +288,7 @@ test('UX-UT-001 full-length report reads classify empty, single and up to eight 
     assert.equal(result.outcome, 'data', `${item.text}: the original outcome is untouched`);
     assert.equal(result.frameId, 7);
     assert.equal(result.bytesDecoded, 625, `${item.text}: bytesDecoded stays the decoded length`);
-    assert.deepEqual(result.uxObservation, { version: 1, report: item.expected },
+    assert.deepEqual(plain(result.uxObservation), { version: 1, report: item.expected },
       `${item.text}: the report is classified exactly`);
     assert.equal(h.results().length, 1, 'one frame still yields exactly one business result');
   }
@@ -302,8 +306,8 @@ test('UX-UT-001 full-length report reads classify empty, single and up to eight 
   zero.send(frameMessage({ frameId: 1 }));
   zero.send(frameMessage({ frameId: 2 }));
   const [first, second] = zero.results();
-  assert.deepEqual(first.uxObservation.report.ratios, [0.9]);
-  assert.deepEqual(second.uxObservation.report,
+  assert.deepEqual(Array.from(first.uxObservation.report.ratios), [0.9]);
+  assert.deepEqual(plain(second.uxObservation.report),
     { state: 'empty', ratios: [], diagnosticCode: 0 },
     'a zero-length read is empty, never stale buffer text');
   assert.equal(second.bytesDecoded, 625);
@@ -311,7 +315,7 @@ test('UX-UT-001 full-length report reads classify empty, single and up to eight 
   // Only the declared n bytes are parsed; trailing garbage is not JSON input.
   const trailing = reportHarness(answerText('[0.4]GARBAGE', 5));
   const trailingResult = await startAndFrame(trailing);
-  assert.deepEqual(trailingResult.uxObservation.report,
+  assert.deepEqual(plain(trailingResult.uxObservation.report),
     { state: 'single', ratios: [0.4], diagnosticCode: 0 });
 });
 
@@ -329,7 +333,7 @@ test('UX-UT-002 an absent optional report export does not block init or data', a
   assert.equal(init[0].type, 'ready', 'the optional export is not a REQUIRED_EXPORT');
   assert.equal(result.outcome, 'data');
   assert.equal(result.bytesDecoded, 625);
-  assert.deepEqual(result.uxObservation,
+  assert.deepEqual(plain(result.uxObservation),
     { version: 1, report: { state: 'unavailable', ratios: [], diagnosticCode: 19001 } });
   assert.equal(h.results().length, 1, 'no retry and no extra decode for a missing capability');
 });
@@ -344,7 +348,7 @@ test('UX-UT-003 the report length boundary rejects truncation and illegal return
   assert.equal(padded.length, 1023);
   const full = reportHarness(answerText(padded));
   const fullResult = await startAndFrame(full);
-  assert.deepEqual(fullResult.uxObservation.report,
+  assert.deepEqual(plain(fullResult.uxObservation.report),
     { state: 'single', ratios: [0.5], diagnosticCode: 0 },
     '1023 complete bytes are parsed as-is');
 
@@ -352,12 +356,12 @@ test('UX-UT-003 the report length boundary rejects truncation and illegal return
   assert.equal(padded1024.length, 1024);
   const atLimit = reportHarness(answerText(padded1024));
   const atLimitResult = await startAndFrame(atLimit);
-  assert.deepEqual(atLimitResult.uxObservation.report,
+  assert.deepEqual(plain(atLimitResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19003 });
 
   const overLimit = reportHarness(answerText('[0.5]', 1025));
   const overLimitResult = await startAndFrame(overLimit);
-  assert.deepEqual(overLimitResult.uxObservation.report,
+  assert.deepEqual(plain(overLimitResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19003 },
     'the first half of the buffer is never parsed as a fallback');
 
@@ -365,7 +369,7 @@ test('UX-UT-003 the report length boundary rejects truncation and illegal return
   for (const n of illegal) {
     const h = reportHarness(answerText('[0.5]', n));
     const result = await startAndFrame(h);
-    assert.deepEqual(result.uxObservation.report,
+    assert.deepEqual(plain(result.uxObservation.report),
       { state: 'unavailable', ratios: [], diagnosticCode: 19002 },
       `length ${n} is unavailable/19002`);
     assert.equal(result.outcome, 'data', 'a bad length never becomes a frame_error');
@@ -404,13 +408,13 @@ test('UX-UT-004 invalid JSON and UTF-8 reject the whole report without partial t
   const results = h.results();
   assert.equal(results.length, answers.length, 'every frame yields exactly one result');
   for (let i = 0; i < answers.length - 1; i += 1) {
-    assert.deepEqual(results[i].uxObservation.report,
+    assert.deepEqual(plain(results[i].uxObservation.report),
       { state: 'unavailable', ratios: [], diagnosticCode: 19004 },
       `invalid report #${i + 1} is rejected as a whole`);
     assert.equal(results[i].outcome, 'data');
     assert.equal(results[i].bytesDecoded, 625);
   }
-  assert.deepEqual(results[results.length - 1].uxObservation.report,
+  assert.deepEqual(plain(results[results.length - 1].uxObservation.report),
     { state: 'single', ratios: [0.7], diagnosticCode: 0 },
     'the next real data frame reads the report again instead of restarting');
 });
@@ -443,7 +447,7 @@ test('UX-UT-005 the report is sampled only after a non-negative fountain result 
     'the report is read before the build exports run');
   assert.ok(artifactCalls.indexOf('filesize') >= 0);
   assert.equal(artifactResult.outcome, 'artifact');
-  assert.deepEqual(artifactResult.uxObservation.report,
+  assert.deepEqual(plain(artifactResult.uxObservation.report),
     { state: 'single', ratios: [0.2], diagnosticCode: 0 },
     'the pre-build sample survives the artifact path');
 
@@ -481,13 +485,14 @@ test('UX-UT-006 the report reads the current heap with one reused buffer', async
   const freed = [];
   let reportPtr = null;
   const h = reportHarness((module, ptr, call) => {
+    const live = h.context.Module; // the Module the worker actually reads
     if (call === 1) {
-      module.HEAPU8.set(utf8Bytes('[0.25]'), ptr); // stale value in the old heap
-      module.HEAPU8 = new Uint8Array(4 * 1024 * 1024); // simulated heap growth
-      module.HEAPU8.set(utf8Bytes('[0.75]'), ptr); // the answer lives in the new heap
+      live.HEAPU8.set(utf8Bytes('[0.25]'), ptr); // stale value in the old heap
+      live.HEAPU8 = new Uint8Array(4 * 1024 * 1024); // simulated heap growth
+      live.HEAPU8.set(utf8Bytes('[0.75]'), ptr); // the answer lives in the new heap
       return 6;
     }
-    module.HEAPU8.set(utf8Bytes('[0.5]'), ptr);
+    live.HEAPU8.set(utf8Bytes('[0.5]'), ptr);
     return 5;
   });
   const baseMalloc = h.moduleRef._malloc.bind(h.moduleRef);
@@ -509,16 +514,16 @@ test('UX-UT-006 the report reads the current heap with one reused buffer', async
   h.send(frameMessage({ frameId: 2 }));
   h.send(frameMessage({ frameId: 3 }));
   const [first, second] = h.results();
-  assert.deepEqual(first.uxObservation.report.ratios, [0.75],
+  assert.deepEqual(Array.from(first.uxObservation.report.ratios), [0.75],
     'the current heap wins over the pre-growth view');
-  assert.deepEqual(second.uxObservation.report.ratios, [0.5]);
+  assert.deepEqual(Array.from(second.uxObservation.report.ratios), [0.5]);
 
   const reportMallocs = mallocSizes.filter((size) => size === 1024);
   assert.equal(reportMallocs.length, 1, 'one 1024-byte report buffer for the worker lifetime');
   assert.ok(Number.isSafeInteger(reportPtr), 'the report buffer has a stable pointer');
 
   h.heap().fill(9, 0, 4096); // clobber the heap after parsing
-  assert.deepEqual(first.uxObservation.report.ratios, [0.75],
+  assert.deepEqual(Array.from(first.uxObservation.report.ratios), [0.75],
     'the parsed observation is detached from the mutable heap view');
 
   h.send({ type: 'close' });
@@ -539,7 +544,7 @@ test('UX-UT-007 report failures stay local and never mask core decode errors', a
   const baseZeroMalloc = zeroMalloc.moduleRef._malloc.bind(zeroMalloc.moduleRef);
   zeroMalloc.moduleRef._malloc = (size) => (size === 1024 ? 0 : baseZeroMalloc(size));
   const zeroResult = await startAndFrame(zeroMalloc);
-  assert.deepEqual(zeroResult.uxObservation.report,
+  assert.deepEqual(plain(zeroResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19002 });
   assert.equal(zeroResult.outcome, 'data');
   assert.equal(zeroResult.bytesDecoded, 625);
@@ -552,14 +557,14 @@ test('UX-UT-007 report failures stay local and never mask core decode errors', a
     return baseThrowMalloc(size);
   };
   const throwResult = await startAndFrame(throwMalloc);
-  assert.deepEqual(throwResult.uxObservation.report,
+  assert.deepEqual(plain(throwResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19002 });
   assert.equal(throwResult.outcome, 'data');
 
   // get_report throws
   const throwing = reportHarness(() => { throw new Error('export exploded'); });
   const throwingResult = await startAndFrame(throwing);
-  assert.deepEqual(throwingResult.uxObservation.report,
+  assert.deepEqual(plain(throwingResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19002 });
   assert.equal(throwingResult.outcome, 'data');
 
@@ -577,7 +582,15 @@ test('UX-UT-007 report failures stay local and never mask core decode errors', a
   assert.equal(failed.uxObservation, undefined, 'a valid report never dresses up an error');
 
   // a valid report must not mask the artifact budget error
-  const overBudget = reportHarness(answerText('[0.2]'), { fountain: 0x2an });
+  const overBudget = reportHarness(answerText('[0.2]'), {
+    fountain: 0x2an,
+    exports: {
+      _cimbard_get_filesize() { return 3; },
+      _cimbard_decompress_read(id, ptr, cap) {
+        return cap >= 3 ? 3 : 0; // first read yields 3 bytes: over the budget of 2
+      },
+    },
+  });
   overBudget.send(overBudget.makeInit({ limits: { maxArtifactBytes: 2 } }));
   await overBudget.settle();
   overBudget.send(frameMessage({ frameId: 1 }));
@@ -592,7 +605,7 @@ test('UX-UT-007 report failures stay local and never mask core decode errors', a
   const strictResult = await startAndFrame(strict);
   assert.equal(strictResult.outcome, 'artifact');
   assert.ok(strictResult.artifact, 'the strict-EOF artifact is still delivered');
-  assert.deepEqual(strictResult.uxObservation.report,
+  assert.deepEqual(plain(strictResult.uxObservation.report),
     { state: 'unavailable', ratios: [], diagnosticCode: 19002 });
 
   assert.equal(zeroMalloc.results().length, 1, 'one business result per frame');

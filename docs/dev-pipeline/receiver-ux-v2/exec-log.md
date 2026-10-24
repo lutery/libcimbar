@@ -56,3 +56,12 @@
 - 断言先行修复：readSenderManifest 接受冻结包的注释/空行/裸 ISO 时间戳三种非条目行；新测试第 10 例先 RED（t6-record-attempt1-sendermanifest-red.log）后 GREEN（10/10）。verify-assets PASS；旧目录 760 项 UNCHANGED。
 - 提交：`docs: record receiver UX baseline and fixtures`。
 
+
+## B2-T8 — 会话观测实现（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 18:32 ～ 19:20 (+08:00)；报告：b2-t8-report.md；GREEN：red-logs/b2-t8-{run-unit-all,ux-telemetry,worker-client-session}.txt
+- 产品 3 改 1 新：src/ux-telemetry.js（新，ReceiverTelemetry+observeSave+snapshot）、worker read_report（配方 B 逐字，仅 0n/正值后 artifact 前读）、decoder-client pending 元数据（post 前盖戳+只读 getter）、session createUx/nowMs 注入（begin/accept/finish 每 seq 恰一次，观测异常全部吞并）。
+- 9 旧套 137 tests 全绿；ux-telemetry 16/16（未注册，T10 注册）；ux-view 仍 RED（T9）；node --check 全 0；旧 run 零改动。
+- 夹具级修正（无断言放松）：worker 跨 realm 归一/堆交换位置/预算例字节；client postMessage 覆盖时机；session deliverFrame 兼容；telemetry 速率帧补合法 rEmpty() report+031 窗口期望按冻结数学修正。
+- lead 决策：UX-UT-014 迟到注入延至 T12；observeSave 模型级用例补进 T14 派发。
+- 提交：`feat: observe receiver data without changing decoding`。

@@ -265,7 +265,7 @@ test('UX-UT-008 pending submittedAtMs comes from the real main-thread post', asy
       sawDuringPost = client.pendingSubmission();
       clock.now = 200; // the worker world only exists after the post
     }
-    basePost(msg);
+    basePost.call(worker, msg);
   };
 
   const frame = client.submitFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
@@ -329,9 +329,10 @@ test('UX-UT-009 a wrong frameId clears nothing and a stale reply restores nothin
 // Then each frame still rejects with its registered convergence code and
 // the ux pending metadata is empty after every exit
 test('UX-UT-010 every original failure exit clears the ux pending metadata', async () => {
-  const arm = async (overrides = {}) => {
+  const arm = async (overrides = {}, before) => {
     const harness = ownedClient(overrides);
     await ownedReady(harness.client, harness.worker);
+    if (typeof before === 'function') before(harness);
     const frame = harness.client.submitFrame(
       { width: 2, height: 3, pixels: new ArrayBuffer(24) });
     return { ...harness, frame };
@@ -344,8 +345,9 @@ test('UX-UT-010 every original failure exit clears the ux pending metadata', asy
   };
 
   // (a) a postMessage throw: 15010
-  const a = await arm();
-  a.worker.postMessage = () => { throw new Error('gone'); };
+  const a = await arm({}, (harness) => {
+    harness.worker.postMessage = () => { throw new Error('gone'); };
+  });
   await rejectsAndClears(a, 15010);
 
   // (b) the frame watchdog: 14003

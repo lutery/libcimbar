@@ -16,6 +16,15 @@ export class SessionCoordinator {
     this._onSnapshot = options.onSnapshot || (() => {});
     this._onError = options.onError || (() => {});
     this._maxPixels = options.maxPixels || 4194304;
+    // Optional receiver-ux observation (receiver-ux-v2): a fresh ux model per
+    // session comes from createUx; nowMs is the monotonic main-thread clock
+    // used for begin/accept/finish stamps. Legacy callers keep working.
+    this._createUx = typeof options.createUx === 'function' ? options.createUx : null;
+    this._nowMs = typeof options.nowMs === 'function' ? options.nowMs
+      : () => performance.now();
+    this._ux = null;
+    this._uxSeq = 0;
+    this._uxFinished = false;
 
     this._counter = 0;
     this._eventSeq = 0;
@@ -28,6 +37,19 @@ export class SessionCoordinator {
     this._pending = new Set();
     this._saveWhenSettled = null;
     this._cleanupToken = 0;
+  }
+
+  // Read-only ux accessors for the display layer (T9): the current model and
+  // the real pending submission metadata of the adopted client, if any.
+  uxTelemetry() {
+    return this._ux;
+  }
+
+  pendingSubmission() {
+    const client = this._client;
+    return client && typeof client.pendingSubmission === 'function'
+      ? client.pendingSubmission()
+      : null;
   }
 
   snapshot() {
@@ -110,6 +132,9 @@ export class SessionCoordinator {
     this._scheduler = null;
     this._stream = null;
     this._videoSource = null;
+    this._ux = null;
+    this._uxSeq = 0;
+    this._uxFinished = false;
     this._eventSeq += 1;
     this._onSnapshot(this.snapshot());
     return seq;
@@ -170,8 +195,118 @@ export class SessionCoordinator {
   _maybeStart(seq) {
     if (!this._isCurrent(seq) || this._isStopping()) return;
     if (this._mediaReady() && this._client && this._session.state === 'Preparing') {
+      this._uxBegin(seq);
       this._emit({ state: 'Receiving' });
     }
+  }
+
+  // --- receiver-ux observation (bypass only; never a state machine change) --
+
+  _uxBegin(seq) {
+    if (!this._createUx) return;
+    const session = this._session;
+    if (!session || session.seq !== seq) return;
+    this._ux = this._createUx();
+    this._uxSeq = seq;
+    this._uxFinished = false;
+    try {
+      this._ux.begin({
+        version: 1,
+        sessionId: session.id,
+        sessionSeq: session.seq,
+        inputKind: session.inputKind,
+        nowMs: this._nowMs(),
+      });
+    } catch (error) { /* the observation side channel never breaks the session */ }
+  }
+
+  // An old worker (or a bad bypass) only degrades the ux report; the frame's
+  // business outcome and bytes stay exactly what the original result carried.
+  _normalizeObservation(observation) {
+    if (!observation || typeof observation !== 'object') {
+      return { state: 'unavailable', ratios: [], diagnosticCode: 19015 };
+    }
+    if (observation.version !== 1) {
+      return { state: 'unavailable', ratios: [], diagnosticCode: 19013 };
+    }
+    const report = observation.report;
+    if (this._isValidReport(report)) {
+      return {
+        state: report.state,
+        ratios: report.ratios.map((ratio) => ratio),
+        diagnosticCode: report.diagnosticCode,
+      };
+    }
+    return { state: 'unavailable', ratios: [], diagnosticCode: 19008 };
+  }
+
+  _isValidReport(report) {
+    if (!report || typeof report !== 'object') return false;
+    const states = ['single', 'multiple', 'empty', 'unavailable', 'not_sampled'];
+    if (!states.includes(report.state)) return false;
+    if (!Array.isArray(report.ratios) || report.ratios.length > 8) return false;
+    for (const ratio of report.ratios) {
+      if (typeof ratio !== 'number' || !Number.isFinite(ratio) || ratio < 0) return false;
+    }
+    if (!Number.isSafeInteger(report.diagnosticCode)) return false;
+    switch (report.state) {
+      case 'single':
+        return report.ratios.length === 1 && report.diagnosticCode === 0;
+      case 'multiple':
+        return report.ratios.length >= 2 && report.diagnosticCode === 19005;
+      case 'empty':
+      case 'not_sampled':
+        return report.ratios.length === 0 && report.diagnosticCode === 0;
+      case 'unavailable': {
+        const codes = [19001, 19002, 19003, 19004, 19008, 19013, 19015];
+        return report.ratios.length === 0 && codes.includes(report.diagnosticCode);
+      }
+      default:
+        return false;
+    }
+  }
+
+  _uxAccept(seq, result) {
+    if (!this._ux || this._uxSeq !== seq) return;
+    const session = this._session;
+    if (!session) return;
+    const outcome = result && result.outcome;
+    const input = {
+      version: 1,
+      sessionId: session.id,
+      sessionSeq: session.seq,
+      frameId: result ? result.frameId : undefined,
+      receivedAtMs: this._nowMs(),
+      outcome,
+      bytesDecoded: 0,
+      report: { state: 'not_sampled', ratios: [], diagnosticCode: 0 },
+    };
+    if (outcome === 'data' || outcome === 'artifact') {
+      input.bytesDecoded = result.bytesDecoded;
+      input.report = this._normalizeObservation(result.uxObservation);
+    }
+    try {
+      this._ux.acceptFrame(input);
+    } catch (error) { /* ux refuse never blocks the original result */ }
+  }
+
+  // A genuine terminal finishes the observation exactly once per session.
+  _uxFinish(seq, reason, artifactId) {
+    if (!this._ux || this._uxSeq !== seq) return;
+    if (this._uxFinished) return;
+    const session = this._session;
+    if (!session) return;
+    this._uxFinished = true;
+    try {
+      this._ux.finish({
+        version: 1,
+        sessionId: session.id,
+        sessionSeq: session.seq,
+        nowMs: this._nowMs(),
+        reason,
+        artifactId: typeof artifactId === 'string' && artifactId ? artifactId : null,
+      });
+    } catch (error) { /* the observation side channel never breaks the session */ }
   }
 
   startLive({ requestId = 'live' } = {}) {
@@ -242,7 +377,10 @@ export class SessionCoordinator {
   }
 
   _initializeDecoder(seq) {
-    return Promise.resolve(this._createClient())
+    const owner = this._session
+      ? { sessionId: this._session.id, sessionSeq: this._session.seq }
+      : null;
+    return Promise.resolve(this._createClient(owner))
       .then((client) => {
         if (!this._isCurrent(seq) || this._isStopping() ||
             (this._session && this._session.captureRejected)) {
@@ -290,6 +428,7 @@ export class SessionCoordinator {
     if (!this._isCurrent(seq)) return;
     if (this._isStopping()) return; // a user-initiated stop settles silently
     this._onError(error && error.code ? error.code : 15001);
+    this._uxFinish(seq, 'error', null);
     this._emit({ state: 'Stopping' });
     this.releaseInputs();
     if (this._pending.size === 0) {
@@ -327,7 +466,10 @@ export class SessionCoordinator {
     if (this._isStopping()) return;
     if (this._session.state !== 'Receiving' && this._session.state !== 'Draining') return;
 
+    this._uxAccept(seq, result);
+
     if (result.outcome === 'artifact') {
+      this._uxFinish(seq, 'artifact', result.artifact && result.artifact.artifactId);
       this._emit({ state: 'Ready', artifact: result.artifact });
       return;
     }
@@ -382,6 +524,7 @@ export class SessionCoordinator {
     await this._scheduler.finish({ takeFinalSample });
     if (!this._isCurrent(seq)) return;
     if (this._session.state === 'Draining') {
+      this._uxFinish(seq, 'incomplete', null);
       this._emit({ state: 'Incomplete' });
       // nothing was delivered: retire the capture and the decoder now
       this.releaseInputs();
@@ -410,6 +553,7 @@ export class SessionCoordinator {
   stop() {
     if (!this._session) return;
     if (['Stopping', 'Stopped'].includes(this._session.state)) return; // idempotent
+    this._uxFinish(this._session.seq, 'stopped', null);
     this._emit({ state: 'Stopping' });
     this._cleanupToken += 1;
 
