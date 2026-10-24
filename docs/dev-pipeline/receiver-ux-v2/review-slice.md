@@ -190,3 +190,31 @@ review-v2-slice（独立审查代理，未参与 bb198d9/9bc9867/2650d0c/8e739d5
 - S2：observeSave 归一/幂等/终态不回写/新 attempt 仅 selecting 四类模型用例；
 - S3：UX-UT-034 的 test-cases.md Target 文档对齐；
 - S4：receivedAt/submittedAt 交错与同毫秒双帧的时钟边界用例。
+
+
+## 第 1 次整改复核（review-slice 第 2 次，全局轮号 16 续）
+
+复核对象：a271371（fix: converge real-time receiver UX review），T12。复核范围限于 lead 指派的三项，限时复核不重开全部 A-G 项。未执行 git 写命令，未改任何代码。
+
+**1. S1 接线（session.js 旁路与绑定 / app.js 同步调用点）——CLOSED**
+
+- `uxSaveIntent()`（session.js:503-515）：同步捕获不可变 owner `{sessionId, sessionSeq, artifactId}`，不 await；app.js 的 `saveArtifact` 在 `saveController.start` 之前同步调用（a271371 diff：`coordinator.uxSaveIntent();` 位于 fallback 计算与 start 之间，无 await 介入）。
+- `_observeSaveEvent(event)`（session.js:515-547）：整体 try/catch（旁路异常不可能进业务状态机）；未知 rawStatus 直接返回；只有 `selecting` 且有 owner 时把捕获的 owner 绑定到真实 `attemptId`（`_saveAttemptBindings`，SAVE_BINDINGS_CAP=16 有界、命中既清空，session.js:11/527-528），owner 恰好消费一次（`this._uxSaveOwner = null`）；非 selecting 事件只发给已绑定 attempt，未绑定保持静默；终态（TERMINAL_SAVE_STATUSES，session.js:10）观察后删除绑定。recipe E（quit/守卫/一次一绑定）语义与 ux-telemetry.js 的 observeSave 归一（failed/cancelled+16002→cancelled、writing+16008 仍 writing）在用例中验证。
+- `saveEvent(event)`（session.js:562-563）：`_observeSaveEvent` 在业务状态机 switch **之前**调用——旁路先行且永不阻塞业务。
+- 会话复位：`_newSession` 清空 `_uxSaveOwner` 与 `_saveAttemptBindings`（session.js:146-147）。
+- 证据：源码行号如上；`node tools/desktop-recv/run-unit.mjs --all` → EXIT=0（见第 3 项）。
+
+**2. T12-S1 断言组与 169 全绿实测——CLOSED**
+
+- 用例 `T12-S1 save events drive Saving/Saved/Retryable observations through a real save`（session.test.mjs，T12 后 session 32→33）确实存在且为真实模型断言：经 `makeReady` 真实 artifact 到 Ready 后走真实 `uxSaveIntent()+saveEvent()` 链，`readView`（真实 ux-view 投影，非影子断言）逐步断言 selecting→`saving_selecting`、writing→`saving_writing`、pending→`saving_pending`、saved→`saved`（四链每步 `view.ok === true`，即上一轮 discovered 的 19014 拒绝已消除）；`elapsedMs === 400`（冻结于 artifact时刻 500-100，保存时间不计入接收时长）。
+- 「迟到 attempt 不夺取视图」两条均已断言：saved 后对已结算 attempt 7 重放 `writing` → statusKey 仍 `saved`；stale attempt 8 的 writing 事件 → `save.attemptId` 仍 `'9'`、statusKey 仍 `saving_writing`。
+- 旁支：failed+16002 → `save_cancelled`（Retryable）；Retryable 后新 attempt 9 selecting 重新进入 Saving；writing+16008 busy 守卫仍 `saving_writing` 且 `errorCode === 16008` 保留（不伪装失败）。
+- 实测（本审查者本人运行，非转录）：`node tools/desktop-recv/run-unit.mjs --all` → **EXIT=0**，`UNIT SUITES PASS (12 suite(s))`，session: 33 tests，12 套合计 169。
+
+**3. UX-UT-014 强化（真实未决 promise）——CLOSED**
+
+强化后的用例（session.test.mjs）以真实在途提交替代手工注入：A 会话第二帧经 `offerFrame` 真实进入 flight（控制 promise 尚未 resolve），`stop()` 停止 A、经清理门开启 B（video）后，迟到结果才 deliver。断言：B 模型零 accept、A 冻结模型不追溯计数（仍 1 次）、业务 revision 与 sessionSeq(B) 不变、B 自身新帧恰好计一次。这正是第一轮 Suggestion 4 关注的「迟到结果不喂新模型」的最真实形态（真实未决 promise 而非 no-op fake），断言强度提升；符合我的 G 项口径。注：S4 中「同一毫秒双帧/receivedAt 与 submittedAt 交错」的时钟边界用例仍未落，属 Suggestion 4 的剩余部分，lead 已排 T14，不在本次三项复核范围内。
+
+## 结论
+
+**S1 CLOSED；无新增 Blocking。** 三项复核全部 CLOSED，每项均有源码行号/commit diff/本人实测命令与退出码支撑。T12 整改报告所述与实际代码一致，测试无造假迹象（真实 ReceiverTelemetry 模型 + 真实 readView 投影断言）。本文件第 1 次整改结果节的剩余项（S2/S3/S4）为已排计划的 Suggestions，不构成阻断，维持全局轮号 16 的 PASS 结论不变。
