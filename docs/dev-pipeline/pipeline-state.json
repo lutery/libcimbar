@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-24T14:37:17+08:00",
+  "updated_at": "2026-10-24T17:00:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -239,7 +239,7 @@
       "team_mode": "native",
       "omc_slug": "",
       "contract_files": [],
-      "review_rounds": 0,
+      "review_rounds": 1,
       "max_rounds": 10,
       "test_status": "pending",
       "started_at": "2026-10-24T14:37:17+08:00",
