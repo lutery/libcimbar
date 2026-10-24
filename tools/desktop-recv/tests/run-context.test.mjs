@@ -31,6 +31,7 @@ import {
   initializeRunRoot,
   loadRunContext,
   resolveRunPath,
+  stageVerifiedSender,
   verifyProductManifest,
 } from '../e2e/run-context.mjs';
 
@@ -690,4 +691,79 @@ test('T3 adversarial: case-folded twins, separators, history and forged identiti
     isRunContextError('E_ATTEMPT_EXISTS'),
   );
   assert.equal(readFileSync(join(attempt, 'original.bin'), 'utf8'), 'sealed');
+});
+
+// T5 (T4 review S3/S5): the historical guard is case-folded because the host
+// filesystem is; the verified sender package is copied read-only into
+// <stagingRoot>/sender before any server starts, from a delivery manifest
+// whose digests are re-checked.
+test('T5 guard: case-folded history and verified sender staging', (t) => {
+  const repo = makeRepo(t, 't5');
+
+  // A case variant of a historical run id is the same directory on Windows.
+  const caseRunId = contextFixture(repo, { runId: '20261021-TEAMEXEC-03', attemptId: 'attempt-001', phase: 'final' });
+  assert.throws(
+    () => loadRunContext(caseRunId.contextPath, { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_HISTORY'),
+  );
+  const casePlan = contextFixture(repo, {
+    runId: '20261024-uxt5a',
+    mutate: (context) => { context.planningFile = 'docs/tests/runs/20261021-TEAMEXEC-03/results.json'; },
+  });
+  assert.throws(
+    () => loadRunContext(casePlan.contextPath, { repoRoot: repo }),
+    isRunContextError('E_CONTEXT_HISTORY'),
+  );
+
+  // A verified sender package is re-hashed against DELIVERY-MANIFEST.txt and
+  // copied to stagingRoot/sender; the source package stays byte-identical.
+  const senderFiles = {
+    'index.html': '<!doctype html><title>sender</title>\n',
+    'main.js': 'export const sender = true;\n',
+    'cimbar_js.wasm': Buffer.from([0x00, 0x61, 0x73, 0x6d, 0x01]),
+  };
+  const sourceDir = join(repo, 'product', 'cimbar-sender-1.0.0-test');
+  const manifestLines = ['# cimbar-sender delivery manifest', ''];
+  for (const [name, content] of Object.entries(senderFiles)) {
+    put(sourceDir, name, content);
+    manifestLines.push(`${sha256(content)}  ${Buffer.byteLength(content)}  ${name}`);
+  }
+  put(sourceDir, 'DELIVERY-MANIFEST.txt', `${manifestLines.join('\n')}\n`);
+
+  const built = contextFixture(repo, { runId: '20261024-uxt5b' });
+  const context = loadRunContext(built.contextPath, { repoRoot: repo });
+  initializeRunRoot(context);
+  const sourceBefore = treeDigest(sourceDir);
+  const staged = stageVerifiedSender(context, { sourceDir });
+  assert.equal(staged.reused, false);
+  assert.ok(staged.files.includes('index.html'));
+  assert.equal(readFileSync(join(context.abs.stagingRoot, 'sender', 'main.js'), 'utf8'), senderFiles['main.js']);
+  assert.equal(treeDigest(sourceDir), sourceBefore, 'the verified package is read-only');
+
+  // A second call reuses the already-verified copy instead of rewriting it.
+  const again = stageVerifiedSender(context, { sourceDir });
+  assert.equal(again.reused, true);
+  assert.equal(treeDigest(sourceDir), sourceBefore);
+
+  // Tampering with one sender byte makes the delivery manifest disagree.
+  const tampered = contextFixture(repo, { runId: '20261024-uxt5c' });
+  const tamperedContext = loadRunContext(tampered.contextPath, { repoRoot: repo });
+  initializeRunRoot(tamperedContext);
+  writeFileSync(join(sourceDir, 'main.js'), 'tampered sender byte\n');
+  assert.throws(
+    () => stageVerifiedSender(tamperedContext, { sourceDir }),
+    (error) => error instanceof RunContextError && error.code === 'E_SENDER_MANIFEST',
+  );
+  writeFileSync(join(sourceDir, 'main.js'), senderFiles['main.js']);
+
+  // A staging area already holding a DIFFERENT sender copy is never silently
+  // overwritten.
+  const stale = contextFixture(repo, { runId: '20261024-uxt5d' });
+  const staleContext = loadRunContext(stale.contextPath, { repoRoot: repo });
+  initializeRunRoot(staleContext);
+  put(staleContext.abs.stagingRoot, 'sender/main.js', 'older sender copy\n');
+  assert.throws(
+    () => stageVerifiedSender(staleContext, { sourceDir }),
+    (error) => error instanceof RunContextError && error.code === 'E_SENDER_STAGED_MISMATCH',
+  );
 });

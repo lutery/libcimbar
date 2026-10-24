@@ -39,3 +39,12 @@
 - 两处抗对抗加固（断言先行）：context 路径为目录→E_CONTEXT_MISSING；planning 不可读→ContextError exit 3。
 - 复跑（lead 独立确认）：8/8、54 cases、14/14、prefix 3/3、check-contracts PASS、unit 9 套 120；旧 run/staging/product 零改动。
 - 提交：`test: reject stale and incomplete UX run claims`。
+
+## B1-T5 — 工具审查整改与复验（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-24 16:08 ～ 16:45 (+08:00)；报告：`b1-t5-report.md`；RED：`red-logs/t5-red.txt`；GREEN：`red-logs/t5-green-tools.txt`；旧 run 指纹：T3 基线 vs `t5-oldruns-after.sha` UNCHANGED（760 项）。
+- Blocking 1 关闭：新增 `e2e/process-guard.mjs`（pids.json 登记 + 全 marker 命令行复核才清理 + `assertPortsFree` 占用即拒绝）；run-e2e/record-sender 的三类宽匹配杀进程删除；新测试 `tests/process-guard.test.mjs` 6 例。
+- Blocking 2 关闭：README「Run」改为 stage-5 context 入口 + 新增 Historical diagnostics（do not run）节；smoke-live.mjs 头部 historical + 无 `--legacy-write-frozen-run` 即 exit 2。
+- 采纳：S2（stage 退出码可达 2/3/4）、S3（历史守卫大小写折叠）、S4（Python realpath containment + 判别性 junction 反例）、S5（`stageVerifiedSender` 按 DELIVERY-MANIFEST 校验后只读复制发送端包到 `<stagingRoot>/sender`，幂等/漂移拒绝）、S6、S7（UX-UI=E2E-35..38）、S8（恒真 check 改真断言）、S10（node 子进程 30s 超时）。S1 不采纳（README 写明 v2 一律显式 -StagingRoot）。
+- 复跑（lead 独立确认）：run-context 9/9、process-guard 6/6、ux 自测 55、旧自测 14/14、prefix 3/3、契约 PASS、unit 120；旧 run/product/staging 零改动。
+- 提交：`fix: resolve UX runner review findings`。

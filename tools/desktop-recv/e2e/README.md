@@ -23,15 +23,11 @@ npm install        # playwright-core, pinned in package.json
 
 Edge must be installed (`channel: 'msedge'`); no browser download happens.
 
-## Run
+## Run (stage-5 context entry point)
 
-```
-node tools/desktop-recv/e2e/smoke-live.mjs     # one live roundtrip smoke
-```
-
-Outputs go to `docs/tests/runs/20261019-teamexec-02/proof/` and the run's
-`results.json`. The receiver server and the sender HTTP server are started
-and stopped by the script.
+Every receiver-ux-v2 command requires a validated `run-context.json` and only
+writes inside that context's own roots; the actual command recipes are in the
+"Stage-5 run context" section below.
 
 ## Notes
 
@@ -79,3 +75,21 @@ with proof files, on-disk hashes for file roundtrips, and finally runs the
 legacy `verify-evidence.py` gate on `results.json`. `UX-SLICE`, `UX-IAT`,
 `UX-MEDIA-SAVE`, `UX-UI` and `UX-ALL` are registered entry points that
 currently exit 4 (not implemented); they never record a PASS.
+
+## Historical diagnostics (do not run)
+
+The files `smoke-live.mjs` and `probe-*.mjs` predate receiver-ux-v2. They are
+historical scaffolding, NOT v2 acceptance entry points:
+
+- `smoke-live.mjs` writes into the FROZEN run `docs/tests/runs/20261019-teamexec-02`.
+  Running it mutates a read-only historical run; it now refuses to start
+  unless the explicit `--legacy-write-frozen-run` switch is passed, and even
+  then only for historical traceability.
+- `probe-*.mjs` are throwaway capture/save probes used during the original
+  harness bring-up. They are read-only kept for context and must not be used
+  to produce acceptance evidence.
+
+For all receiver-ux-v2 work use the context commands above. `stage.ps1`
+development mode keeps its legacy shared-staging default for the historical
+runbook commands; every v2 invocation passes an explicit `-StagingRoot` under
+the run's own `stagingRoot` (the context roots are authoritative).

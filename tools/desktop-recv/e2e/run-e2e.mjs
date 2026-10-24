@@ -16,15 +16,16 @@ import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   copyArtifact, markMarkerLegsCarried, readResults, sha256File, stampLegAttempts, tagCarriedLegs,
   upsertResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
 import {
-  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, RunContextError,
+  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, stageVerifiedSender, RunContextError,
 } from './run-context.mjs';
+import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
   evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
@@ -550,7 +551,36 @@ async function launchReceiver(port = RECEIVER_PORT) {
   return { child, profile, pid, browser: connected, page };
 }
 
+// Record every process THIS run started, so a later run can reclaim exactly
+// these (command line re-checked) instead of killing by port or browser flag.
+function recordStackPids({ senderServer, receiverServer, senderBrowser, receiver }) {
+  const entries = [];
+  if (senderServer && Number.isSafeInteger(senderServer.pid)) {
+    entries.push({ pid: senderServer.pid, kind: 'sender-http' });
+  }
+  if (receiverServer && Number.isSafeInteger(receiverServer.pid)) {
+    entries.push({ pid: receiverServer.pid, kind: 'receiver-server' });
+  }
+  if (receiver && Number.isSafeInteger(receiver.pid)) {
+    entries.push({ pid: receiver.pid, kind: 'receiver-edge' });
+  }
+  const handle = senderBrowser && typeof senderBrowser.process === 'function'
+    ? senderBrowser.process() : null;
+  if (handle && Number.isSafeInteger(handle.pid)) {
+    entries.push({ pid: handle.pid, kind: 'playwright-edge' });
+  }
+  if (entries.length === 0) return null;
+  try {
+    return recordProcesses(RUN, entries);
+  } catch (error) {
+    log(`process guard: could not record pids: ${error.message}`);
+    return null;
+  }
+}
+
 async function launchStack({ withSender = true } = {}) {
+  await assertPortsFree(withSender ? [SENDER_PORT, RECEIVER_PORT] : [RECEIVER_PORT]);
+  if (withSender) stageVerifiedSender(CONTEXT);
   const senderServer = withSender
     ? startServer('python', ['-m', 'http.server', String(SENDER_PORT), '--bind', '127.0.0.1',
       '--directory', join(STAGING, 'sender')], 'sender-http')
@@ -573,6 +603,7 @@ async function launchStack({ withSender = true } = {}) {
   }
 
   const receiver = await launchReceiver();
+  recordStackPids({ senderServer, receiverServer, senderBrowser, receiver });
 
   return {
     senderServer, receiverServer, senderBrowser, senderPage, receiver,
@@ -601,6 +632,8 @@ async function closeReceiver(receiver) {
 // A sender-only environment for journeys that launch their own receiver
 // (E2E-1/2: the packaged launcher's server).
 async function startSenderOnly() {
+  await assertPortsFree([SENDER_PORT]);
+  stageVerifiedSender(CONTEXT);
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
   await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
@@ -612,6 +645,7 @@ async function startSenderOnly() {
   });
   const senderPage = await senderBrowser.newPage();
   await senderPage.goto(`http://127.0.0.1:${SENDER_PORT}/`);
+  recordStackPids({ senderServer, senderBrowser });
   return {
     senderServer, senderBrowser, senderPage,
     async close() {
@@ -1131,13 +1165,24 @@ if ($p -eq ${pid}) { 'FOREGROUND' } else { "OTHER:$p" }`],
 async function recordSenderClip(stack, { seconds, clipPath }) {
   await stack.senderPage.bringToFront();
   await sleep(300);
+  await assertPortsFree([RECORDER_PORT]);
   // recorder.html lives in this tool's directory; serve it for the duration
   // of the recording only (record-sender.mjs does the same on this port).
   const recorderServer = startServer('python', ['-m', 'http.server', String(RECORDER_PORT),
     '--bind', '127.0.0.1', '--directory', HERE], 'recorder-http');
   try {
+    recordProcesses(RUN, [{ pid: recorderServer.pid, kind: 'recorder-http' }]);
+  } catch (error) {
+    log(`process guard: could not record pids: ${error.message}`);
+  }
+  try {
     await waitHttp(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
     const recorder = await launchRecorderPage();
+    try {
+      recordProcesses(RUN, [{ pid: recorder.pid, kind: 'recorder-edge' }]);
+    } catch (error) {
+      log(`process guard: could not record recorder pid: ${error.message}`);
+    }
     // Crash diagnostics: a recorder Edge that dies mid-recording must leave
     // its exit code / disconnect behind, not a bare evaluate error.
     let crashInfo = null;
@@ -1225,7 +1270,8 @@ async function ensureExtendedFixtures() {
 // The artifact budget actually configured for the staged receiver (never an
 // assumed number): the profile the worker loads mirrors contracts.js.
 function actualArtifactBudget() {
-  const source = 'build-desktop-recv/staging/receiver/config/profile.json';
+  const profilePath = join(STAGING, 'receiver', 'config', 'profile.json');
+  const source = relative(REPO, profilePath).replaceAll(sep, '/');
   try {
     const profile = JSON.parse(readFileSync(join(STAGING, 'receiver', 'config', 'profile.json'), 'utf8'));
     if (Number.isSafeInteger(profile.maxArtifactBytes)) {
@@ -3935,7 +3981,7 @@ const UX_ENTRY_GROUPS = {
   'UX-SLICE': ['E2E-27'],
   'UX-IAT': ['UX-IAT-01', 'UX-IAT-02', 'UX-IAT-03', 'UX-IAT-04', 'UX-IAT-05', 'UX-IAT-06', 'UX-IAT-07', 'UX-IAT-08'],
   'UX-MEDIA-SAVE': ['E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34'],
-  'UX-UI': ['E2E-35', 'E2E-36', 'E2E-37'],
+  'UX-UI': ['E2E-35', 'E2E-36', 'E2E-37', 'E2E-38'],
   'UX-ALL': ['E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34', 'E2E-35', 'E2E-36', 'E2E-37', 'E2E-38'],
 };
 const UX_PLACEHOLDER_CASES = new Set([
@@ -3984,15 +4030,13 @@ async function main() {
   }
   applyContextRoots(CONTEXT);
   mkdirSync(RUN, { recursive: true });
-  // A crashed earlier run can leave Edge instances (some holding an active
-  // share) or a listener on the receiver/recorder ports; both poison the
-  // capture picker. Clean them before starting our own stack.
-  await new Promise((resolveCleanup) => {
-    const ps = spawn('powershell', ['-NoProfile', '-Command',
-      `Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*cimbar-e2e-*') -or ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*--disable-backgrounding-occluded-windows*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*server.py --port 8771*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*http.server 8790*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
-    { stdio: 'ignore' });
-    ps.on('exit', resolveCleanup);
-  });
+  // Reclaim ONLY processes a previous run of THIS run root recorded in
+  // pids.json, after a command-line re-check. Never kill by port, browser
+  // flag or process name.
+  const reclaimed = await cleanupRecordedProcesses(RUN);
+  if (reclaimed.recorded > 0) {
+    log(`process guard: reclaimed ${reclaimed.killed.length}/${reclaimed.recorded} recorded process(es)`);
+  }
   const ATTEMPT_ID = `${CASE}-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
   ACTIVE_ATTEMPT_ID = ATTEMPT_ID;
   // Planned gate cases get the S-1 attempt marker; diagnostics do not.

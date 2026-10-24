@@ -160,3 +160,69 @@ README 问题（Blocking 2）：README.md L26-34 的「Run」节仍指示 `node 
 独立审查代理（Claude, dev-pipeline native 模式） · 2026-10-24 · receiver-ux-v2 阶段5 · 全局轮号 15 · review-tools 第 1 次
 
 审查期间未写入产品/工具/测试代码，未执行任何 git 写命令；唯一仓库写入为本报告文件 docs/dev-pipeline/receiver-ux-v2/review-tools.md（由临时分片组装生成）。旧 run（20261018/19/21-teamexec-*）、旧 staging、product/、旧 schema 均只读访问；三个旧 run 的 results.json 在审查期间前后 SHA-256 一致。
+
+## 第 1 次整改结果（T5）
+
+整改执行：dev-v2-tools · 2026-10-24 · 基线 ee0b20c。执行报告：`b1-t5-report.md`；证据日志：`red-logs/t5-red.txt`、`red-logs/t5-green-tools.txt`、`red-logs/t5-oldruns-after.sha`。本节只追加，未修改上文审查内容。
+
+### Blocking 1 —— 已修复
+- 位置：新增 `tools/desktop-recv/e2e/process-guard.mjs`；`tools/desktop-recv/e2e/run-e2e.mjs`（main 启动清理块、launchStack/startSenderOnly/recordSenderClip）；`tools/desktop-recv/e2e/record-sender.mjs`；新增 `tools/desktop-recv/tests/process-guard.test.mjs`。
+- 内容：只回收 run 根 `pids.json` 中本轮记录的 PID，且命令行必须命中该条目的全部 marker；无 pids.json 时零清理；marker 为空绝不杀；端口被占抛 ProcessGuardError（含 "refusing to kill the owner process"），不杀占用者；三类宽匹配（msedge + `--disable-backgrounding-occluded-windows`、python `server.py --port 8771`、python `http.server 8790`）已删除。
+- 复验：`node --test tools/desktop-recv/tests/process-guard.test.mjs` → exit 0（6 tests / 6 pass，含「无 pid 文件不杀」「记录 pid 命令行不匹配不杀且进程存活」「占用端口拒绝」）；`grep Stop-Process tools/desktop-recv/e2e/run-e2e.mjs` 仅剩 closeReceiver（`cimbar-e2e-` 专用 profile 前缀）与 stopPackagedServer（记录 PID + CommandLine 复核）；三类宽匹配 grep 0 命中。
+- 结论：已修复。审查 DoD 中「现场运行前后用户 Edge/其他自动化实例数量不变」需要第一次真实 v2 运行（T13+）实测；T5 以单测 + 代码 DoD 复核代替。
+
+### Blocking 2 —— 已修复
+- 位置：`tools/desktop-recv/e2e/README.md`（原 Run 节改为 stage-5 context 入口；末尾新增 Historical diagnostics 节）；`tools/desktop-recv/e2e/smoke-live.mjs`（文件头 HISTORICAL 标注 + 首条可执行守卫）。
+- 复验：`node tools/desktop-recv/e2e/smoke-live.mjs` → exit 2，输出三行 HISTORICAL 说明（需显式 `--legacy-write-frozen-run`）；README 中不再存在「直接运行即写 docs/tests/runs/2026xxxx-*」的指示；旧 smoke/probe 入口在 README 与文件头均标注 historical 且非 v2 验收入口。
+- 结论：已修复。
+
+### S1 —— 不采纳（lead 决定）
+- 保留 stage.ps1 development 的 legacy 共享 staging 默认；v2 命令一律显式 `-StagingRoot`，README 已写明 context roots 权威。
+
+### S2 —— 已修复
+- 位置：`tools/desktop-recv/stage.ps1`；全部 `Write-Error`（在 `$ErrorActionPreference='Stop'` 下 exit 不可达）替换为 `[Console]::Error.WriteLine(...)` + 原 exit 码。
+- 复验：无 `-RunId` → exit 2；历史 RunId → exit 2；assets 缺 `-WasmBuildDir` → exit 2；缺 gate log → exit 3；`-Help` → exit 0。文件行尾保持仓库 LF，`git diff --check` 0。
+- 结论：已修复（exit 4 分支机制与已验证的 2/3 相同，未逐一实跑，见执行报告偏差 1）。
+
+### S3 —— 已修复
+- 位置：`tools/desktop-recv/e2e/run-context.mjs` 新增 `foldCase`（win32 小写化）；`HISTORICAL_RUN_IDS` 判定与 `isHistoricalPath` 均折叠比较。
+- 复验：`node --test tools/desktop-recv/tests/run-context.test.mjs` → exit 0（9/9；含大写历史 runId 与大写历史 planningFile 两个 fail-closed 负例）。
+
+### S4 —— 已修复
+- 位置：`tools/desktop-recv/verify-ux-evidence.py::resolve_inside`；对最深存在祖先做 realpath containment（与 node 解析器同规则）。
+- 复验：`python tools/desktop-recv/tests/ux-evidence-selftest.py` → exit 0（55 cases；新增判别性 junction 用例：run 根内 junction 指向根外、外部 received.bin 字节与记录哈希一致，只有 realpath 检查能拒绝，实测 exit 1）。
+
+
+### S5 —— 已修复
+- 位置：`tools/desktop-recv/e2e/run-context.mjs::stageVerifiedSender`（+`defaultSenderPackage`/`readSenderManifest`/`stageSenderEntries`）；`run-e2e.mjs` launchStack/startSenderOnly 与 `record-sender.mjs` main 在启动服务前调用。
+- 内容：DELIVERY-MANIFEST.txt 逐文件 SHA/存在性/路径规范校验后只读复制到 `<stagingRoot>/sender`，写 `.sender-staged.json` 幂等标记；同包重复调用复用；不同包或漂移副本 `E_SENDER_STAGED_MISMATCH` 拒绝；源包零写入；源不得位于 run/staging 根内。
+- 复验：run-context 测试 T5 用例（复制成功且源包 treeDigest 不变、幂等 reuse、篡改源 → E_SENDER_MANIFEST、既有异包副本 → E_SENDER_STAGED_MISMATCH）全部通过。
+
+### S6 —— 已修复
+- 位置：`run-e2e.mjs::actualArtifactBudget`；source 标签改为 `relative(REPO, <stagingRoot>/receiver/config/profile.json)`（正斜杠）。
+- 复验：`node --check` 0；真实 profile 路径值随首次 E2E 记录验证。
+
+### S7 —— 已修复
+- 位置：`run-e2e.mjs::UX_ENTRY_GROUPS['UX-UI']` → ['E2E-35','E2E-36','E2E-37','E2E-38']（对齐 runbook）。
+- 备注：v2 planning-cases.json 的 groups.UX-UI 仍为 35..37；占位出口（exit 4）不受影响，T31 接线真实 handler 时统一（本任务不改冻结计划）。
+
+### S8 —— 已修复
+- 位置：`tools/desktop-recv/tests/ux-evidence-selftest.py`；删除恒真 `check("NOT_RUN evidence is preserved on disk", True)`，替换为重读 ux-results.json 并断言 E2E-39 result==NOT_RUN 且 executedBy is None 的真实断言。
+
+### S9 —— 未处理
+- 不在 lead 采纳清单内（assertRealContained 对声明根自身的 realpath 校验维持现状）。
+
+### S10 —— 已修复
+- 位置：`verify-ux-evidence.py::load_context`；node 子进程 `timeout=30`，`TimeoutExpired` → ContextError（环境拒绝 exit 3）。
+
+### T5 回归矩阵（仓库根，全部 exit 0）
+- `node --test tools/desktop-recv/tests/run-context.test.mjs`（9/9）
+- `node --test tools/desktop-recv/tests/process-guard.test.mjs`（6/6）
+- `python tools/desktop-recv/tests/ux-evidence-selftest.py`（SELFTEST PASS, 55 cases）
+- `python tools/desktop-recv/verify-evidence-selftest.py`（14 cases）
+- `python tools/desktop-recv/e2e/video-prefix-check.py --selftest`（3/3）
+- `python docs/design-catalog/receiver-ux-v2/contracts/check-contracts.py`（DESIGN_CONTRACT_SHAPES_PASS）
+- `node tools/desktop-recv/run-unit.mjs --all`（9 套 120 tests，0 failed/todo/skipped）
+- 旧 run 指纹：`t5-oldruns-after.sha` vs T3 基线 `t3-oldruns-before.sha`（760 项）Compare-Object 无差异；`git diff --check` 0。
+
+整改期间未执行任何 git 写命令；未改产品代码（web/desktop-recv、worker/）；历史 run/旧 staging/product 只读。

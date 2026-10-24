@@ -12,8 +12,9 @@ import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PAIR_CONSTRUCTION } from './pair-evidence.mjs';
 import {
-  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, RunContextError,
+  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, stageVerifiedSender, RunContextError,
 } from './run-context.mjs';
+import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
@@ -510,14 +511,30 @@ async function main() {
     process.exit(5);
   }
   applyContextRoots(CONTEXT);
+  // Same process-guard policy as the runner: reclaim only what this run root
+  // recorded earlier, refuse a busy port explicitly, and stage the verified
+  // sender package read-only into <stagingRoot>/sender first.
+  await cleanupRecordedProcesses(RUN);
+  await assertPortsFree([SENDER_PORT, RECORDER_PORT, DEBUG_PORT]);
+  stageVerifiedSender(CONTEXT);
   mkdirSync(MEDIA, { recursive: true });
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
+  try {
+    recordProcesses(RUN, [{ pid: senderServer.pid, kind: 'sender-http' }]);
+  } catch (error) {
+    console.log(`process guard: could not record sender pid: ${error.message}`);
+  }
   // The recorder page lives in this tool's dir; serve it here instead of
   // depending on an external server on the recorder port (observed: the rig
   // fails with ERR_CONNECTION_REFUSED when nobody serves it).
   const recorderServer = startServer('python', ['-m', 'http.server', String(RECORDER_PORT),
     '--bind', '127.0.0.1', '--directory', HERE], 'recorder-http');
+  try {
+    recordProcesses(RUN, [{ pid: recorderServer.pid, kind: 'recorder-http' }]);
+  } catch (error) {
+    console.log(`process guard: could not record recorder pid: ${error.message}`);
+  }
   await waitHttp(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
   await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
 
@@ -531,6 +548,11 @@ async function main() {
   await senderPage.goto(`http://127.0.0.1:8811/`);
 
   const recorderBrowser = await launchNormalEdge();
+  try {
+    recordProcesses(RUN, [{ pid: recorderBrowser.pid, kind: 'recorder-edge', markers: ['cimbar-recorder-'] }]);
+  } catch (error) {
+    console.log(`process guard: could not record recorder edge pid: ${error.message}`);
+  }
   const recorderPage = await recorderBrowser.page;
   await recorderPage.goto(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
   await recorderPage.waitForSelector('#rec');

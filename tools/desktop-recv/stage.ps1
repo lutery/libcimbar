@@ -66,19 +66,19 @@ usage: pwsh -NoProfile -File tools/desktop-recv/stage.ps1 -RunId <id> -Mode <dev
 }
 
 if ($RunId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$') {
-  Write-Error 'invalid or missing -RunId'
+  [Console]::Error.WriteLine('invalid or missing -RunId')
   exit 2
 }
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if (-not (Test-Path (Join-Path $repoRoot 'CMakeLists.txt'))) {
-  Write-Error "repo root not found from $PSScriptRoot"
+  [Console]::Error.WriteLine("repo root not found from $PSScriptRoot")
   exit 2
 }
 
 $historicalRunIds = @('20261018-teamexec-01', '20261019-teamexec-02', '20261021-teamexec-03')
 if ($historicalRunIds -contains $RunId) {
-  Write-Error "refusing to stage or write evidence into historical run '$RunId' (read-only)"
+  [Console]::Error.WriteLine("refusing to stage or write evidence into historical run '$RunId' (read-only)")
   exit 2
 }
 
@@ -95,7 +95,7 @@ if ([string]::IsNullOrWhiteSpace($StagingRoot)) {
     $sep = [IO.Path]::DirectorySeparatorChar
     if ($staging.Equals($prefix, [StringComparison]::OrdinalIgnoreCase) -or
         $staging.StartsWith($prefix + $sep, [StringComparison]::OrdinalIgnoreCase)) {
-      Write-Error "refusing -StagingRoot inside a read-only area: $staging"
+      [Console]::Error.WriteLine("refusing -StagingRoot inside a read-only area: $staging")
       exit 2
     }
   }
@@ -122,16 +122,16 @@ function Test-SafeRelativePath([string]$Value) {
 switch ($Mode) {
   'assets' {
     if ([string]::IsNullOrWhiteSpace($WasmBuildDir)) {
-      Write-Error '-Mode assets requires -WasmBuildDir'
+      [Console]::Error.WriteLine('-Mode assets requires -WasmBuildDir')
       exit 2
     }
     if ([string]::IsNullOrWhiteSpace($GateLog)) {
-      Write-Error '-Mode assets requires -GateLog (a real CMD-02 run log)'
+      [Console]::Error.WriteLine('-Mode assets requires -GateLog (a real CMD-02 run log)')
       exit 2
     }
     $gateLogPath = if ([IO.Path]::IsPathRooted($GateLog)) { $GateLog } else { Join-Path $repoRoot $GateLog }
     if (-not (Test-Path $gateLogPath)) {
-      Write-Error "gate log not found: $gateLogPath"
+      [Console]::Error.WriteLine("gate log not found: $gateLogPath")
       exit 3
     }
 
@@ -140,7 +140,7 @@ switch ($Mode) {
     $srcWasm = Join-Path $srcWeb 'cimbar_js.wasm'
     foreach ($f in @($srcJs, $srcWasm)) {
       if (-not (Test-Path $f)) {
-        Write-Error "missing WASM build artifact: $f"
+        [Console]::Error.WriteLine("missing WASM build artifact: $f")
         exit 3
       }
     }
@@ -165,7 +165,7 @@ switch ($Mode) {
     )
     foreach ($marker in $gateMarkers) {
       if ($gateText -notmatch [regex]::Escape($marker)) {
-        Write-Error "gate log does not contain '$marker'; refusing to bind evidence"
+        [Console]::Error.WriteLine("gate log does not contain '$marker'; refusing to bind evidence")
         exit 4
       }
     }
@@ -212,7 +212,7 @@ switch ($Mode) {
   'development' {
     $src = Join-Path $repoRoot 'web/desktop-recv'
     if (-not (Test-Path $src)) {
-      Write-Error "no receiver source yet at $src (T1.2.c creates it)"
+      [Console]::Error.WriteLine("no receiver source yet at $src (T1.2.c creates it)")
       exit 3
     }
     New-Item -ItemType Directory -Force -Path $staging | Out-Null
@@ -229,11 +229,11 @@ switch ($Mode) {
       $localPath = Join-Path $src $pair.local
       $contractPath = Join-Path $repoRoot $pair.contract
       if (-not (Test-Path $localPath)) {
-        Write-Error "missing app config: $($pair.local)"
+        [Console]::Error.WriteLine("missing app config: $($pair.local)")
         exit 4
       }
       if ((Get-Sha256 $localPath) -ne (Get-Sha256 $contractPath)) {
-        Write-Error "$($pair.local) does not match $($pair.contract); copy the frozen contract"
+        [Console]::Error.WriteLine("$($pair.local) does not match $($pair.contract); copy the frozen contract")
         exit 4
       }
     }

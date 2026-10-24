@@ -97,6 +97,41 @@
       "productManifestSha256": null,
       "productNote": "tooling-only task; product untouched",
       "date": "2026-10-24"
+    },
+    {
+      "taskId": "T5",
+      "caseIds": [
+        "process-guard guards (new)",
+        "UX-UT-081..089 extensions (case-fold history, junction proof redirect, sender staging)"
+      ],
+      "suite": "tools/desktop-recv/tests/process-guard.test.mjs; tools/desktop-recv/tests/run-context.test.mjs; tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "phase": "red",
+      "command": "node --test tools/desktop-recv/tests/process-guard.test.mjs; node --test tools/desktop-recv/tests/run-context.test.mjs; python tools/desktop-recv/tests/ux-evidence-selftest.py",
+      "exitCode": 1,
+      "failureReason": "process-guard.mjs missing (ERR_MODULE_NOT_FOUND); stageVerifiedSender export missing; junction proof-redirect accepted before realpath containment",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t5-red.txt",
+      "sourceRevision": "fa71186",
+      "productManifestSha256": null,
+      "productNote": "tooling-only task; assertion-first per recipe R",
+      "date": "2026-10-24"
+    },
+    {
+      "taskId": "T5",
+      "caseIds": [
+        "process-guard guards",
+        "UX-UT-081..089 extensions"
+      ],
+      "suite": "full battery",
+      "phase": "green",
+      "command": "node --test run-context; node --test process-guard; python ux-evidence-selftest; python verify-evidence-selftest; python video-prefix-check --selftest; python check-contracts; node run-unit --all",
+      "exitCode": 0,
+      "failureReason": null,
+      "passed": "9/9 + 6/6 + 55 cases + 14/14 + 3/3 + contracts PASS + unit 9 suites 120; old runs UNCHANGED",
+      "logRef": "docs/dev-pipeline/receiver-ux-v2/red-logs/t5-green-tools.txt",
+      "sourceRevision": "fa71186",
+      "productManifestSha256": null,
+      "productNote": "tooling-only task; product untouched",
+      "date": "2026-10-24"
     }
   ]
 }

@@ -1,0 +1,17 @@
+== process-guard.test.mjs exit 1 ==
+#     throw new ERR_MODULE_NOT_FOUND(
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\process-guard.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\process-guard.test.mjs
+#   code: 'ERR_MODULE_NOT_FOUND',
+# tests 1
+# pass 0
+# fail 1
+== run-context.test.mjs exit 1 ==
+#   stageVerifiedSender,
+# SyntaxError: The requested module '../e2e/run-context.mjs' does not provide an export named 'stageVerifiedSender'
+not ok 1 - tools\\desktop-recv\\tests\\run-context.test.mjs
+# tests 1
+# pass 0
+# fail 1
+== ux-evidence-selftest.py exit 1 ==
+FAIL junction inside the run root cannot redirect proof reads
+SELFTEST FAIL (1 of 55 cases)

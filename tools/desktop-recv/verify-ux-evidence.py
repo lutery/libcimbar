@@ -88,13 +88,37 @@ def canonical_rel(value):
 
 
 def resolve_inside(root, rel):
-    """Resolve a canonical relative path and require it to stay under root."""
+    """Resolve a canonical relative path and require it to stay under root.
+
+    Mirrors the node parser: containment is checked against the REAL path of
+    the deepest existing ancestor, so a junction inside the run root that
+    points outside cannot redirect proof reads.
+    """
     if not canonical_rel(rel):
         return None
     root_norm = os.path.normpath(root)
     candidate = os.path.normpath(os.path.join(root_norm, *rel.split("/")))
     if candidate != root_norm and not candidate.lower().startswith(root_norm.lower() + os.sep):
         return None
+    probe = candidate
+    while probe and not os.path.exists(probe):
+        parent = os.path.dirname(probe)
+        if parent == probe:
+            probe = ""
+            break
+        probe = parent
+    root_probe = root_norm
+    while root_probe and not os.path.exists(root_probe):
+        parent = os.path.dirname(root_probe)
+        if parent == root_probe:
+            root_probe = ""
+            break
+        root_probe = parent
+    if probe and root_probe:
+        real = os.path.realpath(probe)
+        real_root = os.path.realpath(root_probe)
+        if real != real_root and not real.lower().startswith(real_root.lower() + os.sep):
+            return None
     return candidate
 
 
@@ -106,7 +130,10 @@ def load_context(context_path, repo_root):
     command = [node, RUN_CONTEXT_CLI, "--validate", context_path]
     if repo_root:
         command += ["--repo-root", repo_root]
-    proc = subprocess.run(command, capture_output=True)
+    try:
+        proc = subprocess.run(command, capture_output=True, timeout=30)
+    except subprocess.TimeoutExpired:
+        raise ContextError("run-context validation timed out after 30s")
     stdout = proc.stdout.decode("utf-8", "replace")
     stderr = proc.stderr.decode("utf-8", "replace")
     if proc.returncode != 0:

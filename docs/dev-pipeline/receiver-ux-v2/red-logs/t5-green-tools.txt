@@ -1,0 +1,42 @@
+== T5 GREEN evidence ==
+run-context exit 0
+process-guard exit 0
+ux-evidence selftest exit 0
+legacy verify-evidence selftest exit 0
+video-prefix selftest exit 0
+check-contracts exit 0
+
+ok 1 - run context field set is exactly the frozen recipe-A contract
+ok 2 - UX-UT-081 missing run context is refused before any side effect
+ok 3 - UX-UT-082 Chinese and space roots propagate to every writer
+ok 4 - UX-UT-083 path escapes and historical output roots are refused
+ok 5 - UX-UT-084 baseline/candidate staging are separate and the old package stays read-only
+ok 6 - UX-UT-085 resume accepts only the same run identity and keeps old attempts
+ok 7 - UX-UT-086 product manifest and tool revision are bound separately
+ok 8 - T3 adversarial: case-folded twins, separators, history and forged identities
+ok 9 - T5 guard: case-folded history and verified sender staging
+# tests 9
+# pass 9
+# fail 0
+---
+ok 1 - no pid file: cleanup kills nothing and reports an empty result
+ok 2 - a recorded pid whose command line does not match is never killed
+ok 3 - stale recorded pids are skipped, never fatal
+ok 4 - an occupied port is refused with an explicit error and no process kill
+ok 5 - free ports pass
+ok 6 - the pid file is canonical, bounded and rejects bad entries
+# tests 6
+# pass 6
+# fail 0
+---
+SELFTEST PASS (55 cases)
+SELFTEST PASS (14 cases)
+SELFTEST PASS (3/3 cases: positive, head-shifted negative, tail-truncated negative)
+{"result": "DESIGN_CONTRACT_SHAPES_PASS", "definitions": 20, "examples": 27, "shapeVectors": 44, "interfaces": 6, "diagnostics": 15, "acTracked": 10, "v1Isolation": "1 positive, 3 negative shape checks; semantic fingerprints unchanged; CRLF-safe", "implementationCases": "12 NOT_RUN", "productAcceptance": "NOT_RUN"}
+
+== run-unit --all (exit 0) ==
+9 suites / 120 tests (7/25/6/6/11/7/15/7/36), 0 failed/todo/skipped; UNIT SUITES PASS
+== old-run fingerprint ==
+t5-oldruns-after.sha vs t3-oldruns-before.sha: UNCHANGED (760 entries)
+== CLI refusals (T5) ==
+run-e2e --help=0 / no --context=2; record-sender --help=0 / no --context=2; stage.ps1 -Help=0; stage no-arg=2; historical RunId=2; assets missing -WasmBuildDir=2; missing gate log=3; smoke-live without --legacy-write-frozen-run=2

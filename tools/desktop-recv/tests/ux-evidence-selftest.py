@@ -451,7 +451,13 @@ def main():
         ux_path = os.path.join(run["run_root"], "ux-results.json")
         expect("field gate over NOT_RUN is non-zero", run, "field", 1,
                unchanged=ux_path)
-        check("NOT_RUN evidence is preserved on disk", True)
+        with open(ux_path, encoding="utf-8") as handle:
+            preserved = json.load(handle)
+        not_run_record = [record for record in preserved["records"]
+                          if record.get("caseId") == "E2E-39"][0]
+        check("NOT_RUN evidence is preserved as NOT_RUN on disk",
+              not_run_record.get("result") == "NOT_RUN"
+              and not_run_record.get("executedBy") is None)
 
         # ---- UX-UT-089: every missing UX id fails the local gate -------
         for missing_id in LOCAL_UX:
@@ -687,6 +693,36 @@ def main():
         os.makedirs(plan_path)
         expect("planning path that is a directory is an environment refusal",
                run, "local", 3)
+
+        # ---- T5 (S4): a junction inside the run root must not redirect
+        # proof reads. The outside file deliberately MATCHES the record's
+        # received hash, so only realpath containment can refuse it.
+        junction_repo = repo()
+        run, legacy, ux = complete_local(junction_repo)
+        outside = os.path.join(junction_repo, "outside-proof")
+        os.makedirs(outside)
+        with open(os.path.join(outside, "received.bin"), "wb") as handle:
+            handle.write(b"E2E-27-payload")
+        link = os.path.join(run["run_root"], "proof", "E2E-27",
+                            run["attempt_id"], "link")
+        created = False
+        try:
+            import _winapi
+            _winapi.CreateJunction(outside, link)
+            created = True
+        except Exception as error:  # noqa: BLE001 - host may forbid junctions
+            print("note: junction creation unavailable (%s); "
+                  "realpath containment is exercised by the node suite" % error)
+        if created:
+            original_ref = ux[0]["proofRefs"][0]
+            assertion_refs = ux[0]["proofRefs"][2:]
+            ux[0]["proofRefs"] = [
+                original_ref,
+                "proof/E2E-27/%s/link/received.bin" % run["attempt_id"],
+            ] + assertion_refs
+            write_results(run, legacy, ux)
+            expect("junction inside the run root cannot redirect proof reads",
+                   run, "local", 1)
 
         passed = sum(1 for ok in CHECKS if ok)
         if passed == len(CHECKS):

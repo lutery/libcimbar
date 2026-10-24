@@ -120,9 +120,17 @@ function absFromRepo(repoRoot, rel) {
 }
 
 function isHistoricalPath(rel) {
+  const folded = foldCase(rel);
   return HISTORICAL_RUN_IDS.some((runId) => (
-    rel === `docs/tests/runs/${runId}` || rel.startsWith(`docs/tests/runs/${runId}/`)
+    folded === `docs/tests/runs/${foldCase(runId)}`
+    || folded.startsWith(`docs/tests/runs/${foldCase(runId)}/`)
   ));
+}
+
+// T5/S3 (T4 review): the historical guard is case-folded because the host
+// filesystem is case-insensitive; a case variant must fail closed.
+function foldCase(value) {
+  return process.platform === 'win32' ? value.toLowerCase() : value;
 }
 
 function checkManifestPair(raw, fileField, shaField) {
@@ -234,7 +242,7 @@ export function loadRunContext(contextPath, options = {}) {
   checkManifestPair(raw, 'productManifest', 'productManifestSha256');
   checkManifestPair(raw, 'inputManifest', 'inputManifestSha256');
   checkStructuredRoots(raw);
-  if (HISTORICAL_RUN_IDS.includes(raw.runId)) {
+  if (HISTORICAL_RUN_IDS.some((id) => foldCase(id) === foldCase(raw.runId))) {
     throw new RunContextError(
       'E_CONTEXT_HISTORY',
       `runId ${raw.runId} is a historical run; historical outputs are read-only`,
@@ -452,6 +460,102 @@ export function verifyProductManifest(context) {
     files.push({ path: entry.path, sha256: entry.sha256, bytes: entry.bytes, abs: fileAbs });
   }
   return { manifest, files, manifestPath, manifestSha256: actualSha };
+}
+
+// T5/S5 (T4 review): the verified sender package is copied READ-ONLY into
+// <stagingRoot>/sender before any server starts. Its delivery manifest is
+// re-checked file by file, and an existing staging copy from a different
+// package is never silently overwritten.
+function defaultSenderPackage(repoRoot) {
+  const productDir = join(repoRoot, 'product');
+  if (!existsSync(productDir)) {
+    throw new RunContextError('E_SENDER_PACKAGE', `no product/ directory under ${repoRoot}`);
+  }
+  const candidates = readdirSync(productDir)
+    .filter((name) => name.startsWith('cimbar-sender-') && !name.endsWith('.zip'))
+    .filter((name) => statSync(join(productDir, name)).isDirectory())
+    .sort();
+  if (candidates.length === 0) {
+    throw new RunContextError('E_SENDER_PACKAGE', 'no verified cimbar-sender package under product/');
+  }
+  return join(productDir, candidates[candidates.length - 1]);
+}
+
+function readSenderManifest(sourceDir) {
+  const manifestPath = join(sourceDir, 'DELIVERY-MANIFEST.txt');
+  if (!existsSync(manifestPath)) {
+    throw new RunContextError('E_SENDER_MANIFEST', `sender package has no DELIVERY-MANIFEST.txt: ${sourceDir}`);
+  }
+  const manifestBytes = readFileSync(manifestPath);
+  const entries = [];
+  for (const line of manifestBytes.toString('utf8').split(/\r?\n/)) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const match = /^([0-9a-f]{64})\s+(\d+)\s+(.+)$/.exec(line.trim());
+    if (!match) throw new RunContextError('E_SENDER_MANIFEST', `unparsable delivery manifest line: ${line}`);
+    const rel = match[3].trim().replace(/\\/g, '/');
+    assertCanonicalRepoPath('DELIVERY-MANIFEST entry', rel);
+    entries.push({ path: rel, sha256: match[1], bytes: Number(match[2]) });
+  }
+  if (entries.length === 0) throw new RunContextError('E_SENDER_MANIFEST', 'sender delivery manifest is empty');
+  return { manifestPath, manifestSha256: sha256(manifestBytes), entries };
+}
+
+export function stageVerifiedSender(context, options = {}) {
+  const sourceDir = resolve(options.sourceDir || defaultSenderPackage(context.repoRoot));
+  if (!existsSync(sourceDir) || !statSync(sourceDir).isDirectory()) {
+    throw new RunContextError('E_SENDER_PACKAGE', `verified sender package not found: ${sourceDir}`);
+  }
+  if (lexicallyInside(sourceDir, context.abs.runRoot) || lexicallyInside(sourceDir, context.abs.stagingRoot)) {
+    throw new RunContextError('E_SENDER_PACKAGE', 'the sender source may not live inside the run or staging root');
+  }
+  const { manifestSha256, entries } = readSenderManifest(sourceDir);
+  for (const entry of entries) {
+    const fileAbs = resolve(sourceDir, ...entry.path.split('/'));
+    if (!lexicallyInside(sourceDir, fileAbs)) {
+      throw new RunContextError('E_SENDER_MANIFEST', `manifest entry escapes the package: ${entry.path}`);
+    }
+    if (!existsSync(fileAbs) || !statSync(fileAbs).isFile()) {
+      throw new RunContextError('E_SENDER_MANIFEST', `sender file missing: ${entry.path}`);
+    }
+    if (sha256(readFileSync(fileAbs)) !== entry.sha256) {
+      throw new RunContextError('E_SENDER_MANIFEST', `sender file SHA-256 mismatch: ${entry.path}`);
+    }
+  }
+  return stageSenderEntries(context, sourceDir, manifestSha256, entries);
+}
+
+function stageSenderEntries(context, sourceDir, manifestSha256, entries) {
+  const targetDir = join(context.abs.stagingRoot, 'sender');
+  const markerPath = join(targetDir, '.sender-staged.json');
+  if (existsSync(targetDir) && readdirSync(targetDir).length > 0) {
+    let marker = null;
+    try { marker = JSON.parse(readFileSync(markerPath, 'utf8')); } catch { marker = null; }
+    if (!marker || marker.sourceManifestSha256 !== manifestSha256) {
+      throw new RunContextError('E_SENDER_STAGED_MISMATCH', `staging already holds a different sender copy: ${targetDir}`);
+    }
+    for (const entry of entries) {
+      const fileAbs = join(targetDir, ...entry.path.split('/'));
+      if (!existsSync(fileAbs) || sha256(readFileSync(fileAbs)) !== entry.sha256) {
+        throw new RunContextError('E_SENDER_STAGED_MISMATCH', `staged sender file drifted: ${entry.path}`);
+      }
+    }
+    return {
+      reused: true, sourceDir, targetDir,
+      files: entries.map((entry) => entry.path), sourceManifestSha256: manifestSha256,
+    };
+  }
+  mkdirSync(targetDir, { recursive: true });
+  for (const entry of entries) {
+    const sourceAbs = resolve(sourceDir, ...entry.path.split('/'));
+    const targetAbs = join(targetDir, ...entry.path.split('/'));
+    mkdirSync(dirname(targetAbs), { recursive: true });
+    writeFileSync(targetAbs, readFileSync(sourceAbs));
+  }
+  writeFileSync(markerPath, `${JSON.stringify({ version: 1, sourceManifestSha256: manifestSha256, files: entries }, null, 2)}\n`);
+  return {
+    reused: false, sourceDir, targetDir,
+    files: entries.map((entry) => entry.path), sourceManifestSha256: manifestSha256,
+  };
 }
 
 // Baseline and candidate (or any two builds) may never share a run or
