@@ -90,3 +90,11 @@
 - 复跑（lead 独立确认）：12 套 169 全绿（session 33）；node --check 0。
 - review-slice.md 已追加「第 1 次整改结果（T12）」。S2/S3/S4 留 T14。
 - 提交：`fix: converge real-time receiver UX review`。
+
+## B3-T13 — 真实抓屏闭环（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-24 21:26 ～ 22:36 (+08:00)；报告：b3-t13-report.md；失败留档：red-logs/t13-attempt{1,2,3}-*.log；指纹：t13-oldruns-after.sha（UNCHANGED）
+- E2E-27（UX-SLICE）真实旅程 **PASS**（第 4 attempt，前三次工具缺陷如实留档：clip 映射、attachCapture 等待语义、certutil 替代 Get-FileHash）。
+- SRC-01 校准 CAL01-05 全 PASS（真实码帧 PNG、静止层≥10s、空白层全覆盖）；S01-S06 全 PASS：等待≥6s（用时走表/0 伪造进度）→ 首数据 revision 2→3 + 41.7 KiB/s → Ready 131072B + 用时冻结 → 真实系统保存 saveTimingsComplete → 外部 SHA 相等（certutil）。
+- 产物：source-scene.mjs（新）、run-e2e.mjs（E2E-27 handler/UX-SLICE 展开/waitForReady 选项）、run 根 20261024-teamexec-06（ux-results.json phase=slice PARTIAL、proof 全套、manifest sha=adb59205…）。
+- 提交：`docs: record first real receiver UX roundtrip`。

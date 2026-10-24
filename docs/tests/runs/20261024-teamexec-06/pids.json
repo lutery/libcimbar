@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 62456,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 44464,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 64240,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 66556,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 50676,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 67600,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 62924,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 70296,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 62208,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 64708,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 64552,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 51220,
+      "kind": "receiver-edge"
+    }
+  ]
+}

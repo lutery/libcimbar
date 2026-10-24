@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "base": "receiver",
+  "files": [
+    {
+      "path": "config/asset-set.json",
+      "sha256": "8dbcbd3f7c2556d98a5339b9f19d88df9ae6ece3a3ec0b65d387d9ee47b8a59a",
+      "bytes": 440
+    },
+    {
+      "path": "config/errors.json",
+      "sha256": "5a93bf224108509565fc8d630741a1442c77455df211b18d9d253131cf6c2f7f",
+      "bytes": 24043
+    },
+    {
+      "path": "config/profile.json",
+      "sha256": "4eb957e66bb24009d1ff42b2aa365d2bf377e63eaf64a7406adf66145fd6eb4d",
+      "bytes": 299
+    },
+    {
+      "path": "index.html",
+      "sha256": "f0766dcffadebd795e2f1cb12fa1e7298779f685a40775c7335e0faee74d410a",
+      "bytes": 1845
+    },
+    {
+      "path": "launch.cmd",
+      "sha256": "2474e80463de493f12bc0fde1b4d8c9a31424478d1ba9e8245b0fc8b42e8ee64",
+      "bytes": 576
+    },
+    {
+      "path": "launch.ps1",
+      "sha256": "d39bdbfdb8c7d575cec7e3710a89a7539d6a0bbc8f8e2a44cd628fb4caaa3756",
+      "bytes": 4656
+    },
+    {
+      "path": "package.json",
+      "sha256": "1beff5c779a11b22a2263cad9413f8e0c70bde5619d3c450aeeec7d802620eba",
+      "bytes": 246
+    },
+    {
+      "path": "server.py",
+      "sha256": "4f0ef533936372b6c795faf302c2d2eab9addc9d996b2a859d2df4b5f8667294",
+      "bytes": 1540
+    },
+    {
+      "path": "src/app.js",
+      "sha256": "627931cefaf446ef5dd5d9a49584a80f91a87674d15949256765565958de9f26",
+      "bytes": 22299
+    },
+    {
+      "path": "src/capabilities.js",
+      "sha256": "f5b99efabbfdd108a7d6a488751d47297e4930e017d725250634990a3e8e33e6",
+      "bytes": 1685
+    },
+    {
+      "path": "src/contract-snapshot.js",
+      "sha256": "283b4abc07ac109829f3c144f9d628c3a9598108ea0d972a18855935f068442f",
+      "bytes": 2941
+    },
+    {
+      "path": "src/contracts.js",
+      "sha256": "77b485bfc17d5e3de40faa8b70b495183e23b2f8ce7e40811269e2cadb920d48",
+      "bytes": 5124
+    },
+    {
+      "path": "src/decoder-client.js",
+      "sha256": "728e87ce566cafc0eaf46ec41f93c65616f15f96b139cb05d8bddfc23dd145d2",
+      "bytes": 8456
+    },
+    {
+      "path": "src/evidence.js",
+      "sha256": "ac4b64726830a4d976480db8c4da6831fe550f8b3e6c26dbfb409af252335e19",
+      "bytes": 8393
+    },
+    {
+      "path": "src/frame-scheduler.js",
+      "sha256": "5d899ec926aeb338cd297023df593199413aedd4a9294e0550a090cdde01a3f4",
+      "bytes": 4316
+    },
+    {
+      "path": "src/live-source.js",
+      "sha256": "2a47e91d7850ce5116007132170700f41ce9bcf0d4cdb1a11ea4e422fc84d7c6",
+      "bytes": 1646
+    },
+    {
+      "path": "src/save-controller.js",
+      "sha256": "a51177e4f79a99053df601f0da34358e844da3fb6144d20934e7c10403340e21",
+      "bytes": 5327
+    },
+    {
+      "path": "src/session.js",
+      "sha256": "fd18b5f49d2c9c14627709c6c13aec3f05824670250ca5a0351cdcd255613cd5",
+      "bytes": 24405
+    },
+    {
+      "path": "src/ui.js",
+      "sha256": "4da244d542481f047f76a64a632caba560b09bd9b51727692cba77236ca31bc2",
+      "bytes": 5101
+    },
+    {
+      "path": "src/ux-display.js",
+      "sha256": "6c5ecb586067f691a56d3ceab996faf82982e883b5f40fd136a806744551fee7",
+      "bytes": 7063
+    },
+    {
+      "path": "src/ux-telemetry.js",
+      "sha256": "ae02eaebfb857b4bf1843efe3c027940ae3e21a48a053d580ac2c0120e8d5d62",
+      "bytes": 15718
+    },
+    {
+      "path": "src/ux-view.js",
+      "sha256": "e5365d7865eba986001660f659369a34b25fd115cb3586f78db3e1f0e8eae57f",
+      "bytes": 14174
+    },
+    {
+      "path": "src/video-source.js",
+      "sha256": "b9431e0645c2c00c5225c79a0a00052408deee95611a12a96d3bd6a123be1eca",
+      "bytes": 14109
+    },
+    {
+      "path": "styles.css",
+      "sha256": "2e3ea77b223eb22c277332cb995798c452ee10345a3a91a3e932fc0fc3bcd645",
+      "bytes": 2748
+    },
+    {
+      "path": "vendor/cimbar_js.js",
+      "sha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+      "bytes": 85309
+    },
+    {
+      "path": "vendor/cimbar_js.wasm",
+      "sha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+      "bytes": 1939173
+    },
+    {
+      "path": "worker/decoder-worker.js",
+      "sha256": "a73356b3096de5488228484fa8962de963c88456dd0ca50ec1019348680047e1",
+      "bytes": 14508
+    }
+  ]
+}
