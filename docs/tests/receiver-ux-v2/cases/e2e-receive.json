@@ -1,0 +1,873 @@
+[
+  {
+    "id": "E2E-27",
+    "title": "实时等待→数据识别→可保存→真实写盘",
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T13",
+      "T35",
+      "T36"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-01"
+    ],
+    "entry": "从本轮candidate说明启动接收页，主区点击“实时抓屏”",
+    "preconditions": [
+      "新context绑定最终产品清单；原发送端Mode B，128KiB或更长难压缩样本已核SHA且不会一帧即完成",
+      "固定发送源窗口可由SRC-01测试画面层先显示空白再显示原发送码；这只改变真实源像素，不调用接收端输入接口",
+      "正常Edge，源选择器/保存对话框可真实操作；诊断默认收起"
+    ],
+    "steps": [
+      {
+        "action": "按用户说明启动接收页面；不打开日志，点击“实时抓屏”，在系统选择器选实际源窗口并确认共享",
+        "expected": "两个接收按钮仍存在，活动期互锁；进入准备/接收等待，保存不能提前点击",
+        "evidence": [
+          "入口/按钮/选择器实际截图",
+          "源窗口标题与环境/构建摘要"
+        ]
+      },
+      {
+        "action": "保持源为无有效码至少6秒；记录一个前台5秒区间的真实业务revision和可见用时",
+        "expected": "等待有效数据有文字和下一步建议，≥5秒提示；用时随时间变、不会把画面帧当文件进度；无snapshot也不停止计时",
+        "evidence": [
+          "等待0/5/6秒截图或短录制",
+          "真实revision与用时取证时点"
+        ]
+      },
+      {
+        "action": "在同一所选源移除空白视觉层，播放原发送端实际码；不停止接收",
+        "expected": "首次真实data后主区显示接收活动，预热后有含冗余KiB/s；有可信单流报告才显示重建估计",
+        "evidence": [
+          "真实源画面前后证明",
+          "data/frame结果只读观察与主区对应时序"
+        ]
+      },
+      {
+        "action": "继续播放直到原严格重建产生Ready；在出现可保存后暂停/关闭发送输入",
+        "expected": "Ready明确“文件已接收完成，请保存”，文件名/大小取真实artifact；未写盘时不显示已保存；用时冻结、速度不继续虚增",
+        "evidence": [
+          "Ready和文件信息截图",
+          "真实状态/产物事件与接收用时冻结对照"
+        ]
+      },
+      {
+        "action": "点击保存，在真实系统窗口选本轮专有目标路径；等待写入与close完成",
+        "expected": "选择路径/保存中/已保存分开，关闭写盘后才Saved；界面说明下一步",
+        "evidence": [
+          "系统选择/写入/Saved截图",
+          "实际saveRequest/writable/writeClose时点"
+        ]
+      },
+      {
+        "action": "应用外对原/收实物分别执行Get-FileHash -Algorithm SHA256，并核对当前manifest/attempt",
+        "expected": "SHA完全相同，输出存在且字节数相符；画面/时序/文件来自同一构建与执行",
+        "evidence": [
+          "原文件与实存接收文件",
+          "外部SHA完整文本",
+          "manifest/attempt清单"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "真实源没有data时只能记等待/未完成，不能用原型动画代替",
+      "若样本瞬间完成看不到中间态，重建更长实际样本并保留该次不充分记录",
+      "取消共享/权限/初始化失败按实际原码记录并按原入口恢复，不以脚本成功当接收成功"
+    ],
+    "requiredEvidence": [
+      "原/收文件及外部SHA",
+      "逐步UI截图/时间线",
+      "真实源/保存对话框证据",
+      "最终manifest/输入SHA/attempt"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-28",
+    "title": "重复有效码有识别速率但不虚增重建进度",
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-020",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-04",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T19",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-02"
+    ],
+    "entry": "实时抓屏入口，选择显示原发送端单个真实码帧的测试源窗口",
+    "preconditions": [
+      "SRC-01静止码取自原发送端当前实际输出并记录PNG与原文件SHA，128KiB以上难压缩样本不可能该单帧完成",
+      "新会话从冻结帧开始，完整码区自然尺寸可被实际捕获；不喂PNG给Worker、不mock report",
+      "后续可移除静止层继续同一个原发送文件，解码报告保持可信单流"
+    ],
+    "steps": [
+      {
+        "action": "在接收开始前由原发送端生成文件码，捕获完整真实码帧并作为不透明视觉层冻结源画面；记录来源",
+        "expected": "冻结的是真实有码画面，不是空白或合成进度；原发送协议/程序资产未改",
+        "evidence": [
+          "原发送文件/码帧截图与SHA",
+          "测试层操作及源标题"
+        ]
+      },
+      {
+        "action": "新接收会话真实选择该源，等待首批data和单流比例后持续至少10秒",
+        "expected": "有实际data重复到达；近期识别速率可大于0，重建比例稳定不虚增；可信比例8秒不增可见提示",
+        "evidence": [
+          "data返回/报告只读时序",
+          "首样本、+8/+10秒主区截图",
+          "KiB/s含冗余与稳定比例对照"
+        ]
+      },
+      {
+        "action": "在此期间不触碰接收按钮，检查用时与接收状态、保存可用性",
+        "expected": "用时继续；不会因重复码变Ready、自动停止/重启或启用保存；不能把速率当新增文件字节",
+        "evidence": [
+          "状态/controls/elapsed时序",
+          "无额外源选择/重启的操作记录"
+        ]
+      },
+      {
+        "action": "移除静止视觉层恢复同一原发送文件连续码并保持源窗口",
+        "expected": "新块到达时真实报告可增长，提示恢复；未重置已有业务会话",
+        "evidence": [
+          "源恢复动作",
+          "报告增长与主区提示"
+        ]
+      },
+      {
+        "action": "实际Ready后系统保存，外部核对原/收SHA",
+        "expected": "静止阶段未假完成，恢复后严格完成且文件相同",
+        "evidence": [
+          "真实保存/原收文件/SHA",
+          "完整attempt时间线"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "若冻结码未被识别为data，不得称验证了重复数据；调整自然尺寸/源可见性后重跑",
+      "若缺可信单流报告，本例进度稳定部分未证实，仍需IAT坏报告分支分列",
+      "若一帧即完成需换足够大的难压缩样本，不放松中间态判据"
+    ],
+    "requiredEvidence": [
+      "真实码帧来源与输入SHA",
+      "重复data及可信比例时序",
+      "≥8秒主区证据",
+      "恢复后的实存文件外部SHA"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-29",
+    "title": "真实无有效数据暂停→速率归零→恢复",
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-020",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-04",
+      "R-07",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T31",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-02"
+    ],
+    "entry": "实时抓屏接收中，在同一实际源上切换空白视觉层",
+    "preconditions": [
+      "先至少收到持续data/有可信估计并保持未完成，样本足够长",
+      "SRC-01的空白层覆盖整个码区；通过实际帧outcome确认no_data，不把最小化冻结码当无数据",
+      "所有阈值从实际最后data时点计，前台取证容差1000ms"
+    ],
+    "steps": [
+      {
+        "action": "从原发送端真实播放到已接收数据，记录最后data、当前用时/速率/估计",
+        "expected": "取得非空基准而不是尚未开始的等待",
+        "evidence": [
+          "基准UI截图",
+          "最后data观察时点/原输入SHA"
+        ]
+      },
+      {
+        "action": "在所选源盖不含有效码的空白层并维持至少6秒，接收端继续前台运行",
+        "expected": "原帧继续可能no_data；不再有data后速率不超过3秒归零（取证+1秒），≥5秒显示曾接收后无新增提示",
+        "evidence": [
+          "源真实空白证据",
+          "no_data/最后data时序",
+          "+3/+5/+6秒主区截图"
+        ]
+      },
+      {
+        "action": "检查暂停期间用时、最后进度与操作建议，不按停止或重开",
+        "expected": "用时继续，若显示上次估计须有陈旧语义，不假新百分比/网络断开；不会自动重启或打开选择器",
+        "evidence": [
+          "用时连续记录",
+          "主文案/建议/控件截图"
+        ]
+      },
+      {
+        "action": "移除空白层，继续同一原发送文件到Ready",
+        "expected": "新data后速度/状态恢复，已有接收上下文保持，没有自动丢弃已有数据",
+        "evidence": [
+          "恢复源操作",
+          "data/主区恢复时点"
+        ]
+      },
+      {
+        "action": "实际保存并计算原/收外部SHA",
+        "expected": "恢复路径无需控制台/刷新，最终字节一致",
+        "evidence": [
+          "真实保存截图/原收文件/SHA"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "若空白后仍有data，应先确认码区是否覆盖/源绑定是否正确，不能据人操作时间直接判速率不归零",
+      "若来源实际冻结有码帧，转E2E-28记录，不能冒充本例完成",
+      "真实业务错误/超时沿旧规则记录FAIL，不被“暂时无数据”文案掩盖"
+    ],
+    "requiredEvidence": [
+      "source前后实际画面",
+      "最后data→归零/5秒提示时间线",
+      "真实恢复/保存及外部SHA"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-30",
+    "title": "真实停止与实时/录像双向切换不串指标",
+    "acceptanceIds": [
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-09",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-06"
+    ],
+    "entry": "从一个已有部分接收进展的实际输入点击“停止”",
+    "preconditions": [
+      "A/B内容不同且外部SHA不同，可用同名同大小碰撞样本；B的录像和原文件可核对",
+      "无未决系统模态，清理前禁止新开始；按旧互锁执行",
+      "双向各一条：实时A→录像B与录像A→实时B"
+    ],
+    "steps": [
+      {
+        "action": "真实接收A至用时/速率/估计可见，点击停止并记录按钮响应/清理",
+        "expected": "显示正在停止/已停止等真实语义；清理未完双入口不可重开，旧数值不继续跳",
+        "evidence": [
+          "停止前后UI/owner/cleanup时序"
+        ]
+      },
+      {
+        "action": "清理后点击另一输入按钮，完成实际选源/选文件；观察初始计时/采样",
+        "expected": "新seq从零/采样中开始，不沿用A比例、速率、用时或保存状态；两个按钮依旧存在",
+        "evidence": [
+          "实际新选择器",
+          "新owner与初始主区截图"
+        ]
+      },
+      {
+        "action": "让B真实重建并实际保存，核对输出属于B",
+        "expected": "保存产物摘要为B而非A，原源/Worker/媒体URL/UX timer均已按原归属清理",
+        "evidence": [
+          "B原/收文件与外部SHA",
+          "源/Worker/URL/timer清理证据"
+        ]
+      },
+      {
+        "action": "用新独立会话按反向输入重复上述停止/切换/保存",
+        "expected": "两种方向都不串数字/产物；正常使用不需刷新/控制台",
+        "evidence": [
+          "反向完整操作及SHA"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "迟到旧frame/save极端回调由IAT-02/06单独注入验证，不能伪装成人操作",
+      "不能在系统模态阻塞时要求点击页面Stop；应先真实取消模态再操作",
+      "清理前重开被拒是正确互锁，不为测试放宽"
+    ],
+    "requiredEvidence": [
+      "双向真实切换记录",
+      "两个独立B输出实物与外部SHA",
+      "新旧seq/cleanup和UX timer释放对照"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-31",
+    "title": "真实录像位置与重建反馈分别可理解",
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-03"
+    ],
+    "entry": "点击“录像导入”，从系统文件选择器选择原发送端录制的正常录像",
+    "preconditions": [
+      "原发送端已停止/关闭，防止靠实时输入完成；录像/对应原文件SHA已锁",
+      "至少一轮使用真实OS文件选择器，浏览器级setInputFiles可用于其余自动化轮",
+      "有效录像足够长展示媒体位置与收集/重建；活动preview可呈现"
+    ],
+    "steps": [
+      {
+        "action": "点击录像导入并在真实OS窗口选文件，返回接收页；不打开诊断日志",
+        "expected": "真实文件被App接纳并进入正确会话；出现中文录像活动/下一步",
+        "evidence": [
+          "点击/系统文件窗口/实际ingestion记录"
+        ]
+      },
+      {
+        "action": "在读取过程中分时点观察用时、识别速率、重建估计及“录像处理位置”",
+        "expected": "媒体时间/总时长与文件估计分开标注，单位明确；真实位置前进且preview持续呈现",
+        "evidence": [
+          "3个间隔时点的完整主区截图",
+          "媒体位置/帧呈现时序"
+        ]
+      },
+      {
+        "action": "保持正常读取直到真实artifact；若早于媒体尾完成，记录实际完成位置",
+        "expected": "Ready由artifact而非位置比例，可能提前停止读取；接收用时冻结",
+        "evidence": [
+          "真实Ready与artifact/媒体位置的时序"
+        ]
+      },
+      {
+        "action": "真实系统保存并应用外核对原/收SHA",
+        "expected": "写close后才已保存，文件一致，无后台抓屏路径替代",
+        "evidence": [
+          "保存对话框/完成截图",
+          "输入媒体/原收文件/SHA"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "文件选择器取消/无效录像的有限恢复仍按E2E-15逐异常执行",
+      "无法取得可信duration时展示已处理位置但不编造分母/百分比；异常元数据注入属于IAT",
+      "若active preview被布局隐藏导致读取停滞，记录产品FAIL，不能通过展开未写进正常路径的调试控件补救"
+    ],
+    "requiredEvidence": [
+      "真实OS文件入口证据",
+      "媒体/重建分离的实际UI时序",
+      "实际产物/保存与外部SHA"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-32",
+    "title": "录像读到尾但未重建时不假报成功并可恢复",
+    "acceptanceIds": [
+      "AC-016",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-12"
+    ],
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-04"
+    ],
+    "entry": "录像导入入口选择真实不足/缺尾关键数据录像",
+    "preconditions": [
+      "当前批准V-SHORT/同流V-LAST-without及完整with对照，前缀与时点配方可核对",
+      "旧E2E-16末段/前缀/最终帧判据仍单独必测，本例新增UI反馈",
+      "同一页按正常清理门恢复，不刷新/控制台"
+    ],
+    "steps": [
+      {
+        "action": "真实选择不足录像，观察媒体位置接近/到达结尾，保持接收页正常显示",
+        "expected": "位置到尾仅表示读完；收尾/处理中来自真实EOF排空，不提前显示已接收/已保存或启用保存",
+        "evidence": [
+          "尾部媒体位置与UI截图",
+          "EOF/最后采样/产物时序"
+        ]
+      },
+      {
+        "action": "等待原EOF屏障完成且仍无artifact",
+        "expected": "明确数据不足/未完成，速度不继续虚增、用时冻结，下一步可导入完整录像",
+        "evidence": [
+          "最终Incomplete、controls及elapsed冻结截图"
+        ]
+      },
+      {
+        "action": "待清理完成，点击录像导入选择对应完整with版本",
+        "expected": "新会话数值清零；真实末尾关键数据可被处理，不因新布局隐藏preview遗漏",
+        "evidence": [
+          "实际新文件入口/新seq",
+          "完整末段处理时序"
+        ]
+      },
+      {
+        "action": "真实Ready后系统保存、外部核对原/收SHA；把旧E2E-16 pair材料关联本次执行",
+        "expected": "不足与完整对照均真实发生；完整输出相等，不能只凭artifactFrameId等于presented证明末帧",
+        "evidence": [
+          "实存原/收文件与SHA",
+          "前缀/量纲/末段有效性证明"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "不足录像没触达真实EOF/元数据即拒绝，属于入口异常，不冒充EOF分支；按配方重建可真实读到尾的fixture",
+      "同流pair构造无效时保留装置失败并重建，不删失败日志",
+      "不能用任意字节截断容器代替声明时间停止的同前缀对照"
+    ],
+    "requiredEvidence": [
+      "真实不足EOF与原件SHA",
+      "UI终态/冻结/不可保存证明",
+      "完整对照恢复与外部SHA",
+      "当前pair构造及末段时序"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-33",
+    "title": "Ready、选择保存、取消重试和Saved清楚分层",
+    "acceptanceIds": [
+      "AC-018",
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-09",
+      "R-10",
+      "R-12"
+    ],
+    "taskIds": [
+      "T25",
+      "T31",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-05"
+    ],
+    "entry": "从真实已接收完成、尚未保存的主区点击“保存文件”",
+    "preconditions": [
+      "真实artifact已存在，停止/关闭发送端但不重置接收会话",
+      "原文件SHA与专有保存根已确定；可真实取消OS保存",
+      "记录Ready时接收用时，用实际系统对话框停留不小于3秒"
+    ],
+    "steps": [
+      {
+        "action": "观察未保存的Ready主区与文件信息；记接收用时并保持3秒",
+        "expected": "清楚提示可保存而不是已保存，接收用时已冻结，不继续虚显接收速率",
+        "evidence": [
+          "Ready+3秒截图/接收用时"
+        ]
+      },
+      {
+        "action": "点击保存，真实OS选择器停留至少3秒后取消，回到页面",
+        "expected": "选择路径期间不显示已保存；取消后主区明确文件仍在可再次保存，不需重接收，焦点能继续",
+        "evidence": [
+          "真实系统选择器/取消动作",
+          "回页提示/可保存按钮"
+        ]
+      },
+      {
+        "action": "再次真实点击保存并选本轮新目标路径，观察写入和关闭结算",
+        "expected": "新attempt归当前artifact；写盘未close不Saved，真实close后显示已保存；接收用时不含两轮picker/写入",
+        "evidence": [
+          "saveRequest/writable/writeClose实际时点",
+          "选择/写入/已保存的时间线"
+        ]
+      },
+      {
+        "action": "应用外核对实存文件SHA，检查原源已关闭仍能保存",
+        "expected": "原/收一致，无新解码/重传；真实用户可看懂完成与保存的区别",
+        "evidence": [
+          "原/收实物与外部SHA",
+          "发送端关闭及接收状态记录"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "模态期间页面被浏览器阻塞时不要求同时点Stop/观察被遮挡页面；对话框停留与回页后状态共同取证",
+      "OS写入/close太快看不到中间文案时仅证明实际结算与最终提示，长pending/close失败由IAT-06精确补证",
+      "取消后产物丢失或按钮不可恢复为FAIL，不靠重传掩盖"
+    ],
+    "requiredEvidence": [
+      "真实Ready/OS取消/新attempt成功操作",
+      "接收用时冻结与保存时点分离",
+      "最终实存文件外部SHA"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-34",
+    "title": "真实系统保存受阻后可理解地恢复",
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-09",
+      "R-12"
+    ],
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-05"
+    ],
+    "entry": "已真实Ready的保存文件按钮，使用本轮专有受控目标",
+    "preconditions": [
+      "只使用本轮临时专有目标文件，先保存哨兵内容/SHA；不碰用户文件/系统权限设置",
+      "外部持有FileShare.None锁或独立测试只读目标，记录能否在OS选路径/创建可写阶段复现阻碍",
+      "该场景验证真实系统阻碍与恢复；精确write/close异常映射另由IAT-06，不能伪造实际触达"
+    ],
+    "steps": [
+      {
+        "action": "对专有目标建立可控锁/不可写状态；点击保存并在真实OS窗口选择该目标，显式处理仅本轮哨兵的覆盖确认",
+        "expected": "真实系统拒绝或产品报实际原保存错误；文件不被静默破坏；选择未完成/写入失败都不显示已保存",
+        "evidence": [
+          "专有路径/锁或只读设置记录",
+          "系统拒绝窗口或App实际失败状态/原码"
+        ]
+      },
+      {
+        "action": "按真实分支恢复：若OS阻止确认则取消回页；若App失败则直接回主区观察",
+        "expected": "回页后主提示准确（取消或失败按实际结果），artifact仍可保存，不能谎称已捕获write/close故障",
+        "evidence": [
+          "实际返回状态与下一步提示",
+          "失败触达阶段/保留artifact证明"
+        ]
+      },
+      {
+        "action": "解除本轮锁/障碍，重新点击保存到可写的新专有路径",
+        "expected": "无刷新/控制台/重传即可再次保存，真实write+close后Saved",
+        "evidence": [
+          "解除障碍/新保存系统操作",
+          "新attempt实际成功时点"
+        ]
+      },
+      {
+        "action": "核对哨兵是否按实际分支保持，应用外比较原与成功输出SHA；只清理本轮锁句柄/文件",
+        "expected": "成功字节相等，无旧失败事件污染；记录系统层与App层分支分别验证了什么",
+        "evidence": [
+          "哨兵前后SHA",
+          "原/成功收文件SHA",
+          "锁句柄清理记录"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "若装置完全无法构造真实系统阻碍，保持NOT_RUN并附原因；不注入假的文件句柄当成本例PASS",
+      "若只在OS确认阶段受阻，本例可按真实分支判定，但不得宣称App write/close失败分支已E2E执行；精确异常由IAT-06",
+      "如果恢复需重新接收/刷新或哨兵被静默破坏为FAIL，保留原件"
+    ],
+    "requiredEvidence": [
+      "真实OS受阻截图/触达阶段",
+      "原错误码或实际取消分支与恢复动作",
+      "专有哨兵/最终输出实物和外部SHA"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  },
+  {
+    "id": "E2E-35",
+    "title": "无新业务事件仍计时，后台返回不串旧时钟",
+    "acceptanceIds": [
+      "AC-015",
+      "AC-017",
+      "AC-018",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-02",
+      "R-08",
+      "R-10",
+      "R-11",
+      "R-12"
+    ],
+    "taskIds": [
+      "T19",
+      "T31",
+      "T35"
+    ],
+    "sourceAcceptanceIds": [
+      "UX-AT-01",
+      "UX-AT-06",
+      "UX-AT-07"
+    ],
+    "entry": "前台接收尚无有效码的实际源窗口，随后真实切换浏览器前后台",
+    "preconditions": [
+      "原源SRC-01空白/静止有效帧可切换，实际outcome可只读观察；接收尚未完成",
+      "无新snapshot轨迹与后台轨迹分别新会话/独立取证，避免Ready提前终结计时器使测试空测",
+      "后台浏览器节流允许，不承诺后台解码速度或精确刷新"
+    ],
+    "steps": [
+      {
+        "action": "在前台真实抓屏空白源，固定记录业务revision/观测版本，持续观察用时至少5秒",
+        "expected": "即使业务revision不变，用时可见更新且满5秒给等待建议；不能要求为UI伪造revision",
+        "evidence": [
+          "真实revision与前台1秒采样UI时间线",
+          "源空白/无data证据"
+        ]
+      },
+      {
+        "action": "结束该次并按原清理门建立新独立会话，保持未完成；将接收页切到真实后台或最小化至少6秒",
+        "expected": "真实visibility变化有记录，不注入document.visibilityState，不强制后台定时器逐次触发",
+        "evidence": [
+          "前后台切换动作/实际visibility时点",
+          "新seq与开始时钟"
+        ]
+      },
+      {
+        "action": "恢复接收页前台，先观察用时/速率/等待反馈，再做任何停止动作",
+        "expected": "按当前单调时间重算而非补tick；前台1秒取证容差内值正确，无旧高速/旧seq数字；不假自动失败/重启",
+        "evidence": [
+          "回前台即时/+1秒主区截图",
+          "实际now/最后data与View时序"
+        ]
+      },
+      {
+        "action": "恢复同一源的真实原发送码到Ready并实际系统保存，再用新独立会话点击停止验证清理",
+        "expected": "完整接收分支必须得到原/收SHA相等，不能以提前停止替代；独立停止子轨迹终结后UX显示timer释放、用时不再变化",
+        "evidence": [
+          "真实恢复/完成及SHA",
+          "停止/终结后timer与UI冻结证据"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "如果源最小化造成冻结有效码，按实际data解释速率，不能推断无data",
+      "若后台阶段触发原真实错误/源结束，按原错误记录；不把等待文案掩盖错误",
+      "后台节流本身不判性能FAIL；恢复前台仍不重算、旧seq污染或产生额外抓帧为产品FAIL"
+    ],
+    "requiredEvidence": [
+      "前台稳定revision与变化用时",
+      "真实visibility/回前台时间线",
+      "恢复或终结的实物/清理证明"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
+    "sources": [
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "docs/tests/receiver-ux-v2/cases/acceptance.json",
+      "docs/design-catalog/receiver-ux-v2/module-contract-error-matrix.md",
+      "docs/design-catalog/receiver-ux-v2/ui-spec.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "web/main.js",
+      "web/send.js"
+    ]
+  }
+]

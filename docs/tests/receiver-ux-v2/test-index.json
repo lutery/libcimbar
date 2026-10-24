@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "kind": "planning_only",
+  "iterationId": "receiver-ux-v2",
+  "unitFiles": [
+    "cases/core.json",
+    "cases/experience.json",
+    "cases/tooling.json"
+  ],
+  "integrationFile": "cases/integration.json",
+  "acceptanceFile": "cases/acceptance.json",
+  "counts": {
+    "unitAndTooling": 80,
+    "integrationGroups": 8,
+    "acceptanceDefinitions": 10,
+    "skeletonFiles": 12
+  },
+  "skeletonFiles": [
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/client.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/ui.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/video.test.mjs",
+    "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs"
+  ],
+  "performanceMethodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "managedPhasesFingerprint": "e959d3e04150558d7c44b09e58a7918c7362b9a217851b4fc99a2245d9703212",
+  "productAcceptance": "NOT_RUN"
+}

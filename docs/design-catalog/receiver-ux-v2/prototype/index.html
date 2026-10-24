@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>接收器体验 v2 · 交互原型</title>
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <aside class="design-bar" aria-label="原型演示控制">
+    <div><strong>界面设计预览</strong><span>演示数据 · 不采集屏幕、不读取录像、不写入文件</span></div>
+    <label>查看状态 <select id="scenario" aria-label="查看演示状态"></select></label>
+  </aside>
+  <header class="app-header"><h1>Cimbar 文件接收器</h1><span class="pill">模式 B</span></header>
+  <main>
+    <nav class="actions" aria-label="接收操作">
+      <button id="btn-live" class="primary" type="button">实时抓屏</button>
+      <button id="btn-video" type="button">录像导入</button>
+      <button id="btn-stop" type="button" disabled>停止接收</button>
+      <button id="btn-save" class="save" type="button" disabled>保存文件…</button>
+    </nav>
+    <div class="content-grid">
+      <section class="receive-panel" aria-labelledby="status-title">
+        <div class="status-top"><span id="state-tag" class="state-tag">等待开始</span><span id="source" class="muted">尚未选择输入</span></div>
+        <div id="status-announcement" role="status" aria-live="polite" aria-atomic="true">
+          <h2 id="status-title">准备好接收文件</h2>
+          <p id="status-detail" class="description"></p>
+        </div>
+        <div class="progress-heading"><label for="rebuild-progress">码流重建进度 <span class="muted">（估计）</span></label><strong id="progress-text">尚未开始</strong></div>
+        <progress id="rebuild-progress" max="100" value="0" aria-label="码流重建进度估计"></progress>
+        <p id="progress-note" class="muted small"></p>
+        <dl class="metrics">
+          <div><dt>近期数据识别速率</dt><dd><span id="rate">—</span><small id="rate-unit"></small><p>含协议及冗余数据</p></dd></div>
+          <div><dt>接收用时</dt><dd><span id="elapsed">00:00</span><p id="elapsed-note">开始接收后计时</p></dd></div>
+        </dl>
+        <section id="video-position" class="media-position" hidden aria-label="录像处理位置">
+          <div><span>录像处理位置</span><strong id="media-text">01:20 / 02:30</strong></div>
+          <progress id="media-progress" max="150" value="80" aria-label="录像处理位置"></progress>
+          <p class="small muted">这是录像读取位置，文件是否完整以重建结果为准。</p>
+        </section>
+        <section id="artifact" class="artifact" hidden aria-label="已接收文件">
+          <div class="file-icon" aria-hidden="true">↓</div><div><strong>项目资料.zip</strong><p>4.00 MiB · 单文件</p></div><span id="file-status" class="muted">等待保存</span>
+        </section>
+        <section id="save-demo" class="save-demo" hidden aria-labelledby="save-demo-title">
+          <h3 id="save-demo-title">保存操作演示</h3><p>实际产品会打开系统保存窗口；此处仅预览取消、失败和成功后的反馈。</p>
+          <div class="demo-actions"><button id="save-ok" type="button" class="primary">模拟保存成功</button><button id="save-cancel" type="button">模拟取消</button><button id="save-fail" type="button">模拟写入失败</button></div>
+        </section>
+      </section>
+      <aside class="guide" aria-labelledby="guide-title">
+        <h2 id="guide-title">接下来怎么做</h2>
+        <p id="next-action"></p>
+        <div class="guide-divider"></div>
+        <h3>两种方式都能接收</h3>
+        <p><strong>实时抓屏</strong><br>选择显示云桌面发送画面的窗口或屏幕。</p>
+        <p><strong>录像导入</strong><br>选择已录好的发送画面，逐帧读取并重建文件。</p>
+        <p class="small muted">一次发送一个文件。发送完成后，仍需在这里点击“保存文件”。</p>
+      </aside>
+    </div>
+    <section class="preview" aria-labelledby="preview-heading"><h3 id="preview-heading">输入预览</h3><div id="preview-placeholder">原型不采集输入。实际产品在活动接收期间保持所选画面可见。</div></section>
+    <details class="diagnostics"><summary>诊断详情</summary><pre id="diagnostic-text"></pre></details>
+  </main>
+  <script src="prototype.js"></script>
+</body>
+</html>

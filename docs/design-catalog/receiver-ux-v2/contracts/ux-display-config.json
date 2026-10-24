@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "scope": "receiver-ux-v2-internal",
+  "reportBufferBytes": 1024,
+  "maxReportStreams": 8,
+  "rateBucketCount": 12,
+  "rateBucketMs": 250,
+  "rateWindowMaxMs": 3000,
+  "rateWarmupMs": 1000,
+  "viewRefreshMinMs": 250,
+  "firstDataNoticeMs": 5000,
+  "noDataNoticeMs": 5000,
+  "noAdvanceNoticeMs": 8000,
+  "processingNoticeMs": 1500,
+  "maxDiagnosticCodes": 15,
+  "displayRateUnit": "KiB/s",
+  "includesRedundancy": true,
+  "performanceSLA": false,
+  "notice": "Initial design constants; actual overhead and real UI behavior remain for stage 4.x/5 acceptance."
+}

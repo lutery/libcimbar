@@ -1,0 +1,31 @@
+sequenceDiagram
+  actor U as 使用者
+  participant A as App与显示时钟
+  participant S as SessionCoordinator
+  participant W as 旧Worker
+  participant V as SaveController与系统
+  U->>A: 停止会话A
+  A->>S: 原stop请求
+  A->>A: 解除A的显示时钟
+  S->>W: 原关闭及清理
+  W-->>S: 迟到帧结果A
+  S->>S: 按原seq规则拒绝旧观测
+  S-->>A: cleanupComplete
+  U->>A: 通过任一入口开始B
+  A->>S: 原start请求
+  S->>S: 创建新seq与零遥测
+  A->>A: 创建B的显示时钟
+  A->>A: 任何迟到A tick直接丢弃
+  S-->>A: B的真实artifact完成
+  A-->>U: 可保存
+  U->>A: 点击保存文件
+  A->>V: 原保存操作与用户激活
+  alt 用户取消或写入失败
+    V-->>S: cancelled或failed
+    S-->>A: Retryable且保留artifact
+    A-->>U: 明确可再次保存
+  else write和close成功
+    V-->>S: saved
+    S-->>A: Saved
+    A-->>U: 文件已保存
+  end

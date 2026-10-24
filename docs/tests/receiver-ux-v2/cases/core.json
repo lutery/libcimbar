@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "UX-UT-001",
+    "title": "完整长度读取支持空报告、单比例与最多八流",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19005
+    ],
+    "given": "VM真实加载当前classic Worker；fake Module提供合法核心导出，report字节分别为零长度、[]、[0]、[0.25]、[1.2]和八个比例；返回长度之后刻意留垃圾字节且不加NUL。",
+    "when": "通过原frame入口提交data帧，按返回长度读取旁路报告。",
+    "then": "报告按完整文本分类；0长度或[]为empty，单值含大于等于1仍为single，八流为multiple。",
+    "assertions": [
+      "只读取返回的n字节，尾部垃圾不进入JSON；零长度不得读取旧缓冲。",
+      "single.ratios精确等于原数值；不夹成99%或1。",
+      "八流diagnosticCode=19005，无虚构streamId。",
+      "原frameId/outcome=data/bytesDecoded=625保持；report不触发额外frame-result。"
+    ],
+    "fixtures": [
+      "web/desktop-recv/tests/helpers/worker-vm.mjs（现有VM，阶段5扩展report导出写入spy）",
+      "report表：n=0、[]、[0]、[0.25]、[1.2]、[0,0.1,0.2,0.3,0.4,0.5,0.6,1.2]；fountain=0n；scan=625"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；现有Worker尚未附uxObservation，断言合法报告分类应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-002",
+    "title": "可选report导出缺失不阻止初始化和数据交付",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19001
+    ],
+    "given": "fake Module保留所有原REQUIRED_EXPORTS但删除_cimbard_get_report。",
+    "when": "完成init并提交一个scan=625、fountain=0n的数据帧。",
+    "then": "init仍ready，原数据仍交付，报告为unavailable/19001。",
+    "assertions": [
+      "不得把report加入REQUIRED_EXPORTS或产生15002。",
+      "报告能力缺失与旧Worker旁路缺失19015分开。",
+      "一个输入帧仍只交付一次业务结果，不创建重试或新解码。"
+    ],
+    "fixtures": [
+      "现有makeFakeModule；仅删除可选_cimbard_get_report；保留资产摘要正例"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；尚无report降级字段，19001断言应失败而非以缺测试环境作为RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-003",
+    "title": "报告缓冲长度边界拒绝截断和非法返回值",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19002,
+      19003
+    ],
+    "given": "固定报告缓冲1024字节；合法JSON[0.5]加空格补至1023字节；另有返回长度1024、1025、-1、1.5、NaN、Infinity和非安全整数。",
+    "when": "每个独立VM用同一data帧入口读取报告。",
+    "then": "1023完整字节可解析；达到或超过1024的合法整数为19003；非法长度为19002，均不部分采信。",
+    "assertions": [
+      "1023字节正例为single且ratio=0.5。",
+      "n=1024/1025不尝试解析缓冲前半段，不扩大缓冲。",
+      "负数/非整数/非有限/非安全整数归unavailable/19002。",
+      "全部负例原outcome=data且bytesDecoded=625；没有UX码冒充frame_error。"
+    ],
+    "fixtures": [
+      "固定1024B fake heap报告区域；1023B JSON空格正例；长度返回值表"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前Worker缺长度策略，合法边界及精确降级码断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-004",
+    "title": "非法JSON与UTF8报告整体拒绝且不采信部分比例",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19004
+    ],
+    "given": "报告输入为截断JSON、对象/null/字符串、负比例、字符串数字、1e309、九项数组及非法UTF8；另有混合合法和非法项数组。",
+    "when": "在合法data帧读取报告，下一数据帧改为[0.7]。",
+    "then": "非法帧为unavailable/19004且ratios=[]；下一真实data帧可恢复single。",
+    "assertions": [
+      "非法UTF8必须按fatal解码拒绝，不以替代字符继续。",
+      "[-0.1]、[\"0.2\"]、[0.2,-0.1]、[1e309]和九项数组全部整体拒绝。",
+      "不得保留非法文本中可用前缀或前八项。",
+      "下一真实帧重试报告读取而非重启Worker；业务数据继续。"
+    ],
+    "fixtures": [
+      "report文本表：{\"x\":1}、null、\"x\"、[0.2、[-0.1]、[\"0.2\"]、[0.2,-0.1]、[1e309]、九项数组；UTF8字节0xC3,0x28"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前无严格report解析，拒绝规则及下一帧恢复断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-005",
+    "title": "仅在fountain非负后且产物处理前采样报告",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05",
+      "R-06"
+    ],
+    "diagnosticCodes": [],
+    "given": "Module spy记录scan、fountain、get_report、get_filesize、decompress_read顺序；scan可改写共享调试文本，产物读会模拟删除stream报告。",
+    "when": "分别提交scan无数据、scan错误、fountain负值/错误ABI、fountain=0n和正artifact帧。",
+    "then": "no_data/error不读取report；数据帧在fountain成功后读取，artifact帧在首次build_artifact调用前读取。",
+    "assertions": [
+      "data顺序为scan→fountain→report；artifact顺序为scan→fountain→report→build相关导出。",
+      "get_report在no_data、真正error和错误ABI分支调用次数为0，不能采信scan调试文本。",
+      "artifact分支保留被删除前的report，不在decompress/recover之后补读。",
+      "原outcome和原错误码逐分支不变；不新增轮询。"
+    ],
+    "fixtures": [
+      "现有worker-vm.mjs；有顺序日志的fake导出；artifact构造仍走既有严格EOF正例"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；原Worker没有report调用，调用顺序和触发分支断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-006",
+    "title": "报告使用当前HEAP且单个1024字节缓冲复用释放",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05",
+      "R-08"
+    ],
+    "diagnosticCodes": [
+      19002
+    ],
+    "given": "fake get_report在调用中替换Module.HEAPU8并写入新堆；malloc/free spy能区分报告与原img/fountain/dec/name分配。",
+    "when": "连续提交多帧数据，模拟堆增长，再发送close两次。",
+    "then": "读取当前堆得到完整比例；同Worker报告分配最多一个1024字节缓冲，close不会重复释放。",
+    "assertions": [
+      "堆增长正例ratio取新堆[0.75]而非旧视图[0.25]。",
+      "报告字节在后续堆覆写后保持已解析观测值，不持有可变堆切片。",
+      "报告分配不随帧数增加；报告指针释放一次，原缓冲生命周期仍有效。",
+      "堆切片不足n字节归19002且原data结果继续。"
+    ],
+    "fixtures": [
+      "worker-vm.mjs扩展：可替换HEAPU8、按指针记录1024B分配与free、get_report内触发heap growth"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；现有无报告缓冲，当前堆读取/复用/释放断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-007",
+    "title": "report异常局部降级且不掩盖真正解码或预算错误",
+    "level": "unit",
+    "target": "web/desktop-recv/worker/decoder-worker.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/worker.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-05",
+      "R-06"
+    ],
+    "diagnosticCodes": [
+      19002,
+      19004
+    ],
+    "given": "报告分配返回0/抛错、get_report抛错、JSON坏格式；独立分支中原decompress返回-15或产物超预算。",
+    "when": "通过原frame入口运行这些旁路失败及核心失败组合。",
+    "then": "UX异常只降报告；真正核心失败仍按原业务错误结算，无半文件。",
+    "assertions": [
+      "report malloc/get_report异常不冒泡为原frame_error，data仍625B。",
+      "报告失败不阻止严格EOF成功产物交付。",
+      "有效report也不能把decompress=-15的15007或超预算15008改成data/artifact。",
+      "每帧一个业务结果；没有自动重建、额外submit或UX错误污染v1 Error。"
+    ],
+    "fixtures": [
+      "VM故障注入，仅用于unit_integration；现有UT-022/023核心正负例作为独立回归参照"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；真实旁路异常隔离尚未实现，应由上述行为断言失败形成RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-008",
+    "title": "pending提交时间来自主线程原postMessage之前",
+    "level": "unit",
+    "target": "web/desktop-recv/src/decoder-client.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/client.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-07"
+    ],
+    "diagnosticCodes": [],
+    "given": "DecoderClient注入owner=(s1,1)和nowMs；时钟初始100ms，fakeWorker.postMessage内推进至200ms并读取pending元数据。",
+    "when": "按原submitFrame提交一帧，然后在UI等到800ms才读取当前pending元数据。",
+    "then": "submittedAtMs始终100，getter反映真正pending而非首次显示时点。",
+    "assertions": [
+      "postMessage发生前元数据已含sessionId=s1、sessionSeq=1、原frameId和submittedAtMs=100。",
+      "800ms查询不会把submittedAtMs改成800；不得使用Worker绝对时间。",
+      "元数据不进入postMessage payload、原stats或公开v1；原transfer仍只有像素buffer。",
+      "查询不提交新帧、不新增timer或pending项。"
+    ],
+    "fixtures": [
+      "现有client.test.mjs fakeWorker；阶段5注入可手动推进主线程单调时钟；24B像素仅作原传输负载"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前pending没有owner/时点只读接口，实际post前时间断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-009",
+    "title": "关联结果清理pending元数据且迟到或错误frameId不串入",
+    "level": "unit",
+    "target": "web/desktop-recv/src/decoder-client.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/client.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-07"
+    ],
+    "diagnosticCodes": [],
+    "given": "已init的Client有一个真实pending帧，getter返回该帧owner和提交时点。",
+    "when": "先发错误frameId，再发匹配结果，然后重发旧frame-result。",
+    "then": "错误id不清当前pending；匹配结果只结算一次且getter即为null，旧回应不复活元数据。",
+    "assertions": [
+      "匹配frame-result前仍可读原提交时点；匹配后没有假inFlight。",
+      "getter清空不依赖下一次UI刷新或scheduler Promise后续微任务。",
+      "原result字段及可选uxObservation原样解析，额外的迟到结果不重结算。",
+      "只读元数据返回值被外部尝试改写时不能改变Client保存的owner/时点。"
+    ],
+    "fixtures": [
+      "fakeWorker.emit和settlement spy；原客户端onmessage真实入口"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；现有无提交元数据getter，清理/只读断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-010",
+    "title": "所有失败出口同步清除UX pending并保留原收敛码",
+    "level": "unit",
+    "target": "web/desktop-recv/src/decoder-client.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/client.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-07",
+      "R-08"
+    ],
+    "diagnosticCodes": [],
+    "given": "每个独立测试有一个pending帧；使用原失败路径postMessage抛错、frame watchdog、worker error、messageerror和close。",
+    "when": "触发一种失败后再送late frame-result或再次close。",
+    "then": "pending元数据为空，原promise/失败hook仍只结算一次且保持原业务码。",
+    "assertions": [
+      "postMessage/error/messageerror/close保持15010；frame watchdog保持14003。",
+      "每种出口都清真实pending和它的时点；晚到结果不会显示处理旧帧。",
+      "原Worker释放、看门狗清理与onFailure一次语义保留。",
+      "本用例不要求Client新增拒绝并行策略；single-flight由现有Scheduler另行回归。"
+    ],
+    "fixtures": [
+      "现有UT-056..061/087模式；使用可控timer或确定失败事件，不用真实30秒等待"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；待加元数据的失败清理断言会在当前实现失败，不能把任意超时当UX RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-011",
+    "title": "观测查询不会新增通道消息、轮询或队列",
+    "level": "unit",
+    "target": "web/desktop-recv/src/decoder-client.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/client.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-07",
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "原Client正常init和单帧提交，记录posted消息、pending数、timer创建/释放及promise结算次数。",
+    "when": "在不产生新frame的前提下多次查询pending与提交时点，期间推进显示时钟。",
+    "then": "查询无副作用，原结果处理和单在途调度不变。",
+    "assertions": [
+      "反复查询前后posted仍仅init+原frame，pending数不变。",
+      "没有UX类型postMessage或report polling；没有额外看门狗。",
+      "owner/真实提交时点不因查询修改；完成后所有查询为null。",
+      "原提交像素transfer/ready/close仍符合现有测试，不以该测试替代真实浏览器。"
+    ],
+    "fixtures": [
+      "Client fakeWorker + timer spy；Scheduler单在途已有测试在正式全量套件执行"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前缺只读观测入口，接口断言应先失败，后续GREEN还必须证明无额外消息。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-012",
+    "title": "Receiving才开始计时且创建Client时捕获正确owner",
+    "level": "unit",
+    "target": "web/desktop-recv/src/session.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-02",
+      "R-07"
+    ],
+    "diagnosticCodes": [],
+    "given": "分别创建live/video会话；手动控制picker/source与Client init完成；主线程时钟Preparing=100，最后依赖就绪=600。",
+    "when": "按真实会话路径进入Receiving，并读取本次UX观测。",
+    "then": "receivingAtMs=600，elapsed从600计；createClient收到新会话的id/seq。",
+    "assertions": [
+      "Preparing等待不算接收耗时；初始化失败或选择取消未进入Receiving则elapsed=null。",
+      "Client工厂接收的是创建时捕获的sessionId/sessionSeq，不从迟到回调推断当前owner。",
+      "source/Client以两种相反顺序就绪都只begin一次。",
+      "原同步打开选择器、cleanup门和业务revision语义保留。"
+    ],
+    "fixtures": [
+      "现有session.test.mjs fakeStream/fakeClient及延迟promise；新增注入单调clock，仍使用原startLive/startVideo"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；现有Session未接UX begin或向Client工厂传owner，起点与owner断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-013",
+    "title": "旧Worker及坏旁路只降UX并保留每帧核心结果",
+    "level": "unit",
+    "target": "web/desktop-recv/src/session.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19008,
+      19013,
+      19015
+    ],
+    "given": "原frame-result依次携带无uxObservation、version=2、非法结构以及合法报告；核心结果分别为data/artifact/error。",
+    "when": "从当前Client/Scheduler原关联结果路径进入Session消费函数。",
+    "then": "无旁路记19015，未知版19013，坏结构19008；data字节仍能计速，原产物/错误独立结算。",
+    "assertions": [
+      "旧Worker旁路缺失不冒称19001导出缺失；未知版不猜测字段。",
+      "主线程receivedAtMs取实际消费时钟，不复用Worker绝对时间。",
+      "data/artifact使用原合法正bytesDecoded；no_data/error传入模型字节为0且report=not_sampled。",
+      "旁路拒绝不能吞掉真实artifact或原错误，也不能创建额外frame消费。"
+    ],
+    "fixtures": [
+      "session当前原result消费入口；fakeClient.deliver可选旁路数据表；真实WASM能力另由T16/T19 IAT验证"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前Session无旁路归一/接纳桥，精确兼容码和保留核心行为联合断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-014",
+    "title": "旧seq、重复帧及实时录像切换不污染新观测",
+    "level": "unit",
+    "target": "web/desktop-recv/src/session.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T16",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-017",
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02"
+    ],
+    "diagnosticCodes": [
+      19007
+    ],
+    "given": "会话A接收过数据后stop并收敛；按原cleanup门启动相反inputKind的B；A仍有可手动送出的旧响应。",
+    "when": "分别送A迟到响应、B重复frameId以及B一个正常新响应。",
+    "then": "B只有新的当前帧记一次；B起点/桶/进度/保存显示不继承A。",
+    "assertions": [
+      "A结果不改变B的bytes、lastData、lastAdvance、revision、artifact或输入类型。",
+      "B重复帧不加速率或抬revision；新帧计一次。",
+      "正常video submitAndWait单次返回只接纳一次；不声称现有录像onResult必然重复调用。",
+      "所有权过滤仍沿原Client/seq，不用UX owner替代原Worker对象关联。"
+    ],
+    "fixtures": [
+      "原Session fakeClient延迟交付，原FrameScheduler路径；live→video和video→live参数化"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前无UX状态隔离，新增观测字段/不污染断言应失败；不借RED重构正常调度。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-015",
+    "title": "真实终点冻结用时而比例与EOF不能生成Ready",
+    "level": "unit",
+    "target": "web/desktop-recv/src/session.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16",
+      "T20",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-02",
+      "R-06"
+    ],
+    "diagnosticCodes": [],
+    "given": "Receiving起点100ms；先送single=1.2而没有artifact；input ended进入Draining；分别准备真实artifact、Incomplete、用户stop、原fatal错误终点。",
+    "when": "按原结果/结束路径在900ms终结，再推进至1500ms并清理/销毁。",
+    "then": "Draining继续计时；只能真实业务终点finish，最终接收用时800ms且之后不增长。",
+    "assertions": [
+      "比例>=1不触发Ready/Saved或启用保存；单独EOF且无完整artifact仍Incomplete。",
+      "真实artifact分支的Ready及原错误/停止/Incomplete结算不被UX替代。",
+      "冻结后stop/dispose不改endedAt/elapsed，不保留接收tick。",
+      "准备阶段失败保持elapsed=null；原保存耗时不会计入接收时长。"
+    ],
+    "fixtures": [
+      "原Session结果和finishStream/stop入口；时钟100→900→1500；每种终点使用独立会话"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前没有观测freeze；必须由冻结时点/无假Ready断言失败形成RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-016",
+    "title": "UX读写不扩充旧v1或伪造业务revision",
+    "level": "unit",
+    "target": "web/desktop-recv/src/session.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/session.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T16",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-05",
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [
+      19001,
+      19015
+    ],
+    "given": "相同原业务snapshot配上多次UX查询、report降级与速率窗口时间变化；已读取冻结receiver-v1 schema。",
+    "when": "读取UX和toContractSnapshot，保持原state不变并推进主线程时钟。",
+    "then": "UX有独立observationRevision，原v1 Snapshot/stats/Error字节与字段集合不变。",
+    "assertions": [
+      "仅时钟投影不能调用Session._emit({})，business revision/eventSeq与onSnapshot次数不增加。",
+      "toContractSnapshot字段精确符合旧schema，不出现uxObservation、rate、progress、190xx。",
+      "原processed/completed等业务stats含义不因UX重复/拒绝改变。",
+      "原schema/error登记作为只读输入；不修改枚举来使测试绿灯。"
+    ],
+    "fixtures": [
+      "现有session.test.mjs assertConforms与toContractSnapshot；docs/design-catalog/contracts/receiver-v1.schema.json只读"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；旧v1回归可能已绿；新增UX独立投影/不调用_emit断言必须先因缺功能失败，再连同旧约束保持GREEN。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-017",
+    "title": "begin同owner幂等并在新seq完整清空",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-02"
+    ],
+    "diagnosticCodes": [
+      19007,
+      19008,
+      19013
+    ],
+    "given": "新ReceiverTelemetry，begin(s1,seq1,live,100)，已接数据和保存观测；另有相同begin、同seq冲突owner/kind、旧seq和新seq。",
+    "when": "依次应用begin请求并比较每次完整观测快照。",
+    "then": "首次revision=1/applied=true；相同begin不清零；冲突拒绝，新seq才全量重置。",
+    "assertions": [
+      "同id/seq/kind重复begin为applied=false，receivingAt不移动且observationRevision不提升。",
+      "更旧seq返回19007；同seq冲突id/kind返回19008；未知version返回19013。",
+      "合法新seq按Session cleanup门调用后，12桶、rateEpoch、所有时间/比例/歧义/保存attempt/诊断清空。",
+      "拒绝请求不部分应用，不修改当前会话。"
+    ],
+    "fixtures": [
+      "schema BeginRequest正例；明确值s1/1/live/100；新s2/2/video/9000；非法版本2"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；新增ReceiverTelemetry尚不存在；迁移后需先落实幂等断言而不能只把模块缺失写作永久RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-018",
+    "title": "FrameInput字段与时钟校验先于任何UX应用",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-017",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-05",
+      "R-08"
+    ],
+    "diagnosticCodes": [
+      19008,
+      19009,
+      19013
+    ],
+    "given": "begin时间100；上次接受frameId=1于200ms；输入含非法frameId/owner、data字节0或非整数、no_data带正字节、未知字段/版本或无效时间。",
+    "when": "对每个独立负例调用acceptFrame，随后送一个合法当前帧。",
+    "then": "负例以准确UX诊断拒绝且原快照不变，后续合法帧仍可接纳。",
+    "assertions": [
+      "非法结构/业务矛盾19008；版本非1为19013；receivedAt早于receivingAt/上次已接受结果或非有限时钟为19009。",
+      "不消耗lastAcceptedFrameId，不更新bytes/lastData/lastAdvance/observationRevision。",
+      "no_data/error只允许0B及not_sampled；data/artifact必须正安全整数，不能使用RGBA大小。",
+      "负例拒绝是UX动作结果，不能更改核心frame outcome或业务错误。"
+    ],
+    "fixtures": [
+      "确定值begin100、前帧200；时间99/199/NaN/Infinity/-1；字节0/1.5/MAX_SAFE_INTEGER+1；未知字段autoRestart"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；正式测试应先因校验接口/拒绝语义缺失而RED，不能仅用schema验证代替运行时断言。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-019",
+    "title": "frameId、seq与冻结状态严格幂等",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-017",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-01"
+    ],
+    "diagnosticCodes": [
+      19007
+    ],
+    "given": "当前seq2已接受frameId=5的数据，保存完整观测；另有相同/更小id、旧seq1和finish后的新id。",
+    "when": "逐一调用acceptFrame并读取观测。",
+    "then": "所有过期观测返回19007，当前事实一项也不变化。",
+    "assertions": [
+      "frameId<=5不增加bytes、lastData、lastAdvance、任何桶或observationRevision。",
+      "旧seq即便frameId更大仍拒绝。",
+      "finish/stopped冻结后即便是更大当前帧仍拒绝。",
+      "一个新的当前有效帧只增长一次revision；原业务结果仍独立处理。"
+    ],
+    "fixtures": [
+      "FrameInput数据625B、ratio0.25；重复id5/4、旧seq1/id100、冻结后id6"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；新增模型缺过期拒绝，正式运行需出现精确19007及不变性断言的行为RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-020",
+    "title": "重复单流比例不伪造进展但仍记录真实数据字节",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-04"
+    ],
+    "diagnosticCodes": [],
+    "given": "同一owner在1000ms收到0.25、1250ms重复0.25、1500ms收到0.5，每个原数据帧625B。",
+    "when": "按三个递增frameId接纳后读取观测和进度投影。",
+    "then": "首次建立基准，重复不推进lastAdvance，严格增大才推进；三个实际数据帧均可记速率。",
+    "assertions": [
+      "第一次lastAdvance=1000，第二次仍1000，第三次为1500。",
+      "百分比依次为0.25、0.25、0.5，不按帧数插值。",
+      "三个data字节累计1875B，包含冗余；不宣称新增1875B文件有效载荷。",
+      "重复报告与重复frameId是两种情况：后者由UX-UT-019不计数。"
+    ],
+    "fixtures": [
+      "合法报告[0.25]/[0.25]/[0.5]；frameId1/2/3；receivingAt=0"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；尚无报告推进/冗余语义，lastAdvance与字节独立断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-021",
+    "title": "多流报告锁歧义直到新seq不猜测流身份",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-03"
+    ],
+    "diagnosticCodes": [
+      19005
+    ],
+    "given": "先single0.2，后multiple[0.3,0.8]，再single0.9；同seq仍有近期data。",
+    "when": "接纳并每次读取progress，再用新seq开始。",
+    "then": "多流后progress为ambiguous且ratio=null，后续single不解锁；新seq才清空歧义。",
+    "assertions": [
+      "不能选第一项、最大值、求和或按数组索引臆造streamId。",
+      "歧义码19005并按seq去重，data速率仍可计。",
+      "后续single0.9不恢复百分比。",
+      "新seq初值无继承锁，新的合法single可形成estimate。"
+    ],
+    "fixtures": [
+      "single0.2→[0.3,0.8]→single0.9；新seq single0.1"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；尚无ambiguity锁，正式断言会因错误恢复比例或缺模型而RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-022",
+    "title": "有效单流比例回退锁歧义且不以最高值夹住",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-03"
+    ],
+    "diagnosticCodes": [
+      19006
+    ],
+    "given": "同seq三个合法single依次0.6、0.4、0.8，均有正data字节。",
+    "when": "按时间顺序acceptFrame并readView。",
+    "then": "0.4触发19006和ambiguous，后续0.8仍不可展示比例。",
+    "assertions": [
+      "不能显示max历史0.6、当前0.4或后续0.8冒称当前文件进度。",
+      "同值不算回退；严格小于最近可信single才锁。",
+      "歧义不停止接收、不改变原outcome，速率仍工作。",
+      "新seq重置才能解除；临时无报告不能重置可信比较基线。"
+    ],
+    "fixtures": [
+      "single0.6→0.4→0.8；独立相等0.6→0.6对照"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；尚无回退锁；正式断言需在补逻辑前RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-023",
+    "title": "临时空或缺报告隐藏比例但保留可信历史",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-05"
+    ],
+    "diagnosticCodes": [
+      19002,
+      19004,
+      19006,
+      19015
+    ],
+    "given": "当前可信single0.6；随后报告empty/unavailable（19002/19004/19015），但每帧仍解出625B；之后分别恢复single0.7或0.5。",
+    "when": "对两条独立分支接受报告并投影。",
+    "then": "临时不可用隐藏百分比而非展示旧0.6；恢复0.7可估计，恢复0.5仍依据历史判回退。",
+    "assertions": [
+      "不可用期间rate仍基于真实bytes，progress为unavailable且ratio=null。",
+      "empty不清lastAdvance或最后可信0.6；不误报“没有新块”作为可判定结论。",
+      "恢复0.7推进；恢复0.5触发19006且锁歧义。",
+      "已有多流锁也不能被empty/unavailable清除。"
+    ],
+    "fixtures": [
+      "0.6→empty/unavailable→0.7与0.5两分支；各种报告码作参数表"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前缺隐藏与保留基线规则，应先在实际模型行为断言RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-024",
+    "title": "理论比例达到一仍为不确定收集不触发完成",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-020"
+    ],
+    "runtimeIds": [
+      "R-06"
+    ],
+    "diagnosticCodes": [],
+    "given": "Receiving且原context无artifact、canSave=false；合法单比例依次0、0.999、1、1.4。",
+    "when": "接受帧并readView；另用真实业务artifact上下文及finish事件做正向对照。",
+    "then": "0<=p<1为estimate，p>=1为enough_data/ratio=null；只有真实artifact对应complete。",
+    "assertions": [
+      "1和1.4不显示100%、不硬钉99%、不自造Ready/Saved。",
+      "原controls逐位透传，不能因比例启用保存。",
+      "不得从进度调用finish或创建artifactId。",
+      "真实artifact后complete.ratio=1；模型正例不代替Session产物/保存IO证据。"
+    ],
+    "fixtures": [
+      "只读Receiving context四布尔；single0/0.999/1/1.4；当前artifactId=42的业务正例"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前无UX enough_data/estimate投影，正式比例边界断言应失败。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-025",
+    "title": "十二桶精确边界归属和稳定窗口分母",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-04"
+    ],
+    "diagnosticCodes": [],
+    "given": "rateEpoch=0；data字节依次为t0:10B、t249.9:20B、t250:30B、t2999.9:40B、t3000:50B。",
+    "when": "以递增frameId接纳；在2999.9接受后及3000接受后查询速率。",
+    "then": "前四帧和100B在2999.9均保留；3000时q=12保留桶1..12，桶0的30B淘汰，保留120B。",
+    "assertions": [
+      "独立数学预期：t2999.9的windowMs=2999.9、bytes/s=100000/2999.9。",
+      "t3000的window起点=250、windowMs=2750、保留字节=30+40+50=120、bytes/s=480/11。",
+      "t0和249.9同桶，250进入下一桶；2999.9为桶11，3000为桶12。",
+      "实现只保留12槽；expected常量/分数直接来自上述算例，禁止调用实现算expected。"
+    ],
+    "fixtures": [
+      "纯逻辑手动clock及固定字节表；浮点比较用明确绝对/相对容差1e-9"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；新窗口数学尚未实现，独立数字断言在正式测试中应先RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-026",
+    "title": "一秒预热边界使用实际覆盖期而非固定三秒",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-04"
+    ],
+    "diagnosticCodes": [],
+    "given": "epoch=0，仅t250接受1024B，之后只前进查询时钟。",
+    "when": "依次查询999.9、1000、2999.9、3000和3250ms。",
+    "then": "不足1000时warming/null；1000后按实际windowMs算率，3250淘汰样本为0。",
+    "assertions": [
+      "t999.9：warming且数值null；t1000：window1000、1024B/s。",
+      "t2999.9：window2999.9、1024000/2999.9 B/s。",
+      "t3000：window2750、4096/11 B/s；不能固定除3000。",
+      "t3250：active、0B/s；零速率不应重新进入warming。"
+    ],
+    "fixtures": [
+      "单个1024B@250ms数据；独立算例来自冻结实施计划配方C"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；未有预热/窗口逻辑，精确边界断言应先RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-027",
+    "title": "停止数据后不超过三秒速率归零且无snapshot也刷新",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-04",
+      "R-10"
+    ],
+    "diagnosticCodes": [],
+    "given": "epoch0；独立分支最后一帧625B在249.9ms或250ms，之后没有任何onSnapshot和新data。",
+    "when": "仅readView随当前主时钟推进到样本所在桶的淘汰边界。",
+    "then": "249.9样本在3000ms淘汰，250样本在3250ms淘汰；最多3000ms后为0。",
+    "assertions": [
+      "样本@249.9在2999.9仍可非零，3000为0；@250在3249.9仍可非零，3250为0。",
+      "不继续展示收到最后一帧时的高值；没有snapshot也按now投影。",
+      "速率归零不修改业务revision、停止接收或伪造文件完成。",
+      "窗口正数且phase=active，不把0展示成未知故障。"
+    ],
+    "fixtures": [
+      "手动clock两个独立样本；冻结业务context和observationRevision"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；正式断言应先暴露无独立时间投影或陈旧速率行为。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-028",
+    "title": "只计真实解码字节且明确包含冗余",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-017",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-04",
+      "R-05"
+    ],
+    "diagnosticCodes": [],
+    "given": "epoch0，两个不同frameId的data各625B但ratio均0.25；夹入no_data/error零字节；输入像素RGBA可远大于625B。",
+    "when": "在1000ms查询rate。",
+    "then": "data的1250B计入分子，no_data/error和像素大小不计；速率含冗余。",
+    "assertions": [
+      "确定预期window1000ms、1250B/s；includesRedundancy=true。",
+      "same ratio并非相同frameId，两个真实解码结果都计字节。",
+      "no_data/error不刷新lastData或lastAdvance，只更新结果时点。",
+      "不称文件有效吞吐或按压缩比反推原文件字节/ETA。"
+    ],
+    "fixtures": [
+      "data625B@100/@500；no_data0B@250；error0B@750；query1000；ratio始终0.25"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前缺有界数据速率，字节含义与数值联合断言应先RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-029",
+    "title": "安全整数溢出只重置速率域并保留接收事实",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-08"
+    ],
+    "diagnosticCodes": [
+      19010
+    ],
+    "given": "begin=0；布局A同桶：frameId=1于250ms接受MAX_SAFE_INTEGER字节，frameId=2仍于250ms接受1B和有效single0.5；布局B跨桶：frameId=1于0ms接受MAX_SAFE_INTEGER字节，frameId=2于250ms接受1B和有效single0.5。相同单调时点允许且frameId严格递增；两种独立布局都在250ms触发不安全累加。",
+    "when": "acceptFrame触发溢出后在1249.9及1250查询；再加入小额正常帧。",
+    "then": "丢弃本条速率样本，清12桶并rateEpoch=250重新预热；接收起点和data/进度事实保持。",
+    "assertions": [
+      "诊断19010；receivingAt仍0，lastData=250且合法single0.5仍可推进。",
+      "1249.9距新epoch不足1000为warming/null；1250为active且0B/s。",
+      "elapsed在1250为1250，不因rate重置归零。",
+      "无Infinity/夹MAX_SAFE速率；原outcome继续，后续正常字节可计。"
+    ],
+    "fixtures": [
+      "布局A：begin=0，MAX_SAFE_INTEGER B@250ms/frameId1，1B@250ms/frameId2；两帧在桶1，同一主线程时点不倒退；第二帧触发桶内溢出。",
+      "布局B：begin=0，MAX_SAFE_INTEGER B@0ms/frameId1，1B@250ms/frameId2；分别在桶0和桶1；第二帧触发窗口总和溢出。",
+      "两布局均rateEpoch重置为250ms；查询1249.9ms为warming/null，1250ms为active/0B/s；后续正常小帧在这两个查询之后加入。极端字节属于对抗输入，不是实际文件容量承诺。"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；溢出只重采样语义尚不存在，独立epoch/elapsed断言应先RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-030",
+    "title": "大时间跳跃与长序列保持固定有界状态",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-04",
+      "R-08",
+      "R-10"
+    ],
+    "diagnosticCodes": [
+      19015
+    ],
+    "given": "epoch0先有625B；之后主时钟直接到900000000ms；另一路长序列反复接纳有效数据和相同report unavailable/19015。",
+    "when": "查询大跳跃后的rate并检查观测模型及重复诊断状态。",
+    "then": "旧桶自然失效为0；模型始终只用12槽，不按跳过桶数创建数组或逐桶循环补齐。",
+    "assertions": [
+      "大跳跃后active/0且windowMs=2750（该时刻q=3600000，窗口起点899997250）。",
+      "原receivingAt不重设，elapsed依据真实时钟而非tick次数。",
+      "长序列不保留逐帧历史；报告比例最多8个、诊断去重且总数<=15。",
+      "同码19015不每帧追加或增长日志；没有新后台解码/重启。"
+    ],
+    "fixtures": [
+      "不使用wall-clock性能上限作为唯一断言；用状态大小和受控循环/分配观测验证固定12槽；大跳跃固定时间900000000"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；当前无模型有界状态，新正式测试先暴露缺失或不受限实现。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-031",
+    "title": "倒退和非有限主时钟不应用且恢复后自然淘汰",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-08"
+    ],
+    "diagnosticCodes": [
+      19009
+    ],
+    "given": "receivingAt100，最后接受结果200；快照固定；提供receivedAt/view now为99、199、NaN、Infinity、负数。",
+    "when": "分别尝试acceptFrame及readView，再将时钟恢复为5000。",
+    "then": "非法时间返回19009且不倒拨或夹值；恢复后按真实now投影旧桶淘汰。",
+    "assertions": [
+      "非法frame不会更新lastFrameId/bytes/revision；非法查询不改变观测。",
+      "不回退到Date.now、Worker绝对时间或累计tick次数。",
+      "恢复5000时elapsed=floor(5000-100)=4900，旧数据率自然0。",
+      "对不完整业务context和版本错误仍保留对应19008/19013，不一律报时钟错误。"
+    ],
+    "fixtures": [
+      "手动单调clock；每个负例独立模型以免顺序掩盖；合法恢复5000ms"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；正式运行先由精确时钟拒绝与恢复数字断言RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-032",
+    "title": "相同观测revision随now投影且保持纯读取",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "同一深冻结telemetry.snapshot及business context；begin100，最后data于250ms；context业务revision=7。",
+    "when": "先readView(now1100)，再readView(now4100)，不发送事件或snapshot。",
+    "then": "elapsed为1000和4000，窗口按now变化；两个revision均不伪造增长。",
+    "assertions": [
+      "深冻结输入不被修改，两个观测revision相同且businessRevision保持7。",
+      "纯readView不得调用Session._emit、原render、抓帧、选择器或save。",
+      "announcementKey不包含数值；仅时长/速率变化不产生新语义播报身份。",
+      "相同snapshot/context/now重复调用得到等价结果。"
+    ],
+    "fixtures": [
+      "计划中的web/desktop-recv/src/ux-view.js；深冻结观测和只读context；调用spy只是unit_integration，不是UI/E2E证明"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；缺少纯投影接口时RED；旧业务revision不变本身不能作为新功能已实现的GREEN。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-033",
+    "title": "finish冻结终点且后续清理幂等不抹掉用时",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T10",
+      "T16",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-020",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-06"
+    ],
+    "diagnosticCodes": [
+      19007,
+      19008
+    ],
+    "given": "begin100，真实业务结束于1000；分别用artifact/incomplete/stopped/error/disposed合法reason，artifact正例传真实上层归属id42。",
+    "when": "finish同样结束两次，再在2000清理；另测未begin的Preparing清理和percentage非法reason。",
+    "then": "首次冻结elapsed900，重复不移动终点，rate=frozen/null；未begin仍无接收用时。",
+    "assertions": [
+      "重复相同finish为幂等，observationRevision/endedAt不因重复改变。",
+      "artifact完成后stop/dispose只清理不抹elapsed；晚到frame返回19007。",
+      "reason=percentage或artifact而id=null返回19008，不伪造产物。",
+      "本模型接受真实上层finish并不证明文件可用，Session与保存IO仍有独立测试。"
+    ],
+    "fixtures": [
+      "FinishRequest合法五reason参数表；begin100/finish1000/later2000；未begin Preparing独立模型"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；正式断言须先因冻结/幂等未实现而RED，不能把守卫失败算RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-034",
+    "title": "1500/5000/8000ms状态边界与忙帧优先级",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-telemetry.test.mjs",
+    "taskIds": [
+      "T7",
+      "T8",
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-07",
+      "R-08",
+      "R-10"
+    ],
+    "diagnosticCodes": [],
+    "given": "通过计划readView投影三个独立模型：无data begin0；曾有data@1000；single0.25首次增长@1000且之后持续收到等比例data。busy context使用真实pending submittedAt=500。",
+    "when": "分别查询4999.9/5000、5999.9/6000、8999.9/9000及忙帧年龄1499.9/1500ms。",
+    "then": "建议在精确阈值出现；普通inFlight不闪烁，真正慢帧processing优先；提示不驱动业务。",
+    "assertions": [
+      "无data时5000前仍waiting_data但无超时检查建议，5000开始检查建议；不能把有画面当已有data。",
+      "lastData1000时5999.9未到no_new_data，6000达到；忙帧已处理1500ms时processing优先于无新数据推断。",
+      "lastAdvance1000且data持续至8999/9000时，8999.9非no_progress，9000才no_progress；不可用/歧义报告不得谎称“无新块”。",
+      "真实pending@500在now1999.9不processing，2000才processing；没有pending时不得保留慢帧提示。",
+      "不调用stop/restart/picker、不改变原controls或原30秒看门狗。"
+    ],
+    "fixtures": [
+      "计划ux-view.js；手动clock；冻结Receiving context；持续等比例data时间1000/4000/7000/8999/9000；与Client真实pending测试UX-UT-008衔接"
+    ],
+    "redExpectation": "阶段5先迁移到正式测试并补全实际断言；精确阈值投影尚未实现，正式条件/中文状态键断言应先RED。本规划骨架的守卫错误不是真实TDD RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  }
+]
+

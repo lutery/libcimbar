@@ -1,0 +1,355 @@
+[
+  {
+    "id": "UX-IAT-01",
+    "title": "真实WASM帧结果与可选报告旁路",
+    "taskIds": [
+      "T8",
+      "T16",
+      "T19",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-05",
+      "R-06"
+    ],
+    "mode": "real_wasm_with_explicit_fault_adapter",
+    "preconditions": [
+      "最终候选实际vendor及strict-EOF资产校验成功",
+      "原生帧fixture可实际解码；报告缺失/坏长度用局部适配器明确注入"
+    ],
+    "steps": [
+      "经实际DecoderClient/Worker提交原生cimbar图像帧，记录原outcome/bytes/artifact",
+      "对同一输入分别有有效report、缺导出、读取抛错/截断/坏文本；还原注入",
+      "核对报告在fountain后artifact构造前，原错误/产物/预算结果不被UX改写"
+    ],
+    "expected": [
+      "真实正例收到合法可选观测",
+      "注入只改变UX诊断/百分比可用性，原frame结论相同",
+      "no_data/error不读共享report缓冲，close释放新缓冲"
+    ],
+    "evidence": [
+      "资产摘要、真实输入SHA、实际响应和诊断时序",
+      "注入位置/恢复记录、命令退出码"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-02",
+    "title": "Client/Session/Scheduler的所有权与生命周期组合",
+    "taskIds": [
+      "T8",
+      "T10",
+      "T16",
+      "T22",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-07",
+      "R-08"
+    ],
+    "mode": "actual_modules_fake_sources_and_clock",
+    "preconditions": [
+      "实际Client/Session/Scheduler模块，注入受控Worker/source与主单调时钟",
+      "原初始化/帧看门狗及Promise真实结算路径启用"
+    ],
+    "steps": [
+      "进入Receiving，提交一帧并检查post前原pending元数据",
+      "人工重复同一frame、旧seq、关闭/超时后迟到响应，再新seq启动",
+      "从实际pending上下文投影短/慢inFlight并使旧ticker迟到"
+    ],
+    "expected": [
+      "同帧仅一次观测；旧结果不抬字节/revision/时点",
+      "原Scheduler保证single-flight，Client Map不被额外强制改为不同并发API",
+      "finish/close/timeout清理元数据与UX显示所有权，原业务错误继续"
+    ],
+    "evidence": [
+      "实际模块事件链/状态/待处理数断言",
+      "R-01/02/07/08对应测试ID与输出"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-03",
+    "title": "数据→窗口/报告→视图的精确组合",
+    "taskIds": [
+      "T15",
+      "T16",
+      "T19",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-04",
+      "R-05",
+      "R-06",
+      "R-08",
+      "R-10"
+    ],
+    "mode": "actual_models_deterministic_clock",
+    "preconditions": [
+      "真实ReceiverTelemetry/readView模块",
+      "独立预期常量而非实现函数生成expected"
+    ],
+    "steps": [
+      "按0/249.9/250/2999.9/3000/3250ms输入有效字节与重复/增长比例",
+      "组合无data、坏报告、多流后回single、溢出重新预热和同revision时间前进",
+      "保持原artifact不存在直到真实业务提供，查询不同Context"
+    ],
+    "expected": [
+      "实际跨度分母/桶淘汰独立算例符合契约",
+      "重复不虚增、多流/回退锁定、坏report仍可识别速率",
+      ">=1或媒体结束不造Ready；时长前进而业务revision和播报key稳定"
+    ],
+    "evidence": [
+      "输入时序、独立数学期望、实际ViewSnapshot及原业务快照前后对比"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-04",
+    "title": "显示调度接线、真实DOM与退化保护",
+    "taskIds": [
+      "T9",
+      "T10",
+      "T19",
+      "T27",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-022",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-02",
+      "R-08",
+      "R-10",
+      "R-11"
+    ],
+    "mode": "browser_component_harness_explicit_injection",
+    "preconditions": [
+      "正常浏览器加载最终实际模块/DOM",
+      "源/报告只在组件IAT中可受控，不能当真实捕获E2E"
+    ],
+    "steps": [
+      "高频原snapshot事件与250ms显示tick交错；无事件继续计时",
+      "业务Ready/Stop/controls即时变化，数字按共同节流更新",
+      "强制UX paint一次抛错、隐藏/恢复页面、旧seq tick和pagehide"
+    ],
+    "expected": [
+      "tick不调用app旧render/发帧/选择器/EOF操作",
+      "数值刷新批次≤4Hz，按钮/真实终态即时；无重复数字播报",
+      "绘制失败只回退UX，停止/销毁无多余显示timer，新seq拒旧tick",
+      "观测/投影/显示操作不产生新增远程fetch/XHR/beacon/socket；原同源资源加载单列允许，不误判为遥测上传。"
+    ],
+    "evidence": [
+      "浏览器实际DOM变化与paint调用/时间",
+      "原业务副作用计数、timer/owner释放断言；注入标签"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-05",
+    "title": "原VideoSource/Worker与独立媒体位置",
+    "taskIds": [
+      "T21",
+      "T22",
+      "T25",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-019",
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-02",
+      "R-06",
+      "R-08"
+    ],
+    "mode": "real_recording_browser_integration",
+    "preconditions": [
+      "原发送端录制的有效/不足录像及payload SHA，当前已批准前缀/最后帧配方",
+      "实际VideoSource、rVFC、Session/Worker与可呈现preview"
+    ],
+    "steps": [
+      "顺序导入正常/不足/完整末帧录像并观察实际媒体时点",
+      "验证active preview的布局/呈现而非只查元素存在",
+      "执行停止/切换；元数据坏值分支明确用IAT适配器"
+    ],
+    "expected": [
+      "媒体位置与文件估计不混用；未知duration不阻断处理",
+      "EOF无artifact按原屏障Incomplete；真实最后采样/严格EOF不放松",
+      "活动录像持续前进，终结/切换清理URL/source/观测"
+    ],
+    "evidence": [
+      "输入/媒体/payload SHA与实际读取/EOF/产物时序",
+      "前缀/末帧检查材料，注入分支单列"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-06",
+    "title": "实际SaveController事件到UX保存阶段",
+    "taskIds": [
+      "T21",
+      "T22",
+      "T25",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-022"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-09",
+      "R-10"
+    ],
+    "mode": "actual_controller_injected_picker_writable",
+    "preconditions": [
+      "真实不可变artifact与真实SaveController/Session/UX模块",
+      "可控picker/write/close Promise与真实attempt事件；这是IAT注入不是OS证明"
+    ],
+    "steps": [
+      "点击路径同步调用start，首个selecting绑定点击owner与真实attempt",
+      "注入取消、write失败、close失败、pending、busy提示与迟到旧attempt",
+      "再次真实start新attempt，并让write和close依序完成"
+    ],
+    "expected": [
+      "16002取消/16008仍写入/pending等待映射正确，文件保留可重试",
+      "回调不读取当前owner冒领旧保存，终结attempt不倒退",
+      "仅真实write+close成功进入Saved；Receiving用时不计保存等待"
+    ],
+    "evidence": [
+      "原事件/attempt/owner与View/业务状态对应表",
+      "注入位置、每步结算和残留资源检查"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-07",
+    "title": "旧v1门禁与新增UX汇总CLI的真实磁盘链路",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T5",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "mode": "actual_cli_temp_disk_fixtures",
+    "preconditions": [
+      "临时隔离根内创建实际小原/收文件与合成记录，明确仅门禁测试数据",
+      "本轮冻结清单与manifest样本；旧v1 schema原字节"
+    ],
+    "steps": [
+      "运行完整正例及缺UX/错scope/错构建/假哈希/路径逃逸/缺assertion等反例",
+      "让旧20项为绿而删除每一新必测，确认汇总失败",
+      "检查局部阶段/UX方法不能当final/旧field26，删除临时自有数据前只核临时根"
+    ],
+    "expected": [
+      "正例0且每个指定反例非0，旧验证器真实被调用",
+      "磁盘SHA、caseType/执行者/原件/manifest均核对，原run未写",
+      "合成正例即使门禁0也只记unit_integration，不能装入真实results"
+    ],
+    "evidence": [
+      "完整CLI stdout/stderr/exit、临时目录结构与摘要",
+      "每个反例命中实际拒绝原因"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  },
+  {
+    "id": "UX-IAT-08",
+    "title": "同一开发观测器与实际浏览器模块的测量链路",
+    "taskIds": [
+      "T28",
+      "T30",
+      "T31",
+      "T34"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-07",
+      "R-10",
+      "R-11"
+    ],
+    "mode": "actual_observer_browser_pipeline",
+    "preconditions": [
+      "开发观测器已实现，真实baseline/candidate或受控浏览器模块用于接线检查",
+      "冻结method摘要、原Promise包装与restore路径"
+    ],
+    "steps": [
+      "真实执行一轮观测预检，核对提交/结算标记、原Promise身份与DOM统计域",
+      "对已知原始时序端到端计算分位数/配对/阈值输出",
+      "中断/结束后确认包装器恢复、工具不进入用户包"
+    ],
+    "expected": [
+      "观测工具不改IO/并发/业务结果，输出可复算原始样本",
+      "预检不足5对不能宣称正式A/B通过",
+      "数值主判据录像/实时行为/可选longtask分列"
+    ],
+    "evidence": [
+      "观测器SHA与实际调用时序/restore证明",
+      "独立算例的raw/comparison输出，正式A/B留UX-AT-08"
+    ],
+    "scope": "unit_integration",
+    "level": "integration",
+    "status": "NOT_RUN",
+    "executedBy": null
+  }
+]

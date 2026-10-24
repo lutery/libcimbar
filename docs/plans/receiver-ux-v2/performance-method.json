@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "kind": "frozen_method_only",
+  "iterationId": "receiver-ux-v2",
+  "frozen": true,
+  "methodStatus": "DESIGN_FROZEN",
+  "productAcceptance": "NOT_RUN",
+  "results": null,
+  "purpose": "本轮UI与可选观测的同输入开销回归判据，不是传输速度SLA或已执行性能结果",
+  "primaryInput": {
+    "kind": "video",
+    "payloadBytes": 131072,
+    "compressibility": "incompressible",
+    "seed": 20261018,
+    "mode": "B",
+    "sha256": null,
+    "freezeAt": "T6 before product changes",
+    "minSettledFrames": 30,
+    "recording": "原发送端真实录像，完整可重建；SHA在T6锁定"
+  },
+  "pairedRuns": 5,
+  "order": [
+    "AB",
+    "BA",
+    "AB",
+    "BA",
+    "AB"
+  ],
+  "warmupPerBuild": 1,
+  "matchedEnvironment": [
+    "wasmSha256",
+    "inputSha256",
+    "mediaSha256",
+    "browserVersion",
+    "mode",
+    "viewport",
+    "deviceScaleFactor",
+    "screenResolution",
+    "powerMode",
+    "instrumentationSha256"
+  ],
+  "mandatoryMetrics": [
+    {
+      "name": "readyMs",
+      "definition": "同一构建原journey.readyAt - receivingAt，单位ms，排除初始化/选择器/保存时间",
+      "aggregation": "每对A/B有效结果，各侧5轮中位数",
+      "candidateMax": {
+        "relativeFactor": 1.1,
+        "absoluteAllowanceMs": 250,
+        "formula": "candidateMedian <= baselineMedian * 1.10 + 250"
+      }
+    },
+    {
+      "name": "frameRttP50Ms",
+      "definition": "主线程原submitFrame调用到原Promise结算，同一performance.now域，不冒称WASM纯解码CPU时间",
+      "aggregation": "每轮有效帧RTT的p50，再对5轮p50取中位数",
+      "candidateMax": {
+        "relativeFactor": 1.1,
+        "absoluteAllowanceMs": 2,
+        "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)"
+      }
+    },
+    {
+      "name": "frameRttP95Ms",
+      "definition": "与p50同一帧RTT样本",
+      "aggregation": "每轮nearest-rank p95，再对5轮p95取中位数",
+      "candidateMax": {
+        "relativeFactor": 1.15,
+        "absoluteAllowanceMs": 5,
+        "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)"
+      }
+    }
+  ],
+  "hardInvariants": {
+    "maxFramesInFlight": 1,
+    "maxQueuedFramesAddedByUx": 0,
+    "telemetryMinWriteIntervalMs": 250,
+    "rateBuckets": 12,
+    "reportBufferBytes": 1024,
+    "reportStreams": 8,
+    "diagnosticCodes": 15,
+    "uxDisplayTimersAfterTermination": 0
+  },
+  "foregroundFeedback": {
+    "elapsedVisibleChangeWithinMs": 1000,
+    "rateZeroNoDataMs": 3000,
+    "waitNoticeMs": 5000,
+    "noAdvanceNoticeMs": 8000,
+    "observationToleranceMs": 1000,
+    "processingThresholdMs": 1500,
+    "notice": "真实浏览器采样允许1000ms观测误差；确定性单测按契约精确边界，后台节流不以该时限判定，返回前台必须重算"
+  },
+  "liveObservation": {
+    "pairs": 5,
+    "order": [
+      "AB",
+      "BA",
+      "AB",
+      "BA",
+      "AB"
+    ],
+    "activeWindowSeconds": 30,
+    "reference": "同一原发送端、输入SHA、窗口、模式，使用足够长循环播放码流；不能宣称实时腿逐帧完全相同",
+    "mandatory": [
+      "single-flight",
+      "bounded telemetry writes",
+      "stop cleanup",
+      "truthful status"
+    ],
+    "advisory": [
+      "frame RTT distribution",
+      "ready time if completed"
+    ],
+    "reason": "实时抓屏采样受调度影响；数值A/B主判据使用同一录像，实时腿独立检查实际行为"
+  },
+  "advisoryMetrics": [
+    "longtask count/duration normalized by actual receiving seconds; unsupported => NOT_MEASURED with reason",
+    "live frame RTT distribution"
+  ],
+  "invalidRunPolicy": "不删除异常样本；环境不匹配、原件哈希不同、样本<30、任一未完成/数据缺失均不可判定。保留原始轮次，重跑整对并记录原因；至少5对有效才可PASS，最多2对替换，仍不足记NOT_RUN，不按结果放宽阈值。",
+  "failurePolicy": "候选有效轮次业务失败、产物错误或违反不变式为FAIL并整改，不作为环境噪声丢弃；原实时busy时合法丢采样策略保留并记录，不要求零丢采样。方法变更须新版本/理由并重跑两侧全部配对，禁止事后改判据追绿。",
+  "thresholdOrigin": "阶段4技术验收选择：在既有30秒看门狗内比较UI增量开销；不更改源协议/预算或对用户承诺吞吐量。"
+}

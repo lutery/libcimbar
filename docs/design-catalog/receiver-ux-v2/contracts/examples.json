@@ -1,0 +1,623 @@
+{
+  "version": 1,
+  "notice": "Design metadata fragments; schema validity is not executed product success. The receiving rate fragment uses 625 bytes / 2750ms. Runtime identity, order, real artifact/IO and text projection need separate implementation tests.",
+  "examples": [
+    {
+      "id": "report-read-request",
+      "interface": "UX-01",
+      "definition": "ReportReadRequest",
+      "data": {
+        "version": 1,
+        "frameId": 1
+      }
+    },
+    {
+      "id": "report-read-response",
+      "interface": "UX-01",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "state": "single",
+          "ratios": [
+            0.426
+          ],
+          "diagnosticCode": 0
+        }
+      }
+    },
+    {
+      "id": "worker-observation",
+      "interface": "UX-01",
+      "definition": "WorkerObservation",
+      "data": {
+        "version": 1,
+        "report": {
+          "state": "single",
+          "ratios": [
+            0.426
+          ],
+          "diagnosticCode": 0
+        }
+      }
+    },
+    {
+      "id": "old-worker-normalized",
+      "interface": "UX-01",
+      "definition": "Report",
+      "data": {
+        "state": "unavailable",
+        "ratios": [],
+        "diagnosticCode": 19015
+      }
+    },
+    {
+      "id": "report-multiple",
+      "interface": "UX-01",
+      "definition": "Report",
+      "data": {
+        "state": "multiple",
+        "ratios": [
+          0.3,
+          0.7
+        ],
+        "diagnosticCode": 19005
+      }
+    },
+    {
+      "id": "report-empty",
+      "interface": "UX-01",
+      "definition": "Report",
+      "data": {
+        "state": "empty",
+        "ratios": [],
+        "diagnosticCode": 0
+      }
+    },
+    {
+      "id": "begin-request",
+      "interface": "UX-02",
+      "definition": "BeginRequest",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "inputKind": "live",
+        "nowMs": 1000
+      }
+    },
+    {
+      "id": "begin-response",
+      "interface": "UX-02",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionSeq": 1,
+          "applied": true,
+          "observationRevision": 1
+        }
+      }
+    },
+    {
+      "id": "submitted-frame-meta",
+      "interface": "UX-03",
+      "definition": "FrameSubmissionMeta",
+      "data": {
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "frameId": 1,
+        "submittedAtMs": 2200
+      }
+    },
+    {
+      "id": "frame-input",
+      "interface": "UX-03",
+      "definition": "FrameInput",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "frameId": 1,
+        "receivedAtMs": 2500,
+        "outcome": "data",
+        "bytesDecoded": 625,
+        "report": {
+          "state": "single",
+          "ratios": [
+            0.426
+          ],
+          "diagnosticCode": 0
+        }
+      }
+    },
+    {
+      "id": "frame-response",
+      "interface": "UX-03",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionSeq": 1,
+          "applied": true,
+          "observationRevision": 2
+        }
+      }
+    },
+    {
+      "id": "no-data-frame",
+      "interface": "UX-03",
+      "definition": "FrameInput",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "frameId": 2,
+        "receivedAtMs": 2500,
+        "outcome": "no_data",
+        "bytesDecoded": 0,
+        "report": {
+          "state": "not_sampled",
+          "ratios": [],
+          "diagnosticCode": 0
+        }
+      }
+    },
+    {
+      "id": "view-request",
+      "interface": "UX-04",
+      "definition": "ViewRequest",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "nowMs": 5250,
+        "context": {
+          "state": "Receiving",
+          "businessRevision": 3,
+          "inputKind": "live",
+          "cleanupComplete": true,
+          "artifactId": null,
+          "controls": {
+            "canStartLive": false,
+            "canImportVideo": false,
+            "canStop": true,
+            "canSave": false
+          },
+          "inFlight": false,
+          "inFlightSinceMs": null,
+          "mediaPosition": null,
+          "mediaDiagnosticCode": 0
+        }
+      }
+    },
+    {
+      "id": "view-response",
+      "interface": "UX-04",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "version": 1,
+          "sessionId": "s1",
+          "sessionSeq": 1,
+          "observationRevision": 2,
+          "businessRevision": 3,
+          "viewAtMs": 5250,
+          "state": "Receiving",
+          "statusKey": "receiving",
+          "primary": "正在接收数据",
+          "secondary": "已识别到码流。",
+          "nextAction": "保持发送画面可见并继续播放。",
+          "elapsedMs": 4250,
+          "rate": {
+            "phase": "active",
+            "bytesPerSecond": 227.27272727272728,
+            "windowMs": 2750,
+            "includesRedundancy": true
+          },
+          "progress": {
+            "kind": "estimate",
+            "ratio": 0.426,
+            "asOfMs": 2500,
+            "stale": false,
+            "diagnosticCode": 0
+          },
+          "mediaPosition": null,
+          "save": {
+            "phase": "none",
+            "attemptId": null,
+            "artifactId": null,
+            "errorCode": null
+          },
+          "controls": {
+            "canStartLive": false,
+            "canImportVideo": false,
+            "canStop": true,
+            "canSave": false
+          },
+          "announcementKey": "receiving:none:none",
+          "diagnosticCodes": []
+        }
+      }
+    },
+    {
+      "id": "receiving-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 2,
+        "businessRevision": 3,
+        "viewAtMs": 5250,
+        "state": "Receiving",
+        "statusKey": "receiving",
+        "primary": "正在接收数据",
+        "secondary": "已识别到码流。",
+        "nextAction": "保持发送画面可见并继续播放。",
+        "elapsedMs": 4250,
+        "rate": {
+          "phase": "active",
+          "bytesPerSecond": 227.27272727272728,
+          "windowMs": 2750,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "estimate",
+          "ratio": 0.426,
+          "asOfMs": 2500,
+          "stale": false,
+          "diagnosticCode": 0
+        },
+        "mediaPosition": null,
+        "save": {
+          "phase": "none",
+          "attemptId": null,
+          "artifactId": null,
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": false,
+          "canImportVideo": false,
+          "canStop": true,
+          "canSave": false
+        },
+        "announcementKey": "receiving:none:none",
+        "diagnosticCodes": []
+      }
+    },
+    {
+      "id": "ambiguous-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 2,
+        "businessRevision": 3,
+        "viewAtMs": 5250,
+        "state": "Receiving",
+        "statusKey": "progress_unknown",
+        "primary": "正在识别码流",
+        "secondary": "无法确定当前文件进度。",
+        "nextAction": "保持发送画面可见并继续播放。",
+        "elapsedMs": 4250,
+        "rate": {
+          "phase": "active",
+          "bytesPerSecond": 227.27272727272728,
+          "windowMs": 2750,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "ambiguous",
+          "ratio": null,
+          "asOfMs": null,
+          "stale": false,
+          "diagnosticCode": 19005
+        },
+        "mediaPosition": null,
+        "save": {
+          "phase": "none",
+          "attemptId": null,
+          "artifactId": null,
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": false,
+          "canImportVideo": false,
+          "canStop": true,
+          "canSave": false
+        },
+        "announcementKey": "progress_unknown:none:none",
+        "diagnosticCodes": [
+          19005
+        ]
+      }
+    },
+    {
+      "id": "enough-data-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 2,
+        "businessRevision": 3,
+        "viewAtMs": 5250,
+        "state": "Receiving",
+        "statusKey": "collecting_more",
+        "primary": "继续补齐重建数据",
+        "secondary": "理论数据量已达到，文件尚未完成。",
+        "nextAction": "保持发送画面可见并继续播放。",
+        "elapsedMs": 4250,
+        "rate": {
+          "phase": "active",
+          "bytesPerSecond": 227.27272727272728,
+          "windowMs": 2750,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "enough_data",
+          "ratio": null,
+          "asOfMs": 2500,
+          "stale": false,
+          "diagnosticCode": 0
+        },
+        "mediaPosition": null,
+        "save": {
+          "phase": "none",
+          "attemptId": null,
+          "artifactId": null,
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": false,
+          "canImportVideo": false,
+          "canStop": true,
+          "canSave": false
+        },
+        "announcementKey": "collecting_more:none:none",
+        "diagnosticCodes": []
+      }
+    },
+    {
+      "id": "video-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 2,
+        "businessRevision": 3,
+        "viewAtMs": 5250,
+        "state": "Receiving",
+        "statusKey": "receiving",
+        "primary": "正在读取录像并接收数据",
+        "secondary": "已识别到码流。",
+        "nextAction": "保持发送画面可见并继续播放。",
+        "elapsedMs": 4250,
+        "rate": {
+          "phase": "active",
+          "bytesPerSecond": 227.27272727272728,
+          "windowMs": 2750,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "estimate",
+          "ratio": 0.426,
+          "asOfMs": 2500,
+          "stale": false,
+          "diagnosticCode": 0
+        },
+        "mediaPosition": {
+          "positionSeconds": 80,
+          "durationSeconds": 150,
+          "fraction": 0.5333333333333333
+        },
+        "save": {
+          "phase": "none",
+          "attemptId": null,
+          "artifactId": null,
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": false,
+          "canImportVideo": false,
+          "canStop": true,
+          "canSave": false
+        },
+        "announcementKey": "receiving:none:none",
+        "diagnosticCodes": []
+      }
+    },
+    {
+      "id": "ready-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 4,
+        "businessRevision": 4,
+        "viewAtMs": 6000,
+        "state": "Ready",
+        "statusKey": "ready",
+        "primary": "文件已接收完成，请保存",
+        "secondary": "文件已完整重建。",
+        "nextAction": "点击保存文件。",
+        "elapsedMs": 5000,
+        "rate": {
+          "phase": "frozen",
+          "bytesPerSecond": null,
+          "windowMs": 0,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "complete",
+          "ratio": 1,
+          "asOfMs": 6000,
+          "stale": false,
+          "diagnosticCode": 0
+        },
+        "mediaPosition": null,
+        "save": {
+          "phase": "none",
+          "attemptId": null,
+          "artifactId": null,
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": false,
+          "canImportVideo": false,
+          "canStop": true,
+          "canSave": true
+        },
+        "announcementKey": "ready:42:none",
+        "diagnosticCodes": []
+      }
+    },
+    {
+      "id": "saved-view",
+      "interface": "UX-04",
+      "definition": "ViewSnapshot",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "observationRevision": 8,
+        "businessRevision": 7,
+        "viewAtMs": 9000,
+        "state": "Saved",
+        "statusKey": "saved",
+        "primary": "文件已保存",
+        "secondary": "写入与关闭均已成功。",
+        "nextAction": "可以开始下一次接收。",
+        "elapsedMs": 5000,
+        "rate": {
+          "phase": "frozen",
+          "bytesPerSecond": null,
+          "windowMs": 0,
+          "includesRedundancy": true
+        },
+        "progress": {
+          "kind": "complete",
+          "ratio": 1,
+          "asOfMs": 6000,
+          "stale": false,
+          "diagnosticCode": 0
+        },
+        "mediaPosition": null,
+        "save": {
+          "phase": "saved",
+          "attemptId": "save-1",
+          "artifactId": "42",
+          "errorCode": null
+        },
+        "controls": {
+          "canStartLive": true,
+          "canImportVideo": true,
+          "canStop": false,
+          "canSave": false
+        },
+        "announcementKey": "saved:42:save-1",
+        "diagnosticCodes": []
+      }
+    },
+    {
+      "id": "unknown-video-duration",
+      "interface": "UX-04",
+      "definition": "MediaPosition",
+      "data": {
+        "positionSeconds": 80,
+        "durationSeconds": null,
+        "fraction": null
+      }
+    },
+    {
+      "id": "finish-request",
+      "interface": "UX-05",
+      "definition": "FinishRequest",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "nowMs": 6000,
+        "reason": "artifact",
+        "artifactId": "42"
+      }
+    },
+    {
+      "id": "finish-response",
+      "interface": "UX-05",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionSeq": 1,
+          "applied": true,
+          "observationRevision": 4
+        }
+      }
+    },
+    {
+      "id": "save-request",
+      "interface": "UX-06",
+      "definition": "SaveRequest",
+      "data": {
+        "version": 1,
+        "sessionId": "s1",
+        "sessionSeq": 1,
+        "artifactId": "42",
+        "attemptId": "save-1",
+        "rawStatus": "failed",
+        "errorCode": 16002
+      }
+    },
+    {
+      "id": "save-response",
+      "interface": "UX-06",
+      "definition": "UxResult",
+      "data": {
+        "ok": true,
+        "code": 0,
+        "data": {
+          "sessionSeq": 1,
+          "applied": true,
+          "observationRevision": 5
+        }
+      }
+    },
+    {
+      "id": "cancel-normalization",
+      "interface": "UX-06",
+      "definition": "SaveView",
+      "data": {
+        "phase": "cancelled",
+        "attemptId": "save-1",
+        "artifactId": "42",
+        "errorCode": 16002
+      }
+    },
+    {
+      "id": "stale-dropped",
+      "interface": "UX-03",
+      "definition": "UxResult",
+      "data": {
+        "ok": false,
+        "code": 19007,
+        "data": null
+      }
+    }
+  ]
+}

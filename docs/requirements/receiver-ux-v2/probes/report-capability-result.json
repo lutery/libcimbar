@@ -1,0 +1,31 @@
+{
+  "kind": "requirements_feasibility_only",
+  "mode": 68,
+  "realPackagedWasm": true,
+  "chunkSize": 625,
+  "initialReport": "",
+  "first": [
+    0.030303
+  ],
+  "repeated": [
+    0.030303
+  ],
+  "next": [
+    0.0606061
+  ],
+  "mixed": [
+    0.030303,
+    0.0606061
+  ],
+  "duplicateDoesNotAdvance": true,
+  "freshBlockAdvances": true,
+  "multipleStreamsHaveNoIdsInReport": true,
+  "exercised": "synthetic fountain packets directly into shipped WASM",
+  "notExercised": [
+    "screen capture",
+    "new UI",
+    "field E2E",
+    "file completion"
+  ],
+  "repositoryWritesByProbe": 0
+}

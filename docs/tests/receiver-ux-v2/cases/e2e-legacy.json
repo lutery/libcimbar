@@ -1,0 +1,3156 @@
+[
+  {
+    "id": "E2E-1",
+    "title": "干净包首次启动",
+    "legacyDefinition": {
+      "id": "E2E-1",
+      "title": "干净包首次启动",
+      "given": "候选/最终包和手册，正常Edge",
+      "steps": [
+        "解压中文空格目录",
+        "从其他cwd照手册启动",
+        "打开双输入入口并做实时/录像保存"
+      ],
+      "then": "无控制台/手改路径补救即可用；缺前置准确提示",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-003",
+        "AC-005",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.1.a",
+        "T5.1.a",
+        "T5.1.c"
+      ],
+      "sourceCase": "UAT-L01",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "阶段5使用本轮冻结的候选用户目录与候选清单，依 T35 执行，不等待阶段8；阶段8完成最终装配后另补同入口复验，包装或字节有变须复验受影响路径。",
+      "准备真实含中文和空格的新目录、非仓库 cwd；保留当前系统区域设置，不为测试改 UTF-8 Beta。"
+    ],
+    "steps": [
+      {
+        "action": "按候选说明把整套文件解压到中文和空格新目录，从其他 cwd 执行文档化启动入口。",
+        "expected": "不需手改路径或开发控制台；资源、Worker、匹配 WASM 正确加载，实际目录不是乱码孪生目录。",
+        "evidence": [
+          "目录实际 Unicode 路径",
+          "候选整套摘要",
+          "启动终端原始输出"
+        ]
+      },
+      {
+        "action": "用正常 Edge 打开入口，确认“实时抓屏”和“录像导入”均可访问，照说明完成一次真实选窗口接收与系统保存。",
+        "expected": "候选入口可独立使用；仅真实完整产物进入待保存，写入与 close 后才已保存。",
+        "evidence": [
+          "双按钮截图",
+          "真实捕获/保存对话框记录",
+          "本次原件和落盘外部 SHA-256"
+        ]
+      },
+      {
+        "action": "关闭发送与实时输入，点击录像导入并在系统文件选择器选 V-GOOD，再保存。",
+        "expected": "双输入均能从候选目录完成；没有借用后台实时数据。",
+        "evidence": [
+          "录像输入摘要",
+          "发送停止证据",
+          "第二次外部 SHA-256"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "中文路径启动失败时保留原始输出与真实路径，先归因产品/启动器/装置，禁止仅凭猜测写成 pwsh 平台无法自救。",
+      "缺运行时或端口等前置必须有可操作提示；手动借用开发服务器后不得记首次启动 PASS。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "目录实际 Unicode 路径",
+      "候选整套摘要",
+      "启动终端原始输出",
+      "双按钮截图",
+      "真实捕获/保存对话框记录",
+      "本次原件和落盘外部 SHA-256",
+      "录像输入摘要",
+      "发送停止证据",
+      "第二次外部 SHA-256"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-001",
+      "AC-003",
+      "AC-005",
+      "AC-013"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L01",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "finalPackageRecheckStage": "8",
+    "packageRecheck": {
+      "executionStage": "8",
+      "status": "NOT_RUN",
+      "executedBy": null,
+      "steps": [
+        {
+          "action": "阶段8最终整套包装完成后，从另一个全新中文空格目录重复上述入口与双输入保存；与阶段5候选证据分开归档。",
+          "expected": "阶段5记录只声称候选验证；最终包复验另有阶段8摘要和结果，不用尚未产生的阶段8结果阻断阶段5候选门禁。",
+          "evidence": [
+            "阶段8最终包摘要及入口记录",
+            "阶段8单独 attempt 和两输入外部哈希"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "E2E-2",
+    "title": "启动失败恢复",
+    "legacyDefinition": {
+      "id": "E2E-2",
+      "title": "启动失败恢复",
+      "given": "专有端口占用/独立缺运行时环境",
+      "steps": [
+        "照手册启动观察提示",
+        "恢复依赖/端口",
+        "退出重启服务"
+      ],
+      "then": "不白屏/挂起/杀无关进程，恢复后可正常使用",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-006",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.1.a",
+        "T5.1.a"
+      ],
+      "sourceCase": "UAT-L02",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "仅用专有测试端口和可还原的独立依赖环境；不卸载系统软件、不停止无关进程。"
+    ],
+    "steps": [
+      {
+        "action": "在专有端口预先启动已登记的占用者，按候选说明正常启动接收器。",
+        "expected": "明确报告实际端口冲突与恢复步骤，不白屏、挂起或杀占用者。",
+        "evidence": [
+          "占用端口/PID归属",
+          "启动错误原文",
+          "页面状态"
+        ]
+      },
+      {
+        "action": "结束自己创建的占用者，按提示重启；在独立环境执行已声明必要运行时缺失分支，或验证自带运行时路线。",
+        "expected": "恢复端口/依赖后可正常启动；不适用分支单独注明，不用模拟故障冒充实际缺依赖。",
+        "evidence": [
+          "恢复命令",
+          "干净环境/自带运行时说明",
+          "实际入口可用截图"
+        ]
+      },
+      {
+        "action": "按说明退出服务，再启动并做真实接收和系统保存。",
+        "expected": "退出可控且无无关进程受损；新实例可用，落盘字节正确。",
+        "evidence": [
+          "退出前后服务/PID",
+          "重启输出",
+          "外部原收哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "工具无法制造缺依赖条件时该分支 NOT_RUN/不适用带依据；IAT 只补技术分支，不冒充真实环境。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "占用端口/PID归属",
+      "启动错误原文",
+      "页面状态",
+      "恢复命令",
+      "干净环境/自带运行时说明",
+      "实际入口可用截图",
+      "退出前后服务/PID",
+      "重启输出",
+      "外部原收哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-005",
+      "AC-006",
+      "AC-013"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L02",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "title": "实时到磁盘往返",
+    "legacyDefinition": {
+      "id": "E2E-3",
+      "title": "实时到磁盘往返",
+      "given": "B原发送窗口、D-C/D-N、干净会话",
+      "steps": [
+        "点击实时开始",
+        "真实选择独立发送窗口",
+        "等Ready",
+        "点保存选目标",
+        "外部算两侧hash"
+      ],
+      "then": "写close成功后Saved；两类数据各3会话hash相等",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-010"
+      ],
+      "taskIds": [
+        "T2.1.b",
+        "T2.1.c",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L03",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "原发送端模式 B；D-C/D-N 两类各准备3个干净会话，固定真实自然像素、DPI、浏览器缩放。"
+    ],
+    "steps": [
+      {
+        "action": "原发送端加载 D-C，点击实时抓屏，在真实系统选择器中选独立发送窗口。",
+        "expected": "唯一捕获源/Worker，页面进入真实接收；不直接喂帧或自动假授权。",
+        "evidence": [
+          "来源选择过程",
+          "环境/自然尺寸/profile",
+          "sessionId/seq"
+        ]
+      },
+      {
+        "action": "切回接收页等待真实完整产物，然后点击保存并选择本轮专有磁盘目录。",
+        "expected": "接收、待保存、选择位置、写入与已保存语义可辨；write/close 未完成不得已保存。",
+        "evidence": [
+          "接收至待保存界面",
+          "实际保存交互",
+          "保存完成后四时点"
+        ]
+      },
+      {
+        "action": "在应用之外计算原文件和实际落盘文件的字节数与 SHA-256，再停止并等待清理。",
+        "expected": "两端哈希相等且文件真实存在，清理后无活动旧源。",
+        "evidence": [
+          "外部 Get-FileHash 原始输出",
+          "输出路径/尺寸",
+          "清理记录"
+        ]
+      },
+      {
+        "action": "D-C、D-N 各完成3个独立干净会话，逐轮保存和外部哈希，不只选择最快或成功一轮。",
+        "expected": "总计6个实时完整往返均有各自证据，失败/重试也保留。",
+        "evidence": [
+          "6轮结果/耗时/attempt",
+          "每轮原收文件引用与外部哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "只有 Ready/Blob/下载按钮没有磁盘输出或外部哈希时 FAIL；保存四时点缺失也不得当量测完整。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "来源选择过程",
+      "环境/自然尺寸/profile",
+      "sessionId/seq",
+      "接收至待保存界面",
+      "实际保存交互",
+      "保存完成后四时点",
+      "外部 Get-FileHash 原始输出",
+      "输出路径/尺寸",
+      "清理记录",
+      "6轮结果/耗时/attempt",
+      "每轮原收文件引用与外部哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-001",
+      "AC-002",
+      "AC-003",
+      "AC-004",
+      "AC-010"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L03",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "title": "取消选源再开始",
+    "legacyDefinition": {
+      "id": "E2E-4",
+      "title": "取消选源再开始",
+      "given": "无活动会话",
+      "steps": [
+        "点开始后取消系统选源",
+        "返回页再点击开始选正确窗口",
+        "保存校验"
+      ],
+      "then": "可重试无旧进度；拒绝路径只在实际存在时单记，不拿取消代替全部拒绝",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L04",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "页面无活动接收，系统真实捕获选择器可操作。"
+    ],
+    "steps": [
+      {
+        "action": "点击实时抓屏，出现真实系统来源选择器后取消。",
+        "expected": "取消后无假接收或旧进度，入口可重试。",
+        "evidence": [
+          "取消对话框记录",
+          "前后会话与界面状态"
+        ]
+      },
+      {
+        "action": "回到页面重新点击，选择原发送窗口并等待完整重建。",
+        "expected": "新的有效会话可正常接收；无第二个残留选择器或旧回调污染。",
+        "evidence": [
+          "重新选源过程",
+          "新会话归属",
+          "待保存截图"
+        ]
+      },
+      {
+        "action": "通过真实系统保存对话框写到本轮目录，并在外部核对哈希。",
+        "expected": "取消后真实恢复成功。",
+        "evidence": [
+          "保存交互",
+          "保存后时点",
+          "外部原收 SHA-256"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "若环境提供独立“拒绝授权”入口须另执行、单独记录；仅取消不能代表全部拒绝路径已测。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "取消对话框记录",
+      "前后会话与界面状态",
+      "重新选源过程",
+      "新会话归属",
+      "待保存截图",
+      "保存交互",
+      "保存后时点",
+      "外部原收 SHA-256"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L04",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "title": "选错源与无数据恢复",
+    "legacyDefinition": {
+      "id": "E2E-5",
+      "title": "选错源与无数据恢复",
+      "given": "另有无编码窗口",
+      "steps": [
+        "选空白窗口等noData提示",
+        "停止",
+        "重选原发送窗口保存"
+      ],
+      "then": "不报成功或虚构确定原因，正常重选能恢复",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L05",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "准备一个确实无编码画面的普通独立窗口和正确 B 模式发送窗口。"
+    ],
+    "steps": [
+      {
+        "action": "点击实时抓屏，在系统选择器中选空白或错误窗口，等待当前 no-data 提示期限。",
+        "expected": "不假成功、不臆断唯一根因；用户可看到检查来源/模式和停止办法。",
+        "evidence": [
+          "错误来源画面",
+          "真实等待时长",
+          "无有效数据界面"
+        ]
+      },
+      {
+        "action": "点击停止并等清理完成，然后重新点击实时抓屏选择正确原发送窗口。",
+        "expected": "恢复入口可用，旧无数据会话结束，新会话干净。",
+        "evidence": [
+          "停止/清理状态",
+          "重新选源操作",
+          "新会话身份"
+        ]
+      },
+      {
+        "action": "等真实重建、系统保存，再外部计算原收哈希。",
+        "expected": "无需刷新或控制台补救即可恢复，字节一致。",
+        "evidence": [
+          "保存对话框",
+          "落盘文件",
+          "外部 SHA-256"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "只扫描累计日志找到旧 no-data 行不能证明本轮；每轮取分发前基线和本轮增量。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "错误来源画面",
+      "真实等待时长",
+      "无有效数据界面",
+      "停止/清理状态",
+      "重新选源操作",
+      "新会话身份",
+      "保存对话框",
+      "落盘文件",
+      "外部 SHA-256"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L05",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "title": "外部停止共享/关闭源",
+    "legacyDefinition": {
+      "id": "E2E-6",
+      "title": "外部停止共享/关闭源",
+      "given": "尚未完成A、同名同大小B",
+      "steps": [
+        "系统停止共享",
+        "另轮关闭源",
+        "确认清理",
+        "新会话发送B保存"
+      ],
+      "then": "源结束准确；无A串入；输出hash为B",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L06",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "D-A/D-B 同名同大小不同哈希；A 足够长，能在完成前操作。"
+    ],
+    "steps": [
+      {
+        "action": "开始接收 A，在尚未完整时使用系统/浏览器停止共享控件。",
+        "expected": "停止来源后不假完成；页面提示来源结束或未完成并可清理。",
+        "evidence": [
+          "系统停止共享动作",
+          "前后界面/共享指示",
+          "本轮状态增量"
+        ]
+      },
+      {
+        "action": "清理后重新接收 A，另轮关闭真实源标签页/窗口。",
+        "expected": "源关闭路径同样可结束清理；两个动作分支单列，不能相互冒充。",
+        "evidence": [
+          "独立源关闭动作",
+          "资源/状态时间线"
+        ]
+      },
+      {
+        "action": "每个异常分支之后都重新打开原发送端加载 B、真实选源、保存并外部核对。",
+        "expected": "新输出等于 B 且不等于 A，无 A 晚结果污染。",
+        "evidence": [
+          "每分支恢复保存",
+          "A/B/输出三方外部哈希",
+          "新旧会话身份"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "旧 run-03 的共享指示条 UIA 不可达只证明外部关闭路径；本轮不可达时补人工，仍不可执行须单列 NOT_RUN/偏差，不将关闭源写成系统停止共享已测。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "系统停止共享动作",
+      "前后界面/共享指示",
+      "本轮状态增量",
+      "独立源关闭动作",
+      "资源/状态时间线",
+      "每分支恢复保存",
+      "A/B/输出三方外部哈希",
+      "新旧会话身份"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L06",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "title": "应用停止重复点击",
+    "legacyDefinition": {
+      "id": "E2E-7",
+      "title": "应用停止重复点击",
+      "given": "A传输中、B已备",
+      "steps": [
+        "点停止并快速重复停止/开始",
+        "待清理",
+        "新B重复开始",
+        "保存"
+      ],
+      "then": "单源单Worker、清理前禁开始、B从零，B输出正确",
+      "acceptanceIds": [
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L07",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "A/B 同名同大小不同哈希；记录当前活动源、Worker 与清理标记。"
+    ],
+    "steps": [
+      {
+        "action": "A 真实传输中点击停止，并快速重复点击停止/开始。",
+        "expected": "停止幂等，清理尚未完成不能启动新会话，不出现双来源选择器。",
+        "evidence": [
+          "真实点击录像",
+          "按钮状态",
+          "资源/清理时间线"
+        ]
+      },
+      {
+        "action": "按页面提示等清理后加载 B，重复点击开始并只确认一个真实捕获选择器。",
+        "expected": "仅一个活动源和 Worker；新会话计数从零，无 A 产物。",
+        "evidence": [
+          "重复点击/选源记录",
+          "新会话身份",
+          "源/Worker计数"
+        ]
+      },
+      {
+        "action": "完整接收保存 B，外部核对 B 与输出哈希。",
+        "expected": "输出为 B，无旧进度/旧错误覆盖当前会话。",
+        "evidence": [
+          "系统保存记录",
+          "B/输出外部哈希",
+          "停止后资源证据"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "仅脚本调用内部 stop/start 的压力测试归 IAT；不能替代实际用户按钮操作。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "真实点击录像",
+      "按钮状态",
+      "资源/清理时间线",
+      "重复点击/选源记录",
+      "新会话身份",
+      "源/Worker计数",
+      "系统保存记录",
+      "B/输出外部哈希",
+      "停止后资源证据"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-007"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L07",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "title": "模式不匹配恢复",
+    "legacyDefinition": {
+      "id": "E2E-8",
+      "title": "模式不匹配恢复",
+      "given": "原发送另一实际模式、接收B",
+      "steps": [
+        "发送非B画面实际接收",
+        "观察",
+        "停止改回B再接收保存"
+      ],
+      "then": "不匹配不假完整；不把候选模式写成支持，B能正常恢复",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L08",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "接收基线 B，发送端另一个实际可用模式；不新增支持模式声明。"
+    ],
+    "steps": [
+      {
+        "action": "原发送端切为实际非 B 模式，接收器仍 B，真实选择窗口开始接收。",
+        "expected": "不匹配时不产生虚假完整产物；可检查模式或停止。",
+        "evidence": [
+          "发送/接收模式截图",
+          "真实来源",
+          "观察时长与状态"
+        ]
+      },
+      {
+        "action": "停止接收，将发送端改回 B；若页面内翻回不能恢复，按已知 TD-16 说明重载原发送端后重新加载原文件。",
+        "expected": "如实记录发送端已知限制及恢复动作，不把刷新补救隐去。",
+        "evidence": [
+          "模式恢复操作",
+          "是否需要发送端重载",
+          "新会话状态"
+        ]
+      },
+      {
+        "action": "重新点击实时抓屏、真实选源并保存核外部哈希。",
+        "expected": "B 路线可正常恢复，输出与原件一致。",
+        "evidence": [
+          "系统保存",
+          "原收外部哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "非 B 候选模式实际不可用时说明条件并由 IAT 补分支；不得虚构模式已实测。",
+      "发送端翻回 B 后饥饿与接收器缺陷分别归因，保留首次失败。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "发送/接收模式截图",
+      "真实来源",
+      "观察时长与状态",
+      "模式恢复操作",
+      "是否需要发送端重载",
+      "新会话状态",
+      "系统保存",
+      "原收外部哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-013"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L08",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-9",
+    "title": "DPI/缩放/尺寸",
+    "legacyDefinition": {
+      "id": "E2E-9",
+      "title": "DPI/缩放/尺寸",
+      "given": "当前日常桌面设置、已声明支持组合",
+      "steps": [
+        "先当前默认往返",
+        "调整窗口",
+        "测试宣称支持DPI/zoom",
+        "可实际制造时选超预算源"
+      ],
+      "then": "自然像素不静默缩图，主基线可用；限制明确且可恢复",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-006",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T2.1.b",
+        "T2.2.b",
+        "T4.2.a",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L09",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "先记录操作者当前日常 DPI/缩放；只对已声明支持组合逐项验收。"
+    ],
+    "steps": [
+      {
+        "action": "保持当前日常桌面 DPI、浏览器缩放，选原发送窗口完成往返保存。",
+        "expected": "正常基线无需隐藏特殊设置；记录实际自然像素。",
+        "evidence": [
+          "系统/浏览器设置",
+          "编码区画面/自然尺寸",
+          "外部原收哈希"
+        ]
+      },
+      {
+        "action": "分别调整发送窗口与接收窗口大小，再逐项测试已声明的 DPI/zoom 组合。",
+        "expected": "不得悄悄缩图；每种声称支持组合独立列实际结果。",
+        "evidence": [
+          "逐组合配置/自然尺寸",
+          "逐次输出/外部哈希"
+        ]
+      },
+      {
+        "action": "仅在真实可达时选择超像素预算来源，观察拒绝，再恢复支持尺寸并正常保存。",
+        "expected": "超预算不截断假成功、可恢复；不可构造的精确边界由 IAT 补且注明。",
+        "evidence": [
+          "真实预算条件和提示",
+          "恢复哈希",
+          "不可达分支依据"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "不能将 CSS 缩放测试写成操作系统 DPI 已测；未测组合不得发布支持。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "系统/浏览器设置",
+      "编码区画面/自然尺寸",
+      "外部原收哈希",
+      "逐组合配置/自然尺寸",
+      "逐次输出/外部哈希",
+      "真实预算条件和提示",
+      "恢复哈希",
+      "不可达分支依据"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-001",
+      "AC-006",
+      "AC-012"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L09",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-10",
+    "title": "焦点/遮挡/最小化",
+    "legacyDefinition": {
+      "id": "E2E-10",
+      "title": "焦点/遮挡/最小化",
+      "given": "正常可捕获发送窗口",
+      "steps": [
+        "传输时切回接收页",
+        "另轮遮挡/最小化源再还原",
+        "保存或按提示重试"
+      ],
+      "then": "正常切回接收页可完成；不供帧时不假成功且恢复方法可用",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-006",
+        "AC-007"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.1.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L10",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "已验证正常可捕获窗口；较长载荷避免操作前已 Ready。"
+    ],
+    "steps": [
+      {
+        "action": "真实接收时切回接收页查看状态并完成保存。",
+        "expected": "用户能正常查看接收页而完成，不要求全程盯发送端。",
+        "evidence": [
+          "窗口焦点/布局录像",
+          "保存及外部哈希"
+        ]
+      },
+      {
+        "action": "另一个未完成会话中遮挡源后还原，再另轮最小化源后还原；逐分支记录输入实际行为。",
+        "expected": "是否供帧按平台实测；不供新数据时不假成功，冻结重复画面也不能假定为无数据。",
+        "evidence": [
+          "各分支遮挡/最小化动作",
+          "输入/数据观测",
+          "等待提示和恢复"
+        ]
+      },
+      {
+        "action": "按页面已验证操作恢复或停止重试，再系统保存和外部哈希。",
+        "expected": "恢复方法真实可用，各已执行分支有字节证据。",
+        "evidence": [
+          "各分支恢复操作",
+          "原收外部哈希",
+          "支持布局说明"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "遮挡与最小化分开列；某分支未执行不能用另一分支成功冒充。",
+      "不承诺平台未提供的后台持续捕获能力。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "窗口焦点/布局录像",
+      "保存及外部哈希",
+      "各分支遮挡/最小化动作",
+      "输入/数据观测",
+      "等待提示和恢复",
+      "各分支恢复操作",
+      "原收外部哈希",
+      "支持布局说明"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-001",
+      "AC-006",
+      "AC-007"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L10",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-11",
+    "title": "保存取消无需重传",
+    "legacyDefinition": {
+      "id": "E2E-11",
+      "title": "保存取消无需重传",
+      "given": "已重建Blob，停止发送但不重置接收会话",
+      "steps": [
+        "点保存取消",
+        "新点击选择目标保存",
+        "外部核对hash"
+      ],
+      "then": "同artifact新attempt，无源仍能保存，不再解压/重传",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L11",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "真实重建完成；仅停止发送，不点击接收端停止/重置以免销毁当前 Blob。"
+    ],
+    "steps": [
+      {
+        "action": "关闭发送源或停止动画，保留当前待保存产物，点击保存并在系统对话框取消。",
+        "expected": "取消不显示已保存，产物仍可重试，无新传输。",
+        "evidence": [
+          "发送停止证据",
+          "系统保存取消",
+          "artifactId/attemptId"
+        ]
+      },
+      {
+        "action": "在页面重新点击保存，真实选择本轮新目标路径并确认。",
+        "expected": "同一 artifact、新 save attempt；write/close 完成才已保存。",
+        "evidence": [
+          "第二次真实点击/保存对话框",
+          "同 artifact/新 attempt",
+          "保存完成后四时点"
+        ]
+      },
+      {
+        "action": "不重开发送源，对实际输出在应用之外计算字节数和哈希。",
+        "expected": "无需重传即可保存相同字节。",
+        "evidence": [
+          "发送仍关闭",
+          "实际落盘文件",
+          "外部原收 SHA-256"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "误点接收端停止/重置造成产物释放属于不同操作，不能据此声称本例不支持重试或偷偷重新发送后记通过。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "发送停止证据",
+      "系统保存取消",
+      "artifactId/attemptId",
+      "第二次真实点击/保存对话框",
+      "同 artifact/新 attempt",
+      "保存完成后四时点",
+      "发送仍关闭",
+      "实际落盘文件",
+      "外部原收 SHA-256"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-003",
+      "AC-004",
+      "AC-009"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L11",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-12",
+    "title": "中文名/重名确认",
+    "legacyDefinition": {
+      "id": "E2E-12",
+      "title": "中文名/重名确认",
+      "given": "中文空格样本、专有目录哨兵",
+      "steps": [
+        "核建议名",
+        "取消同名覆盖检查哨兵",
+        "换名保存",
+        "另一哨兵显式确认覆盖"
+      ],
+      "then": "无静默覆盖；取消哨兵不变；实际所选输出hash正确",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T2.1.c",
+        "T3.2.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L12",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "中文空格 basename 原件；仅在本轮专有目录创建可丢弃的同名哨兵并先存外部哈希。"
+    ],
+    "steps": [
+      {
+        "action": "真实重建后点击保存，核对系统对话框建议 basename。",
+        "expected": "正确、安全的建议名；缺原名时用文档回退名，不静默越界。",
+        "evidence": [
+          "原名/建议名截图",
+          "哨兵初始路径和哈希"
+        ]
+      },
+      {
+        "action": "选择同名目标但取消覆盖，然后用外部工具复算哨兵。",
+        "expected": "取消不成功、不覆盖，哨兵字节与哈希完全不变。",
+        "evidence": [
+          "取消覆盖对话框",
+          "哨兵前后外部哈希"
+        ]
+      },
+      {
+        "action": "重新点击保存改为另名；另轮对第二个可丢弃哨兵显式确认覆盖。",
+        "expected": "实际所选输出正确；只有用户确认才覆盖。",
+        "evidence": [
+          "改名和显式覆盖交互",
+          "两个实际目标路径",
+          "各次外部原收哈希/保存四时点"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "不得用用户现有重要文件做重名试验；危险路径/缺名的纯输入边界由 IAT 补并标层级。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "原名/建议名截图",
+      "哨兵初始路径和哈希",
+      "取消覆盖对话框",
+      "哨兵前后外部哈希",
+      "改名和显式覆盖交互",
+      "两个实际目标路径",
+      "各次外部原收哈希/保存四时点"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-003",
+      "AC-004",
+      "AC-009"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L12",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-13",
+    "title": "保存模态与停止",
+    "legacyDefinition": {
+      "id": "E2E-13",
+      "title": "保存模态与停止",
+      "given": "已重建文件",
+      "steps": [
+        "快速双击保存",
+        "模态取消返回后再停止",
+        "另轮保存成功后停止",
+        "重新接收"
+      ],
+      "then": "无重复保存；不能要求模态阻塞期间点页面Stop；已存文件不删除",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-007",
+        "AC-009"
+      ],
+      "taskIds": [
+        "T3.2.a",
+        "T3.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L13",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "已有真实完整产物；系统保存模态可能阻塞页面点击。"
+    ],
+    "steps": [
+      {
+        "action": "在页面快速重复点击保存，观察真实系统对话框。",
+        "expected": "仅一个有效保存流程，无重叠选择器或重复写入。",
+        "evidence": [
+          "连续点击录像",
+          "保存 attempt/写入次数"
+        ]
+      },
+      {
+        "action": "在模态中取消或关闭，回到页面后点击停止，等清理并重新接收另一文件。",
+        "expected": "不要求用户在阻塞页面的模态中点击停止；返回后能清理和重启。",
+        "evidence": [
+          "模态取消/返回后停止操作",
+          "新接收保存外部哈希"
+        ]
+      },
+      {
+        "action": "另轮实际保存成功后点击停止，并在磁盘复查该文件。",
+        "expected": "停止不删除已保存文件，原收哈希保持一致。",
+        "evidence": [
+          "已保存后停止录像",
+          "文件存在/外部哈希",
+          "保存后时点"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "选择器未返回时内部 stop、延迟 write/close 等技术竞态归 IAT，不把脚本调用冒充用户可操作路径。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "连续点击录像",
+      "保存 attempt/写入次数",
+      "模态取消/返回后停止操作",
+      "新接收保存外部哈希",
+      "已保存后停止录像",
+      "文件存在/外部哈希",
+      "保存后时点"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-003",
+      "AC-007",
+      "AC-009"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L13",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-14",
+    "title": "真实录像成功",
+    "legacyDefinition": {
+      "id": "E2E-14",
+      "title": "真实录像成功",
+      "given": "实际窗口V-GOOD，已关闭发送端",
+      "steps": [
+        "选择录像入口并真实导入",
+        "等待完成",
+        "系统保存",
+        "两侧外部hash",
+        "按格式重复"
+      ],
+      "then": "不借后台实时输入；至少一种真实格式通过；双类样本各3轮",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-010",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.a",
+        "T4.1.b",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L14",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "V-GOOD-C/N 来自真实原发送窗口；每个声明支持的容器/编码可播放，媒体 manifest/原件哈希就位。"
+    ],
+    "steps": [
+      {
+        "action": "关闭发送端，确认无实时捕获，点击录像导入并在真实系统选择器选 V-GOOD。",
+        "expected": "录像入口实际可用，不靠 DOM 注入或后台实时流完成。",
+        "evidence": [
+          "发送停止/无捕获证据",
+          "真实打开对话框",
+          "媒体摘要/录制参数"
+        ]
+      },
+      {
+        "action": "等待受控播放与真实文件重建，点击系统保存。",
+        "expected": "录像进度与文件完整不同；完整产物才待保存，实际 close 完成才已保存。",
+        "evidence": [
+          "媒体呈现与界面",
+          "保存交互",
+          "保存完成后四时点"
+        ]
+      },
+      {
+        "action": "在外部核原件与输出哈希；对 D-C/D-N 各3个干净会话并覆盖每个发布支持格式。",
+        "expected": "至少一种真实格式通过；总计至少6轮录像完整往返，发布的每个格式均有证据。",
+        "evidence": [
+          "每轮原收文件/外部哈希",
+          "格式/会话/attempt矩阵",
+          "录制与处理时长"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "只有加载/播放成功不是文件接收成功；新录像应有新实测哈希，不粘贴历史媒体哈希。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "发送停止/无捕获证据",
+      "真实打开对话框",
+      "媒体摘要/录制参数",
+      "媒体呈现与界面",
+      "保存交互",
+      "保存完成后四时点",
+      "每轮原收文件/外部哈希",
+      "格式/会话/attempt矩阵",
+      "录制与处理时长"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-003",
+      "AC-004",
+      "AC-010",
+      "AC-014"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L14",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-15",
+    "title": "录像取消/坏文件恢复",
+    "legacyDefinition": {
+      "id": "E2E-15",
+      "title": "录像取消/坏文件恢复",
+      "given": "V-BAD、V-GOOD",
+      "steps": [
+        "取消选择后重选",
+        "分别导入空/非视频/损坏/实际不支持输入",
+        "每次恢复正常录像保存"
+      ],
+      "then": "有限结束、可理解提示和重选，无刷新/控制台补救",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.a",
+        "T2.2.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L15",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "V-GOOD 与空/非视频/损坏/本浏览器实际不支持候选均登记摘要；每分支独立保存恢复目录。"
+    ],
+    "steps": [
+      {
+        "action": "在空闲页面点击录像导入，取消真实系统打开对话框，再立刻真实选择 V-GOOD、重建、系统保存核外部哈希。",
+        "expected": "取消不会伪造 change/新会话；入口可用，同页面真实恢复，不需刷新。",
+        "evidence": [
+          "取消前后状态/attempt",
+          "真实重选/保存交互",
+          "recovery-cancel 外部原收哈希及保存四时点"
+        ]
+      },
+      {
+        "action": "分别通过真实录像入口和系统打开对话框导入空、非视频、损坏输入，每次取分发前基线并等本轮有限终态。",
+        "expected": "本轮实际摄入、身份推进/状态离 Idle、本轮错误增量、无 already-active 假拒绝；无假产物，可重启且清理完成。",
+        "evidence": [
+          "每输入摘要/真实选择过程",
+          "本轮增量错误与终态/按钮/cleanup",
+          "逐坏输入独立结果"
+        ]
+      },
+      {
+        "action": "每个坏输入失败后立即通过真实录像入口重选 V-GOOD，系统保存并外部核哈希，再进入下一个坏输入。",
+        "expected": "每个异常都有单独真实恢复；一个最后总恢复不能覆盖前面多个异常。",
+        "evidence": [
+          "recovery-empty/text/corrupt 各自目录",
+          "每恢复会话/attempt",
+          "各保存后四时点和外部哈希"
+        ]
+      },
+      {
+        "action": "对实际不支持媒体候选执行同样失败→单独真实恢复；若候选实际支持则记录支持，不把成功伪装“不支持”。",
+        "expected": "真实不支持分支有限结束且可恢复；无法构造时说明不适用并用 IAT 补，不虚报。",
+        "evidence": [
+          "候选媒体参数/能力实测",
+          "不支持分支状态与单独恢复或不适用依据"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "现有 runner 的 empty/text/corrupt 使用 DataTransfer，仅为 IMPORT-PATH-ONLY，不证明真实打开入口；本轮 UAT 必须补真实系统选择，或如实留缺口。",
+      "坏输入后 Preparing/超时/旧错误码均不能 PASS；恢复对话框自动化不可达时补人工，不补则 NOT_RUN。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "取消前后状态/attempt",
+      "真实重选/保存交互",
+      "recovery-cancel 外部原收哈希及保存四时点",
+      "每输入摘要/真实选择过程",
+      "本轮增量错误与终态/按钮/cleanup",
+      "逐坏输入独立结果",
+      "recovery-empty/text/corrupt 各自目录",
+      "每恢复会话/attempt",
+      "各保存后四时点和外部哈希",
+      "候选媒体参数/能力实测",
+      "不支持分支状态与单独恢复或不适用依据"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-008",
+      "AC-014"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/tests/runs/20261021-teamexec-03/results.json"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L15",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。",
+      "tools/desktop-recv/e2e/run-e2e.mjs:2085-2296：8腿逐异常真实恢复；坏输入当前仅DataTransfer，需补真实入口，不得把该路径证据冒充系统入口。"
+    ]
+  },
+  {
+    "id": "E2E-16",
+    "title": "录像EOF与最终帧",
+    "legacyDefinition": {
+      "id": "E2E-16",
+      "title": "录像EOF与最终帧",
+      "given": "真实V-SHORT、V-LAST有/无关键帧对照",
+      "steps": [
+        "导入短录像等EOF",
+        "导入缺关键帧版",
+        "再导入完整末帧版保存hash"
+      ],
+      "then": "不足不Ready；完整等最终帧结果后成功；有限补采/排空无无限重播",
+      "acceptanceIds": [
+        "AC-002",
+        "AC-008",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T3.1.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L16",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "V-SHORT 与同流同步双录制器 V-LAST-with/without 配对；真实文件哈希、payload 哈希、声明 cut、prefix-check、接收侧时长齐全。",
+      "配对录制一次 getDisplayMedia、两个同任务 start 的 MediaRecorder；不再采用逐段 reload 同前缀假设，也不能字节截断假 EOF。"
+    ],
+    "steps": [
+      {
+        "action": "通过真实录像导入入口选 V-SHORT，播放至实际 EOF 并等待当前 profile 有限排空。",
+        "expected": "不足结束为未完成，无 Ready/产物，不无限重放；每步观察上界预先登记。",
+        "evidence": [
+          "媒体文件与摘要",
+          "真实导入",
+          "ended/最终帧/排空时间线"
+        ]
+      },
+      {
+        "action": "导入 V-LAST-without 播放至真实 EOF，记录媒体时长、最后呈现时间和无产物。",
+        "expected": "EOF 媒体时间达到声明 cut−1.0s 容差，仍无产物；不把装置提前中断当对照。",
+        "evidence": [
+          "配对 manifest/prefix-check",
+          "without EOF/lastUs/时长",
+          "该腿状态/无产物断言"
+        ]
+      },
+      {
+        "action": "导入同流 V-LAST-with，等待最终有效帧及在途结果，保存并外部核哈希。",
+        "expected": "真实产物成功优先；完成媒体时间 T*=lastUs/1e6≥接收侧 withDurationSec−2.0 且 T*>without 时长；artifactFrameId 仅帧身份。",
+        "evidence": [
+          "with 接收侧 open-precheck 时长",
+          "T*计算及独立 frameId",
+          "末段 result/artifact/EOF 顺序",
+          "保存后四时点和外部哈希"
+        ]
+      },
+      {
+        "action": "核对 prefix-check 同流共享头和声明裁停对应尾帧证据，以及 with 完成时 mediaEnded 状态；若末段判据不成立按预定预算重录。",
+        "expected": "配对因果和量纲正确；不能用重放/旧哈希或固定录像长度自动宣称最后关键帧通过；最多2轮校准，耗尽仍如实失败。",
+        "evidence": [
+          "同流构造/头尾检查",
+          "with mediaEnded/尾事件",
+          "重录记录与新媒体哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "缺共享前缀/尾帧、without 未真正 EOF、with 提前远离末段、frameId 当秒数、保存前快照量测均拒绝。",
+      "精确 ended/Worker 回复竞态仍由 IAT 补；不能只控回调就声称真录像本例 PASS。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "媒体文件与摘要",
+      "真实导入",
+      "ended/最终帧/排空时间线",
+      "配对 manifest/prefix-check",
+      "without EOF/lastUs/时长",
+      "该腿状态/无产物断言",
+      "with 接收侧 open-precheck 时长",
+      "T*计算及独立 frameId",
+      "末段 result/artifact/EOF 顺序",
+      "保存后四时点和外部哈希",
+      "同流构造/头尾检查",
+      "with mediaEnded/尾事件",
+      "重录记录与新媒体哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-002",
+      "AC-008",
+      "AC-014"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "tools/desktop-recv/e2e/record-sender.mjs",
+      "tools/desktop-recv/e2e/pair-evidence.mjs",
+      "tools/desktop-recv/e2e/video-prefix-check.py"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L16",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。",
+      "docs/dev-pipeline/autonomous-decisions.md:26-27 D-20/D-21；reproduction.md §3：同流双录制器/声明停点/头尾配对/最多2轮校准。",
+      "tools/desktop-recv/e2e/run-e2e.mjs:2297-2607；leg-verdict.mjs evaluateLastFramePair：EOF/末段/量纲判据。"
+    ]
+  },
+  {
+    "id": "E2E-17",
+    "title": "双输入停止切换",
+    "legacyDefinition": {
+      "id": "E2E-17",
+      "title": "双输入停止切换",
+      "given": "A录像与内容不同B",
+      "steps": [
+        "录像A中点停止后实时B保存",
+        "反向实时中停后导入B录像保存"
+      ],
+      "then": "旧媒体/URL/Worker清理，B无A晚结果污染，hash为B",
+      "acceptanceIds": [
+        "AC-007",
+        "AC-008",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T3.1.b",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L17",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "A 录像与 B 不同内容且哈希已存；准备 B 原发送端和 B 真实录像。"
+    ],
+    "steps": [
+      {
+        "action": "真实导入尚未完成的 A 录像，处理中点击停止并等清理。",
+        "expected": "旧媒体暂停/解绑、Object URL/回调/Worker 清理，旧数据不能继续修改页面。",
+        "evidence": [
+          "真实导入/停止",
+          "媒体/URL/Worker资源时间线"
+        ]
+      },
+      {
+        "action": "点击实时抓屏，真实选择发送 B 的独立窗口，重建、系统保存并外部核对。",
+        "expected": "新输入实时、新会话从零；输出等于 B 且不等于 A。",
+        "evidence": [
+          "新来源/会话",
+          "A/B/输出外部哈希",
+          "保存后时点"
+        ]
+      },
+      {
+        "action": "反向执行实时 A 中停→清理→真实导入 B 录像→重建保存。",
+        "expected": "两方向均不串旧源/旧 srcObject/晚回调，B 字节一致。",
+        "evidence": [
+          "反向全程操作",
+          "清理/新媒体归属",
+          "B录像输出外部哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "切换前未完成清理、预览隐藏致 rVFC 停滞或旧流留在 srcObject 均失败；不得刷新掩盖。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "真实导入/停止",
+      "媒体/URL/Worker资源时间线",
+      "新来源/会话",
+      "A/B/输出外部哈希",
+      "保存后时点",
+      "反向全程操作",
+      "清理/新媒体归属",
+      "B录像输出外部哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-007",
+      "AC-008",
+      "AC-004"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L17",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-18",
+    "title": "扩展规模和预算恢复",
+    "legacyDefinition": {
+      "id": "E2E-18",
+      "title": "扩展规模和预算恢复",
+      "given": "已核实边界内1/4MiB两类数据",
+      "steps": [
+        "逐级双输入往返",
+        "真实可构造超预算样本拒绝后再传正常文件"
+      ],
+      "then": "支持内字节正确；越界不截断/挂死；精确边界不足由IAT补并说明",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-012",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T2.2.b",
+        "T4.2.a",
+        "T4.2.b"
+      ],
+      "sourceCase": "UAT-L18",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "完整10腿逐项参照 cases/e2e18-matrix.json；确定性扩展输入重新核哈希，媒体按本轮运行根重建或登记受控输入副本。",
+      "TD-15 已关闭，4MiB 难压缩录像已可行且必测；不能沿用旧128KiB装置上限或未批准草案缩减。",
+      "录像/导入观察上界须执行前登记；1MiB探针可用后完整4MiB腿仍须运行，失败不自动变为批准 NOT_RUN。"
+    ],
+    "steps": [
+      {
+        "action": "依矩阵在真实原发送窗口分别加载两类1MiB/4MiB样本，真实选源接收并逐腿系统保存、外部核哈希。",
+        "expected": "4条实时腿各自正确，不用一个 canonical 文件代表所有腿已执行。",
+        "evidence": [
+          "4腿输入/自然尺寸/profile",
+          "每腿选择/保存过程",
+          "各腿外部原收哈希与保存后时点"
+        ]
+      },
+      {
+        "action": "按矩阵准备真实 video-c-4mib、video-n-128kib、video-n-1mib-probe、video-n-4mib，停止发送/实时输入后逐腿真实导入与系统保存。",
+        "expected": "4条录像腿实际运行；每腿同源输入/录像哈希、有限观察、末段状态和输出可追踪。",
+        "evidence": [
+          "录像 manifest/录制参数/边界声明",
+          "4腿真实入口/无后台源",
+          "每腿媒体时间线/哈希/保存四时点"
+        ]
+      },
+      {
+        "action": "真实发送可压缩20MiB超产物预算样本，记录本轮15008拒绝，点击停止清理，再正常文件完整接收保存。",
+        "expected": "验证的是解压后产物预算，不是像素拒绝；越界无可保存产物，恢复输出哈希正确；恢复时点独立重置。",
+        "evidence": [
+          "原始/编码/预算尺寸和profile",
+          "拒绝增量15008/无产物/可停止",
+          "budget-recovery 真实保存/哈希/保存四时点"
+        ]
+      },
+      {
+        "action": "逐项列10腿结果并核对每腿构建、attempt和执行来源，单列未运行难压缩20MiB额外探测腿。",
+        "expected": "只有 live-n-20mib-over-budget 可按D-19带当前代码依据 NOT_RUN；其余9腿必须 PASS，矩阵缺腿/其他NOT_RUN/任何FAIL均不通过。",
+        "evidence": [
+          "10腿清单/逐腿结果",
+          "每腿executedInAttempt和非当前携带来源",
+          "唯一例外代码级依据"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "装置录制失败/缺媒体时诚实 NOT_RUN，但除唯一授权腿外不得因此把总矩阵置 PASS。",
+      "录像导入已呈现足够内容仍未重建或中途停滞应调查接收端 FAIL，不预先归为平台/容量限制。",
+      "重跑合并须 fresh-only 打章；失败attempt不能冒领历史腿，旧run03 PASS不能带入本轮候选。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "4腿输入/自然尺寸/profile",
+      "每腿选择/保存过程",
+      "各腿外部原收哈希与保存后时点",
+      "录像 manifest/录制参数/边界声明",
+      "4腿真实入口/无后台源",
+      "每腿媒体时间线/哈希/保存四时点",
+      "原始/编码/预算尺寸和profile",
+      "拒绝增量15008/无产物/可停止",
+      "budget-recovery 真实保存/哈希/保存四时点",
+      "10腿清单/逐腿结果",
+      "每腿executedInAttempt和非当前携带来源",
+      "唯一例外代码级依据"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-012",
+      "AC-004"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/tests/runs/20261021-teamexec-03/results.json"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L18",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。",
+      "tools/desktop-recv/e2e/run-e2e.mjs:3196-3505：完整10腿、录制观察边界、15008拒绝与恢复、唯一AUTHORIZED_NOT_RUN。",
+      "docs/dev-pipeline/autonomous-decisions.md:25 D-19；stage5-dev-summary.md:162,189：4MiB难压缩录像已可行，TD-15旧上限关闭。"
+    ],
+    "legMatrixRef": "docs/tests/receiver-ux-v2/cases/e2e18-matrix.json"
+  },
+  {
+    "id": "E2E-19",
+    "title": "刷新/关页/服务重启",
+    "legacyDefinition": {
+      "id": "E2E-19",
+      "title": "刷新/关页/服务重启",
+      "given": "无未决模态/写入的活动接收",
+      "steps": [
+        "刷新后重试",
+        "另轮关页重开",
+        "按手册停服务重启并往返"
+      ],
+      "then": "无幽灵捕获/旧进度；新实例，已存文件保留",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T2.2.a",
+        "T5.1.a",
+        "T4.1.b"
+      ],
+      "sourceCase": "UAT-L19",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "无未决系统模态或保存写入；先保留一个已存文件及外部哈希。"
+    ],
+    "steps": [
+      {
+        "action": "接收中真实刷新页面，观察共享/处理终止，然后从页面入口重新选源保存。",
+        "expected": "新实例无幽灵捕获/旧进度，恢复输出正确。",
+        "evidence": [
+          "刷新前后共享/资源状态",
+          "重新接收操作",
+          "外部原收哈希"
+        ]
+      },
+      {
+        "action": "另轮接收中真实关闭接收页，复核旧页确已关闭，再打开说明入口并往返。",
+        "expected": "不能只导航假装关页；重开是新实例，无旧会话串入。",
+        "evidence": [
+          "旧页关闭/新页入口",
+          "资源清理",
+          "新输出外部哈希"
+        ]
+      },
+      {
+        "action": "按用户手册停接收服务、重新启动并完成真实往返，再复查原先保存文件。",
+        "expected": "服务重启可用；已有磁盘文件不删除或改写。",
+        "evidence": [
+          "服务停止/重启输出",
+          "新往返哈希",
+          "既有文件前后哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "原生保存未决时强制离页的技术竞态另归 IAT；不承诺浏览器退出事务回滚。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "刷新前后共享/资源状态",
+      "重新接收操作",
+      "外部原收哈希",
+      "旧页关闭/新页入口",
+      "资源清理",
+      "新输出外部哈希",
+      "服务停止/重启输出",
+      "新往返哈希",
+      "既有文件前后哈希"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007",
+      "AC-013"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L19",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ]
+  },
+  {
+    "id": "E2E-20",
+    "title": "连续使用与最终包",
+    "legacyDefinition": {
+      "id": "E2E-20",
+      "title": "连续使用与最终包",
+      "given": "基础路径通过，冻结包和摘要",
+      "steps": [
+        "10轮交替双输入并取消/停止/重试",
+        "最终包新目录重做启动/实时/录像/保存重试"
+      ],
+      "then": "资源归属/清理不累积；每次输出hash；最终双输入双类数据与证据字节绑定",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-005",
+        "AC-007",
+        "AC-010",
+        "AC-013",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T4.1.b",
+        "T4.2.b",
+        "T5.1.a",
+        "T5.1.c"
+      ],
+      "sourceCase": "UAT-L20",
+      "scope": "local_simulated",
+      "executorRole": "executor",
+      "caseType": "file_roundtrip",
+      "execution": "手工/有界面浏览器自动化结合真实系统操作",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T35",
+      "T36"
+    ],
+    "entry": "从本轮候选用户说明启动正常 Edge 接收器；原发送端独立窗口或真实录像入口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "阶段5固定候选先完成10轮混合生命周期；最终包入口段在阶段8独立追加，不是 T35/T36 候选本地门禁的循环前置。",
+      "基础真实路径通过；A/B、两类样本与录像已就位，记录初始活动track/Worker/URL基线。"
+    ],
+    "steps": [
+      {
+        "action": "按预先排定的10轮表交替实时/录像与 A/B，穿插捕获取消、处理中停止、保存取消重试。",
+        "expected": "10轮每轮独立终态/清理与实际输出，所有已执行保存有外部哈希，不强制刷新掩盖恢复失败。",
+        "evidence": [
+          "预排10轮表",
+          "每轮操作/状态/资源",
+          "每次保存后时点和外部哈希"
+        ]
+      },
+      {
+        "action": "每轮停止后核对资源归属和释放，下一轮从页面已恢复入口开始。",
+        "expected": "无累积活动源/Worker/URL或旧数据串入；可用性异常即阻断。",
+        "evidence": [
+          "逐轮资源时间线",
+          "A/B与输出三方哈希",
+          "失败/重试原始记录"
+        ]
+      },
+      {
+        "action": "候选10轮完成时登记仅阶段5结果、冻结产品摘要，并列阶段8最终包复验为待执行。",
+        "expected": "不要求先执行尚未发生的最终发布；不把候选 PASS写成最终包/现场 PASS。",
+        "evidence": [
+          "候选清单与10轮结果",
+          "阶段8待办和证据边界"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "候选资产与结果manifest不同、连续流程必须靠刷新修复或少轮次，不得记通过。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "预排10轮表",
+      "每轮操作/状态/资源",
+      "每次保存后时点和外部哈希",
+      "逐轮资源时间线",
+      "A/B与输出三方哈希",
+      "失败/重试原始记录",
+      "候选清单与10轮结果",
+      "阶段8待办和证据边界"
+    ],
+    "scope": "local_simulated",
+    "executorRole": "executor",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-004",
+      "AC-005",
+      "AC-007",
+      "AC-010",
+      "AC-013",
+      "AC-014"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "local",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "5",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/dev-pipeline/autonomous-decisions.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: UAT-L20",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "finalPackageRecheckStage": "8",
+    "packageRecheck": {
+      "executionStage": "8",
+      "status": "NOT_RUN",
+      "executedBy": null,
+      "steps": [
+        {
+          "action": "阶段8最终包装从全新目录依 E2E-1/3/11/14复验，双输入×两类数据并包含保存取消重试。",
+          "expected": "最终包与被引用产品资产字节绑定；纯包装变动只补受影响入口，产品字节变更按影响重跑。",
+          "evidence": [
+            "最终包/环境/产品摘要",
+            "阶段8独立attempt/真实操作",
+            "双输入两类外部哈希/保存重试"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "E2E-21",
+    "title": "真实云桌面实时",
+    "legacyDefinition": {
+      "id": "E2E-21",
+      "title": "真实云桌面实时",
+      "given": "用户客户端及云端原发送B，D-C/D-N",
+      "steps": [
+        "记录现场环境",
+        "选真实桌面客户端窗口",
+        "双类样本分别接收保存",
+        "对比云端原文与宿主输出hash"
+      ],
+      "then": "真实客户端范围内分别正确；不以本地源替换",
+      "acceptanceIds": [
+        "AC-001",
+        "AC-004",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-01",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "file_roundtrip",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "用户在真实云桌面客户端中运行本项目原发送端 B；宿主机使用本轮接收器，不能用本地模拟源替代。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "用户记录客户端/云端/宿主机/浏览器/显示设置和当前包摘要，在云端加载 D-C 原件并独立计算云端 SHA-256。",
+        "expected": "现场范围、原件和版本可追踪；远程桌面可为原生客户端，不要求运行在浏览器。",
+        "evidence": [
+          "现场环境/版本",
+          "云端原件尺寸和外部哈希"
+        ]
+      },
+      {
+        "action": "宿主机点击实时抓屏，真实选择该桌面客户端窗口，等完成并通过系统保存到宿主磁盘。",
+        "expected": "跨真实云桌面画面接收成立；已保存以真实 write/close 完成计。",
+        "evidence": [
+          "真实客户端窗口选择/布局",
+          "接收和系统保存",
+          "保存后时点"
+        ]
+      },
+      {
+        "action": "宿主机外部复算输出哈希，对 D-N 重复并与云端原件逐一比对。",
+        "expected": "两类样本分别字节一致；只有当前客户端/设置/样本范围得到现场结论。",
+        "evidence": [
+          "云端/宿主机外部哈希原始输出",
+          "双类现场回执",
+          "用户实际执行人/时间"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "用户此前“可以传文件”口述仅 USER_REPORTED_SUCCESS，不替代本轮六项现场结果。",
+      "无法访问现场或用户未执行时保留 NOT_RUN，不以本地 PASS代填。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "现场环境/版本",
+      "云端原件尺寸和外部哈希",
+      "真实客户端窗口选择/布局",
+      "接收和系统保存",
+      "保存后时点",
+      "云端/宿主机外部哈希原始输出",
+      "双类现场回执",
+      "用户实际执行人/时间"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-001",
+      "AC-004",
+      "AC-011"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-01",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  },
+  {
+    "id": "E2E-22",
+    "title": "真实云桌面录像",
+    "legacyDefinition": {
+      "id": "E2E-22",
+      "title": "真实云桌面录像",
+      "given": "从实际客户端录的双类样本录像",
+      "steps": [
+        "停止实时输入/发送",
+        "导入录像",
+        "分别保存并核外部hash"
+      ],
+      "then": "至少一个公布支持格式实际往返；后台无实时输入",
+      "acceptanceIds": [
+        "AC-004",
+        "AC-011",
+        "AC-014"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-02",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "file_roundtrip",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "真实录制桌面客户端中原发送端双类样本；媒体参数、原件与媒体摘要已登记。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "用户从实际云桌面客户端窗口录制足量编码画面并记录工具、容器/编码、尺寸、帧率、时长及媒体哈希。",
+        "expected": "媒体来源真实，至少一个公布支持组合有实际材料。",
+        "evidence": [
+          "真实录制来源/参数",
+          "媒体完整哈希",
+          "云端原件外部哈希"
+        ]
+      },
+      {
+        "action": "停止发送与退出实时接收后，在宿主机真实点击录像导入并选择录像。",
+        "expected": "没有后台实时输入；导入入口、媒体读取与文件接收区分正确。",
+        "evidence": [
+          "发送/捕获已停止",
+          "真实系统打开对话框",
+          "媒体/会话状态"
+        ]
+      },
+      {
+        "action": "用户实际保存到宿主磁盘，外部核对输出与云端原件哈希，双类样本分别执行。",
+        "expected": "录像途径真实跨客户端往返，字节相等；未公布格式不虚称支持。",
+        "evidence": [
+          "系统保存和四时点",
+          "双类云端/宿主机哈希",
+          "用户现场回执"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "无现场录像或只在本地发送端录制时不算此现场用例通过。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "真实录制来源/参数",
+      "媒体完整哈希",
+      "云端原件外部哈希",
+      "发送/捕获已停止",
+      "真实系统打开对话框",
+      "媒体/会话状态",
+      "系统保存和四时点",
+      "双类云端/宿主机哈希",
+      "用户现场回执"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-004",
+      "AC-011",
+      "AC-014"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-02",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  },
+  {
+    "id": "E2E-23",
+    "title": "现场日常显示布局",
+    "legacyDefinition": {
+      "id": "E2E-23",
+      "title": "现场日常显示布局",
+      "given": "用户日常DPI/缩放/窗口",
+      "steps": [
+        "正常接收切回页面",
+        "遮挡/最小化后还原",
+        "按手册恢复"
+      ],
+      "then": "日常支持路径可用；不供帧如实提示，未测配置不冒充通过",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-011",
+        "AC-012"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-03",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "negative_or_lifecycle",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "用户日常真实客户端布局/DPI/zoom，已知正确接收路线和较长样本。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "保持现场日常显示设置，真实接收时切回宿主接收器查看状态并保存。",
+        "expected": "日常已支持路径可用，不暗中改成开发者特殊布局。",
+        "evidence": [
+          "现场显示/窗口配置",
+          "切焦点录像",
+          "输出外部哈希"
+        ]
+      },
+      {
+        "action": "另轮分别遮挡、最小化真实客户端，再还原，逐项记录是否持续新供帧/新数据。",
+        "expected": "平台行为如实呈现；冻结画面不等同无数据，不能虚构故障原因或假完成。",
+        "evidence": [
+          "每分支实际操作",
+          "帧/数据/提示时间线"
+        ]
+      },
+      {
+        "action": "按手册恢复或停止重选，完成保存并回填实测支持范围。",
+        "expected": "恢复可执行；未测设置或环境受限保持 NOT_RUN/限制。",
+        "evidence": [
+          "恢复操作",
+          "落盘外部哈希",
+          "现场支持范围回执"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "本地源/模拟器结果不得填现场；未测DPI组合不冒充全部支持。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "现场显示/窗口配置",
+      "切焦点录像",
+      "输出外部哈希",
+      "每分支实际操作",
+      "帧/数据/提示时间线",
+      "恢复操作",
+      "落盘外部哈希",
+      "现场支持范围回执"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "negative_or_lifecycle",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007",
+      "AC-011",
+      "AC-012"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-03",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  },
+  {
+    "id": "E2E-24",
+    "title": "现场取消停止重启",
+    "legacyDefinition": {
+      "id": "E2E-24",
+      "title": "现场取消停止重启",
+      "given": "真实客户端、A/B不同hash",
+      "steps": [
+        "取消选源重开",
+        "传输中停止换B",
+        "系统停止共享后重试"
+      ],
+      "then": "资源释放；B无A串入；记录操作和实际hash",
+      "acceptanceIds": [
+        "AC-006",
+        "AC-007",
+        "AC-011",
+        "AC-004"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-04",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "negative_or_lifecycle",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "真实客户端，A/B同名同大小不同外部哈希；用户可操作真实捕获选择器。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "用户点击实时抓屏并取消真实系统选源，再正常重开选择客户端窗口。",
+        "expected": "取消后可恢复，无旧进度和残留来源。",
+        "evidence": [
+          "取消/重选交互",
+          "会话/状态时间线"
+        ]
+      },
+      {
+        "action": "A 未完成时用户点停止，清理后由云端发送 B，再真实接收保存。",
+        "expected": "B无A串入，输出哈希等于B、不等于A。",
+        "evidence": [
+          "停止/清理/重选",
+          "云端A/B与宿主输出外部哈希"
+        ]
+      },
+      {
+        "action": "另轮用户使用系统停止共享控件，按手册重新接收并保存。",
+        "expected": "系统外部终止可恢复，资源释放；未能执行此分支单列真实缺口。",
+        "evidence": [
+          "系统停止共享动作",
+          "资源/恢复状态",
+          "恢复保存哈希"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "源关闭与系统停止共享不能无说明相互替代；每异常之后都应有对应恢复证据。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "取消/重选交互",
+      "会话/状态时间线",
+      "停止/清理/重选",
+      "云端A/B与宿主输出外部哈希",
+      "系统停止共享动作",
+      "资源/恢复状态",
+      "恢复保存哈希"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "negative_or_lifecycle",
+    "acceptanceIds": [
+      "AC-006",
+      "AC-007",
+      "AC-011",
+      "AC-004"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-04",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  },
+  {
+    "id": "E2E-25",
+    "title": "现场实际保存恢复",
+    "legacyDefinition": {
+      "id": "E2E-25",
+      "title": "现场实际保存恢复",
+      "given": "真实接收Blob和专有哨兵目录",
+      "steps": [
+        "停止发送",
+        "保存取消后重试",
+        "验证中文名/重名确认",
+        "核实际目标hash"
+      ],
+      "then": "无需重传、无静默覆盖，真实磁盘文件正确",
+      "acceptanceIds": [
+        "AC-003",
+        "AC-004",
+        "AC-009",
+        "AC-011"
+      ],
+      "taskIds": [
+        "T5.2.b"
+      ],
+      "sourceCase": "FAT-05",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "file_roundtrip",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "真实云桌面已重建产物，专有可丢弃哨兵目录与中文/空格名样本。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "用户停止云端发送但保留宿主待保存产物，点击保存并取消系统对话框。",
+        "expected": "取消不假已保存、不要求重传，产物仍可重试。",
+        "evidence": [
+          "发送停止",
+          "保存取消",
+          "同artifact/attempt记录"
+        ]
+      },
+      {
+        "action": "重新点击保存，验证中文建议名、同名取消不改哨兵，再新命名或显式覆盖专有哨兵。",
+        "expected": "无静默覆盖；系统对话框操作与用户目标一致。",
+        "evidence": [
+          "中文名/覆盖交互",
+          "哨兵前后哈希",
+          "实际目标路径"
+        ]
+      },
+      {
+        "action": "在宿主机外部计算最终输出哈希，与云端原件比较并回填。",
+        "expected": "真实磁盘字节正确，保存结束四时点齐全。",
+        "evidence": [
+          "保存后四时点",
+          "云端/宿主机外部哈希",
+          "用户现场回执"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "不对用户重要现存文件做覆盖试验；不自动删除或回滚已经实际保存的文件。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "发送停止",
+      "保存取消",
+      "同artifact/attempt记录",
+      "中文名/覆盖交互",
+      "哨兵前后哈希",
+      "实际目标路径",
+      "保存后四时点",
+      "云端/宿主机外部哈希",
+      "用户现场回执"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "file_roundtrip",
+    "acceptanceIds": [
+      "AC-003",
+      "AC-004",
+      "AC-009",
+      "AC-011"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-05",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  },
+  {
+    "id": "E2E-26",
+    "title": "现场测量回执与整改",
+    "legacyDefinition": {
+      "id": "E2E-26",
+      "title": "现场测量回执与整改",
+      "given": "现场双输入实际结果和版本包",
+      "steps": [
+        "记录尺寸/fps/时点/重复",
+        "填现场回执",
+        "失败留复现材料",
+        "必要时按整套入口回退"
+      ],
+      "then": "功能/性能/现场分开；无阈值性能未评定；不删旧文件/证据；归因后最小整改",
+      "acceptanceIds": [
+        "AC-005",
+        "AC-011",
+        "AC-012",
+        "AC-013"
+      ],
+      "taskIds": [
+        "T5.2.a",
+        "T5.2.b",
+        "T5.2.c"
+      ],
+      "sourceCase": "FAT-06",
+      "scope": "real_cloud",
+      "executorRole": "user",
+      "caseType": "measurement",
+      "execution": "用户现场手工",
+      "result": "NOT_RUN",
+      "executedBy": null
+    },
+    "executionTaskIds": [
+      "T36"
+    ],
+    "entry": "宿主机正常浏览器中的候选接收器；云端原发送端→真实桌面客户端窗口",
+    "preconditions": [
+      "当前为规划，未执行；仅使用本轮新运行根/候选清单/attempt。旧 run-03 只读，不抄旧 PASS 或改写历史证据。",
+      "未来执行前先完成 T1～T6 运行上下文隔离；当前 runner 的历史 RUN/STAGING/PLANNING 默认值不可直接使用。正常启动 Edge 后 CDP 附加，Windows 桌面/剪贴板/对话框独占串行。",
+      "按当前真实用户说明操作；真实捕获和文件选择/保存对话框由工具或人工执行。注入帧、DataTransfer、模拟句柄只作对应 IAT/导入路径证据，不能替代本例要求的系统入口。",
+      "现场双输入实际执行记录、当前版本摘要、全部重试/失败记录；旧现场性能阈值文件或明确未确认状态。",
+      "T36只准备空回执和如实报告独立 field 门禁；实际执行留用户现场（路线图T4.2.d），不计入阶段5本地已执行。"
+    ],
+    "steps": [
+      {
+        "action": "用户或实施方协助整理现场双输入两类样本的自然尺寸/fps、原始/编码/产物字节、初始化/重建/选择器等待/写入时点及重复结果。",
+        "expected": "量纲和起止边界明确，用户决策等待不混入解码吞吐；保存量测来自保存后。",
+        "evidence": [
+          "现场原始时点/样本与录像摘要",
+          "重复/失败/重试原始数据",
+          "计算公式与单位"
+        ]
+      },
+      {
+        "action": "由用户填写现场空回执，分别列功能、测量、性能目标评定、支持范围与现场状态。",
+        "expected": "没冻结现场阈值则 NOT_EVALUATED；本轮UX开销方法不能代填旧现场吞吐阈值或伪造性能PASS。",
+        "evidence": [
+          "用户实际填写回执",
+          "旧性能阈值依据或未确认状态",
+          "版本/环境绑定"
+        ]
+      },
+      {
+        "action": "失败时保留可复现材料；需要回退时停止候选，按手册切回整套已验证入口并核对，不删除已存文件。",
+        "expected": "先归因、最小整改与受影响复验；保留旧证据与输出，不能混用资产。",
+        "evidence": [
+          "失败步骤/来源/媒体/日志",
+          "回退整套摘要与入口",
+          "文件保留/复验记录"
+        ]
+      }
+    ],
+    "failureBranches": [
+      "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
+      "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
+      "用户未执行不能补签执行人或时间；只有口述成功没有尺寸/哈希/回执不闭合本例。",
+      "性能未确认不能由功能成功升级；本地或UX性能method不能替代现场旧批准判据。"
+    ],
+    "requiredEvidence": [
+      "本轮产品/输入manifest摘要、sourceRevision/harnessRevision、runId/attemptId、每腿实际执行来源、实际执行人/时间和环境。",
+      "本轮真实用户动作、可见状态/按钮及相应日志增量；每个失败和重试保留，不只摘成功截图。",
+      "凡执行保存：原件与实际磁盘输出的路径、字节数和外部 SHA-256；保存后读取且同 attempt 的 saveRequestAt/createWritableAccessedAt/writableAt/writeCloseAt 四个有限有序时点。无保存腿显式不适用，不填假0。",
+      "现场原始时点/样本与录像摘要",
+      "重复/失败/重试原始数据",
+      "计算公式与单位",
+      "用户实际填写回执",
+      "旧性能阈值依据或未确认状态",
+      "版本/环境绑定",
+      "失败步骤/来源/媒体/日志",
+      "回退整套摘要与入口",
+      "文件保留/复验记录"
+    ],
+    "scope": "real_cloud",
+    "executorRole": "user",
+    "caseType": "measurement",
+    "acceptanceIds": [
+      "AC-005",
+      "AC-011",
+      "AC-012",
+      "AC-013"
+    ],
+    "uxAcceptanceIds": [],
+    "gate": "field",
+    "required": true,
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "executionStage": "FIELD",
+    "sources": [
+      "docs/tests/planning-cases.json",
+      "docs/plans/test-acceptance-plan.md",
+      "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-timings.mjs",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md"
+    ],
+    "sourceNotes": [
+      "docs/plans/test-acceptance-plan.md: FAT-06",
+      "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "laterField": true
+  }
+]

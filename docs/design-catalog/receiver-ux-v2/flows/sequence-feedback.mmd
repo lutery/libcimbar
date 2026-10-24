@@ -1,0 +1,32 @@
+sequenceDiagram
+  actor U as 使用者
+  participant A as App与视图
+  participant S as 会话与遥测
+  participant W as 原Worker与WASM
+  U->>A: 点击实时抓屏或录像导入
+  A->>S: 原启动操作
+  S->>S: 建立新seq及空遥测
+  A->>A: 开始绑定seq的显示时钟
+  loop 原单在途帧节奏
+    S->>W: 提交当前帧
+    W->>W: 原解码及可选report读取
+    alt 正常data且单流报告有效
+      W-->>S: 帧结果与观测
+      S->>S: 更新有界窗口与比例
+    else no_data或report缺失无效
+      W-->>S: 原结果与不可用原因
+      S->>S: 保留原业务结果 遥测降级
+    end
+    A->>S: 读取当前seq快照
+    S-->>A: 业务状态与内部遥测
+    A->>A: 按当前单调时间重绘反馈
+  end
+  alt 真实artifact完成
+    S-->>A: Ready及真实产物
+    A->>A: 冻结用时 释放显示时钟
+    A-->>U: 文件已接收完成 请保存
+  else 原EOF结算无产物或用户停止
+    S-->>A: Incomplete或Stopped
+    A->>A: 冻结用时 释放显示时钟
+    A-->>U: 未完成或已停止及下一步
+  end
