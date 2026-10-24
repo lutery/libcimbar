@@ -488,3 +488,53 @@ test('UT-095 stop removes the run ended and error listeners', { timeout: 3000 },
     assert.deepEqual(events, [], 'a late ended event cannot fire eof after stop');
   });
 });
+
+// --- T20: the media position stays an independent, bounded fact --------------
+
+// Given an opened recording
+// When the position snapshot is read at open, mid-run and after stop
+// Then it stays a finite non-negative fact with a positive duration, and the
+// wiring can never mistake it for the file estimate
+test('T20 the source snapshot is a bounded media position', async () => {
+  await withFakeUrls(async () => {
+    const element = fakeVideoElement({ duration: 2 });
+    const { source } = harness({ element });
+    const metadata = await source.open(file());
+    assert.equal(metadata.durationSeconds, 2);
+
+    const open = source.snapshot();
+    assert.equal(open.open, true);
+    assert.ok(Number.isFinite(open.durationSeconds) && open.durationSeconds > 0);
+    assert.ok(Number.isFinite(open.positionSeconds) && open.positionSeconds >= 0);
+
+    element.currentTime = 1.25;
+    const mid = source.snapshot();
+    assert.equal(mid.positionSeconds, 1.25);
+    assert.equal(mid.durationSeconds, 2);
+
+    source.stop();
+    const closed = source.snapshot();
+    assert.equal(closed.open, false);
+  });
+});
+
+// Given the receiver page sources
+// When the video session runs
+// Then the preview element stays presentable: the app keeps its video-state
+// visibility branch and neither the markup nor the stylesheet ever hides the
+// element with display:none (the rVFC stall lesson)
+test('T20 the active preview can never be structurally hidden', async () => {
+  const fs = await import('node:fs');
+  const app = fs.readFileSync('web/desktop-recv/src/app.js', 'utf8');
+  const html = fs.readFileSync('web/desktop-recv/index.html', 'utf8');
+  const css = fs.readFileSync('web/desktop-recv/styles.css', 'utf8');
+
+  assert.ok(app.includes("if (snapshot.inputKind === 'video' &&"),
+    'app.js keeps the video-visibility branch');
+  assert.ok(app.includes('el.preview.hidden = false'),
+    'the preview is explicitly un-hidden for video sessions');
+  assert.ok(!/video\s*\{[^}]*display\s*:\s*none/.test(css),
+    'styles.css never hides the video element with display:none');
+  assert.ok(!/display\s*:\s*none/.test(html),
+    'index.html contains no display:none at all');
+});

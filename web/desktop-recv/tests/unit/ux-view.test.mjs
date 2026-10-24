@@ -588,3 +588,57 @@ test('T15 the tiny rate displays under one decimal and frozen states show nothin
   assert.equal(formatRate({ phase: 'frozen', bytesPerSecond: null, windowMs: 0, includesRedundancy: true }), '');
   assert.equal(formatRate(null), '');
 });
+
+
+// --- T20: the media position is an independent fact from the file estimate ----
+
+test('T20 the media position normalizes independently of the file estimate', () => {
+  const videoContext = (mediaPosition, mediaDiagnosticCode = 0) => contextFixture({
+    inputKind: 'video', mediaPosition, mediaDiagnosticCode, businessRevision: 9,
+  });
+
+  // a known duration: the fraction is recomputed, never taken from input
+  const known = readView(observationFixture({ inputKind: 'video' }),
+    requestAt(2000, videoContext({ positionSeconds: 80, durationSeconds: 150, fraction: 0.9 })));
+  assert.equal(known.ok, true);
+  assert.equal(known.data.mediaPosition.positionSeconds, 80);
+  assert.equal(known.data.mediaPosition.durationSeconds, 150);
+  assert.ok(Math.abs(known.data.mediaPosition.fraction - 80 / 150) < 1e-9,
+    'the fraction is min(1, position/duration), not the caller value');
+  assert.notEqual(known.data.statusKey, 'collecting_more');
+
+  // an unknown duration: the fraction stays null, no error is invented
+  const unknown = readView(observationFixture({ inputKind: 'video' }),
+    requestAt(2000, videoContext({ positionSeconds: 3, durationSeconds: null, fraction: null })));
+  assert.deepEqual(unknown.data.mediaPosition,
+    { positionSeconds: 3, durationSeconds: null, fraction: null });
+
+  // live sessions never show a media bar
+  const live = readView(observationFixture(),
+    requestAt(2000, contextFixture({ mediaPosition: { positionSeconds: 5, durationSeconds: 9, fraction: 0.5 } })));
+  assert.equal(live.data.mediaPosition, null);
+
+  // an invalid position degrades to null with 19011, the session keeps going
+  const broken = readView(observationFixture({ inputKind: 'video' }),
+    requestAt(2000, videoContext({ positionSeconds: -1, durationSeconds: null, fraction: null }, 19011)));
+  assert.equal(broken.ok, true);
+  assert.equal(broken.data.mediaPosition, null);
+  assert.deepEqual(broken.data.diagnosticCodes, [19011]);
+
+  // EOF at 100 percent of the media is still not a completed file
+  const ended = readView(observationFixture({ inputKind: 'video', endedAtMs: 1800 }),
+    requestAt(2000, videoContext({ positionSeconds: 150, durationSeconds: 150, fraction: 1 },
+      0) && contextFixture({
+      state: 'Incomplete', businessRevision: 11, inputKind: 'video',
+      artifactId: null,
+      controls: { canStartLive: true, canImportVideo: true, canStop: false, canSave: false },
+      inFlight: false, inFlightSinceMs: null,
+      mediaPosition: { positionSeconds: 150, durationSeconds: 150, fraction: 1 },
+      mediaDiagnosticCode: 0,
+    })));
+  assert.equal(ended.ok, true);
+  assert.equal(ended.data.statusKey, 'incomplete', 'media at 100 percent is not completion');
+  assert.notEqual(ended.data.progress.kind, 'complete');
+  assert.equal(ended.data.controls.canSave, false);
+  assert.equal(ended.data.mediaPosition.fraction, 1);
+});

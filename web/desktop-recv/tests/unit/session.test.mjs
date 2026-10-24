@@ -1428,3 +1428,91 @@ test('T10 a duplicate result from either entry counts exactly once', async () =>
   assert.equal(coordinator.snapshot().stats.submitted, 1,
     'the video session submitted exactly one frame');
 });
+
+
+// --- T20: late save callbacks and stop must not cross sessions ---------------
+
+function realUxSession() {
+  const clients = [];
+  const pickers = [];
+  const clock = { now: 100 };
+  const coordinator = new SessionCoordinator({
+    getDisplayMedia: () => new Promise((resolve) => { pickers.push(resolve); }),
+    createClient: () => { const client = fakeClient(); clients.push(client); return Promise.resolve(client); },
+    createUx: () => new ReceiverTelemetry(),
+    nowMs: () => clock.now,
+  });
+  return { coordinator, clients, pickers, clock };
+}
+
+function savePhaseOf(harness) {
+  return harness.coordinator.uxTelemetry().snapshot().save.phase;
+}
+
+async function toReadyViaArtifact(h) {
+  h.coordinator.startLive({ requestId: 'T20' });
+  h.pickers[0](fakeStream());
+  await tick(5);
+  h.clock.now = 500;
+  h.coordinator.offerFrame({ width: 2, height: 3, pixels: new ArrayBuffer(24) });
+  await tick(1);
+  h.clients[0].deliver({ frameId: 1, outcome: 'artifact', bytesDecoded: 625,
+    artifact: { artifactId: '42', byteCount: 5 } });
+  await tick(5);
+  assert.equal(h.coordinator.snapshot().state, 'Ready');
+}
+
+test('T20 a late save callback after stop never pollutes the next session', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  h.coordinator.uxSaveIntent();
+  h.clock.now = 600;
+  h.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 1 });
+  assert.equal(savePhaseOf(h), 'selecting');
+
+  // the user stops while the dialog is open; the save settles later
+  h.coordinator.stop();
+  await tick();
+  assert.equal(h.coordinator.snapshot().state, 'Stopped',
+    'nothing else is pending, so stop converges at once');
+
+  h.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 1 });
+  assert.equal(savePhaseOf(h), 'writing',
+    'the observation keeps tracking the in-flight write across Stopping');
+  assert.equal(h.coordinator.snapshot().artifact.artifactId, '42',
+    'the artifact is retained');
+
+  h.coordinator.startVideo({ requestId: 'b', openSource: () => Promise.resolve({ stop() {} }) });
+  await tick(5);
+  const before = h.coordinator.uxTelemetry().snapshot();
+  assert.equal(before.save.phase, 'none', 'the new session starts clean');
+
+  h.coordinator.saveEvent({ saveStatus: 'saved', attemptId: 1 });
+  const after = h.coordinator.uxTelemetry().snapshot();
+  assert.equal(after.save.phase, 'none',
+    "the stale attempt's terminal event does not pollute the new session");
+  assert.equal(after.observationRevision, before.observationRevision);
+});
+
+test('T20 a save during Stopping stays observed while the business state freezes', async () => {
+  const h = realUxSession();
+  await toReadyViaArtifact(h);
+
+  h.coordinator.uxSaveIntent();
+  h.clock.now = 600;
+  h.coordinator.saveEvent({ saveStatus: 'selecting', attemptId: 1 });
+  assert.equal(savePhaseOf(h), 'selecting');
+
+  h.coordinator.stop();
+  await tick();
+  h.coordinator.saveEvent({ saveStatus: 'writing', attemptId: 1 });
+  h.coordinator.saveEvent({ saveStatus: 'failed', attemptId: 1, lastError: 16005 });
+  await tick(10);
+
+  assert.equal(h.coordinator.snapshot().state, 'Stopped',
+    'the business state froze at Stopping -> Stopped');
+  assert.deepEqual(h.coordinator.uxTelemetry().snapshot().save,
+    { phase: 'failed', attemptId: '1', artifactId: '42', errorCode: 16005 },
+    'the write failure is still observed through the frozen state');
+});

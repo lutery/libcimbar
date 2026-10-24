@@ -127,3 +127,10 @@
 - 亮点：组 01 真实 WASM+真实 worker 内 CDP 故障注入（frame 不变仅报告降级）；组 03 独立手算 32.727B/s；组 05 真实录像 import + 严格 EOF；组 06 注入保存链全相位；组 07 55 例门禁链路。
 - 产物：iat-browser.mjs/iat-suite.mjs（新）、run-e2e UX-IAT scenario、runtime-case-map R-01..12 IAT 绑定（47 testBindings）、metrics 根 20261025-teamexec-07。
 - 提交：`test: verify receiver UX integration in a real browser (IAT)`。
+
+## B7-T20 — 媒体/保存接线 RED + 面缺口核对（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-25 02:58 ～ 03:29 (+08:00)；报告：b7-t20-report.md；日志：red-logs/b7-t20-{five-suites,run-unit-all}.txt
+- 5 套 +7 例（video 源快照有界+preview 结构钉；save 事件形状契约钉；session 停止后迟到回调零污染+Stopping 期观测连续；ux-view 媒体独立性矩阵含**唯一真 RED**（19011 诊断未并 diagnosticCodes）；ux-display Retryable 文案/timer 约束）。接线面缺口核对=仅 1（其余已被 T12/T14 覆盖，如实标注）。
+- 核验（lead）：五套定向 17/8/35/6/13-of-14（唯一失败=T20 RED，预期窗口）。
+- 提交：`test: specify media and save feedback ownership`（RED 窗口至 T21）。

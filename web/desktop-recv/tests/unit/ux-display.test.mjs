@@ -415,3 +415,50 @@ test('UX-UT-052 a paint failure degrades only this render and records 19012', ()
   assert.ok(diagCalls.every((call) => call.diagnostics.length <= 15),
     'diagnostics stay bounded and deduped');
 });
+
+
+// --- T20: the cancel and retry texts paint through the save section ----------
+
+test('T20 the cancel and retry texts paint and the interlocks stay with deriveControls', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: { sessionId: 's1', sessionSeq: 1 },
+    observation: observation({ receivingAtMs: 100, endedAtMs: 800 }),
+    context: context({ state: 'Ready', artifactId: '42',
+      controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: true } }),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+  assert.equal(timers.size(), 0, 'Ready keeps the receiving timer released');
+
+  // a cancelled save lands Retryable with its dedicated copy
+  clock.now = 1100;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 1 },
+    observation: observation({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'cancelled', attemptId: 'save-1', artifactId: '42', errorCode: 16002 } }),
+    context: context({ state: 'Retryable', artifactId: '42',
+      controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: true } }),
+  };
+  display.syncBusiness();
+  const cancelledPaint = spy.business().at(-1);
+  assert.equal(cancelledPaint.save, '保存已取消，文件仍可保存',
+    'the cancel copy is explicit that the file is still there');
+  assert.equal(spy.announcements().length, 2, 'the retry state is a new semantic identity');
+
+  // the user clicks retry: selecting paints, the interlocks stay derived
+  clock.now = 1150;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 1 },
+    observation: observation({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'selecting', attemptId: 'save-2', artifactId: '42', errorCode: null } }),
+    context: context({ state: 'Saving', artifactId: '42',
+      controls: { canStartLive: false, canImportVideo: false, canStop: false, canSave: false } }),
+  };
+  display.syncBusiness();
+  const retryPaint = spy.business().at(-1);
+  assert.equal(retryPaint.save, '请选择保存位置');
+  assert.equal(timers.size(), 0, 'Saving never rebuilds the receiving timer');
+});
