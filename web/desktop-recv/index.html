@@ -25,13 +25,27 @@
 
     <p id="status" class="status">Ready to receive</p>
 
+    <section id="ux-feedback" class="ux-feedback">
+      <p id="ux-primary" class="ux-primary"></p>
+      <p id="ux-secondary" class="ux-secondary"></p>
+      <p id="ux-next" class="ux-next"></p>
+      <p id="ux-save" class="ux-save"></p>
+      <div class="ux-metrics">
+        <span id="ux-elapsed" class="ux-metric"></span>
+        <span id="ux-rate" class="ux-metric"></span>
+        <span id="ux-progress" class="ux-metric"></span>
+        <span id="ux-media" class="ux-metric"></span>
+      </div>
+      <p id="ux-announcement" class="ux-announcement" aria-live="polite"></p>
+    </section>
+
     <div id="artifact" class="artifact" hidden>
       <span id="artifact-name"></span>
       <span id="artifact-size" class="muted"></span>
     </div>
 
     <video id="preview" playsinline muted hidden></video>
-    <pre id="log" class="log" aria-live="polite"></pre>
+    <pre id="log" class="log"></pre>
   </main>
 
   <script type="module" src="src/app.js"></script>

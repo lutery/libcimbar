@@ -416,6 +416,47 @@ test('UX-UT-047 business terminals outrank the receiving detail and only real ar
   assert.equal(saved.data.elapsedMs, 700, 'the save time is not part of the receiving time');
 });
 
+test('UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond', () => {
+  // (1) no data ever: waiting_data with advice exactly at 5000 elapsed
+  const none = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 } });
+  const ctx = contextFixture();
+  const before = readView(none, requestAt(4999.9, ctx));
+  const at = readView(none, requestAt(5000, ctx));
+  assert.equal(before.data.statusKey, 'waiting_data');
+  assert.equal(before.data.nextAction, '');
+  assert.equal(at.data.statusKey, 'waiting_data');
+  assert.notEqual(at.data.nextAction, '');
+  assert.equal(at.data.rate.phase, 'active');
+  assert.equal(at.data.rate.bytesPerSecond, 0, 'picture frames are not data bytes');
+
+  // (2) data once at 1000, no trusted ratio: unavailable progress, and
+  // no_new_data from exactly 6000 regardless of the ratio quality
+  const stale = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 1000 } });
+  assert.equal(readView(stale, requestAt(5999.9, ctx)).data.statusKey, 'progress_unavailable');
+  assert.equal(readView(stale, requestAt(6000, ctx)).data.statusKey, 'no_new_data');
+  assert.equal(readView(stale, requestAt(6000.1, ctx)).data.statusKey, 'no_new_data');
+
+  // (3) trusted single, advance stalled since 1000, data through 8999/9000
+  const stalled = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 8999, trustedRatio: 0.25, trustedAtMs: 8999, lastAdvanceAtMs: 1000 } });
+  assert.equal(readView(stalled, requestAt(8999.9, ctx)).data.statusKey, 'receiving');
+  assert.equal(readView(stalled, requestAt(9000, ctx)).data.statusKey, 'no_progress');
+  const advanced = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 9001, trustedRatio: 0.5, trustedAtMs: 9001, lastAdvanceAtMs: 9001 } });
+  assert.equal(readView(advanced, requestAt(9001, ctx)).data.statusKey, 'receiving',
+    'a strict increase clears the no-progress hint');
+
+  // (4) busy frame: processing from exactly 1500ms of pending age
+  const busyObs = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 1000, trustedRatio: 0.25, trustedAtMs: 1000, lastAdvanceAtMs: 1000 } });
+  const busyCtx = contextFixture({ inFlight: true, inFlightSinceMs: 500 });
+  assert.equal(readView(busyObs, requestAt(1999.9, busyCtx)).data.statusKey, 'receiving');
+  assert.equal(readView(busyObs, requestAt(2000, busyCtx)).data.statusKey, 'processing');
+  // and processing outranks the data-wait hints at the same instant
+  assert.equal(readView(busyObs, requestAt(6100, busyCtx)).data.statusKey, 'processing');
+});
+
 
 
 

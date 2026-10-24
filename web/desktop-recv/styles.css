@@ -64,6 +64,40 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .status { margin: 1rem 0 0.5rem; font-weight: 600; }
 
+.ux-feedback {
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.ux-primary { margin: 0; font-weight: 600; }
+.ux-secondary { margin: 0.15rem 0 0; color: var(--muted); }
+.ux-next { margin: 0.15rem 0 0; color: var(--accent); }
+.ux-save { margin: 0.15rem 0 0; color: var(--muted); }
+
+.ux-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ux-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .artifact {
   display: flex;
   gap: 0.75rem;

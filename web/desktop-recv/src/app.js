@@ -9,6 +9,8 @@ import { toContractSnapshot } from './contract-snapshot.js';
 import { SaveController } from './save-controller.js';
 import { captureFrame } from './live-source.js';
 import { VideoSource } from './video-source.js';
+import { ReceiverTelemetry } from './ux-telemetry.js';
+import { createUxDisplay } from './ux-display.js';
 
 const MODE_B = 68;
 const MAX_PIXELS = 4194304;
@@ -27,6 +29,15 @@ const el = {
   btnSave: document.getElementById('btn-save'),
   fileInput: document.getElementById('file-input'),
   mode: document.getElementById('mode'),
+  uxPrimary: document.getElementById('ux-primary'),
+  uxSecondary: document.getElementById('ux-secondary'),
+  uxNext: document.getElementById('ux-next'),
+  uxSave: document.getElementById('ux-save'),
+  uxElapsed: document.getElementById('ux-elapsed'),
+  uxRate: document.getElementById('ux-rate'),
+  uxProgress: document.getElementById('ux-progress'),
+  uxMedia: document.getElementById('ux-media'),
+  uxAnnouncement: document.getElementById('ux-announcement'),
 };
 
 let capabilities = null;
@@ -53,7 +64,7 @@ const coordinator = new SessionCoordinator({
     try { await el.preview.play(); } catch (error) { /* autoplay guard */ }
     return stream;
   },
-  createClient: async () => {
+  createClient: async (owner) => {
     // A-R1: this factory owns the client until init settles. A rejection
     // (protocol init-failed, watchdog, or a throwing construction) releases
     // the worker here, because the coordinator never adopts the client.
@@ -69,6 +80,11 @@ const coordinator = new SessionCoordinator({
         // worker side (profile.json mirrors contracts.js).
         initTimeoutMs: LIMITS_DEFAULT.initTimeoutMs,
         frameTimeoutMs: LIMITS_DEFAULT.frameTimeoutMs,
+      }, {
+        // receiver-ux: the owner captured at session creation, plus the
+        // monotonic main-thread clock for the submission timestamp.
+        owner,
+        nowMs: () => performance.now(),
       });
       await client.init({ mode: MODE_B, assets, limits: {} });
       journey().initReadyAt = Date.now();
@@ -79,8 +95,80 @@ const coordinator = new SessionCoordinator({
     }
   },
   maxPixels: MAX_PIXELS,
+  createUx: () => new ReceiverTelemetry(),
+  nowMs: () => performance.now(),
   onSnapshot: () => render(),
   onError: (code) => showError(code),
+});
+
+// --- receiver-ux display (T9 sparrow slice: read-only projection + clock) ---
+
+function currentMediaPosition() {
+  if (!activeVideoSource || typeof activeVideoSource.snapshot !== 'function') return null;
+  const position = activeVideoSource.snapshot();
+  if (!position || position.open !== true) return null;
+  const seconds = position.positionSeconds;
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  const duration = Number.isFinite(position.durationSeconds) && position.durationSeconds > 0
+    ? position.durationSeconds : null;
+  return {
+    positionSeconds: seconds,
+    durationSeconds: duration,
+    fraction: duration === null ? null : Math.min(1, seconds / duration),
+  };
+}
+
+function paintUx(payload) {
+  if ('primary' in payload) el.uxPrimary.textContent = payload.primary;
+  if ('secondary' in payload) el.uxSecondary.textContent = payload.secondary;
+  if ('nextAction' in payload) el.uxNext.textContent = payload.nextAction;
+  if ('save' in payload) el.uxSave.textContent = payload.save;
+  if ('elapsedText' in payload) el.uxElapsed.textContent = payload.elapsedText;
+  if ('rateText' in payload) el.uxRate.textContent = payload.rateText;
+  if ('progressText' in payload) el.uxProgress.textContent = payload.progressText;
+  if ('mediaText' in payload) el.uxMedia.textContent = payload.mediaText || '';
+  if ('announcement' in payload) el.uxAnnouncement.textContent = payload.announcement;
+  if ('diagnostics' in payload) {
+    for (const code of payload.diagnostics) logLine(`ux ${code}`);
+  }
+}
+
+const uxDisplay = createUxDisplay({
+  readCurrent: () => {
+    const snapshot = coordinator.snapshot();
+    const telemetry = coordinator.uxTelemetry();
+    const pending = coordinator.pendingSubmission();
+    const controls = deriveControls(snapshot, capabilities || {});
+    return {
+      owner: snapshot.sessionId
+        ? { sessionId: snapshot.sessionId, sessionSeq: snapshot.sessionSeq }
+        : null,
+      observation: telemetry && typeof telemetry.snapshot === 'function'
+        ? telemetry.snapshot() : null,
+      context: {
+        state: snapshot.state,
+        businessRevision: snapshot.revision,
+        inputKind: snapshot.inputKind,
+        cleanupComplete: snapshot.cleanupComplete,
+        artifactId: snapshot.artifact && snapshot.artifact.artifactId
+          ? String(snapshot.artifact.artifactId) : null,
+        controls: {
+          canStartLive: controls.canStart === true,
+          canImportVideo: controls.canImportVideo === true,
+          canStop: controls.canStop === true,
+          canSave: controls.canSave === true,
+        },
+        inFlight: pending !== null,
+        inFlightSinceMs: pending ? pending.submittedAtMs : null,
+        mediaPosition: currentMediaPosition(),
+        mediaDiagnosticCode: 0,
+      },
+    };
+  },
+  nowMs: () => performance.now(),
+  setTimer: (fn, ms) => setTimeout(fn, ms),
+  clearTimer: (id) => clearTimeout(id),
+  paint: paintUx,
 });
 
 function logLine(text, isError = false) {
@@ -229,6 +317,10 @@ function render() {
       ['Receiving', 'Draining', 'Reconstructing'].includes(snapshot.state)) {
     el.preview.hidden = false;
   }
+
+  // receiver-ux: the read-only Chinese feedback paints through the display
+  // (business sections immediately, numbers through the shared 250ms gate).
+  uxDisplay.syncBusiness();
 }
 
 function runFrameLoop() {
@@ -451,6 +543,11 @@ async function init() {
   });
   el.btnStop.addEventListener('click', () => coordinator.stop());
   el.btnSave.addEventListener('click', () => { void saveArtifact(); });
+
+  document.addEventListener('visibilitychange', () => {
+    uxDisplay.setVisible(document.visibilityState !== 'hidden');
+  });
+  window.addEventListener('pagehide', () => { uxDisplay.dispose(); });
 
   render();
 }

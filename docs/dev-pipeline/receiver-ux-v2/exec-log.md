@@ -65,3 +65,12 @@
 - 夹具级修正（无断言放松）：worker 跨 realm 归一/堆交换位置/预算例字节；client postMessage 覆盖时机；session deliverFrame 兼容；telemetry 速率帧补合法 rEmpty() report+031 窗口期望按冻结数学修正。
 - lead 决策：UX-UT-014 迟到注入延至 T12；observeSave 模型级用例补进 T14 派发。
 - 提交：`feat: observe receiver data without changing decoding`。
+
+## B2-T9 — 只读视图与显示时钟（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 19:21 ～ 20:03 (+08:00)；报告：b2-t9-report.md；RED：b2-t9-{ux-view,ux-display}-red.log；GREEN：b2-t9-{run-unit-all,ux-suites}.txt
+- 新增：src/ux-view.js（readView 纯投影+格式化；19013/19008/19009/19007/19014 校验顺序；状态优先级；rate/progress/elapsed/media 归一）、src/ux-display.js（createUxDisplay {syncBusiness,setVisible,dispose}；单 owner 刷新器；≥250ms 共享节流；数字去重；19012 回退；visibility 停/恢复）、tests/unit/ux-display.test.mjs（048..052 5 例）。
+- 修改：app.js（createClient owner+nowMs、coordinator createUx/nowMs、uxDisplay 接线、paint 全 textContent）、index.html（9 个 ux 元素 + #log 移出 aria-live，原 id 全保留）、styles.css、ux-view.test.mjs（补 T7 漏写的 034）。
+- 复跑（lead 独立确认）：view 9 + display 5 + telemetry 16 = 30/30；run-unit 9 套 137 全绿；node --check 全 0。
+- 偏差（如实）：T7 漏写 034（T9 补齐并按契约修正子断言，无放宽）；progress.kind=unavailable 需 snapshot 增 lastReport（T12/T15 处理）；setVisible 为最小扩展；新增 #ux-save 元素；麻雀文案（完整矩阵 T27）。
+- 提交：`feat: show Chinese receiver activity and elapsed time`。
