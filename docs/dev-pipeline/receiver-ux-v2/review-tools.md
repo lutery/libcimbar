@@ -226,3 +226,48 @@ README 问题（Blocking 2）：README.md L26-34 的「Run」节仍指示 `node 
 - 旧 run 指纹：`t5-oldruns-after.sha` vs T3 基线 `t3-oldruns-before.sha`（760 项）Compare-Object 无差异；`git diff --check` 0。
 
 整改期间未执行任何 git 写命令；未改产品代码（web/desktop-recv、worker/）；历史 run/旧 staging/product 只读。
+
+## 7. 第 1 次整改复核（review-tools 第 2 次，全局轮号 15 续）
+
+复核对象：提交 8a1ef74「fix: resolve UX runner review findings」（18 文件，+1597/-39）。方式：只按第 4 节 DoD 复核 Blocking 1/2 与 lead 指定的已采纳建议 S2/S3/S4/S5/S6/S7/S8/S10；未构建新探针、未重开已通过项、未改任何代码。所有命令在仓库根执行。
+
+### Blocking 复核
+
+- **Blocking 1 → CLOSED**
+  - `grep Stop-Process tools/desktop-recv/e2e/run-e2e.mjs` 仅剩两处允许类：L627 按专用 profile 前缀（`${receiver.profile}`，即 cimbar-e2e-）、L1458 按已记录 PID + 命令行二次校验；原三条件（`--disable-backgrounding-occluded-windows`、`server.py --port 8771`、`http.server 8790`）已删除。
+  - 新增 tools/desktop-recv/e2e/process-guard.mjs：只清理 `<runRoot>/pids.json` 登记的 PID，且要求命令行包含全部记录 marker（marker 为空则绝不杀）；无 pids.json 不杀任何进程；端口占用改为显式报错、不碰占用者（assertPortsFree）。
+  - `node --test tools/desktop-recv/tests/process-guard.test.mjs` → tests 6 / pass 6 / fail 0，exit 0；测试名逐条覆盖 DoD：no pid file kills nothing、recorded pid with mismatched command line never killed、stale pids skipped、occupied port refused with no kill、free ports pass、pid file canonical/bounded/rejects bad entries。
+  - 结论：DoD「grep 仅剩专用前缀或已记录 PID+命令行复核」「端口占用非 0 且不杀」「无记录不杀」均满足。
+
+- **Blocking 2 → CLOSED**
+  - `node tools/desktop-recv/e2e/smoke-live.mjs`（无开关）→ exit 2，首行 `smoke-live.mjs is HISTORICAL: it writes the FROZEN run docs/tests/runs/20261019-teamexec-02.`；文件头 L1-5 明标 HISTORICAL/do not run，且 guard 是第一条可执行语句（此前无任何写入）。
+  - README：原「Run」节改为指向 stage-5 context 入口（L26-30），新增「## Historical diagnostics (do not run)」节（L79-87）明确 smoke-live/probe-* 为历史脚手架、写入冻结 run、需 `--legacy-write-frozen-run` 才可启动；README 中不再存在「直接运行即写 docs/tests/runs/2026xxxx-*」的 v2 指示。
+  - 结论：DoD 满足。
+
+### 已采纳 Suggestions
+
+- **S2 → CLOSED**：`pwsh stage.ps1`（无 -RunId）→ exit 2；`pwsh stage.ps1 -RunId 20261021-teamexec-03 -Mode development` → exit 2（修复前均为 1）。文档承诺的 2/3/4 分类恢复可达。
+- **S3 → CLOSED**：run-context.mjs 新增 `foldCase`（L123-133）并将 HISTORICAL_RUN_IDS 比较折叠（L245）；`node --test .../run-context.test.mjs` → tests 9 / pass 9，exit 0，新增用例「T5 guard: case-folded history and verified sender staging」实测 `20261021-TEAMEXEC-03` runId 与 case 变体 planningFile 均报 `E_CONTEXT_HISTORY`。
+- **S4 → CLOSED**：verify-ux-evidence.py 的 resolve_inside 增加 realpath 包含校验（L118-119 一带的 probe/real_root 逻辑）；ux-evidence-selftest 新增并通过「junction inside the run root cannot redirect proof reads」，`SELFTEST PASS (55 cases)`，exit 0。
+- **S5 → CLOSED**：run-context.mjs 新增 `stageVerifiedSender`（L503-559）：读取发送包 DELIVERY-MANIFEST、逐文件重算 SHA、只读复制到 `<stagingRoot>/sender` 并写 `.sender-staged.json` marker；已有异源副本拒绝（E_SENDER_STAGED_MISMATCH），重复调用复用（reused=true），源包零字节变化。run-e2e L583/636 与 record-sender L519 均已调用；run-context 测试 L718-768 覆盖复制/复用/篡改/陈旧副本。stage.ps1 帮助文本「copied ... by the runner」现已属实。
+- **S6 → CLOSED**：run-e2e.mjs `actualArtifactBudget`（L1272-1281）的 source 改为 `relative(REPO, profilePath)` 由真实读取路径生成，不再写死共享 staging 字面量。
+- **S7 → CLOSED**：`UX_ENTRY_GROUPS['UX-UI']` 现为 `['E2E-35','E2E-36','E2E-37','E2E-38']`（run-e2e.mjs L3984），与 runbook「T31 执行 E2E-35～38」及 UX-ALL 一致。
+- **S8 → CLOSED**：恒真断言 `check("NOT_RUN evidence is preserved on disk", True)` 已移除（grep 0 命中）；文件未变仍由 expect(unchanged=...) 实际校验。
+- **S10 → CLOSED**：verify-ux-evidence.py 的 load_context 子进程 `subprocess.run(..., timeout=30)` 并捕获 `TimeoutExpired` 按环境拒绝处理（L134-135）。
+
+未列入本次整改范围、维持原状：
+- S1（stage.ps1 development 省略 -StagingRoot 仍写共享 staging）：未采纳；README L93 已明示该 legacy 默认。非阻断。
+- S9（声明根本身是 junction 的情形）：未采纳，仍为建议。非阻断。
+
+### 回归抽查（本审查实跑）
+
+- `node --test tools/desktop-recv/tests/run-context.test.mjs` → tests 9 / pass 9 / fail 0，exit 0。
+- `node --test tools/desktop-recv/tests/process-guard.test.mjs` → tests 6 / pass 6 / fail 0，exit 0。
+- `python tools/desktop-recv/tests/ux-evidence-selftest.py` → SELFTEST PASS (55 cases)，exit 0。
+- 未重跑其余已通过项；T5 报告所列 120 单测/14 例旧自测/契约检查与本审查此前结果一致。
+
+### 总结
+
+Blocking 1、Blocking 2 均 CLOSED；lead 指定采纳的 S2/S3/S4/S5/S6/S7/S8/S10 均 CLOSED；S1/S9 未采纳但不阻断；**整改引入的新 Blocking：无**。**Blocking = 0**。
+
+审查者：独立审查代理（Claude, dev-pipeline native 模式） · 2026-10-24 · review-tools 第 2 次
