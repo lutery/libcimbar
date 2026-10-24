@@ -15,6 +15,7 @@ const NO_ADVANCE_NOTICE_MS = 8000;
 const PROCESSING_NOTICE_MS = 1500;
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+const REPORT_DEGRADATION_CODES = new Set([19001, 19002, 19003, 19004, 19015]);
 const STATES = ['Idle', 'Preparing', 'Receiving', 'Draining', 'Reconstructing',
   'Ready', 'Saving', 'Saved', 'Retryable', 'Stopping', 'Stopped', 'Incomplete',
   'Error'];
@@ -153,6 +154,17 @@ function projectProgress(observation, context, nowMs) {
   }
   const trusted = progress.trustedRatio;
   if (trusted === null || trusted === undefined) {
+    if (progress.lastDataAtMs != null) {
+      // Data is flowing but the report read degraded: hide the ratio, keep
+      // the rate. The code is this seq's latest report degradation (never an
+      // ambiguity code — those took the ambiguous branch above).
+      let degradation = 0;
+      for (const code of observation.diagnostics || []) {
+        if (REPORT_DEGRADATION_CODES.has(code) && code > degradation) degradation = code;
+      }
+      return { kind: 'unavailable', ratio: null, asOfMs: null,
+        stale: false, diagnosticCode: degradation };
+    }
     return { kind: 'none', ratio: null, asOfMs: null, stale: false, diagnosticCode: 0 };
   }
   if (trusted >= 1) {

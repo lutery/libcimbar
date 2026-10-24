@@ -105,3 +105,10 @@
 - ux-telemetry +6（S2 save 归一/幂等/终态不回写/新 attempt 仅 selecting 4 例 + S4 同毫秒双帧/倒退时钟 2 例，均固化既有行为直接 GREEN）；ux-view +3（视图速率窗口边界 5 点 + 四阈值 ±0.1ms 参数表 + **T14-R05 唯一真 RED**：有 data 但报告降级时应 unavailable 而现投影 none）；test-cases.md 034 Target 对齐（S3）。
 - 核验（lead）：telemetry 22/22；view 11/12（R05 预期 RED）。
 - 提交：`test: pin window math, thresholds and save/clock bounds`（RED 窗口期：--all 在 T15 前为红，属 TDD 预期）。
+
+## B6-T15 — unavailable 进度投影实现（dev-v2-prod → lead 提交）
+
+- 起止：2026-10-24 23:22 ～ 23:32 (+08:00)；报告：b6-t15-report.md；GREEN：red-logs/b6-t15-{ux-view-green,ux-telemetry-green,run-unit-all}.txt
+- ux-view.js：REPORT_DEGRADATION_CODES（19001/19002/19003/19004/19015）+ projectProgress unavailable 分支（ratio/asOfMs=null、diagnosticCode=集合内最新降级码，歧义码分流）；formatRate 微小速率边界以直接断言固化。
+- 复跑（lead 独立确认）：ux-view 13/13；--all 12 套 **170** 全绿（T14 RED 窗口关闭）。
+- 提交：`feat: project unavailable progress from degraded report reads`。

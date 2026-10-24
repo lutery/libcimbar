@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readView } from '../../src/ux-view.js';
+import { readView, formatRate } from '../../src/ux-view.js';
 
 function deepFreeze(value) {
   if (Array.isArray(value)) {
@@ -574,4 +574,17 @@ test('T14 every notice threshold flips exactly at its millisecond', () => {
     assert.ok(flip.holds(after) || !flip.crosses(after) === false ? true : true,
       `${flip.name}: crossing sanity`);
   }
+});
+
+test('T15 the tiny rate displays under one decimal and frozen states show nothing', () => {
+  const unit = ' KiB/s（含冗余）';
+  assert.equal(formatRate({ phase: 'active', bytesPerSecond: 51, windowMs: 2750, includesRedundancy: true }),
+    `<0.1${unit}`, '51 B/s = 0.0498 KiB/s rounds up in the display, not to 0.0');
+  assert.equal(formatRate({ phase: 'active', bytesPerSecond: 102.4, windowMs: 2750, includesRedundancy: true }),
+    `0.1${unit}`, '102.4 B/s is exactly 0.1 KiB/s');
+  assert.equal(formatRate({ phase: 'active', bytesPerSecond: 0, windowMs: 2750, includesRedundancy: true }),
+    `0.0${unit}`, 'a true zero stays 0.0');
+  assert.equal(formatRate({ phase: 'warming', bytesPerSecond: null, windowMs: 0, includesRedundancy: true }), '');
+  assert.equal(formatRate({ phase: 'frozen', bytesPerSecond: null, windowMs: 0, includesRedundancy: true }), '');
+  assert.equal(formatRate(null), '');
 });
