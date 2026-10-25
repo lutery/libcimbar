@@ -447,21 +447,27 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
         const probe = await uxProbe(page);
         return probe.saveText === '保存已取消，文件仍可保存' ? probe : null;
       }, 30000, 'cancelled save');
-      const focusAfterCancel = await focusInfo(page);
-      // FINDING (recorded, not masked): after the native cancel the focus sits
-      // on BODY - the product does not restore focus to an operable control
-      // (T24 focus-restore item; handed to the prod lane). The journey then
-      // continues the way a real user would: one real click into the page
-      // re-establishes window focus before the keyboard retry.
-      await page.click('#ux-feedback').catch(() => null);
-      await sleep(250);
+      let focusAfterCancel = await focusInfo(page);
+      // Focus restore (c0d566f) may land one task after the save event: poll
+      // briefly for the operable control before recording the result.
+      for (let i = 0; i < 12 && !(focusAfterCancel && ['BUTTON', 'A', 'SUMMARY'].includes(focusAfterCancel.tag)); i += 1) {
+        await sleep(250);
+        focusAfterCancel = await focusInfo(page);
+      }
+      // Focus restore (c0d566f): after the native cancel the focus must sit on
+      // an operable control again - the T24 item this journey verifies.
       await rec.shot(page, 's36-s03-cancelled.png');
-      rec.add('E2E-36-S03-B', 'keyboard cancel keeps the artifact with the cancel layer shown; focus-restore after the native dialog is recorded as a FINDING (focus on BODY)',
-        `saveFocus=${JSON.stringify(saveFocus)} cancelExit=${cancel.code} text=${cancelled.saveText} focusAfter=${JSON.stringify(focusAfterCancel)} artifactKept=true`,
-        cancel.code === 0 && cancelled.saveText === '保存已取消，文件仍可保存',
+      const focusOperable = Boolean(focusAfterCancel)
+        && ['BUTTON', 'A', 'SUMMARY'].includes(focusAfterCancel.tag);
+      rec.add('E2E-36-S03-B', 'keyboard cancel keeps the artifact, shows the cancel layer, and returns focus to an operable control',
+        `saveFocus=${JSON.stringify(saveFocus)} cancelExit=${cancel.code} text=${cancelled.saveText} focusAfter=${JSON.stringify(focusAfterCancel)}`,
+        cancel.code === 0 && cancelled.saveText === '保存已取消，文件仍可保存' && focusOperable,
         'screens/s36-s03-cancelled.png');
       const target = join(rec.attemptDir, 'saved-longname.bin');
-      const saveFocus2 = await pressTabTo(page, 'btn-save', 8);
+      const focusNow = await focusInfo(page);
+      const saveFocus2 = focusNow && focusNow.id === 'btn-save'
+        ? focusNow
+        : await pressTabTo(page, 'btn-save', 8);
       const saveHelper = runHelper(['-Action', 'save', '-Path', target, '-TimeoutSec', '60'], stack.receiver.pid);
       await page.keyboard.press('Enter');
       const saved = await saveHelper;
@@ -584,9 +590,21 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
       rec38.add('E2E-38-R2', 'each recorded round settled >=30 frames and the tool recomputed the frozen formulas',
         JSON.stringify({ rounds: summary.rounds || summary.validRounds || null }),
         verdict === 'PASS', `measurements/ux-overhead/${context.attemptId}/summary.json`);
-      rec38.notRun('E2E-38-L1', '5 live 30s activity-window pairs (A legacy UI vs B candidate)',
-        'NOT_RUN: the live 5x30s A/B collector is not implemented yet (measure-ux covers the recorded legs only); recorded legs are not a substitute');
-      rec38.finish('NOT_RUN', `recorded A/B verdict=${verdict}; live 30s legs NOT_RUN (collector pending)`, null, null);
+      const liveSummaryPath = join(context.abs.runRoot, 'measurements', 'ux-overhead', context.attemptId, 'live', 'summary.json');
+      if (existsSync(liveSummaryPath)) {
+        const liveSummary = JSON.parse(readFileSync(liveSummaryPath, 'utf8'));
+        rec38.add('E2E-38-L1', '5 live 30s activity-window pairs: single-flight both sides; candidate feedback/throttle/clock release',
+          JSON.stringify({ verdict: liveSummary.verdict, sidesValid: liveSummary.sidesValid,
+            invalid: liveSummary.invalidRounds }),
+          liveSummary.verdict === 'PASS',
+          `measurements/ux-overhead/${context.attemptId}/live/summary.json`);
+        const overall = verdict === 'PASS' && liveSummary.verdict === 'PASS' ? 'PASS' : 'FAIL';
+        rec38.finish(overall, `recorded A/B verdict=${verdict}; live legs verdict=${liveSummary.verdict}`, null, null);
+      } else {
+        rec38.notRun('E2E-38-L1', '5 live 30s activity-window pairs (A legacy UI vs B candidate)',
+          'NOT_RUN: no live summary for this attempt; recorded legs are not a substitute');
+        rec38.finish('NOT_RUN', `recorded A/B verdict=${verdict}; live 30s legs NOT_RUN (no live output)`, null, null);
+      }
     } else {
       rec38.notRun('E2E-38-R1', 'frozen-method recorded A/B verdict', 'NOT_RUN: no measure-ux output for this attempt');
       rec38.finish('NOT_RUN', 'no measurement output found for this attempt', null, null);

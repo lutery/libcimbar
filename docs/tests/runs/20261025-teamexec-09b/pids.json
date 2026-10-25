@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 86528,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 77556,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 74164,
+      "kind": "receiver-edge"
+    }
+  ]
+}

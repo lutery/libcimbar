@@ -1,0 +1,193 @@
+{
+  "side": "B",
+  "pairIndex": 2,
+  "startedAtIso": "2026-10-25T03:41:00.304Z",
+  "samples": [
+    {
+      "at": 1792899671906,
+      "state": "Receiving",
+      "primary": "正在等待有效数据",
+      "elapsed": "0.1s",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899673919,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "2.2s",
+      "rate": "57.2 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899675926,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "4.0s",
+      "rate": "59.2 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899677950,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "6.0s",
+      "rate": "58.5 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899679952,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "8.0s",
+      "rate": "65.5 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899681987,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "10.1s",
+      "rate": "61.6 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899683992,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "12.1s",
+      "rate": "56.0 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899686007,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "14.2s",
+      "rate": "65.4 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899688015,
+      "state": "Receiving",
+      "primary": "正在接收数据",
+      "elapsed": "16.2s",
+      "rate": "62.2 KiB/s（含冗余）",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899690029,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899692038,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899694050,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899696066,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899698077,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899700091,
+      "state": "Ready",
+      "primary": "文件已接收完成，请保存",
+      "elapsed": "17.0s",
+      "rate": "59.5 KiB/s（含冗余）",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    }
+  ],
+  "frames": [],
+  "telemetryWrites": [],
+  "telemetryArmed": null,
+  "observations": {
+    "shareHelperExit": 0,
+    "afterStop": {
+      "frozenA": {
+        "state": "Stopped",
+        "elapsed": "17.0s",
+        "primary": "已停止"
+      },
+      "frozenB": {
+        "state": "Stopped",
+        "elapsed": "17.0s",
+        "primary": "已停止"
+      }
+    }
+  },
+  "stoppedAtIso": "2026-10-25T03:41:43.759Z",
+  "maxInFlight": 0,
+  "okFrameCount": 0,
+  "revisionGrew": true,
+  "submittedLast": 142,
+  "minTelemetryGapMs": null,
+  "numericChanges": 9,
+  "statusChanges": 2,
+  "clockReleasedAfterStop": true,
+  "rttAdvisory": {
+    "p50": null,
+    "p95": null,
+    "note": "advisory only; live sampling is never the primary metric"
+  },
+  "violations": [
+    "telemetry area not armed"
+  ],
+  "valid": false
+}

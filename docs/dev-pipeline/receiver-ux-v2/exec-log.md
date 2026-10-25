@@ -157,3 +157,14 @@
 - 如实 NOT_RUN：E2E-37（Narrator 无法程序化核验真实语音）；E2E-38 实时 5×30s 腿（采集器未实现）→ E2E-38 整体 NOT_RUN。
 - 发现项：①取消保存后焦点落 BODY（T24 登记验收未满足——交 prod 修复后重测）；②后台 visibility 旗标行为记录。
 - 提交：`docs: record real UI acceptance and first a-b overhead run`。
+
+## B8-T31b/T31c — 焦点修复与第二阶段收口（dev-v2-prod/dev-v2-tools → lead 提交）
+
+- T31b（prod）：focusTargetAfterSave 纯函数+接线（cancelled/failed→btn-save 或回退、saved→btn-live）；ui 13/13、--all 12 套 202 全绿。提交 c0d566f。
+- T31c（tools）：产品字节变→重建候选 20261025-teamexec-09b（manifest 9e2595e6…）；新工具 live-legs.mjs（实时 5×30s 采集器：真实发送窗+共享选择器、AB/BA×5、帧区间精确扫描 single-flight、候选侧遥测 armed/节流/反馈/停止冻结判据）。
+- 实时腿 attempt-03 首跑=工具缺陷（addInitScript 晚于页面加载→观察器未装），诊断后修复+重导航；attempt-03 失败轮原件保留。attempt-04（同构建纯 harness 变更，按配方保留新 harness/attempt）：
+  - 录制 A/B **PASS**（5/5 对）；
+  - 实时 5×30s 腿 **PASS**（10/10 侧别 VALID）；
+  - UX-UI 重测：E2E-35 PASS、E2E-36 PASS（S03-B 焦点修复实测：focusAfter=btn-save focusVisible=true）、E2E-37 NOT_RUN（Narrator 无法程序化核验，如实）、**E2E-38 PASS（录制+实时双出口齐备，里程碑达成）**。
+- 回归：--all 12 套全绿；旧 run 760 项 UNCHANGED（t31c-oldruns-after.sha）。
+- 提交：`docs: complete live a-b legs and focus-restored ui acceptance`。

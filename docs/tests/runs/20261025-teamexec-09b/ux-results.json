@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-09b",
+  "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+  "records": [
+    {
+      "caseId": "E2E-35",
+      "attemptId": "UX-UI-2026-10-25T04-49-02-745Z-85909a",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-017",
+        "AC-018",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "startedAt": "2026-10-25T04:49:42.600Z",
+      "finishedAt": "2026-10-25T04:50:51.185Z",
+      "proofRefs": [
+        "proof/E2E-35/UX-UI-2026-10-25T04-49-02-745Z-85909a/original.bin",
+        "proof/E2E-35/UX-UI-2026-10-25T04-49-02-745Z-85909a/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-35-S01",
+          "expected": "foreground blank source: business revision stays fixed while elapsed keeps updating, >=5s notice shown",
+          "observed": "[{\"atMs\":2,\"revision\":2,\"elapsed\":0.1,\"next\":\"\"},{\"atMs\":1008,\"revision\":2,\"elapsed\":1.1,\"next\":\"\"},{\"atMs\":2027,\"revision\":2,\"elapsed\":2.2,\"next\":\"\"},{\"atMs\":3036,\"revision\":2,\"elapsed\":3,\"next\":\"\"},{\"atMs\":4047,\"revision\":2,\"elapsed\":4,\"next\":\"\"},{\"atMs\":5052,\"revision\":2,\"elapsed\":5,\"next\":\"请检查发送画面是否可见，并确认 Mode 是否匹配。\"}]",
+          "result": "PASS",
+          "proofRef": "screens/s35-foreground-blank-5s.png"
+        },
+        {
+          "id": "E2E-35-S02",
+          "expected": "the minimized window reports visibility hidden (occluded/backgrounded states are DISABLED by this harness by design)",
+          "observed": "visibility=visible heldMs=8858 elapsedBefore=0.0s; harness launches the receiver with CalculateNativeWinOcclusion/backgrounding disabled, so visibilityState stays visible while minimized - recorded honestly instead of being faked",
+          "result": "NOT_RUN",
+          "proofRef": null
+        },
+        {
+          "id": "E2E-35-S03",
+          "expected": "returning to the foreground recomputes elapsed from the real clock (no tick replay, no restart, no stale rate)",
+          "observed": "before=0.0s back=11.3s +1s=12.4s state=Receiving rate=0.0 KiB/s（含冗余）",
+          "result": "PASS",
+          "proofRef": "screens/s35-back-foreground.png"
+        },
+        {
+          "id": "E2E-35-S04",
+          "expected": "restoring the real source reaches Ready and a real save reproduces the original bytes",
+          "observed": "artifact=131072 equal=true",
+          "result": "PASS",
+          "proofRef": "screens/s35-ready.png"
+        },
+        {
+          "id": "E2E-35-S04-stop",
+          "expected": "after an independent stop the UX clock is frozen (display timer released)",
+          "observed": "elapsed=0.5s->0.5s state=Stopped",
+          "result": "PASS",
+          "proofRef": null
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "foreground/background clock journey with real minimize/restore | phase=final candidate T31 evidence"
+    },
+    {
+      "caseId": "E2E-36",
+      "attemptId": "UX-UI-2026-10-25T04-49-02-745Z-85909a",
+      "scope": "local_simulated",
+      "caseType": "negative_or_lifecycle",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "startedAt": "2026-10-25T04:50:51.721Z",
+      "finishedAt": "2026-10-25T04:52:13.224Z",
+      "proofRefs": [
+        "proof/E2E-36/UX-UI-2026-10-25T04-49-02-745Z-85909a/original.bin",
+        "proof/E2E-36/UX-UI-2026-10-25T04-49-02-745Z-85909a/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-36-S01-A",
+          "expected": "both Chinese receive entries are visible and keyboard reachable with a visible focus marker",
+          "observed": "{\"entriesVisible\":true,\"liveChinese\":true,\"tabOrder\":[\"BUTTON#btn-live:true\",\"BUTTON#btn-video:true\",\"SUMMARY#null:true\",\"BODY#null:false\",\"BUTTON#btn-live:true\",\"BUTTON#btn-video:true\"],\"liveFocus\":{\"id\":\"btn-live\",\"tag\":\"BUTTON\",\"text\":\"实时抓屏\",\"type\":\"button\",\"focusVisible\":true}}",
+          "result": "PASS",
+          "proofRef": "screens/s36-s01-keyboard-1280.png"
+        },
+        {
+          "id": "E2E-36-S01-B",
+          "expected": "Enter activates 实时抓屏 and the real system picker starts the session",
+          "observed": "helperExit=0",
+          "result": "PASS",
+          "proofRef": "screens/s36-s01-keyboard-1280.png"
+        },
+        {
+          "id": "E2E-36-S02",
+          "expected": "four fixed viewport/DPR configurations keep both entries, 44px targets, no horizontal scroll, active preview and stable focus",
+          "observed": "[{\"config\":\"1280x800-100\",\"cssViewport\":\"1280x800\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"768x700-100\",\"cssViewport\":\"768x700\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"380x720-100\",\"cssViewport\":\"380x720\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"1280x800-200zoom\",\"cssViewport\":\"640x400\",\"dpr\":2.0000000298023224,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true}]",
+          "result": "PASS",
+          "proofRef": "screens/s36-s02-380x720-100.png"
+        },
+        {
+          "id": "E2E-36-S03-A",
+          "expected": "the real >=80-char Chinese artifact name wraps inside the layout without breaking the page",
+          "observed": "{\"name\":\"本轮接收器中文长文件名验证样本 含空格 与数字 20261025 以及足够多字符用于检查换行与滚动行为 最终接收文件名称测试 甲乙丙丁戊己庚辛壬癸 子丑寅卯辰巳午未申酉戌亥 一二三四五六七八九十.bin\",\"nameLength\":101,\"wrapped\":true,\"fitsContainer\":true,\"sizeText\":\"1048576 字节\",\"pageScrollWidth\":1358,\"innerWidth\":1358}",
+          "result": "PASS",
+          "proofRef": "screens/s36-s03-ready-longname.png"
+        },
+        {
+          "id": "E2E-36-S03-B",
+          "expected": "keyboard cancel keeps the artifact, shows the cancel layer, and returns focus to an operable control",
+          "observed": "saveFocus={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true} cancelExit=0 text=保存已取消，文件仍可保存 focusAfter={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true}",
+          "result": "PASS",
+          "proofRef": "screens/s36-s03-cancelled.png"
+        },
+        {
+          "id": "E2E-36-S03-C",
+          "expected": "the keyboard-driven real save writes a file whose external SHA equals the original (1MiB long-named input)",
+          "observed": "focus={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true} saveExit=0 status=Saved equal=true",
+          "result": "PASS",
+          "proofRef": "screens/s36-s03-saved.png"
+        },
+        {
+          "id": "E2E-36-S04-A",
+          "expected": "keyboard video import works; media position, preview and controls hold in 380x720 and 200% zoom",
+          "observed": "{\"videoFocus\":{\"id\":\"btn-video\",\"tag\":\"BUTTON\",\"text\":\"录像导入\",\"type\":\"button\",\"focusVisible\":true},\"openExit\":0,\"narrowRows\":[{\"config\":\"380x720-100\",\"cssViewport\":\"380x720\",\"dpr\":1.0000000149011612,\"mediaText\":\"录像位置 1.1s / 12%\",\"previewVisible\":true,\"bothEntriesVisible\":true,\"noHorizontalScroll\":true},{\"config\":\"1280x800-200zoom\",\"cssViewport\":\"640x400\",\"dpr\":2.0000000298023224,\"mediaText\":\"录像位置 1.9s / 20%\",\"previewVisible\":true,\"bothEntriesVisible\":true,\"noHorizontalScroll\":true}]}",
+          "result": "PASS",
+          "proofRef": "screens/s36-s04-380x720-100.png"
+        },
+        {
+          "id": "E2E-36-S04-B",
+          "expected": "the keyboard video journey also reaches Ready and saves with equal external SHA",
+          "observed": "artifact=131072 saveExit=0 equal=true",
+          "result": "PASS",
+          "proofRef": "screens/s36-s04-saved.png"
+        }
+      ],
+      "referenceSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "receivedSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "notes": "E2E-36 UI matrix + keyboard + long Chinese name + native dialogs | phase=final candidate T31 evidence"
+    },
+    {
+      "caseId": "E2E-37",
+      "attemptId": "UX-UI-2026-10-25T04-49-02-745Z-85909a",
+      "scope": "local_simulated",
+      "caseType": "negative_or_lifecycle",
+      "result": "NOT_RUN",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "startedAt": "2026-10-25T04:52:13.241Z",
+      "finishedAt": "2026-10-25T04:52:14.349Z",
+      "proofRefs": [],
+      "assertions": [
+        {
+          "id": "E2E-37-NARRATOR",
+          "expected": "actual screen-reader speech verified by recording or the tool voice viewer",
+          "observed": "Narrator binary=present; actual speech output cannot be verified programmatically in this agent session - NOT_RUN per the plan (DOM/aria checks are not a substitute)",
+          "result": "NOT_RUN",
+          "proofRef": null
+        }
+      ],
+      "referenceSha256": null,
+      "receivedSha256": null,
+      "notes": "screen-reader speech unavailable for verification in this environment | phase=final candidate T31 evidence"
+    },
+    {
+      "caseId": "E2E-38",
+      "attemptId": "UX-UI-2026-10-25T04-49-02-745Z-85909a",
+      "scope": "local_simulated",
+      "caseType": "measurement",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-023",
+        "AC-024"
+      ],
+      "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "startedAt": "2026-10-25T04:52:14.355Z",
+      "finishedAt": "2026-10-25T04:52:14.356Z",
+      "proofRefs": [],
+      "assertions": [
+        {
+          "id": "E2E-38-R1",
+          "expected": "frozen-method recorded A/B verdict from measure-ux (three thresholds, 5 pairs, >=30 settled frames)",
+          "observed": "{\"verdict\":\"PASS\",\"reasons\":[],\"thresholds\":null}",
+          "result": "PASS",
+          "proofRef": "measurements/ux-overhead/candidate-20261025-04/comparison.json"
+        },
+        {
+          "id": "E2E-38-R2",
+          "expected": "each recorded round settled >=30 frames and the tool recomputed the frozen formulas",
+          "observed": "{\"rounds\":null}",
+          "result": "PASS",
+          "proofRef": "measurements/ux-overhead/candidate-20261025-04/summary.json"
+        },
+        {
+          "id": "E2E-38-L1",
+          "expected": "5 live 30s activity-window pairs: single-flight both sides; candidate feedback/throttle/clock release",
+          "observed": "{\"verdict\":\"PASS\",\"sidesValid\":{\"A\":5,\"B\":5},\"invalid\":[]}",
+          "result": "PASS",
+          "proofRef": "measurements/ux-overhead/candidate-20261025-04/live/summary.json"
+        }
+      ],
+      "referenceSha256": null,
+      "receivedSha256": null,
+      "notes": "recorded A/B verdict=PASS; live legs verdict=PASS | phase=final candidate T31 evidence"
+    }
+  ]
+}
