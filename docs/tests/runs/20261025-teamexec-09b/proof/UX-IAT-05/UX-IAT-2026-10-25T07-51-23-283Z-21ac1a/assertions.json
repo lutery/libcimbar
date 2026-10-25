@@ -1,0 +1,30 @@
+[
+  {
+    "id": "UX-IAT-05-A1",
+    "expected": "the complete recording reaches Ready through the real chain",
+    "observed": "{\"state\":\"Ready\",\"media\":\"录像位置 7.9s / 85%\",\"previewHidden\":false,\"videoW\":0,\"artifact\":{\"artifactId\":\"1862271598\",\"fountainFileId\":\"6f00026e\",\"suggestedName\":\"primary-input-128k.bin\",\"byteCount\":131072,\"compressedBytes\":131183,\"mime\":\"application/octet-stream\"},\"revision\":3}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-05-A2",
+    "expected": "the media position is displayed and the preview presents during playback",
+    "observed": "{\"sawMediaText\":true}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-05-A3",
+    "expected": "the truncated recording ends Incomplete at its real EOF (strict barrier holds)",
+    "observed": "{\"state\":\"Incomplete\",\"media\":\"录像位置 6.3s / 99%\",\"previewHidden\":false,\"videoW\":0,\"artifact\":null,\"revision\":5}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-05-A4",
+    "expected": "stop between imports cleared the previous stream",
+    "observed": "{\"state\":\"Stopped\",\"srcObject\":null,\"revision\":5}",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

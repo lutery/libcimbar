@@ -60,6 +60,22 @@
     {
       "pid": 71440,
       "kind": "receiver-edge"
+    },
+    {
+      "pid": 27176,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 28904,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 86912,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 82412,
+      "kind": "receiver-edge"
     }
   ]
 }

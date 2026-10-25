@@ -19,7 +19,7 @@
         "T16",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -43,8 +43,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -59,7 +59,7 @@
         "T25",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -93,8 +93,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -108,7 +108,7 @@
         "T19",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -142,8 +142,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -156,7 +156,7 @@
         "T16",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -185,8 +185,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -200,7 +200,7 @@
         "T19",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "worker",
@@ -229,8 +229,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -246,7 +246,7 @@
         "T25",
         "T35"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -289,10 +289,54 @@
           "phase": "unit"
         }
       ],
-      "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
-      "proofRefs": []
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-31",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-32",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        }
+      ],
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a; UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+      "proofRefs": [
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+      ]
     },
     {
       "id": "R-07",
@@ -306,7 +350,7 @@
         "T19",
         "T31"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "client",
@@ -330,8 +374,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -345,7 +389,7 @@
         "T19",
         "T31"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "ux-telemetry",
@@ -379,8 +423,8 @@
         }
       ],
       "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a",
       "proofRefs": []
     },
     {
@@ -394,7 +438,7 @@
         "T25",
         "T34"
       ],
-      "status": "UNIT_VERIFIED",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "save",
@@ -432,10 +476,40 @@
           "phase": "unit"
         }
       ],
-      "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
-      "proofRefs": []
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-34",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        }
+      ],
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a; UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+      "proofRefs": [
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+      ]
     },
     {
       "id": "R-10",
@@ -449,7 +523,7 @@
         "T22",
         "T31"
       ],
-      "status": "NOT_RUN",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "UX-IAT",
@@ -467,10 +541,26 @@
           "phase": "iat"
         }
       ],
-      "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
-      "proofRefs": []
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-09b",
+          "attemptId": "UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin"
+          ]
+        }
+      ],
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a; UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+      "proofRefs": [
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin"
+      ]
     },
     {
       "id": "R-11",
@@ -484,7 +574,7 @@
         "T28",
         "T31"
       ],
-      "status": "NOT_RUN",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "UX-IAT",
@@ -492,10 +582,28 @@
           "phase": "iat"
         }
       ],
-      "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
-      "proofRefs": []
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-09b",
+          "attemptId": "UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/summary.json",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/comparison.json",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/live/summary.json"
+          ]
+        }
+      ],
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a; UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+      "proofRefs": [
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/summary.json",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/comparison.json",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/live/summary.json"
+      ]
     },
     {
       "id": "R-12",
@@ -514,7 +622,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "VERIFIED",
       "testBindings": [
         {
           "suite": "UX-IAT",
@@ -522,10 +630,141 @@
           "phase": "iat"
         }
       ],
-      "caseBindings": [],
-      "manifestSha256": null,
-      "attemptId": null,
-      "proofRefs": []
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-27",
+          "phase": "e2e",
+          "runId": "20261024-teamexec-06",
+          "attemptId": "UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261024-teamexec-06/proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/original.bin",
+            "docs/tests/runs/20261024-teamexec-06/proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-31",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-32",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-34",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-08",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+            "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-09b",
+          "attemptId": "UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-36",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-09b",
+          "attemptId": "UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-36/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-36/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin"
+          ]
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261025-teamexec-09b",
+          "attemptId": "UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+          "result": "PASS",
+          "proofRefs": [
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/summary.json",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/comparison.json",
+            "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/live/summary.json"
+          ]
+        }
+      ],
+      "manifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "attemptId": "UX-IAT-2026-10-25T07-51-23-283Z-21ac1a; UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd; UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5; UX-UI-2026-10-25T06-45-04-195Z-9170ae",
+      "proofRefs": [
+        "docs/tests/runs/20261024-teamexec-06/proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/original.bin",
+        "docs/tests/runs/20261024-teamexec-06/proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-30/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-31/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-32/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-33/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/original.bin",
+        "docs/tests/runs/20261025-teamexec-08/proof/E2E-34/UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd/received.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-35/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-36/UX-UI-2026-10-25T06-45-04-195Z-9170ae/original.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-36/UX-UI-2026-10-25T06-45-04-195Z-9170ae/received.bin",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/summary.json",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/comparison.json",
+        "docs/tests/runs/20261025-teamexec-09b/proof/E2E-38/UX-UI-2026-10-25T06-45-04-195Z-9170ae/measurements/live/summary.json"
+      ],
+      "notes": "E2E-27 PASS on the teamexec-06 build; E2E-30..34 on teamexec-08; E2E-35/36/38 on the final 09b candidate (9e2595e6). E2E-37 NOT_RUN (field/AT leg). UX-IAT-08 NOT_RUN: the IAT runner still hardcodes the T28 note (tools lane wiring pending); measure-ux itself passed its 61-test suite."
     }
   ]
 }

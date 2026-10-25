@@ -251,7 +251,8 @@ switch ($Mode) {
       'src/app.js', 'src/session.js', 'src/frame-scheduler.js',
       'src/save-controller.js', 'src/video-source.js', 'src/live-source.js',
       'src/decoder-client.js', 'src/contracts.js', 'src/evidence.js',
-      'src/contract-snapshot.js', 'src/capabilities.js', 'src/ui.js'
+      'src/contract-snapshot.js', 'src/capabilities.js', 'src/ui.js',
+      'src/ux-telemetry.js', 'src/ux-view.js', 'src/ux-display.js'
     )
     foreach ($relative in $required) {
       if (-not (Test-Path (Join-Path $staging $relative))) {
