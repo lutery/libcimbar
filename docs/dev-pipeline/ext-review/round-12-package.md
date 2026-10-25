@@ -85,6 +85,8 @@ python docs/design-catalog/receiver-ux-v2/contracts/check-contracts.py
 
 逐旅程复现见 `docs/tests/runs/20261025-teamexec-09b/reproduction.md`；A/B 与实时腿命令同文件。
 
+> 注：4.7 阶段的 `docs/tests/receiver-ux-v2/check-e2e-plan.py` 是**规划期快照校验器**（其断言之一为「planning 场景应保持 NOT_RUN」）。T36 按执行计划对 planning-cases.json 做了终态状态回填（场景定义零改动、经语义 diff 校验），因此该快照脚本若在终态树上复跑会命中其快照断言——属历史定位冲突，**不作为本迭代门禁**；说明见 `b10-t36-report.md`。(d) 节。
+
 ## 诚实性边界（本迭代已知且如实披露）
 
 1. **现场 7 项 NOT_RUN**：E2E-21～26、E2E-39 需用户在真实云桌面/真实辅助技术环境执行；代理会话不代跑、不伪造。planning-cases.json 对应 7 行保持 NOT_RUN（无 attemptId）。
