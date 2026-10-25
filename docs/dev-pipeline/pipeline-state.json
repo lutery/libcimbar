@@ -4,7 +4,7 @@
   "current_phase": "external-review",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-25T22:20:00+08:00",
+  "updated_at": "2026-10-25T22:35:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -274,7 +274,12 @@
       "completed_at": null,
       "notes": "round-12 送审包与结论模板已就绪（ext_rounds=11 保留全局轮次，下一 verdict=round-12-verdict.md）。等待外部独立审查结论；结论文件放入 docs/dev-pipeline/ext-review/ 或直接告知。通过→阶段7；不通过→回 team-exec 整改（外审问题优先），外层无轮次上限。",
       "_managed_by": "claude-dev-pipeline",
-      "user_instructions": []
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-25T22:35:00+08:00",
+          "summary": "用户于阶段5出口确认门选择「进入阶段6」：接受阶段5摘要（6轮审查0 Blocking、测试与双重门禁如上），同意把 round-12 送审包转外部独立审查并进入等待态；现场 7 项（E2E-21..26/39）与 E2E-37 语音腿仍由用户侧执行，不在本次外审前阻塞。"
+        }
+      ]
     },
     {
       "name": "finishing-a-development-branch",
