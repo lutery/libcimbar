@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { inspectCapabilities } from '../../src/capabilities.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+import * as uiNamespace from '../../src/ui.js';
 import {
   deriveControls,
   noDataHint,
@@ -268,4 +269,27 @@ test('T30 the legacy probe hides from AT and recovery copy reaches the surface',
     'the capability banner speaks Chinese');
   assert.ok(app.includes('字节'),
     'the artifact size uses Chinese units');
+});
+
+// --- T31b: focus returns to an executable action after save settles ----------
+
+// Given a save that just settled
+// When the focus target is derived
+// Then a cancel/failure returns focus to the save button when it is enabled
+// (otherwise the start entry), and a success returns to the new-session entry
+test('T31b focus returns to an executable action after the save settles', () => {
+  const uiModule = uiNamespace;
+  assert.equal(typeof uiModule.focusTargetAfterSave, 'function',
+    'the focus target helper exists');
+  assert.equal(uiModule.focusTargetAfterSave('cancelled', { canSave: true }), 'save');
+  assert.equal(uiModule.focusTargetAfterSave('failed', { canSave: true }), 'save');
+  assert.equal(uiModule.focusTargetAfterSave('cancelled', { canSave: false }), 'start');
+  assert.equal(uiModule.focusTargetAfterSave('saved', { canSave: false }), 'start');
+  assert.equal(uiModule.focusTargetAfterSave('writing', { canSave: true }), null);
+  assert.equal(uiModule.focusTargetAfterSave('selecting', { canSave: true }), null);
+  assert.equal(uiModule.focusTargetAfterSave('pending', { canSave: true }), null);
+
+  const app = pageSource('web/desktop-recv/src/app.js');
+  assert.ok(app.includes('focusTargetAfterSave'), 'the app wires the derived target');
+  assert.ok(app.includes('.focus()'), 'the app moves the focus');
 });

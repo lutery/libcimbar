@@ -119,6 +119,23 @@ export function describeRecovery(code, registry) {
   };
 }
 
+// Where focus should land once a save attempt settles (ui-spec: after the
+// save dialog closes, the user must be able to continue without hunting).
+// Pure helper: the app maps 'save'/'start' to the real buttons and skips the
+// move when the target is disabled.
+export function focusTargetAfterSave(saveStatus, { canSave = false } = {}) {
+  switch (saveStatus) {
+    case 'cancelled':
+    case 'failed':
+      // the file is still there: offer the save button again, else the start
+      return canSave ? 'save' : 'start';
+    case 'saved':
+      return 'start';
+    default:
+      return null;
+  }
+}
+
 // Chinese recovery copy for the same registered codes (ui-spec: express the
 // actual code without inventing a specific permission reason). This is the
 // user-facing text; the English describeRecovery above stays the machine

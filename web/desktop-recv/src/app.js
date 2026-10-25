@@ -1,7 +1,7 @@
 // Desktop receiver entry. The coordinator owns session state and the single
 // in-flight frame; this file only wires DOM events to it and paints snapshots.
 import { inspectCapabilities } from './capabilities.js';
-import { deriveControls, recoveryTextZh, safeSuggestedName, noDataHint } from './ui.js';
+import { deriveControls, recoveryTextZh, safeSuggestedName, noDataHint, focusTargetAfterSave } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
 import { LIMITS_DEFAULT } from './contracts.js';
 import { SessionCoordinator } from './session.js';
@@ -543,6 +543,15 @@ async function init() {
         }
         reportSave(event);
         coordinator.saveEvent(event);
+        // ui-spec: after the dialog closes, focus returns to an executable
+        // action. Pure derivation; the original settlement above is untouched.
+        const target = focusTargetAfterSave(event.saveStatus,
+          { canSave: deriveControls(coordinator.snapshot(), capabilities || {}).canSave });
+        if (target === 'save') {
+          (el.btnSave.disabled ? el.btnLive : el.btnSave).focus();
+        } else if (target === 'start') {
+          el.btnLive.focus();
+        }
       },
     });
     coordinator.attachSave(saveController);
