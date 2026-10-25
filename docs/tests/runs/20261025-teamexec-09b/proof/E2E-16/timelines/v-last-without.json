@@ -1,0 +1,250 @@
+{
+  "leg": "v-last-without",
+  "settled": true,
+  "mediaEnded": {
+    "at": 1792925519248,
+    "duration": 6.348,
+    "currentTime": 6.348
+  },
+  "durationSec": 6.348,
+  "lastUs": 6348000,
+  "tailEvents": [
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 61,
+      "mediaTimeUs": 5427000,
+      "t": 1792925516909
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 62,
+      "mediaTimeUs": 5491000,
+      "t": 1792925517077
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 63,
+      "mediaTimeUs": 5556000,
+      "t": 1792925517221
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 64,
+      "mediaTimeUs": 5619000,
+      "t": 1792925517369
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 65,
+      "mediaTimeUs": 5681000,
+      "t": 1792925517583
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 66,
+      "mediaTimeUs": 5744000,
+      "t": 1792925517763
+    },
+    {
+      "kind": "result",
+      "outcome": "data",
+      "frameId": 67,
+      "mediaTimeUs": 5807000,
+      "t": 1792925517917
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 68,
+      "mediaTimeUs": 5868000,
+      "t": 1792925518095
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 69,
+      "mediaTimeUs": 5929000,
+      "t": 1792925518278
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 70,
+      "mediaTimeUs": 5991000,
+      "t": 1792925518444
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 71,
+      "mediaTimeUs": 6052000,
+      "t": 1792925518565
+    },
+    {
+      "kind": "result",
+      "outcome": "data",
+      "frameId": 72,
+      "mediaTimeUs": 6228000,
+      "t": 1792925518849
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 73,
+      "mediaTimeUs": 6286000,
+      "t": 1792925519035
+    },
+    {
+      "kind": "result",
+      "outcome": "no_data",
+      "frameId": 74,
+      "mediaTimeUs": 6348000,
+      "t": 1792925519155
+    },
+    {
+      "kind": "ended",
+      "reason": "eof",
+      "t": 1792925519248
+    },
+    {
+      "kind": "finalSample",
+      "captured": true,
+      "width": 1604,
+      "height": 1002,
+      "t": 1792925519275
+    }
+  ],
+  "videoTimeline": {
+    "attemptId": "video-2",
+    "presented": 74,
+    "firstUs": 31000,
+    "lastUs": 6348000,
+    "endReason": "eof",
+    "artifactFrameId": null,
+    "finalSample": {
+      "captured": true,
+      "width": 1604,
+      "height": 1002,
+      "t": 1792925519275
+    },
+    "tailEvents": [
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 61,
+        "mediaTimeUs": 5427000,
+        "t": 1792925516909
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 62,
+        "mediaTimeUs": 5491000,
+        "t": 1792925517077
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 63,
+        "mediaTimeUs": 5556000,
+        "t": 1792925517221
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 64,
+        "mediaTimeUs": 5619000,
+        "t": 1792925517369
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 65,
+        "mediaTimeUs": 5681000,
+        "t": 1792925517583
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 66,
+        "mediaTimeUs": 5744000,
+        "t": 1792925517763
+      },
+      {
+        "kind": "result",
+        "outcome": "data",
+        "frameId": 67,
+        "mediaTimeUs": 5807000,
+        "t": 1792925517917
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 68,
+        "mediaTimeUs": 5868000,
+        "t": 1792925518095
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 69,
+        "mediaTimeUs": 5929000,
+        "t": 1792925518278
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 70,
+        "mediaTimeUs": 5991000,
+        "t": 1792925518444
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 71,
+        "mediaTimeUs": 6052000,
+        "t": 1792925518565
+      },
+      {
+        "kind": "result",
+        "outcome": "data",
+        "frameId": 72,
+        "mediaTimeUs": 6228000,
+        "t": 1792925518849
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 73,
+        "mediaTimeUs": 6286000,
+        "t": 1792925519035
+      },
+      {
+        "kind": "result",
+        "outcome": "no_data",
+        "frameId": 74,
+        "mediaTimeUs": 6348000,
+        "t": 1792925519155
+      },
+      {
+        "kind": "ended",
+        "reason": "eof",
+        "t": 1792925519248
+      },
+      {
+        "kind": "finalSample",
+        "captured": true,
+        "width": 1604,
+        "height": 1002,
+        "t": 1792925519275
+      }
+    ]
+  },
+  "attemptId": "video-2"
+}

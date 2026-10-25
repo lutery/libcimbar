@@ -47,7 +47,11 @@ export function createMediaJourneys(h) {
     const assertions = [];
     const startedAt = new Date().toISOString();
     const add = (id, expected, observed, ok, proof) => {
-      assertions.push({ id, expected, observed, result: ok ? 'PASS' : 'FAIL', proofRef: proof || null });
+      // Assertion proofRefs must be canonical run-root-relative paths inside
+      // the attempt dir (T35 gate contract); attempt-relative names from the
+      // T25-era call sites are prefixed at push time.
+      const canonical = proof ? `proof/${caseId}/${attemptId}/${proof}` : null;
+      assertions.push({ id, expected, observed, result: ok ? 'PASS' : 'FAIL', proofRef: canonical });
       return ok;
     };
     const shot = (page, name) => uxShot(page, caseId, attemptId, name);

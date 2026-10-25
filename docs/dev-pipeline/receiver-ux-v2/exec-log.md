@@ -170,3 +170,13 @@
 - 提交：`docs: complete live a-b legs and focus-restored ui acceptance`。
 
 - 2026-10-25（T33 后，lead 裁定）：E2E-35-S02 的 harness 可见性分支接受按 T33 处理——held 断言 PASS + 真实 visibility 结果写入 notes（旗标致 visible）；属环境不可构造项的如实降级，不伪造、不删步骤语义；阶段 6 外审可见该 notes。
+
+## B10-T35 — 最终候选全矩阵（legacy E2E-1..20 + UX E2E-27..38）（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-25 16:13 ～ 20:42 (+08:00)；报告：b10-t35-report.md；日志：09b/logs/lane-progress-t35.txt、t35-final-gate2.log；指纹：red-logs/t35-oldruns-after.sha（760 项 UNCHANGED）
+- Legacy v1 **20/20 PASS**（results.json）：1..13 首跑/个别重试；14/15 process-guard 规模超时（单批 CIM 查询修复后重试 PASS）；16/17/18/20 同流媒体 fixture 缺口（19 文件自只读 04/03 根逐字节复制 + fixtures-provenance-t35.json 登记，未改 input-manifest，重试 PASS）；18 重跑 b94f81 执行 video-n-128kib 腿，十腿=9 PASS + live-n-20mib-over-budget NOT_RUN（D-19 授权依据）。
+- UX **12/12**：27/28/29/30..34/35/36/38 PASS（最终 attempts 89769d / 0db9b3 / fa39af / 13c955 / d40b44），37 如实 NOT_RUN（真实启动 Narrator pid 存活 5s 后停止，本环境无法程序化核验语音，DOM/aria 不替代）。UX-ALL 组内首次运行接收服务死亡（ERR_ADDRESS_INVALID）→ 修复 E2E-27 语义正则 + 改逐组进程隔离调用；失败组 attempt 0db9b3 原件保留。
+- 双门禁实测（lead 独立复核）：legacy `python verify-evidence.py --run …09b --gate local` → **GATE local: PASS (20 required cases)** exit 0；UX `verify-ux-evidence.py --gate local` → **FAIL (2 violations)**，仅 E2E-37 两条环境项（本地不可程序化核验，属现场批次设计内）。
+- 回归：run-unit --all 12 套、ux-evidence-selftest 55、verify-evidence-selftest 14、prefix-check 3/3；产品/worker 0 行改动；旧 run/staging/product/planning 零写入；零残留进程/端口。
+- 工具变更（全部 harness）：ui-journeys（+E2E-28/29 旅程、37/38 独立化、finish 由断言推导、NOT_RUN null 语义）、run-e2e（E2E-27 CAL fold、S04 语义正则、页级保存钩子检测重载、needsSender、live/video roundtrip）、source-scene（静止层活性点）、media-journeys（assertion proofRef 规范化前缀）、process-guard（CIM 单批化 + 120s 超时 + 原因点名）。
+- 报告修正（lead 验收时发现 5 处传输损坏，已由 dev-v2-tools 依 ground truth 精准改写；一次性 splice 备份 .pre-t35-media-splice 已删除、未入库）。

@@ -63,10 +63,15 @@ export function recordProcesses(runRoot, entries) {
 function runPowerShellJson(script) {
   const proc = spawnSync('powershell', ['-NoProfile', '-Command', script], {
     encoding: 'utf8',
-    timeout: 60000,
+    timeout: 120000, // WMI can stall under load; 60s proved flaky on this host
   });
   if (proc.status !== 0) {
-    throw new ProcessGuardError(`process guard helper failed: ${(proc.stderr || '').trim()}`);
+    // status=null means the helper was killed (spawnSync timeout); the empty
+    // stderr then hides the real reason, so name it explicitly.
+    const reason = proc.status === null
+      ? `helper killed (${proc.signal || 'timeout'})`
+      : (proc.stderr || '').trim();
+    throw new ProcessGuardError(`process guard helper failed: ${reason}`);
   }
   const text = (proc.stdout || '').trim();
   try {
@@ -98,11 +103,16 @@ export async function cleanupRecordedProcesses(runRoot) {
   const json = JSON.stringify(spec).replace(/'/g, "''");
   // ConvertTo-Json is avoided on purpose: a one-element PowerShell array
   // serializes as a scalar and would silently hide the recorded pid.
+  // ONE batched CIM query for every recorded pid: a per-pid Get-CimInstance
+  // loop grows with the run's pid history and timed out at 60s after ~15
+  // invocations on this host (T35), refusing the whole journey at startup.
   const script = `
 $spec = '${json}' | ConvertFrom-Json
+$pids = @($spec | ForEach-Object { [int]$_.pid })
+$procs = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $pids -contains [int]$_.ProcessId })
 $killed = @(); $skipped = @()
 foreach ($item in @($spec)) {
-  $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$($item.pid)" -ErrorAction SilentlyContinue
+  $proc = $procs | Where-Object { [int]$_.ProcessId -eq [int]$item.pid } | Select-Object -First 1
   if (-not $proc) { $skipped += [int]$item.pid; continue }
   $cmd = [string]$proc.CommandLine
   $matched = $true

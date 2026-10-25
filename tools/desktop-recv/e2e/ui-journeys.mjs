@@ -4,20 +4,33 @@
 // The lead's dispatch swapped 35/36; the plan wins and the report records the
 // conflict. Real browser only; every injection is labeled.
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { join } from 'node:path';
+import { sha256FileBytes } from './source-scene.mjs';
 
 function parseClock(text) {
   const value = Number.parseFloat(String(text || '').replace('s', ''));
   return Number.isFinite(value) ? value : null;
 }
 
+// "重建估计约 12%" / "上次重建估计约 12%" -> 12 (floor, never rounded up).
+function percentOf(text) {
+  const match = /(\d+)%/.exec(String(text || ''));
+  return match ? Number(match[1]) : null;
+}
+
+// "3.4 KiB/s（含冗余）" / "<0.1 KiB/s（含冗余）" / "" -> number | null.
+function rateKib(text) {
+  const match = /^<?([\d.]+) KiB\/s/.exec(String(text || ''));
+  return match ? Number(match[1]) : null;
+}
+
 export function createUiJourneys(h) {
   const helpers = h;
   const {
     sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
-    importVideo, saveArtifact, runHelper, captureDesktop, clickButton,
+    importVideo, saveArtifact, completeLegSave, runHelper, captureDesktop, clickButton,
     ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
     externalSha256, sha256File, SourceScene,
   } = helpers;
@@ -62,8 +75,13 @@ export function createUiJourneys(h) {
       }
       for (const ref of extraProofRefs) proofRefs.push(ref);
       const plannedType = planned.caseType || caseTypeOverride || 'negative_or_lifecycle';
+      // The record verdict is DERIVED: a PASS claim with any non-PASS
+      // assertion is a FAIL, never an inconsistent record.
+      const verdict = result === 'NOT_RUN' ? 'NOT_RUN'
+        : (result === 'PASS' && assertions.length > 0
+          && assertions.every((entry) => entry.result === 'PASS')) ? 'PASS' : 'FAIL';
       // Recipe-A NOT_RUN rule: no executor, no timestamps, no artifact hashes.
-      const notRun = result === 'NOT_RUN';
+      const notRun = verdict === 'NOT_RUN';
       upsertUxResult(context.abs.runRoot, {
         runId: context.runId,
         productManifestSha256: context.productManifestSha256,
@@ -72,7 +90,7 @@ export function createUiJourneys(h) {
           attemptId,
           scope: 'local_simulated',
           caseType: plannedType,
-          result,
+          result: verdict,
           executedBy: notRun ? null : 'executor',
           acceptanceIds,
           productManifestSha256: context.productManifestSha256,
@@ -82,10 +100,10 @@ export function createUiJourneys(h) {
           assertions: notRun ? [] : assertions,
           referenceSha256: notRun ? null : referenceSha,
           receivedSha256: notRun ? null : receivedSha,
-          notes: `${notes} | phase=final candidate T31 evidence`,
+          notes: `${notes} | phase=final candidate evidence`,
         },
       });
-      return result === 'PASS';
+      return verdict === 'PASS';
     };
     return { attemptDir, add, notRun, shot, finish, caseId, attemptId };
   }
@@ -123,6 +141,287 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
       ps.on('error', resolveState);
     });
     await sleep(700);
+  }
+
+  // ---------------------------------------------------------------- E2E-28
+  // Repeated valid codes: real recognition activity (frames keep decoding,
+  // the rate may stay >0) must NOT inflate the reconstruction estimate and
+  // must never fake Ready. SRC-01 freezes ONE genuine code frame over the
+  // real sender window - only source pixels change; the receiver keeps
+  // seeing genuine getDisplayMedia frames (no frame/report injection).
+  async function e2e28(stack) {
+    const rec = makeRecorder('E2E-28', helpers.attemptId());
+    const page = stack.receiver.page;
+    const proofRef = (name) => `proof/E2E-28/${rec.attemptId}/${name}`;
+    const input = join(getFixtures(), 'ext-random-1mib.bin');
+    const scene = new SourceScene(stack.senderPage, { proofDir: rec.attemptDir });
+    const samples = [];
+    let receivedAbs = null;
+    try {
+      await scene.loadInput(input);
+      await stack.senderPage.bringToFront();
+      await sleep(600);
+      const anim = await scene.waitAnimating(20000);
+      const frame = await scene.captureCodeFrame('src01-code-frame.png');
+      rec.add('E2E-28-S01', 'a real animated code frame from the original sender is frozen as an opaque source layer',
+        `animating=${anim.changed} frameSha256=${frame.sha256} bytes=${frame.bytes} rect=${frame.rect.width}x${frame.rect.height} inputSha256=${sha256File(input)}`,
+        anim.changed && frame.bytes > 0, proofRef('src01-code-frame.png'));
+
+      await attachCapture(page, 'window', stack.receiver.pid, { waitForReady: false });
+      const baseline = await waitFor(async () => {
+        const probe = await uxProbe(page);
+        return probe.revision !== null && /KiB\/s/.test(String(probe.rate || '')) ? probe : null;
+      }, 180000, 'first data with an active rate');
+      await rec.shot(page, 's28-first-data.png');
+      const basePercent = percentOf(baseline.progress);
+      const baseState = await pageState(page);
+      const baseSessionId = baseState.contractSnapshot ? baseState.contractSnapshot.sessionId : null;
+      rec.add('E2E-28-PRE', 'the live source delivers real data and an active rate before the freeze',
+        `revision=${baseline.revision} rate=${baseline.rate} progress=${baseline.progress} frames=${baseline.stats && baseline.stats.processedFrames} sessionId=${baseSessionId}`,
+        basePercent !== null, proofRef('screens/s28-first-data.png'));
+
+      const stillState = await scene.showStill(frame.path);
+      const stillStart = Date.now();
+      const sample = async (label, delayMs) => {
+        if (delayMs) await sleep(delayMs);
+        const probe = await uxProbe(page);
+        samples.push({
+          label, atMs: Date.now() - stillStart, progress: probe.progress, rate: probe.rate,
+          secondary: probe.secondary, elapsed: probe.elapsed, revision: probe.revision,
+          frames: probe.stats ? probe.stats.processedFrames : null, state: probe.state,
+          artifact: probe.artifact ? probe.artifact.byteCount : null,
+        });
+        return probe;
+      };
+      await sample('0.5s', 500);
+      await rec.shot(page, 's28-still-05s.png');
+      await sample('3s', 2500);
+      await sample('5s', 2000);
+      await rec.shot(page, 's28-still-5s.png');
+      await sample('8s', 3000);
+      await rec.shot(page, 's28-still-8s.png');
+      await sample('10s', 2000);
+      await rec.shot(page, 's28-still-10s.png');
+      const heldMs = Date.now() - stillStart;
+      const stillRect = await scene.canvasRect();
+      const stillClip = {
+        x: stillRect.left, y: stillRect.top, width: stillRect.width, height: stillRect.height,
+      };
+      const pixelA = sha256FileBytes(await stack.senderPage.screenshot({ clip: stillClip }));
+      await sleep(1200);
+      const pixelB = sha256FileBytes(await stack.senderPage.screenshot({ clip: stillClip }));
+      // The estimate must stay FIXED from 3s on (the first second may still
+      // settle from pre-freeze frames); compare the ratio, not the raw text
+      // (the >=5s no-data copy prefixes it with 上次 to mark staleness).
+      const stablePercent = percentOf(samples[1].progress);
+      const progressStable = stablePercent !== null
+        && samples.slice(1).every((entry) => percentOf(entry.progress) === stablePercent);
+      // The frozen frame must be DECODED as data (redundant bytes keep the
+      // redundancy-inclusive rate alive); a still that is merely rejected as
+      // no_data would not prove "repeated valid codes" at all.
+      const rateActive = samples.slice(1)
+        .filter((entry) => rateKib(entry.rate) !== null && rateKib(entry.rate) > 0).length >= 3;
+      const noticeSeen = samples.slice(3)
+        .some((entry) => /没有推进|没有识别到新数据/.test(String(entry.secondary || '')));
+      rec.add('E2E-28-S02', 'repeated valid codes for >=10s: the redundancy-inclusive rate stays active while the reconstruction estimate stays fixed and the no-growth notice appears',
+        JSON.stringify({
+          heldMs, stillMode: stillState.mode, pixelStable: pixelA === pixelB,
+          progressStable, stablePercent, rateActive, noticeSeen, samples,
+        }),
+        stillState.mode === 'still' && heldMs >= 10000 && pixelA === pixelB
+          && progressStable && rateActive && noticeSeen,
+        proofRef('screens/s28-still-10s.png'));
+
+      const neverReady = samples.every((entry) => entry.state !== 'Ready'
+        && (entry.artifact === null || entry.artifact === undefined));
+      const saveDisabledDuring = await page.evaluate(() => document.getElementById('btn-save').disabled);
+      const elapsedGrew = parseClock(samples[samples.length - 1].elapsed) > parseClock(samples[0].elapsed);
+      const stillPageState = await pageState(page);
+      const stillSessionSame = baseSessionId !== null && stillPageState.contractSnapshot
+        && stillPageState.contractSnapshot.sessionId === baseSessionId;
+      rec.add('E2E-28-S03', 'no button touched during the freeze: elapsed keeps counting, no false Ready, save stays disabled, the session is not restarted',
+        JSON.stringify({
+          elapsed: [samples[0].elapsed, samples[samples.length - 1].elapsed],
+          states: samples.map((entry) => entry.state), saveDisabledDuring,
+          artifacts: samples.map((entry) => entry.artifact), stillSessionSame,
+        }),
+        neverReady && saveDisabledDuring === true && elapsedGrew && stillSessionSame,
+        proofRef('screens/s28-still-8s.png'));
+
+      const restoreState = await scene.restore();
+      const stillPercent = percentOf(samples[samples.length - 1].progress);
+      const resumeTrail = [];
+      let lastProbeLog = 0;
+      const resumed = await waitFor(async () => {
+        const probe = await uxProbe(page);
+        if (Date.now() - lastProbeLog > 5000) {
+          lastProbeLog = Date.now();
+          resumeTrail.push({
+            atMs: Date.now() - stillStart, state: probe.state, rate: probe.rate,
+            progress: probe.progress, revision: probe.revision,
+            artifact: probe.artifact ? probe.artifact.byteCount : null,
+          });
+          log(`E2E-28 resume probe: state=${probe.state} rate=${probe.rate} progress=${probe.progress} revision=${probe.revision} artifact=${probe.artifact && probe.artifact.byteCount}`);
+        }
+        const percent = percentOf(probe.progress);
+        return percent !== null && stillPercent !== null && percent > stillPercent ? probe : null;
+      }, 180000, 'progress resumes after the freeze is lifted');
+      await rec.shot(page, 's28-resumed.png');
+      const resumedPageState = await pageState(page);
+      const resumedSessionSame = baseSessionId !== null && resumedPageState.contractSnapshot
+        && resumedPageState.contractSnapshot.sessionId === baseSessionId;
+      rec.add('E2E-28-S04', 'removing the still layer resumes real block growth without resetting the session',
+        `mode=${restoreState.mode} progress=${stillPercent}%->${percentOf(resumed.progress)}% revision=${samples[0].revision}->${resumed.revision} resumedSessionSame=${resumedSessionSame} trail=${JSON.stringify(resumeTrail)}`,
+        restoreState.mode === 'live' && percentOf(resumed.progress) > stillPercent && resumedSessionSame,
+        proofRef('screens/s28-resumed.png'));
+
+      await page.waitForFunction(() => {
+        const button = document.getElementById('btn-save');
+        return button && !button.disabled;
+      }, null, { timeout: 420000 });
+      const ready = await uxProbe(page);
+      const save = await completeLegSave({
+        page, caseId: 'E2E-28', legDir: rec.attemptDir, originalPath: input, pid: stack.receiver.pid,
+      });
+      receivedAbs = join(rec.attemptDir, 'received.bin');
+      const extOriginal = externalSha256(input);
+      const extReceived = externalSha256(receivedAbs);
+      await rec.shot(page, 's28-saved.png');
+      rec.add('E2E-28-S05', 'the still phase did not fake completion; after the resume the file rebuilds exactly and saves with equal external SHA',
+        `artifact=${ready.artifact && ready.artifact.byteCount} saveOk=${save.ok} equal=${extOriginal === extReceived} bytes=${save.bytes}`,
+        Boolean(ready.artifact) && ready.artifact.byteCount === statSync(input).size
+          && save.ok && extOriginal === extReceived,
+        proofRef('screens/s28-saved.png'));
+      return rec.finish('PASS', `repeated-code journey: still held ${heldMs}ms with the estimate fixed at ${stillPercent}%, resumed and saved`, receivedAbs, input);
+    } catch (error) {
+      rec.add('E2E-28-ABORT', 'journey runs to completion', String(error.message).slice(0, 300), false);
+      return rec.finish('FAIL', `aborted: ${String(error.message).slice(0, 200)}`, receivedAbs, input);
+    }
+  }
+
+  // ---------------------------------------------------------------- E2E-29
+  // Real no-valid-code pause: the rate must drop to zero within ~3s (+1s
+  // tolerance), the elapsed clock keeps running, the last estimate gets stale
+  // semantics, and lifting the blank resumes the SAME session to Ready.
+  async function e2e29(stack) {
+    const rec = makeRecorder('E2E-29', helpers.attemptId());
+    const page = stack.receiver.page;
+    const proofRef = (name) => `proof/E2E-29/${rec.attemptId}/${name}`;
+    const input = join(getFixtures(), 'ext-random-1mib.bin');
+    const scene = new SourceScene(stack.senderPage, { proofDir: rec.attemptDir });
+    const samples = [];
+    let receivedAbs = null;
+    try {
+      await scene.loadInput(input);
+      await stack.senderPage.bringToFront();
+      await sleep(600);
+      await scene.waitAnimating(20000);
+      await attachCapture(page, 'window', stack.receiver.pid, { waitForReady: false });
+      const baseline = await waitFor(async () => {
+        const probe = await uxProbe(page);
+        const elapsed = parseClock(probe.elapsed);
+        return probe.revision !== null && elapsed !== null && elapsed > 0
+          && /KiB\/s/.test(String(probe.rate || '')) && percentOf(probe.progress) !== null
+          ? probe : null;
+      }, 180000, 'baseline data before the blank');
+      const baseState = await pageState(page);
+      const baseSessionId = baseState.contractSnapshot ? baseState.contractSnapshot.sessionId : null;
+      const basePercent = percentOf(baseline.progress);
+      await rec.shot(page, 's29-baseline.png');
+      rec.add('E2E-29-S01', 'a real receiving baseline exists: elapsed, active rate, and a reconstruction estimate',
+        `revision=${baseline.revision} elapsed=${baseline.elapsed} rate=${baseline.rate} progress=${baseline.progress} sessionId=${baseSessionId}`,
+        basePercent !== null, proofRef('screens/s29-baseline.png'));
+
+      const blankState = await scene.showBlank();
+      const blankStart = Date.now();
+      const sample = async (label, delayMs) => {
+        if (delayMs) await sleep(delayMs);
+        const probe = await uxProbe(page);
+        samples.push({
+          label, atMs: Date.now() - blankStart, rate: probe.rate, progress: probe.progress,
+          secondary: probe.secondary, primary: probe.primary, elapsed: probe.elapsed,
+          state: probe.state, artifact: probe.artifact ? probe.artifact.byteCount : null,
+          saveDisabled: await page.evaluate(() => document.getElementById('btn-save').disabled),
+        });
+        return probe;
+      };
+      await sample('1s', 1000);
+      await sample('3s', 2000);
+      await rec.shot(page, 's29-blank-3s.png');
+      await sample('4s', 1000);
+      await sample('5s', 1000);
+      await rec.shot(page, 's29-blank-5s.png');
+      await sample('6s', 1000);
+      await rec.shot(page, 's29-blank-6s.png');
+      await sample('8s', 2000);
+      await rec.shot(page, 's29-blank-8s.png');
+      const heldMs = Date.now() - blankStart;
+      const zeroAfter3s = samples.filter((entry) => entry.atMs >= 3500)
+        .every((entry) => rateKib(entry.rate) === 0);
+      // The >=5s notice is measured from the LAST data, which can arrive ~1s
+      // after the blank starts: only the tail samples (>=7s) are guaranteed
+      // to be past lastData+5s in every run.
+      const notice5s = samples.filter((entry) => entry.atMs >= 7000)
+        .every((entry) => /已超过五秒没有识别到新数据/.test(String(entry.secondary || '')));
+      const staleProgress = samples.filter((entry) => entry.atMs >= 7000)
+        .every((entry) => /^上次重建估计约 /.test(String(entry.progress || '')));
+      rec.add('E2E-29-S02', 'no valid code for >=6s: the rate drops to zero within 3s(+1s), the >=5s notice and stale-estimate semantics appear',
+        JSON.stringify({ heldMs, blankMode: blankState.mode, zeroAfter3s, notice5s, staleProgress, samples }),
+        blankState.mode === 'blank' && heldMs >= 6000 && zeroAfter3s && notice5s && staleProgress,
+        proofRef('screens/s29-blank-8s.png'));
+
+      const last = samples[samples.length - 1];
+      const elapsedGrew = parseClock(last.elapsed) > parseClock(baseline.elapsed);
+      const afterState = await pageState(page);
+      const sessionSame = baseSessionId !== null && afterState.contractSnapshot
+        && afterState.contractSnapshot.sessionId === baseSessionId;
+      const noRestart = samples.every((entry) => entry.state === 'Receiving'
+        && (entry.artifact === null || entry.artifact === undefined) && entry.saveDisabled === true);
+      rec.add('E2E-29-S03', 'during the pause: elapsed keeps counting, the session is not restarted, save stays disabled, no fake progress',
+        JSON.stringify({
+          elapsed: [baseline.elapsed, last.elapsed], states: samples.map((entry) => entry.state),
+          saveDisabled: samples.map((entry) => entry.saveDisabled),
+          artifacts: samples.map((entry) => entry.artifact), sessionSame,
+        }),
+        elapsedGrew && sessionSame && noRestart, proofRef('screens/s29-blank-5s.png'));
+
+      const restoreState = await scene.restore();
+      const recovered = await waitFor(async () => {
+        const probe = await uxProbe(page);
+        const percent = percentOf(probe.progress);
+        return probe.state === 'Receiving' && /KiB\/s/.test(String(probe.rate || ''))
+          && percent !== null && basePercent !== null && percent >= basePercent
+          && !/^上次重建估计约 /.test(String(probe.progress || ''))
+          ? probe : null;
+      }, 120000, 'rate and progress recover after the blank is lifted');
+      await rec.shot(page, 's29-recovered.png');
+      rec.add('E2E-29-S04', 'lifting the blank resumes the same receiving context: active rate returns and the estimate is fresh again',
+        `mode=${restoreState.mode} rate=${recovered.rate} progress=${recovered.progress} elapsed=${recovered.elapsed}`,
+        restoreState.mode === 'live' && rateKib(recovered.rate) !== null,
+        proofRef('screens/s29-recovered.png'));
+
+      await page.waitForFunction(() => {
+        const button = document.getElementById('btn-save');
+        return button && !button.disabled;
+      }, null, { timeout: 420000 });
+      const ready = await uxProbe(page);
+      const save = await completeLegSave({
+        page, caseId: 'E2E-29', legDir: rec.attemptDir, originalPath: input, pid: stack.receiver.pid,
+      });
+      receivedAbs = join(rec.attemptDir, 'received.bin');
+      const extOriginal = externalSha256(input);
+      const extReceived = externalSha256(receivedAbs);
+      await rec.shot(page, 's29-saved.png');
+      rec.add('E2E-29-S05', 'the resumed session reaches Ready without a reload and the saved bytes match the original externally',
+        `artifact=${ready.artifact && ready.artifact.byteCount} saveOk=${save.ok} equal=${extOriginal === extReceived} bytes=${save.bytes}`,
+        Boolean(ready.artifact) && ready.artifact.byteCount === statSync(input).size
+          && save.ok && extOriginal === extReceived,
+        proofRef('screens/s29-saved.png'));
+      return rec.finish('PASS', `no-data pause journey: blank held ${heldMs}ms, rate reached zero within 3s(+1s), resumed and saved`, receivedAbs, input);
+    } catch (error) {
+      rec.add('E2E-29-ABORT', 'journey runs to completion', String(error.message).slice(0, 300), false);
+      return rec.finish('FAIL', `aborted: ${String(error.message).slice(0, 200)}`, receivedAbs, input);
+    }
   }
 
   // ---------------------------------------------------------------- E2E-35
@@ -568,19 +867,11 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
     }
   }
 
-  // ---------------------------------------------------------------- suite
-  async function uiSuite(stack) {
-    let allOk = true;
-    const ok35 = await e2e35(stack);
-    log(`E2E-35 ${ok35 ? 'PASS' : 'FAIL'}`);
-    allOk = allOk && ok35;
-    await reloadReceiverPage(stack);
-    const ok36 = await e2e36(stack);
-    log(`E2E-36 ${ok36 ? 'PASS' : 'FAIL'}`);
-    allOk = allOk && ok36;
-
-    // E2E-37: NOT_RUN - no verifiable screen-reader speech in this agent
-    // environment (aria/DOM checks are explicitly NOT a substitute).
+  // ---------------------------------------------------------------- E2E-37
+  // One REAL Narrator attempt (start + running state), then an honest
+  // NOT_RUN: actual speech output cannot be verified programmatically in this
+  // agent session, and DOM/aria checks are explicitly not a substitute.
+  async function e2e37() {
     const rec37 = makeRecorder('E2E-37', helpers.attemptId());
     const narrator = await new Promise((resolveN) => {
       const ps = spawn('powershell', ['-NoProfile', '-Command',
@@ -590,13 +881,30 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
       ps.stdout.on('data', (c) => { out += c; });
       ps.on('exit', () => resolveN(out.trim()));
     });
+    let attempt = 'not attempted (binary not present)';
+    if (narrator === 'present') {
+      attempt = await new Promise((resolveA) => {
+        const ps = spawn('powershell', ['-NoProfile', '-Command',
+          "$n = Join-Path $env:windir 'System32\\Narrator.exe'; $p = Start-Process -FilePath $n -PassThru; Start-Sleep -Seconds 5; $alive = Get-Process -Id $p.Id -ErrorAction SilentlyContinue; if ($alive) { 'launched pid=' + $p.Id + ' alive_after_5s=yes'; Stop-Process -Id $p.Id -Force; 'stopped_after_attempt' } else { 'launched pid=' + $p.Id + ' alive_after_5s=no' }"],
+          { stdio: ['ignore', 'pipe', 'pipe'] });
+        let out = '';
+        ps.stdout.on('data', (chunk) => { out += chunk; });
+        ps.stderr.on('data', (chunk) => { out += chunk; });
+        ps.on('exit', (code) => resolveA(`${out.trim().replace(/\s+/g, ' ')} (exit=${code})`));
+      });
+    }
     rec37.notRun('E2E-37-NARRATOR', 'actual screen-reader speech verified by recording or the tool voice viewer',
-      `Narrator binary=${narrator || 'unknown'}; actual speech output cannot be verified programmatically in this agent session - NOT_RUN per the plan (DOM/aria checks are not a substitute)`);
-    rec37.finish('NOT_RUN', 'screen-reader speech unavailable for verification in this environment', null, null);
+      `Narrator binary=${narrator || 'unknown'}; real attempt: ${attempt}; speech output still cannot be verified programmatically - NOT_RUN per the plan (DOM/aria checks are not a substitute)`);
+    rec37.finish('NOT_RUN', `Narrator binary=${narrator || 'unknown'}; real start attempt: ${attempt}; speech not programmatically verifiable in this environment`, null, null);
+    return true;
+  }
 
-    // E2E-38: read the measure-ux outputs of THIS attempt; live legs are a
-    // separate采集器 that does not exist yet - NOT_RUN, never substituted by
-    // the recorded legs.
+  // ---------------------------------------------------------------- E2E-38
+  // Reads the measure-ux outputs of THIS attempt (recorded A/B + live legs)
+  // and copies them into the attempt's proof directory. NOT_RUN is honest;
+  // a recorded FAIL stays a FAIL.
+  async function e2e38() {
+    let overall38 = 'NOT_RUN';
     const rec38 = makeRecorder('E2E-38', helpers.attemptId(), 'measurement');
     const context = getContext();
     const measuredDir = join(context.abs.runRoot, 'measurements', 'ux-overhead', context.attemptId);
@@ -640,6 +948,7 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
           liveSummary.verdict === 'PASS',
           `${proofMeasRel}/live/summary.json`);
         const overall = verdict === 'PASS' && liveSummary.verdict === 'PASS' ? 'PASS' : 'FAIL';
+        overall38 = overall;
         rec38.finish(overall, `recorded A/B verdict=${verdict}; live legs verdict=${liveSummary.verdict}`,
           null, null, [refSummary, refComparison, `${proofMeasRel}/live/summary.json`]);
       } else {
@@ -648,8 +957,31 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
     } else {
       rec38.finish('NOT_RUN', 'NOT_RUN: no measure-ux output for this attempt', null, null, []);
     }
+    return overall38 !== 'FAIL';
+  }
+
+  // ---------------------------------------------------------------- suite
+  async function uiSuite(stack) {
+    let allOk = true;
+    const ok35 = await e2e35(stack);
+    log(`E2E-35 ${ok35 ? 'PASS' : 'FAIL'}`);
+    allOk = allOk && ok35;
+    await reloadReceiverPage(stack);
+    const ok36 = await e2e36(stack);
+    log(`E2E-36 ${ok36 ? 'PASS' : 'FAIL'}`);
+    allOk = allOk && ok36;
+    await e2e37();
+    await e2e38();
     return allOk;
   }
 
-  return { 'UX-UI': uiSuite };
+  return {
+    'E2E-28': e2e28,
+    'E2E-29': e2e29,
+    'E2E-35': e2e35,
+    'E2E-36': e2e36,
+    'E2E-37': e2e37,
+    'E2E-38': e2e38,
+    'UX-UI': uiSuite,
+  };
 }

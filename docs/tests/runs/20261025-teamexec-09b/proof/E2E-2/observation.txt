@@ -1,0 +1,2 @@
+E2E-2 observation (2026-10-25T08:57:41.101Z)
+ENOENT: no such file or directory, stat 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\fixtures\compressible\sample-text-2.bin'

@@ -94,10 +94,17 @@ export class SourceScene {
 
   // Opaque still layer over the exact canvas rect: the source window keeps
   // showing ONE real code frame (real repeated-data pixels).
+  //
+  // A fully static window can starve the OS/WebRTC capture pipeline (no new
+  // frames -> no decodes at all), which would make "repeated valid codes"
+  // untestable. A 10px liveness ticker OUTSIDE the code rect keeps the window
+  // changing without touching a single code pixel; its placement is recorded
+  // in __sourceScene so the evidence says exactly where it was.
   async showStill(framePath) {
     const base64 = readFileSync(framePath).toString('base64');
     return this.page.evaluate(({ data, id }) => {
       document.getElementById(id)?.remove();
+      document.getElementById(`${id}-tick`)?.remove();
       const canvas = document.getElementById('canvas');
       if (!canvas) throw new Error('sender canvas not found');
       const rect = canvas.getBoundingClientRect();
@@ -110,9 +117,34 @@ export class SourceScene {
         background: '#000', zIndex: '2147483647', pointerEvents: 'none',
       });
       document.body.appendChild(image);
+      const margin = 4;
+      const right = rect.left + rect.width;
+      const bottom = rect.top + rect.height;
+      const candidates = [
+        { x: margin, y: margin },
+        { x: Math.max(margin, window.innerWidth - 14), y: margin },
+        { x: margin, y: Math.max(margin, window.innerHeight - 14) },
+        { x: Math.max(margin, window.innerWidth - 14), y: Math.max(margin, window.innerHeight - 14) },
+      ];
+      const overlaps = (p) => p.x + 10 > rect.left && p.x < right && p.y + 10 > rect.top && p.y < bottom;
+      const spot = candidates.find((p) => !overlaps(p)) || { x: margin, y: margin };
+      const style = document.createElement('style');
+      style.id = `${id}-tick-style`;
+      style.textContent = '@keyframes src01tick { 0% { opacity: 1 } 50% { opacity: 0.05 } 100% { opacity: 1 } }';
+      document.head.appendChild(style);
+      const tick = document.createElement('div');
+      tick.id = `${id}-tick`;
+      Object.assign(tick.style, {
+        position: 'fixed', left: `${spot.x}px`, top: `${spot.y}px`,
+        width: '10px', height: '10px', background: '#fff',
+        zIndex: '2147483647', pointerEvents: 'none',
+        animation: 'src01tick 0.5s steps(2, end) infinite',
+      });
+      document.body.appendChild(tick);
       window.__sourceScene = {
         mode: 'still', at: Date.now(),
         rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+        liveness: { x: spot.x, y: spot.y, size: 10, outsideCodeRect: !overlaps(spot) },
       };
       return window.__sourceScene;
     }, { data: base64, id: OVERLAY_ID });
@@ -122,6 +154,7 @@ export class SourceScene {
   async showBlank() {
     return this.page.evaluate((id) => {
       document.getElementById(id)?.remove();
+      document.getElementById(`${id}-tick`)?.remove();
       const div = document.createElement('div');
       div.id = id;
       Object.assign(div.style, {
@@ -138,6 +171,7 @@ export class SourceScene {
   async restore() {
     return this.page.evaluate((id) => {
       document.getElementById(id)?.remove();
+      document.getElementById(`${id}-tick`)?.remove();
       window.__sourceScene = { mode: 'live', at: Date.now() };
       return window.__sourceScene;
     }, OVERLAY_ID);

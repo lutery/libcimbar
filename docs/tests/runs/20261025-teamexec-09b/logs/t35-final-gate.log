@@ -1,0 +1,49 @@
+UX GATE local: FAIL (48 violation(s))
+  - E2E-27: assertion[0] proofRef is not canonical inside the run root: None
+  - E2E-27: assertion[2] proofRef is not canonical inside the run root: None
+  - E2E-27: assertion[3] proofRef is not canonical inside the run root: None
+  - E2E-27: assertion[4] proofRef is not canonical inside the run root: None
+  - E2E-30: assertion[0] proofRef is outside the claimed attempt directory: screens/s30-d1-live-metrics.png
+  - E2E-30: assertion[0] proofRef not found on disk: screens/s30-d1-live-metrics.png
+  - E2E-30: assertion[1] proofRef is outside the claimed attempt directory: screens/s30-d1-stopped.png
+  - E2E-30: assertion[1] proofRef not found on disk: screens/s30-d1-stopped.png
+  - E2E-30: assertion[2] proofRef is outside the claimed attempt directory: screens/s30-d1-video-reset.png
+  - E2E-30: assertion[2] proofRef not found on disk: screens/s30-d1-video-reset.png
+  - E2E-30: assertion[3] proofRef is outside the claimed attempt directory: d1/received.bin
+  - E2E-30: assertion[3] proofRef not found on disk: d1/received.bin
+  - E2E-30: assertion[4] proofRef is outside the claimed attempt directory: screens/s30-d2-live-reset.png
+  - E2E-30: assertion[4] proofRef not found on disk: screens/s30-d2-live-reset.png
+  - E2E-30: assertion[5] proofRef is outside the claimed attempt directory: d2/received.bin
+  - E2E-30: assertion[5] proofRef not found on disk: d2/received.bin
+  - E2E-31: assertion[0] proofRef is outside the claimed attempt directory: screens/s31-open-t2s.png
+  - E2E-31: assertion[0] proofRef not found on disk: screens/s31-open-t2s.png
+  - E2E-31: assertion[1] proofRef is outside the claimed attempt directory: screens/s31-open-t5s.png
+  - E2E-31: assertion[1] proofRef not found on disk: screens/s31-open-t5s.png
+  - E2E-31: assertion[2] proofRef is outside the claimed attempt directory: screens/s31-open-t8s.png
+  - E2E-31: assertion[2] proofRef not found on disk: screens/s31-open-t8s.png
+  - E2E-31: assertion[3] proofRef is outside the claimed attempt directory: save/received.bin
+  - E2E-31: assertion[3] proofRef not found on disk: save/received.bin
+  - E2E-32: assertion[0] proofRef is outside the claimed attempt directory: screens/s32-incomplete.png
+  - E2E-32: assertion[0] proofRef not found on disk: screens/s32-incomplete.png
+  - E2E-32: assertion[1] proofRef is outside the claimed attempt directory: screens/s32-incomplete.png
+  - E2E-32: assertion[1] proofRef not found on disk: screens/s32-incomplete.png
+  - E2E-32: assertion[2] proofRef is outside the claimed attempt directory: screens/s32-ready.png
+  - E2E-32: assertion[2] proofRef not found on disk: screens/s32-ready.png
+  - E2E-32: assertion[3] proofRef is outside the claimed attempt directory: save/received.bin
+  - E2E-32: assertion[3] proofRef not found on disk: save/received.bin
+  - E2E-33: assertion[0] proofRef is outside the claimed attempt directory: screens/s33-dialog-open-desktop.png
+  - E2E-33: assertion[0] proofRef not found on disk: screens/s33-dialog-open-desktop.png
+  - E2E-33: assertion[1] proofRef is outside the claimed attempt directory: screens/s33-cancelled.png
+  - E2E-33: assertion[1] proofRef not found on disk: screens/s33-cancelled.png
+  - E2E-33: assertion[2] proofRef is outside the claimed attempt directory: screens/s33-saved.png
+  - E2E-33: assertion[2] proofRef not found on disk: screens/s33-saved.png
+  - E2E-33: assertion[3] proofRef is outside the claimed attempt directory: screens/s33-saved.png
+  - E2E-33: assertion[3] proofRef not found on disk: screens/s33-saved.png
+  - E2E-34: assertion[0] proofRef is outside the claimed attempt directory: screens/s34-blocked.png
+  - E2E-34: assertion[0] proofRef not found on disk: screens/s34-blocked.png
+  - E2E-34: assertion[1] proofRef is outside the claimed attempt directory: screens/s34-saved.png
+  - E2E-34: assertion[1] proofRef not found on disk: screens/s34-saved.png
+  - E2E-34: assertion[2] proofRef is outside the claimed attempt directory: screens/s34-saved.png
+  - E2E-34: assertion[2] proofRef not found on disk: screens/s34-saved.png
+  - E2E-37: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-37: executedBy must be executor per the plan (got None)

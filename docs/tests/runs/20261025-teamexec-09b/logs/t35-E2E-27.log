@@ -1,0 +1,27 @@
+2026-10-25T12:59:48.434Z process guard: reclaimed 0/131 recorded process(es)
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:53] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [25/Oct/2026 20:59:54] "GET /pwa.json HTTP/1.1" 200 -
+2026-10-25T13:00:01.643Z E2E-27-CAL01: animation changed=true digest=1137bbe3f828
+2026-10-25T13:00:01.798Z E2E-27-CAL02: sha256=ad74f522d0307317... file=src01-code-frame.png rect=710x710
+2026-10-25T13:00:01.851Z E2E-27-CAL03: mode=still rect={"left":285,"top":5,"width":710,"height":710}
+2026-10-25T13:00:12.344Z E2E-27-CAL04: heldMs=10493 stable=true hashes=dbe07aa2,dbe07aa2,dbe07aa2
+2026-10-25T13:00:12.346Z E2E-27-CAL05: mode=blank full-viewport
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=84084
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-27\E2E-27-2026-10-25T12-59-48-435Z-89769d\received.bin
+2026-10-25T13:00:48.496Z CASE E2E-27 PASS (attempt E2E-27-2026-10-25T12-59-48-435Z-89769d)

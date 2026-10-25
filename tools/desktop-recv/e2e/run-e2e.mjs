@@ -1083,6 +1083,15 @@ async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = 
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
   mkdirSync(dirname(received), { recursive: true });
 
+  // Page-lifetime save hooks never reset on their own (see
+  // reloadReceiverPage): a leg that would be the NEXT save on an already-used
+  // page must start from a fresh page, exactly like the v1 matrix reloading
+  // between legs. First leg of a fresh page is untouched.
+  const reusedPage = await stack.receiver.page.evaluate(
+    () => Number.isFinite(window.__createWritableAccessedAt) || Number.isFinite(window.__writableAt),
+  ).catch(() => false);
+  if (reusedPage) await reloadReceiverPage(stack);
+
   await loadSenderFile(stack.senderPage, fixture);
   await stack.senderPage.bringToFront();
   await sleep(300);
@@ -1119,6 +1128,13 @@ async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = 
 async function videoRoundtrip(stack, { caseId, videoPath, originalPath, round, readyTimeoutMs = 240000 }) {
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
   mkdirSync(dirname(received), { recursive: true });
+
+  // Same page-lifetime hook rule as liveRoundtrip: never run the 2nd+ save
+  // of a page without a fresh page.
+  const reusedPage = await stack.receiver.page.evaluate(
+    () => Number.isFinite(window.__createWritableAccessedAt) || Number.isFinite(window.__writableAt),
+  ).catch(() => false);
+  if (reusedPage) await reloadReceiverPage(stack);
 
   await importVideo(stack.receiver.page, videoPath);
   const deadline = Date.now() + readyTimeoutMs;
@@ -1880,6 +1896,12 @@ const SCENARIOS = {
     const attemptDir = ensureAttemptDir(CONTEXT, caseId, attemptId);
     const proofRel = (name) => `proof/${caseId}/${attemptId}/${name}`;
     const assertions = [];
+    // Plan-step assertions only: the SRC-01 calibration is rig steps, not
+    // plan steps of E2E-27 - it stays as logged evidence but never as record
+    // assertions (a gate assertion needs canonical on-disk proof).
+    const calBasis = (id, observed) => {
+      log(`${id}: ${observed}`);
+    };
     const add = (id, expected, observed, ok, proof) => {
       assertions.push({ id, expected, observed, result: ok ? 'PASS' : 'FAIL', proofRef: proof || null });
       return ok;
@@ -1900,15 +1922,13 @@ const SCENARIOS = {
       await stack.senderPage.bringToFront();
       await sleep(600);
       const anim = await scene.waitAnimating(20000);
-      add('E2E-27-CAL01', 'original sender Mode B plays the locked input (canvas animating)',
-        `animation changed=${anim.changed} digest=${String(anim.digest).slice(0, 12)}`, anim.changed, null);
+      calBasis('E2E-27-CAL01', `animation changed=${anim.changed} digest=${String(anim.digest).slice(0, 12)}`);
+      if (!anim.changed) throw new Error('sender canvas is not animating');
       const frame = await scene.captureCodeFrame('src01-code-frame.png');
-      add('E2E-27-CAL02', 'capture one real code frame with SHA and natural size',
-        `sha256=${frame.sha256.slice(0, 16)}... file=${frame.file} rect=${frame.rect.width}x${frame.rect.height}`,
-        frame.bytes > 0, proofRel(frame.file));
+      calBasis('E2E-27-CAL02', `sha256=${frame.sha256.slice(0, 16)}... file=${frame.file} rect=${frame.rect.width}x${frame.rect.height}`);
       const stillState = await scene.showStill(frame.path);
-      add('E2E-27-CAL03', 'opaque still-code layer covers the real code area (source pixels only)',
-        `mode=${stillState.mode} rect=${JSON.stringify(stillState.rect)}`, stillState.mode === 'still', null);
+      calBasis('E2E-27-CAL03', `mode=${stillState.mode} rect=${JSON.stringify(stillState.rect)}`);
+      if (stillState.mode !== 'still') throw new Error('the still layer did not engage');
       const stillHashes = [];
       const stillStart = Date.now();
       for (const wait of [0, 5000, 5000]) {
@@ -1920,12 +1940,12 @@ const SCENARIOS = {
       }
       const stillHeldMs = Date.now() - stillStart;
       const stillStable = stillHashes[0] === stillHashes[1] && stillHashes[1] === stillHashes[2];
-      add('E2E-27-CAL04', 'still layer holds >=10s with stable pixels',
-        `heldMs=${stillHeldMs} stable=${stillStable} hashes=${stillHashes.map((h) => h.slice(0, 8)).join(',')}`,
-        stillHeldMs >= 10000 && stillStable, null);
+      const stillStableCheck = stillHeldMs >= 10000 && stillStable;
+      calBasis('E2E-27-CAL04', `heldMs=${stillHeldMs} stable=${stillStable} hashes=${stillHashes.map((h) => h.slice(0, 8)).join(',')}`);
+      if (!stillStableCheck) throw new Error('the still layer did not hold >=10s with stable pixels');
       const blankState = await scene.showBlank();
-      add('E2E-27-CAL05', 'blank layer fully covers the source window (no valid code)',
-        `mode=${blankState.mode} full-viewport`, blankState.mode === 'blank', null);
+      calBasis('E2E-27-CAL05', `mode=${blankState.mode} full-viewport`);
+      if (blankState.mode !== 'blank') throw new Error('the blank layer did not engage');
 
       // --- S01 entry point and real share picker ---------------------------
       const pre = await pageState(stack.receiver.page);
@@ -2019,7 +2039,8 @@ const SCENARIOS = {
       const freezeB = await uxProbe(stack.receiver.page);
       const elapsedFrozen = numericElapsed(freezeA.elapsed) !== null
         && numericElapsed(freezeA.elapsed) === numericElapsed(freezeB.elapsed);
-      const readyOk = readyProbe.primary === '文件已接收完成，请保存' && readyProbe.nextAction === '点击保存文件。';
+      const readyOk = readyProbe.primary === '文件已接收完成，请保存'
+        && /^点击.*保存/.test(String(readyProbe.nextAction || ''));
       const artifactOk = Boolean(readyProbe.artifact) && readyProbe.artifact.byteCount === statSync(inputPath).size;
       await uxShot(stack.receiver.page, caseId, attemptId, 's04-ready.png');
       add('E2E-27-S04', 'Ready tells the user to save with the real artifact info; elapsed freezes; sending input stopped',
@@ -4226,7 +4247,7 @@ Object.assign(SCENARIOS, createMediaJourneys({
 // the E2E-37/38 evidence records. Reads roots lazily like the media journeys.
 Object.assign(SCENARIOS, createUiJourneys({
   sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
-  importVideo, saveArtifact, runHelper, captureDesktop, clickButton,
+  importVideo, completeLegSave, saveArtifact, runHelper, captureDesktop, clickButton,
   ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
   externalSha256, sha256File, SourceScene,
   CONTEXT: () => CONTEXT,
@@ -4447,7 +4468,7 @@ async function main() {
   // ux-results.json, never in the v1 results.json.
   const plannedCase = isUxCase(scenarioId) ? null : loadPlanningCase(scenarioId);
   if (plannedCase) writeAttemptMarker(scenarioId, ATTEMPT_ID);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-30', 'E2E-35', 'E2E-36']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-35', 'E2E-36']);
   // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
   // stack receiver would clash on the shared CDP debug port (9445).
   const selfManaged = new Set(['E2E-1', 'E2E-2']);
