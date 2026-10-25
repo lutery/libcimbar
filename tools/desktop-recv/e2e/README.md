@@ -76,6 +76,50 @@ legacy `verify-evidence.py` gate on `results.json`. `UX-SLICE`, `UX-IAT`,
 `UX-MEDIA-SAVE`, `UX-UI` and `UX-ALL` are registered entry points that
 currently exit 4 (not implemented); they never record a PASS.
 
+## UX overhead A/B observer (T28, dev-only)
+
+`measure-ux.mjs` is the development-acceptance A/B observer for the receiver
+UX overhead. It is not an acceptance entry point by itself and its tests are
+deliberately outside `ALL_SUITES` (run them directly). T31 is the task that
+collects the real measurement; T28 implements and unit-tests the tool.
+
+```
+node tools/desktop-recv/e2e/measure-ux.mjs --context <candidate ctx> \
+     --baseline-context <baseline ctx> --method docs/plans/receiver-ux-v2/performance-method.json
+node tools/desktop-recv/e2e/measure-ux.mjs --context <ctx> --baseline-context <ctx> \
+     --method <method.json> --validate-only
+node --test tools/desktop-recv/tests/measure-ux.test.mjs
+```
+
+- The method file is the frozen authority (recipe F). The tool embeds the
+  same order (`AB/BA/AB/BA/AB`), one warmup per build, `minSettledFrames=30`
+  and the three threshold formulas, and REFUSES a method whose `frozen` flag,
+  order or thresholds were edited; the method SHA-256 is recorded in every
+  output.
+- Both builds run the identical in-page observer, which wraps
+  `DecoderClient.prototype.submitFrame`, records start/end on the same
+  `performance.now` domain and returns the ORIGINAL promise unchanged. This
+  is frame RTT, not a claim about pure WASM decode CPU time. `readyMs` is
+  `journey.readyAt - receivingAt` from the page's own Date clock.
+- Each round uses a fresh browser, a fresh page and a new Worker; builds run
+  serially. The DOM counter watches only the `ux-metric` numeric spans, so
+  immediate control/terminal-state changes are never counted as 4Hz
+  violations.
+- Output goes to `<candidate runRoot>/measurements/ux-overhead/<attemptId>/`:
+  one file per raw round (every frame kept, warmups included),
+  `environment.json`, `input.json`, `manifest.json`, `invalid-rounds.json`
+  (reasons point at the raw files, nothing is deleted), `summary.json` and
+  `comparison.json` (per-metric medians, formulas, limits, signed margins,
+  pair table and verdict reasons, not just a boolean). An existing attempt
+  directory is never overwritten; the whole-pair replacement policy (at most
+  two pairs) is executed by T31, which reruns the affected pairs.
+- `--validate-only` performs every validation (method, both contexts and
+  their distinct roots, re-hashed product manifests, input/media binding and
+  the output-directory guard) and prints the plan without starting a browser
+  or writing a file.
+- Exit: `0` validation ok (validate-only) or measurement PASS; `1`
+  measurement FAIL/NOT_RUN; `2` bad arguments; `3` validation failure.
+
 ## Historical diagnostics (do not run)
 
 The files `smoke-live.mjs` and `probe-*.mjs` predate receiver-ux-v2. They are
