@@ -180,3 +180,12 @@
 - 回归：run-unit --all 12 套、ux-evidence-selftest 55、verify-evidence-selftest 14、prefix-check 3/3；产品/worker 0 行改动；旧 run/staging/product/planning 零写入；零残留进程/端口。
 - 工具变更（全部 harness）：ui-journeys（+E2E-28/29 旅程、37/38 独立化、finish 由断言推导、NOT_RUN null 语义）、run-e2e（E2E-27 CAL fold、S04 语义正则、页级保存钩子检测重载、needsSender、live/video roundtrip）、source-scene（静止层活性点）、media-journeys（assertion proofRef 规范化前缀）、process-guard（CIM 单批化 + 120s 超时 + 原因点名）。
 - 报告修正（lead 验收时发现 5 处传输损坏，已由 dev-v2-tools 依 ground truth 精准改写；一次性 splice 备份 .pre-t35-media-splice 已删除、未入库）。
+
+## B10-T36 — 阶段 5 收口六项交付与回填（dev-v2-tools → lead 提交）
+
+- 起止：2026-10-25 21:00 ～ 21:50 (+08:00)；报告：b10-t36-report.md
+- 交付（六项中的四项 + 两项回填）：v2 stage5-dev-summary.md（批次表 / 6 轮审查 0 Blocking 残留 / 测试总账 / 双门禁原文 / 现场 7 项声明）；09b/reproduction.md（环境、stage/run-e2e/measure-ux/live-legs 命令、期望 exit、常见坑 8 条）；09b/release-candidate-manifest.json（27 产品文件逐文件重哈希与 product-manifest 一致后才写入；双 results 索引 / measurements / IAT / 门禁状态）；根 stage5-dev-summary.md 索引；planning-cases.json 32 本地行状态回填（lead 语义校验：剥离可变字段后 39 场景定义与 HEAD 逐场景一致、顶层零变化；NOT_RUN=E2E-21..26/37/39，31 PASS）；runtime-case-map.json 最终绑定（R-01..12 全 VERIFIED、binding 指向 09b 最终 attempt、R-05 无 e2e 如实为空）。
+- lead 复核：双门禁复跑 legacy `GATE local: PASS (20 required cases)` / UX `FAIL (2)` 仅 E2E-37×2 / field exit 1（现场项，设计内保留非零）；release-candidate-manifest JSON 校验（runId/attempt/manifest 9e2595e6/productFiles=27）；planning-cases 语义 diff 脚本 PASS。
+- 处置记录：agent 曾以 578B 索引覆盖根 stage5-dev-summary.md（违反 lead 21:21 防覆盖指令，v1 38KB 正文被移出文件）；lead 从 git HEAD 取回 v1 原文（162 行逐字节、尾部比对一致），v2 索引置顶、v1 原文完整保留于下方（38874B）。遗留一次性脚本 t36-prepend-index.mjs 已删除。
+- TDD 台账合并（lead 独占）：tdd-ledger-b2.json 并入 tdd-ledger.json（10 条，T1-T7 红绿成对，去重键 taskId+phase+command+date）；coverageNote 如实声明 T8-T35 的 RED/GREEN 证据在各批报告与 red-logs，不事后伪造补录。
+- 提交：T35=`77a16b4`（工具 5 文件 + 09b 证据 566 文件）；T36=本提交（交付 + 回填 + 台账 + round-12 模板）。下一动作：round-12 送审包构建与 pipeline-state 收口后向用户请求阶段 5 出口确认。

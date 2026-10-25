@@ -3463,8 +3463,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3473,7 +3473,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-1-S01",
@@ -3550,7 +3550,8 @@
             ]
           }
         ]
-      }
+      },
+      "attemptId": "E2E-1-2026-10-25T09-05-44-598Z-d09fc6"
     },
     {
       "id": "E2E-2",
@@ -3576,8 +3577,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3586,7 +3587,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-2-S01",
@@ -3646,7 +3647,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "工具无法制造缺依赖条件时该分支 NOT_RUN/不适用带依据；IAT 只补技术分支，不冒充真实环境。"
-      ]
+      ],
+      "attemptId": "E2E-2-2026-10-25T09-07-37-596Z-572d96"
     },
     {
       "id": "E2E-3",
@@ -3677,8 +3679,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3687,7 +3689,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-3-S01",
@@ -3759,7 +3761,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只有 Ready/Blob/下载按钮没有磁盘输出或外部哈希时 FAIL；保存四时点缺失也不得当量测完整。"
-      ]
+      ],
+      "attemptId": "E2E-3-2026-10-25T09-19-03-799Z-9a94db"
     },
     {
       "id": "E2E-4",
@@ -3785,8 +3788,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3795,7 +3798,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-4-S01",
@@ -3853,7 +3856,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "若环境提供独立“拒绝授权”入口须另执行、单独记录；仅取消不能代表全部拒绝路径已测。"
-      ]
+      ],
+      "attemptId": "E2E-4-2026-10-25T09-10-48-618Z-628039"
     },
     {
       "id": "E2E-5",
@@ -3878,8 +3882,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3888,7 +3892,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-5-S01",
@@ -3948,7 +3952,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只扫描累计日志找到旧 no-data 行不能证明本轮；每轮取分发前基线和本轮增量。"
-      ]
+      ],
+      "attemptId": "E2E-5-2026-10-25T09-12-14-538Z-444a3d"
     },
     {
       "id": "E2E-6",
@@ -3975,8 +3980,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -3985,7 +3990,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-6-S01",
@@ -4043,7 +4048,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "旧 run-03 的共享指示条 UIA 不可达只证明外部关闭路径；本轮不可达时补人工，仍不可执行须单列 NOT_RUN/偏差，不将关闭源写成系统停止共享已测。"
-      ]
+      ],
+      "attemptId": "E2E-6-2026-10-25T09-22-51-242Z-2063ba"
     },
     {
       "id": "E2E-7",
@@ -4068,8 +4074,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4078,7 +4084,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-7-S01",
@@ -4138,7 +4144,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "仅脚本调用内部 stop/start 的压力测试归 IAT；不能替代实际用户按钮操作。"
-      ]
+      ],
+      "attemptId": "E2E-7-2026-10-25T09-25-46-916Z-ee5cc8"
     },
     {
       "id": "E2E-8",
@@ -4163,8 +4170,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4173,7 +4180,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-8-S01",
@@ -4232,7 +4239,8 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "非 B 候选模式实际不可用时说明条件并由 IAT 补分支；不得虚构模式已实测。",
         "发送端翻回 B 后饥饿与接收器缺陷分别归因，保留首次失败。"
-      ]
+      ],
+      "attemptId": "E2E-8-2026-10-25T09-27-50-697Z-c46a38"
     },
     {
       "id": "E2E-9",
@@ -4261,8 +4269,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4271,7 +4279,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-9-S01",
@@ -4329,7 +4337,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "不能将 CSS 缩放测试写成操作系统 DPI 已测；未测组合不得发布支持。"
-      ]
+      ],
+      "attemptId": "E2E-9-2026-10-25T09-30-05-458Z-6dfcea"
     },
     {
       "id": "E2E-10",
@@ -4356,8 +4365,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4366,7 +4375,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-10-S01",
@@ -4425,7 +4434,8 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "遮挡与最小化分开列；某分支未执行不能用另一分支成功冒充。",
         "不承诺平台未提供的后台持续捕获能力。"
-      ]
+      ],
+      "attemptId": "E2E-10-2026-10-25T09-32-40-709Z-80f2a0"
     },
     {
       "id": "E2E-11",
@@ -4451,8 +4461,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4461,7 +4471,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-11-S01",
@@ -4521,7 +4531,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "误点接收端停止/重置造成产物释放属于不同操作，不能据此声称本例不支持重试或偷偷重新发送后记通过。"
-      ]
+      ],
+      "attemptId": "E2E-11-2026-10-25T09-39-54-867Z-4c1545"
     },
     {
       "id": "E2E-12",
@@ -4549,8 +4560,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4559,7 +4570,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-12-S01",
@@ -4615,7 +4626,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "不得用用户现有重要文件做重名试验；危险路径/缺名的纯输入边界由 IAT 补并标层级。"
-      ]
+      ],
+      "attemptId": "E2E-12-2026-10-25T09-41-36-989Z-a96d6e"
     },
     {
       "id": "E2E-13",
@@ -4643,8 +4655,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4653,7 +4665,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-13-S01",
@@ -4709,7 +4721,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "选择器未返回时内部 stop、延迟 write/close 等技术竞态归 IAT，不把脚本调用冒充用户可操作路径。"
-      ]
+      ],
+      "attemptId": "E2E-13-2026-10-25T09-43-26-730Z-050e91"
     },
     {
       "id": "E2E-14",
@@ -4739,8 +4752,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4749,7 +4762,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-14-S01",
@@ -4809,7 +4822,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只有加载/播放成功不是文件接收成功；新录像应有新实测哈希，不粘贴历史媒体哈希。"
-      ]
+      ],
+      "attemptId": "E2E-14-2026-10-25T09-50-33-612Z-f4a38b"
     },
     {
       "id": "E2E-15",
@@ -4836,8 +4850,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4846,7 +4860,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-15-S01",
@@ -4919,7 +4933,8 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "现有 runner 的 empty/text/corrupt 使用 DataTransfer，仅为 IMPORT-PATH-ONLY，不证明真实打开入口；本轮 UAT 必须补真实系统选择，或如实留缺口。",
         "坏输入后 Preparing/超时/旧错误码均不能 PASS；恢复对话框自动化不可达时补人工，不补则 NOT_RUN。"
-      ]
+      ],
+      "attemptId": "E2E-15-2026-10-25T10-01-09-729Z-f0382b"
     },
     {
       "id": "E2E-16",
@@ -4945,8 +4960,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -4955,7 +4970,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-16-S01",
@@ -5033,7 +5048,8 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "缺共享前缀/尾帧、without 未真正 EOF、with 提前远离末段、frameId 当秒数、保存前快照量测均拒绝。",
         "精确 ended/Worker 回复竞态仍由 IAT 补；不能只控回调就声称真录像本例 PASS。"
-      ]
+      ],
+      "attemptId": "E2E-16-2026-10-25T10-51-32-547Z-59e6c9"
     },
     {
       "id": "E2E-17",
@@ -5059,8 +5075,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -5069,7 +5085,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-17-S01",
@@ -5127,7 +5143,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "切换前未完成清理、预览隐藏致 rVFC 停滞或旧流留在 srcObject 均失败；不得刷新掩盖。"
-      ]
+      ],
+      "attemptId": "E2E-17-2026-10-25T10-52-47-753Z-7165af"
     },
     {
       "id": "E2E-18",
@@ -5153,8 +5170,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -5163,7 +5180,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-18-S01",
@@ -5241,7 +5258,8 @@
         "装置录制失败/缺媒体时诚实 NOT_RUN，但除唯一授权腿外不得因此把总矩阵置 PASS。",
         "录像导入已呈现足够内容仍未重建或中途停滞应调查接收端 FAIL，不预先归为平台/容量限制。",
         "重跑合并须 fresh-only 打章；失败attempt不能冒领历史腿，旧run03 PASS不能带入本轮候选。"
-      ]
+      ],
+      "attemptId": "E2E-18-2026-10-25T11-00-04-729Z-b94f81"
     },
     {
       "id": "E2E-19",
@@ -5268,8 +5286,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -5278,7 +5296,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-19-S01",
@@ -5338,7 +5356,8 @@
         "必需动作或证据缺失则保持 NOT_RUN/BLOCKED；已执行但违反预期为 FAIL，不能以旧结果、mock或总通过率覆盖。",
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "原生保存未决时强制离页的技术竞态另归 IAT；不承诺浏览器退出事务回滚。"
-      ]
+      ],
+      "attemptId": "E2E-19-2026-10-25T10-46-14-176Z-9c81a2"
     },
     {
       "id": "E2E-20",
@@ -5368,8 +5387,8 @@
       "executorRole": "executor",
       "caseType": "file_roundtrip",
       "execution": "手工/有界面浏览器自动化结合真实系统操作",
-      "result": "NOT_RUN",
-      "executedBy": null,
+      "result": "PASS",
+      "executedBy": "executor",
       "gate": "local",
       "required": true,
       "executionStage": "5",
@@ -5378,7 +5397,7 @@
         "T35",
         "T36"
       ],
-      "status": "NOT_RUN",
+      "status": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-20-S01",
@@ -5453,7 +5472,8 @@
             ]
           }
         ]
-      }
+      },
+      "attemptId": "E2E-20-2026-10-25T10-54-19-096Z-ec557e"
     },
     {
       "id": "E2E-21",
@@ -6139,8 +6159,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6158,7 +6178,7 @@
         "T35",
         "T36"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-27-S01",
@@ -6221,7 +6241,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-27/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "E2E-27-2026-10-25T12-59-48-435Z-89769d"
     },
     {
       "id": "E2E-28",
@@ -6323,8 +6344,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6341,7 +6362,7 @@
         "T19",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-28-S01",
@@ -6394,7 +6415,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-28/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-ALL-2026-10-25T11-46-31-785Z-0db9b3"
     },
     {
       "id": "E2E-29",
@@ -6493,8 +6515,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6511,7 +6533,7 @@
         "T31",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-29-S01",
@@ -6563,7 +6585,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-29/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "E2E-29-2026-10-25T12-37-47-909Z-fa39af"
     },
     {
       "id": "E2E-30",
@@ -6649,8 +6672,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6667,7 +6690,7 @@
         "T25",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-30-S01",
@@ -6707,7 +6730,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-30/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
     },
     {
       "id": "E2E-31",
@@ -6793,8 +6817,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6811,7 +6835,7 @@
         "T25",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-31-S01",
@@ -6851,7 +6875,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-31/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
     },
     {
       "id": "E2E-32",
@@ -6938,8 +6963,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -6956,7 +6981,7 @@
         "T25",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-32-S01",
@@ -6997,7 +7022,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-32/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
     },
     {
       "id": "E2E-33",
@@ -7084,8 +7110,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -7103,7 +7129,7 @@
         "T31",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-33-S01",
@@ -7144,7 +7170,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-33/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
     },
     {
       "id": "E2E-34",
@@ -7231,8 +7258,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -7249,7 +7276,7 @@
         "T25",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-34-S01",
@@ -7292,7 +7319,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-34/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
     },
     {
       "id": "E2E-35",
@@ -7385,8 +7413,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -7404,7 +7432,7 @@
         "T31",
         "T35"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-35-S01",
@@ -7446,7 +7474,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-35/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
     },
     {
       "id": "E2E-36",
@@ -7565,8 +7594,8 @@
       "caseType": "negative_or_lifecycle",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工/可辅助真实UI操作；真实键盘与系统窗口，实际浏览器像素核对，DOM测量只作补充",
       "sources": [
@@ -7587,7 +7616,7 @@
         "T35",
         "T36"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-36-S01",
@@ -7640,7 +7669,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-36/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
     },
     {
       "id": "E2E-37",
@@ -7824,7 +7854,9 @@
           ],
           "proofDirectoryPattern": "proof/E2E-37/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44",
+      "notRunReason": "no verifiable screen-reader speech in this agent/host environment; Narrator start attempted (binary present, process survived 5s) and the attempt details are in the E2E-37 record notes (ux-results.json); DOM/aria checks are not a substitute per the plan. Real speech verification belongs to the field batch."
     },
     {
       "id": "E2E-38",
@@ -7956,8 +7988,8 @@
       "caseType": "measurement",
       "gate": "local",
       "required": true,
-      "status": "NOT_RUN",
-      "executedBy": null,
+      "status": "PASS",
+      "executedBy": "executor",
       "executionStage": "5",
       "executionMethod": "手工/可辅助真实UI和预注册开发测量器；正常浏览器、原发送端、真实录像/抓屏和系统保存，录像主数值与实时行为分别裁决",
       "sources": [
@@ -7979,7 +8011,7 @@
         "T35",
         "T36"
       ],
-      "result": "NOT_RUN",
+      "result": "PASS",
       "stepSpecifications": [
         {
           "id": "E2E-38-S01",
@@ -8043,7 +8075,8 @@
           ],
           "proofDirectoryPattern": "proof/E2E-38/<attemptId>/"
         }
-      ]
+      ],
+      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
     },
     {
       "id": "E2E-39",

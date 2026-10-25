@@ -1,3 +1,14 @@
+# receiver-ux-v2 迭代索引（2026-10-25，前置；下方为 v1 历史原文，一字未改）
+
+- 本迭代阶段 5 总结：docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md（实施范围 / 6 次审查与整改轮 / 测试总账 / 双门禁实跑输出 / 现场 7 项 NOT_RUN 声明）
+- 候选证据根：docs/tests/runs/20261025-teamexec-09b（含 reproduction.md、release-candidate-manifest.json、results.json、ux-results.json）
+- 双门禁状态：legacy `GATE local: PASS (20 required cases)`；UX `UX GATE local: FAIL (2)`，仅 E2E-37 两条环境缺口（语音核验属现场批次）
+- v1 历史入口：docs/dev-pipeline/history/desktop-receiver-v1/README.md
+
+---
+
+> 以下为 v1 迭代（screen-capture-recv）阶段 5 总结原文，完整保留不动。
+
 # 阶段5（team-exec）开发总结 — 桌面接收端
 
 记录日期：2026-10-21；round-3 整改刷新：2026-10-22；round-5 整改刷新：2026-10-22。基线：分支 `screen-capture-recv`，round-5 车道 HEAD `9a08f9aae4f69c50d6f2aace356d3d889704964d`（`9a08f9a`，2026-10-22）——本文的 round-5 完成主张钉死到该提交（run-03 证据基线随车道刷新）；round-3 基线 `cb43f85` 的主张保留为历史并逐处标注 attempt；历史文档提交 `75d5004` 保留。
