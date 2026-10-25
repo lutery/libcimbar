@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 接收器体验迭代 v2",
   "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
-  "current_phase": "team-exec",
+  "current_phase": "external-review",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-24T17:00:00+08:00",
+  "updated_at": "2026-10-25T22:20:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -233,7 +233,7 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "in_progress",
+      "status": "completed",
       "output_dir": "docs/dev-pipeline/receiver-ux-v2/",
       "output_files": [],
       "team_mode": "native",
@@ -241,10 +241,10 @@
       "contract_files": [],
       "review_rounds": 6,
       "max_rounds": 10,
-      "test_status": "pending",
+      "test_status": "passed",
       "started_at": "2026-10-24T14:37:17+08:00",
-      "completed_at": null,
-      "notes": "通道A标准续接：用户已确认不生成通道B(.omc)契约，OMC 5.2.0虽已安装但本迭代按native组队执行（lead=本会话，开发/审查代理经Agent tool派发）。执行蓝本=docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md（36任务/35 Waves，B1-B10批次）。新证据根 docs/tests/runs/<YYYYMMDD>-teamexec-NN（自04起，旧01/02/03只读）；TDD台账 docs/dev-pipeline/receiver-ux-v2/tdd-ledger.json；分支 receiver-ux-v2。",
+      "completed_at": "2026-10-25T22:20:00+08:00",
+      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
@@ -256,15 +256,23 @@
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "pending",
+      "status": "waiting_external",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [],
       "ext_rounds": 11,
       "verdict_files": [],
-      "materials": [],
-      "started_at": null,
+      "materials": [
+        "docs/dev-pipeline/ext-review/round-12-package.md",
+        "docs/dev-pipeline/ext-review/round-12-template.md",
+        "docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md",
+        "docs/dev-pipeline/receiver-ux-v2/exec-log.md",
+        "docs/dev-pipeline/receiver-ux-v2/tdd-ledger.json",
+        "docs/tests/runs/20261025-teamexec-09b/reproduction.md",
+        "docs/tests/runs/20261025-teamexec-09b/release-candidate-manifest.json"
+      ],
+      "started_at": "2026-10-25T22:20:00+08:00",
       "completed_at": null,
-      "notes": "新迭代尚未开始外审；ext_rounds保留全局轮次，避免覆盖旧round-N工件。历史状态见previous_pipeline_state。",
+      "notes": "round-12 送审包与结论模板已就绪（ext_rounds=11 保留全局轮次，下一 verdict=round-12-verdict.md）。等待外部独立审查结论；结论文件放入 docs/dev-pipeline/ext-review/ 或直接告知。通过→阶段7；不通过→回 team-exec 整改（外审问题优先），外层无轮次上限。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
