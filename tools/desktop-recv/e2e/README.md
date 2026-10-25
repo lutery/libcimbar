@@ -102,9 +102,26 @@ node --test tools/desktop-recv/tests/measure-ux.test.mjs
   is frame RTT, not a claim about pure WASM decode CPU time. `readyMs` is
   `journey.readyAt - receivingAt` from the page's own Date clock.
 - Each round uses a fresh browser, a fresh page and a new Worker; builds run
-  serially. The DOM counter watches only the `ux-metric` numeric spans, so
-  immediate control/terminal-state changes are never counted as 4Hz
-  violations.
+  serially. The DOM counter watches only the four numeric telemetry spans by
+  their frozen ids (`#ux-elapsed`, `#ux-rate`, `#ux-progress`, `#ux-media`),
+  so immediate control/terminal-state changes are never counted as 4Hz
+  violations. Arming is event-driven (one check at document start, one at
+  `DOMContentLoaded`, one bounded `documentElement` observer disarmed at
+  `load`) with **no polling timer**, so a page without a numeric area (the
+  legacy baseline UI) carries no recurring observer cost the other side
+  would not also carry. Each round records `telemetryArmed`; a candidate
+  round that never armed is an invariant failure (FAIL), while the baseline
+  records the 4Hz invariant as not applicable by design instead of silently
+  passing.
+- A round never aborts the collection. A failed collection becomes a round
+  record with a `collectionError` (`kind: business` when the journey never
+  reached the artifact, `environment` for tool/browser faults) together
+  with whatever raw frames/telemetry the page observer already recorded;
+  all raw rounds, `invalid-rounds.json`, `summary.json` and
+  `comparison.json` are still written and the process exits 1. A candidate
+  business failure is a FAIL per the frozen failurePolicy; a tool or
+  environment failure is NOT_RUN (and its pair is a replacement candidate
+  for T31). Exit 3 is reserved for pre-run validation.
 - Output goes to `<candidate runRoot>/measurements/ux-overhead/<attemptId>/`:
   one file per raw round (every frame kept, warmups included),
   `environment.json`, `input.json`, `manifest.json`, `invalid-rounds.json`
@@ -112,13 +129,20 @@ node --test tools/desktop-recv/tests/measure-ux.test.mjs
   `comparison.json` (per-metric medians, formulas, limits, signed margins,
   pair table and verdict reasons, not just a boolean). An existing attempt
   directory is never overwritten; the whole-pair replacement policy (at most
-  two pairs) is executed by T31, which reruns the affected pairs.
+  two pairs) is executed by T31, which reruns the affected pairs. Two
+  counting notes are written into the outputs: the frozen input/media SHA
+  anchor is the T6 input manifest bound by each run context (the frozen
+  method keeps `primaryInput.sha256` null), and the 30-frame gate counts
+  resolved (`okFrameCount`) frames, which is stricter than the method's
+  settled-frame wording (`settledFrameCount` also counts rejected
+  settlements and never gates anything).
 - `--validate-only` performs every validation (method, both contexts and
   their distinct roots, re-hashed product manifests, input/media binding and
   the output-directory guard) and prints the plan without starting a browser
   or writing a file.
 - Exit: `0` validation ok (validate-only) or measurement PASS; `1`
-  measurement FAIL/NOT_RUN; `2` bad arguments; `3` validation failure.
+  measurement FAIL/NOT_RUN or an aborted collection (raw rounds already
+  written); `2` bad arguments; `3` pre-run validation failure only.
 
 ## Historical diagnostics (do not run)
 

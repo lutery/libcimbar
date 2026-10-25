@@ -81,7 +81,9 @@ const THRESHOLD_DEFAULTS = {
 const METRIC_NAMES = ['readyMs', 'frameRttP50Ms', 'frameRttP95Ms'];
 // Invariant classes name a product fault on the CANDIDATE (FAIL), never
 // environment noise that may be replaced.
-const INVARIANT_CODES = new Set(['E_SINGLE_FLIGHT', 'E_TELEMETRY_INTERVAL']);
+const INVARIANT_CODES = new Set([
+  'E_SINGLE_FLIGHT', 'E_TELEMETRY_INTERVAL', 'E_TELEMETRY_NOT_ARMED',
+]);
 
 export class UxMeasureError extends Error {
   constructor(code, message, detail = null) {
@@ -259,6 +261,12 @@ export function judgeRound(record, rules) {
   const push = (code, detail) => violations.push({ code, detail });
   const frames = Array.isArray(record.frames) ? record.frames : [];
 
+  // A collection failure is the primary reason and is always first: the
+  // round is undecidable, but its salvaged raw samples stay in the record.
+  if (record.collectionError) {
+    push('E_COLLECTION_ERROR', String(record.collectionError.message || 'collection failed'));
+  }
+
   let readyMs = null;
   try {
     readyMs = computeReadyMs(record);
@@ -316,6 +324,19 @@ export function judgeRound(record, rules) {
       `telemetry numeric area was written every ${minTelemetryGapMs}ms (< ${rules.telemetryMinWriteIntervalMs}ms)`);
   }
 
+  // B2: arming is a judged fact, not a silent default. The candidate build
+  // must expose the numeric area (a missing one is a product fault, FAIL);
+  // the legacy baseline has no numeric area by design, which is recorded as
+  // not applicable instead of passing or failing the 4Hz invariant.
+  const telemetryApplicable = record.telemetryArmed === true;
+  const telemetryNote = (!record.warmup && record.side === 'A' && !telemetryApplicable)
+    ? 'baseline UI has no numeric telemetry area by design; the 4Hz invariant is not applicable'
+    : null;
+  if (!record.warmup && !record.collectionError && record.side === 'B' && !telemetryApplicable) {
+    push('E_TELEMETRY_NOT_ARMED',
+      'the candidate numeric telemetry area was never observed (telemetryArmed !== true)');
+  }
+
   if (typeof record.inputSha256 !== 'string' || record.inputSha256 !== rules.inputSha256) {
     push('E_INPUT_SHA', 'the round input SHA-256 does not match the frozen input');
   }
@@ -336,6 +357,8 @@ export function judgeRound(record, rules) {
     telemetryGapMs,
     minTelemetryGapMs,
     telemetryJudged,
+    telemetryApplicable,
+    telemetryNote,
     violations,
     invariantViolations: violations.filter((v) => INVARIANT_CODES.has(v.code)),
     exclusionReason: violations.length > 0 ? violations[0].code : null,
@@ -415,18 +438,20 @@ export function pairRounds(rounds, rules) {
       continue;
     }
     const env = matchEnvironment(pair.a.env, pair.b.env, rules.matchedEnvironment);
-    if (!env.matched) {
-      pair.reason = 'E_ENV_MISMATCH';
-      pair.detail = { mismatches: env.mismatches };
+    const failed = [pair.a, pair.b].find((round) => round.exclusionReason !== null);
+    if (failed) {
+      // The round's own failure is the reason; environment comparison is
+      // meaningless for a round that collected nothing.
+      pair.reason = failed.exclusionReason;
+      pair.detail = `pair ${pairIndex} side ${failed.side} was excluded: ${failed.exclusionReason}`;
       invalid(pair.a, pair.reason, pair.detail);
       invalid(pair.b, pair.reason, pair.detail);
       pairs.push(pair);
       continue;
     }
-    const failed = [pair.a, pair.b].find((round) => round.exclusionReason !== null);
-    if (failed) {
-      pair.reason = failed.exclusionReason;
-      pair.detail = `pair ${pairIndex} side ${failed.side} was excluded: ${failed.exclusionReason}`;
+    if (!env.matched) {
+      pair.reason = 'E_ENV_MISMATCH';
+      pair.detail = { mismatches: env.mismatches };
       invalid(pair.a, pair.reason, pair.detail);
       invalid(pair.b, pair.reason, pair.detail);
       pairs.push(pair);
@@ -511,11 +536,28 @@ export function evaluateThresholds(summary) {
 // is NOT_RUN (not decidable), never PASS.
 export function decideVerdict({ pairs, validPairs, metrics }) {
   const reasons = [];
+  let businessFailure = false;
+  for (const pair of pairs) {
+    for (const [side, round] of [['A', pair.a], ['B', pair.b]]) {
+      if (!round || !round.collectionError) continue;
+      const kind = round.collectionError.kind || 'environment';
+      reasons.push({
+        code: 'E_COLLECTION_ERROR',
+        side,
+        pairIndex: pair.pair,
+        kind,
+        detail: round.collectionError.message,
+      });
+      // failurePolicy: a CANDIDATE business failure is FAIL, never noise.
+      if (side === 'B' && kind === 'business') businessFailure = true;
+    }
+  }
+  const invariantReasons = [];
   for (const pair of pairs) {
     const candidateRound = pair.b;
     if (!candidateRound) continue;
     for (const violation of candidateRound.invariantViolations || []) {
-      reasons.push({
+      invariantReasons.push({
         code: violation.code,
         side: 'B',
         pairIndex: pair.pair,
@@ -523,7 +565,9 @@ export function decideVerdict({ pairs, validPairs, metrics }) {
       });
     }
   }
-  if (reasons.length > 0) return { verdict: 'FAIL', reasons };
+  if (businessFailure || invariantReasons.length > 0) {
+    return { verdict: 'FAIL', reasons: [...reasons, ...invariantReasons] };
+  }
   if (validPairs < FROZEN_PAIRS) {
     reasons.push({
       code: 'E_PAIRS',
@@ -553,10 +597,14 @@ export function decideVerdict({ pairs, validPairs, metrics }) {
 // page's performance.now domain, and RETURNS THE ORIGINAL PROMISE: the
 // measurement's own then() never throws and never changes settlement.
 //
-// The DOM counter watches only the four ux-metric numeric spans, so the
-// original immediate control/status changes never count against the 4Hz
-// telemetry budget. One MutationObserver instance observes all four nodes,
-// so one paint tick is one write event, not four.
+// The DOM counter watches only the four numeric telemetry spans by their
+// frozen ids (#ux-elapsed/#ux-rate/#ux-progress/#ux-media), so the original
+// immediate control/status changes never count against the 4Hz telemetry
+// budget. One MutationObserver instance observes all four nodes, so one
+// paint tick is one write event, not four. Arming is event-driven only:
+// there is no polling timer, so a page without a numeric area (the legacy
+// baseline UI) carries no recurring observer cost that the other side
+// would not also carry.
 export const OBSERVER_SCRIPT = `(() => {
   if (window.__uxObserver) return;
   const state = window.__uxObserver = {
@@ -567,6 +615,7 @@ export const OBSERVER_SCRIPT = `(() => {
     frames: [],
     telemetryWrites: [],
     telemetryArmed: false,
+    telemetryUnavailable: false,
   };
   let seqCounter = 0;
   const pushFrame = (frame) => {
@@ -574,10 +623,17 @@ export const OBSERVER_SCRIPT = `(() => {
     state.frames.push(Object.assign({ seq: seqCounter }, frame));
   };
   let attempts = 0;
+  // Same-origin module load. A page never defines __uxModuleLoader; the
+  // deterministic tests inject one so the REAL wrapper can be executed
+  // outside a browser without the vm dynamic-import flag. The injected
+  // observer on real pages always takes the native import() branch.
+  const loadModule = typeof window.__uxModuleLoader === 'function'
+    ? window.__uxModuleLoader
+    : (url) => import(url);
   const wrap = async () => {
     attempts += 1;
     try {
-      const mod = await import('/src/decoder-client.js');
+      const mod = await loadModule('/src/decoder-client.js');
       const proto = mod.DecoderClient.prototype;
       if (proto.submitFrame && proto.submitFrame.__uxWrapped) return;
       if (typeof proto.submitFrame !== 'function') {
@@ -620,7 +676,7 @@ export const OBSERVER_SCRIPT = `(() => {
   wrap();
   const armTelemetry = () => {
     if (state.telemetryArmed) return true;
-    const nodes = document.querySelectorAll('span.ux-metric');
+    const nodes = document.querySelectorAll('#ux-elapsed, #ux-rate, #ux-progress, #ux-media');
     if (!nodes.length) return false;
     const observer = new MutationObserver(() => {
       state.telemetryWrites.push(performance.now());
@@ -631,11 +687,25 @@ export const OBSERVER_SCRIPT = `(() => {
     state.telemetryArmed = true;
     return true;
   };
-  if (!armTelemetry()) {
-    const timer = setInterval(() => {
-      if (armTelemetry()) clearInterval(timer);
-    }, 25);
-    setTimeout(() => clearInterval(timer), 30000);
+  if (armTelemetry()) {
+    // The numeric area is already present (injected after the DOM parsed).
+  } else if (document.readyState === 'loading') {
+    // The static spans arrive with the parsed document: arm once on
+    // DOMContentLoaded, keep a bounded root observer for late-inserted
+    // spans, and stop observing at load. No timers are involved.
+    const rootObserver = new MutationObserver(() => {
+      if (armTelemetry()) rootObserver.disconnect();
+    });
+    rootObserver.observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', () => { armTelemetry(); }, { once: true });
+    window.addEventListener('load', () => {
+      rootObserver.disconnect();
+      if (!state.telemetryArmed) state.telemetryUnavailable = true;
+    }, { once: true });
+  } else {
+    // Injected after the document was parsed: a missing numeric area is
+    // recorded as unavailable instead of being polled for.
+    state.telemetryUnavailable = true;
   }
 })();`;
 
@@ -658,14 +728,16 @@ function roundFileRef(round) {
 function roundCell(round) {
   if (!round) return null;
   return {
-    readyMs: round.readyMs,
-    p50Ms: round.p50Ms,
-    p95Ms: round.p95Ms,
-    okFrameCount: round.okFrameCount,
-    rejectedFrameCount: round.rejectedFrameCount,
-    maxInFlight: round.maxInFlight,
-    minTelemetryGapMs: round.minTelemetryGapMs,
-    exclusionReason: round.exclusionReason,
+    readyMs: round.readyMs === undefined ? null : round.readyMs,
+    p50Ms: round.p50Ms === undefined ? null : round.p50Ms,
+    p95Ms: round.p95Ms === undefined ? null : round.p95Ms,
+    okFrameCount: round.okFrameCount === undefined ? null : round.okFrameCount,
+    rejectedFrameCount: round.rejectedFrameCount === undefined ? null : round.rejectedFrameCount,
+    maxInFlight: round.maxInFlight === undefined ? null : round.maxInFlight,
+    minTelemetryGapMs: round.minTelemetryGapMs === undefined ? null : round.minTelemetryGapMs,
+    telemetryArmed: round.telemetryArmed === undefined ? null : round.telemetryArmed,
+    collectionError: round.collectionError || null,
+    exclusionReason: round.exclusionReason === undefined ? null : round.exclusionReason,
   };
 }
 
@@ -708,7 +780,14 @@ export function buildOutputFiles(input) {
       B: firstMeasured(rounds, 'B') ? firstMeasured(rounds, 'B').env : null,
     },
   };
-  files['input.json'] = binding;
+  // S9: the frozen input SHA anchor lives in the T6 input manifest of each
+  // run context; the method file itself keeps primaryInput.sha256 null until
+  // a new frozen method version is published.
+  files['input.json'] = Object.assign({}, binding, {
+    frozenAnchor: 'the frozen input/media SHA anchor is the T6 input manifest bound by each'
+      + ' run context (docs/tests/runs/20261024-teamexec-04/input-manifest.json); the frozen'
+      + ' method keeps primaryInput.sha256 null until a new method version',
+  });
   files['manifest.json'] = {
     methodSha256,
     sides: {
@@ -742,6 +821,12 @@ export function buildOutputFiles(input) {
     outputVersion: UX_MEASURE_VERSION,
     methodSha256,
     instrumentationSha256: INSTRUMENTATION_SHA256,
+    counting: {
+      gate: 'okFrameCount',
+      note: 'the 30-frame gate counts resolved (ok) frames only, which is stricter than'
+        + ' the frozen method wording "settled frames"; settledFrameCount in each round'
+        + ' file additionally counts rejected settlements and never gates anything',
+    },
     sides: {
       A: Object.assign({ role: 'baseline' }, summary.A),
       B: Object.assign({ role: 'candidate' }, summary.B),
@@ -1038,19 +1123,72 @@ function activePowerMode() {
 // Each round: fresh browser, fresh page, fresh Worker. The page is closed
 // after the journey reaches the artifact, so no journey timestamp or Worker
 // state can leak into the next round. Both builds run the same script.
+//
+// B1: a round NEVER throws out of this function. A failed collection becomes
+// a round record with a collectionError (kind: 'business' when the journey
+// never reached the artifact, 'environment' for every tool/browser fault),
+// and whatever the page observer already recorded is salvaged into that
+// record so the raw evidence survives; judgeRound/pairRounds then treat the
+// round as undecidable while the outputs still land on disk.
 async function runRound({ side, pairIndex, slot, warmup, build, input, powerMode }) {
-  const { chromium } = await import('playwright-core');
-  const server = await startStaticServer(build.receiverDir);
   const startedAtIso = new Date().toISOString();
   let browser = null;
+  let server = null;
+  let page = null;
+  const failed = (error, kind) => ({
+    side,
+    pairIndex,
+    slot,
+    warmup,
+    startedAtIso,
+    collectionError: {
+      code: (error && error.code) || 'E_COLLECTION_FAILED',
+      kind,
+      message: String((error && error.message) || error),
+    },
+  });
+  const salvage = async (record) => {
+    if (!page) {
+      record.salvaged = false;
+      return record;
+    }
+    try {
+      const partial = await page.evaluate(() => {
+        const observer = window.__uxObserver;
+        if (!observer) return null;
+        return {
+          frames: observer.frames,
+          telemetryWrites: observer.telemetryWrites,
+          telemetryArmed: observer.telemetryArmed === true,
+          telemetryUnavailable: observer.telemetryUnavailable === true,
+          wrapped: observer.wrapped,
+          wrappedAtMs: observer.wrappedAtMs,
+          importError: observer.importError,
+          journey: window.__journey || null,
+          state: window.__state === undefined ? null : window.__state,
+          screen: { width: window.screen.width, height: window.screen.height },
+        };
+      });
+      if (!partial) {
+        record.salvaged = false;
+        return record;
+      }
+      return Object.assign(record, partial, { salvaged: true });
+    } catch {
+      record.salvaged = false;
+      return record;
+    }
+  };
   try {
+    const { chromium } = await import('playwright-core');
+    server = await startStaticServer(build.receiverDir);
     browser = await chromium.launch({ channel: 'msedge', headless: false });
     const browserContext = await browser.newContext({
       viewport: VIEWPORT,
       deviceScaleFactor: DEVICE_SCALE_FACTOR,
     });
     await browserContext.addInitScript(OBSERVER_SCRIPT);
-    const page = await browserContext.newPage();
+    page = await browserContext.newPage();
     await page.goto(server.url);
     // The recording journey starts with the real file input; the button is
     // enabled once capabilities have been inspected.
@@ -1062,10 +1200,18 @@ async function runRound({ side, pairIndex, slot, warmup, build, input, powerMode
       { timeout: 30000 },
     );
     await page.setInputFiles('#file-input', input.mediaPath);
-    await page.waitForFunction(
-      () => Boolean(window.__journey && window.__journey.readyAt !== undefined),
-      { timeout: 300000 },
-    );
+    try {
+      await page.waitForFunction(
+        () => Boolean(window.__journey && window.__journey.readyAt !== undefined),
+        { timeout: 300000 },
+      );
+    } catch (error) {
+      // The journey never reached the artifact: that is the product's own
+      // outcome (failurePolicy), not a tool fault.
+      throw new UxMeasureError('E_JOURNEY_INCOMPLETE',
+        `the journey never reached the artifact (readyAt missing after 300s): ${error.message}`,
+        { kind: 'business' });
+    }
     const captured = await page.evaluate(() => ({
       observer: window.__uxObserver || null,
       journey: window.__journey || null,
@@ -1090,6 +1236,8 @@ async function runRound({ side, pairIndex, slot, warmup, build, input, powerMode
       state: captured.state,
       frames: captured.observer.frames,
       telemetryWrites: captured.observer.telemetryWrites,
+      telemetryArmed: captured.observer.telemetryArmed === true,
+      telemetryUnavailable: captured.observer.telemetryUnavailable === true,
       wrappedAtMs: captured.observer.wrappedAtMs,
       env: {
         wasmSha256: build.wasmSha256,
@@ -1106,9 +1254,12 @@ async function runRound({ side, pairIndex, slot, warmup, build, input, powerMode
       inputSha256: input.inputSha256,
       mediaSha256: input.mediaSha256,
     };
+  } catch (error) {
+    const isBusiness = error instanceof UxMeasureError && error.code === 'E_JOURNEY_INCOMPLETE';
+    return salvage(failed(error, isBusiness ? 'business' : 'environment'));
   } finally {
     if (browser) await browser.close().catch(() => {});
-    await server.close().catch(() => {});
+    if (server) await server.close().catch(() => {});
   }
 }
 
@@ -1133,13 +1284,30 @@ export async function runAbDrive(validated, options = {}) {
     mediaSha256: validated.candidateInput.mediaSha256,
     matchedEnvironment: REQUIRED_ENV_FIELDS,
   };
+  const collectRound = options.runRound || runRound;
   const startedAtIso = new Date().toISOString();
   const rounds = [];
   for (const entry of roundSequence(validated.method)) {
     const side = entry.side;
     const build = side === 'A' ? validated.baselineBuild : validated.candidateBuild;
     const input = side === 'A' ? validated.baselineInput : validated.candidateInput;
-    const record = await runRound({ ...entry, build, input, powerMode });
+    let record;
+    try {
+      record = await collectRound({ ...entry, build, input, powerMode });
+    } catch (error) {
+      // Belt and braces: runRound converts its own failures into
+      // collectionError records, and a throw from a stubbed/overridden
+      // collector must still not abort the whole collection.
+      record = {
+        ...entry,
+        startedAtIso,
+        collectionError: {
+          code: (error && error.code) || 'E_COLLECTION_FAILED',
+          kind: 'environment',
+          message: String((error && error.message) || error),
+        },
+      };
+    }
     rounds.push(record);
     if (options.onRound) options.onRound(record);
   }
@@ -1223,9 +1391,11 @@ is never overwritten; the whole-pair replacement policy (<= 2) is executed
 by T31, not by this tool.
 
 Exit: 0 = validation ok (validate-only) or measurement PASS;
-      1 = measurement FAIL or NOT_RUN;
+      1 = measurement FAIL/NOT_RUN or an aborted collection (raw rounds are
+          still written before exiting);
       2 = bad arguments;
-      3 = validation failure (method/context/manifest/input/output).`;
+      3 = pre-run validation failure only (method/context/manifest/input/
+          output); a round that fails to collect is never exit 3.`;
 
 const ARG_KEYS = new Map([
   ['--context', 'context'],
@@ -1269,17 +1439,28 @@ if (IS_MAIN) {
     console.log(HELP);
     process.exit(0);
   }
+  // Exit 3 is reserved for PRE-RUN validation. Everything after validation -
+  // a browser that will not start, a page that never reaches the artifact,
+  // a stubbed round that throws - is a collection outcome: the raw rounds
+  // still land on disk and the process exits 1 with a FAIL/NOT_RUN verdict.
+  let validated;
   try {
-    const validated = loadAndValidate(parsed);
-    if (parsed.validateOnly) {
-      console.log(JSON.stringify(planFor(validated), null, 2));
-      process.exit(0);
-    }
+    validated = loadAndValidate(parsed);
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(3);
+  }
+  if (parsed.validateOnly) {
+    console.log(JSON.stringify(planFor(validated), null, 2));
+    process.exit(0);
+  }
+  try {
     const result = await runAbDrive(validated);
     console.log(JSON.stringify(result.output, null, 2));
     process.exit(result.exitCode);
   } catch (error) {
-    console.error(error && error.message ? error.message : String(error));
-    process.exit(3);
+    console.error(`collection aborted before a verdict (exit 1, not a validation failure): ${
+      (error && error.message) || String(error)}`);
+    process.exit(1);
   }
 }

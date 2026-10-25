@@ -288,3 +288,83 @@ review-v2-ui-perf（独立审查，未参与 T26/T27/T28 实现）
 - **S11**：属工具侧输出说明（perf-tooling 车道），本整改不涉及。
 
 复验（实测）：`node --test ui ux-view ux-display` 36/36；`node tools/desktop-recv/run-unit.mjs --all` exit 0，12 套 **201** tests（ui 12 / ux-view 17 / ux-display 7，其余同 T27），0 fail/todo/skip；node --check 改动文件全 0。
+
+## 第 1 次整改结果（T30 工具侧）
+
+整改对象：`tools/desktop-recv/e2e/measure-ux.mjs`、`tools/desktop-recv/tests/measure-ux.test.mjs`、
+`tools/desktop-recv/e2e/README.md`（审查基点 e084f2c，审查轮 6533965）。执行者 perf-tooling
+（measure-ux 所有权），日期 2026-10-25。冻结阈值/顺序/样本下限零改动。
+
+### B1（已整改）
+
+- `runRound` 全路径 catch：单轮任何失败转成带 `collectionError` 的 round record
+  （`kind: 'business'` 仅当 `E_JOURNEY_INCOMPLETE`，即 journey 300 秒未到 artifact；
+  其余一律 `environment`）；浏览器关闭前能 `page.evaluate` 时抢救
+  frames/telemetryWrites/telemetryArmed/telemetryUnavailable/journey/state 等已采集数据
+  并标记 `salvaged: true`，抢救不到也记录 `salvaged: false`。
+- `runAbDrive` 循环再加逐轮兜底 catch（stub/覆盖的采集器抛错同样转记录），随后照常
+  pairRounds→summarizeSides→evaluateThresholds→decideVerdict→buildOutputFiles→
+  writeMeasurements：rounds/、invalid-rounds.json、summary.json、comparison.json 全量落盘，
+  进程 exit 1。
+- `judgeRound` 将 collectionError 记为首位违规（E_COLLECTION_ERROR），该轮不可判定；
+  `decideVerdict` 对候选侧 business 失败按冻结 failurePolicy 判 FAIL（点名 pairIndex 与
+  kind），环境/工具失败不判 FAIL，落入 <5 有效对的 NOT_RUN 且 reasons 列明。
+- CLI：exit 3 现在只属于运行前校验（loadAndValidate）；采集期任何异常 exit 1
+  （"collection aborted before a verdict"），--help 文本同步。
+- 新测试：T30-B1a（business=FAIL / environment=NOT_RUN，且原始帧保留在判定记录）、
+  T30-B1b（stub runRound 返回 business 失败仍写出 rounds/pair-2-B.json（含抢救帧）、
+  invalid-rounds.json 指向该文件、comparison.json=FAIL、exit 1 而非 3）、T30-B1c（stub
+  runRound 抛错→循环兜底转 environment 记录，rounds/invalid-rounds/comparison 全部落盘、
+  NOT_RUN、exit 1）。
+
+### B2（已整改）
+
+- 删除 25ms setInterval 轮询（连同其 30s 的 setTimeout）。arming 改为纯事件驱动：
+  document-start 一次检查；`readyState==='loading'` 时挂 DOMContentLoaded（once）+
+  有界 documentElement MutationObserver（armed 即断开）+ load（once）断开并记录
+  `telemetryUnavailable`；非 loading 页缺数字区直接记 unavailable。任何分支零定时器，
+  旧 UI 基线不再承受候选没有的常驻轮询。
+- 每轮成功记录与抢救记录均回传 `telemetryArmed`/`telemetryUnavailable`。
+- 判定：候选实测轮未 armed → `E_TELEMETRY_NOT_ARMED`（不变式类，加入 INVARIANT_CODES）
+  → FAIL；基线未 armed → 非违规，记 `telemetryApplicable=false` 与「4Hz 不变式不适用」
+  注记（telemetryNote）；预热轮与 collectionError 轮不做 armed 判定（不重复计错）。
+- 新测试：T30-B2a（vm 执行真实脚本：无 span 页面 setInterval/setTimeout 调用数为 0、
+  无根 observer、记录 unavailable）、T30-B2b（loading 页：DOMContentLoaded arming、
+  load 断开根 observer、数值区 observer 保留、零定时器）、T30-B2c（候选未 armed →
+  FAIL 点名轮次；基线 → 不适用注记；预热与抢救轮不触发）。
+
+### 采纳的 Suggestions
+
+- **S5**：数字区 MutationObserver 显式按冻结 id 选择
+  `#ux-elapsed, #ux-rate, #ux-progress, #ux-media`（#ux-progress 纳入）；T28-07c 改为
+  逐 id 断言并新增「脚本不含 setInterval」断言。
+- **S6**：T28-06b 重构为可区分分布（基线 5 轮 30/100/30/30/30 帧 @ 40/60/42/48/46ms：
+  逐轮中位数 46，混池 p50=48、p95=60，测试内独立算出混池期望证明未混池）；新增
+  T28-07d 在 vm 中真实执行 wrapper：返回值与原 Promise 严格同引用、resolve/reject 的
+  结算值原样、rtt 用同域时钟记录、同步抛错原样重抛并记录 syncThrow。
+- **S9**：input.json 新增 `frozenAnchor` 字段，README 同步：冻结输入/录像 SHA 的锚点是
+  各 run context 绑定的 T6 input-manifest（method.primaryInput.sha256 保持 null，直至
+  新版本方法发布；不静默改冻结文件）。
+- **S11**：summary.json 新增 `counting.gate='okFrameCount'` 与说明：30 帧门按 resolved
+  （ok）帧计，严于冻结方法的 settled 措辞；settledFrameCount 额外计入被拒结算，
+  永不作为门。
+
+### 复验证据（实际执行，工作区相对审查基点）
+
+```
+RED（整改用例先行，对 e084f2c+d747fae 的实现）：
+node --test tools/desktop-recv/tests/measure-ux.test.mjs
+  # tests 45 / # pass 36 / # fail 9（全部为本次新/改用例）exit 1
+GREEN（实现后）：
+node --check tools/desktop-recv/e2e/measure-ux.mjs        exit 0
+node --check tools/desktop-recv/tests/measure-ux.test.mjs exit 0
+node --test tools/desktop-recv/tests/measure-ux.test.mjs
+  # tests 45 / # pass 45 / # fail 0 / # skipped 0 / # todo 0   exit 0
+node tools/desktop-recv/e2e/measure-ux.mjs --help          exit 0
+git diff --check                                           exit 0
+```
+
+边界：未触碰 web/desktop-recv（审查中涉及产品的建议项由 dev-v2-prod 并行处理）、
+未触碰 tools/e2e 其他文件、未执行 git 写命令；工作区仅 3 个工具文件变更
+（README/measure-ux.mjs/measure-ux.test.mjs）。冻结阈值、顺序、样本下限零改动。
+完整整改记录见 `b8-t30-tools-report.md`。

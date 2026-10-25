@@ -23,12 +23,13 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
 
 import {
   INSTRUMENTATION_SHA256, OBSERVER_SCRIPT, OUTPUT_REL, UxMeasureError,
   buildOutputFiles, computeReadyMs, decideVerdict, evaluateThresholds, judgeRound,
   matchEnvironment, median, nearestRankPercentile, outputDirFor, pairRounds,
-  planRounds, summarizeSides, validateMethod, writeMeasurements,
+  planRounds, runAbDrive, summarizeSides, validateMethod, writeMeasurements,
 } from '../e2e/measure-ux.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TOOLS = resolve(HERE, '..');
@@ -384,6 +385,7 @@ function validRoundRecord(overrides = {}) {
     journey: { receivingAt: 5000, readyAt: 6250 },
     frames: frameSeq(35, 40),
     telemetryWrites: [1000, 1300, 1600],
+    telemetryArmed: true,
     env: envFixture(),
     inputSha256: sha256(INPUT_BYTES),
     mediaSha256: sha256(MEDIA_BYTES),
@@ -672,21 +674,35 @@ test('T28-06a medians and thresholds recompute exactly from fixed arrays', () =>
 });
 
 test('T28-06b per-round percentiles feed the median, not a pooled sample', () => {
-  // Five baseline rounds with DIFFERENT constant RTTs: the side median is
-  // the median of the five per-round p50 values, never a pooled percentile
-  // over 175 frames (pooling would give 46 here).
+  // Five baseline rounds with different frame COUNTS and different constant
+  // RTTs. Per-round p50 = [40, 60, 42, 48, 46] -> median 46; per-round p95 is
+  // the same list -> 46. A pooled percentile over all 220 frames would give
+  // p50 = 48 and p95 = 60, so this distribution does distinguish the two
+  // aggregations (the previous fixture could not).
   const rounds = measuredRounds({ candidateRtt: 50, baselineRtt: 40 });
-  const baseRtts = [40, 44, 42, 48, 46]; // median 44
+  const layout = [
+    { count: 30, rtt: 40 },
+    { count: 100, rtt: 60 },
+    { count: 30, rtt: 42 },
+    { count: 30, rtt: 48 },
+    { count: 30, rtt: 46 },
+  ];
   const aRounds = rounds.filter((r) => r.side === 'A' && !r.warmup)
     .sort((x, y) => x.pairIndex - y.pairIndex);
-  aRounds.forEach((round, i) => { round.frames = frameSeq(35, baseRtts[i]); });
+  aRounds.forEach((round, i) => { round.frames = frameSeq(layout[i].count, layout[i].rtt); });
   const paired = pairRounds(rounds, baseRules());
   const summary = summarizeSides(paired.pairs);
-  assert.deepEqual(summary.A.rttP50Values.sort((a, b) => a - b), [40, 42, 44, 46, 48]);
-  assert.equal(summary.A.rttP50Median, 44);
-  assert.equal(summary.A.rttP95Median, 44);
-  // Candidate pooled would also be 50; the per-round median is 50 too, but
-  // the assertion above proves the values were not pooled into one array.
+
+  assert.deepEqual([...summary.A.rttP50Values].sort((a, b) => a - b), [40, 42, 46, 48, 60]);
+  assert.equal(summary.A.rttP50Median, 46, 'median of the five per-round p50 values');
+  assert.equal(summary.A.rttP95Median, 46);
+
+  const pooled = aRounds.flatMap((round) => round.frames.map((frame) => frame.rttMs));
+  assert.equal(pooled.length, 220);
+  assert.equal(nearestRankPercentile(pooled, 50), 48, 'a pooled p50 would be 48');
+  assert.equal(nearestRankPercentile(pooled, 95), 60, 'a pooled p95 would be 60');
+
+  // Candidate pooled would also be 50; the per-round median is 50 too.
   assert.equal(summary.B.rttP50Median, 50);
 });
 test('T28-06c a breached threshold fails the verdict with the numbers kept', () => {
@@ -788,6 +804,15 @@ test('T28-07a buildOutputFiles keeps every raw round and adds the analysis', () 
   assert.equal(runJson.methodSha256, 'f'.repeat(64));
   assert.equal(runJson.outputVersion, 1);
 
+  // S9: the frozen input SHA anchor lives in the T6 input manifest, not in
+  // the method file (primaryInput.sha256 stays null until a new version).
+  assert.match(files['input.json'].frozenAnchor, /T6/);
+  assert.match(files['input.json'].frozenAnchor, /input-manifest/);
+  // S11: the 30-frame gate counts resolved (ok) frames, which is stricter
+  // than the method's settled-frame wording; the output says so explicitly.
+  assert.equal(files['summary.json'].counting.gate, 'okFrameCount');
+  assert.match(files['summary.json'].counting.note, /settledFrameCount/);
+
   // One raw file per collected round, valid or not, warmups included.
   const roundFiles = Object.keys(files).filter((name) => name.startsWith('rounds/'));
   assert.equal(roundFiles.length, fx.paired.allRounds.length);
@@ -826,7 +851,12 @@ test('T28-07c the observer script wraps submitFrame and keeps the promise', () =
   assert.ok(typeof OBSERVER_SCRIPT === 'string' && OBSERVER_SCRIPT.includes('submitFrame'));
   assert.ok(OBSERVER_SCRIPT.includes('/src/decoder-client.js'));
   assert.ok(OBSERVER_SCRIPT.includes('MutationObserver'));
-  assert.ok(OBSERVER_SCRIPT.includes('ux-metric'));
+  // S5: every numeric telemetry span is named explicitly, #ux-progress too.
+  for (const id of ['#ux-elapsed', '#ux-rate', '#ux-progress', '#ux-media']) {
+    assert.ok(OBSERVER_SCRIPT.includes(id), `${id} is explicitly observed`);
+  }
+  // B2: the observer must not poll; arming is event-driven only.
+  assert.ok(!OBSERVER_SCRIPT.includes('setInterval'), 'no polling interval in the observer');
   assert.equal(INSTRUMENTATION_SHA256, sha256(OBSERVER_SCRIPT),
     'the recorded instrumentation SHA is the script actually injected');
   // The wrapper must not alter settlement: it records via side promises.
@@ -963,4 +993,333 @@ test('T28-09e --validate-only accepts a good pair and writes nothing', (t) => {
   assert.ok(plan.instrumentationSha256, 'the observer SHA is in the plan');
   assert.match(plan.outputDir, /ux-overhead/);
   assert.equal(treeDigest(fx.repo), before, 'validation writes nothing');
+});
+
+// --- T30-B1: collection errors are judged and written, never abort --------
+
+// A minimal validated object for drive-level tests: the stubbed runRound
+// replaces all browser work, but runAbDrive/judging/output stay the real code.
+function minimalValidated(t, label) {
+  const repo = makeRepo(t, label);
+  const runRoot = join(repo, 'docs', 'tests', 'runs', CAND_RUN);
+  const method = JSON.parse(readFileSync(FROZEN_METHOD, 'utf8'));
+  const binding = {
+    inputManifest: 'docs/tests/runs/x/input-manifest.json',
+    inputSha256: sha256(INPUT_BYTES),
+    mediaSha256: sha256(MEDIA_BYTES),
+    inputBytes: INPUT_BYTES.length,
+    inputPath: 'fixtures/primary-input.bin',
+    mediaRelativePath: 'fixtures/media.webm',
+  };
+  return {
+    repoRoot: repo,
+    context: { runId: CAND_RUN, attemptId: ATTEMPT_ID, phase: 'final', abs: { runRoot } },
+    baseline: { runId: BASE_RUN, attemptId: 'baseline-001', phase: 'baseline' },
+    method,
+    methodSha256: sha256(readFileSync(FROZEN_METHOD)),
+    minSettledFrames: 30,
+    telemetryMinWriteIntervalMs: 250,
+    candidateBuild: {
+      receiverDir: join(repo, 'cand'), wasmSha256: sha256(WASM_BYTES),
+      manifestSha256: '1'.repeat(64), fileCount: 4,
+    },
+    baselineBuild: {
+      receiverDir: join(repo, 'base'), wasmSha256: sha256(WASM_BYTES),
+      manifestSha256: '2'.repeat(64), fileCount: 4,
+    },
+    candidateInput: binding,
+    baselineInput: binding,
+    outputDir: join(runRoot, 'measurements', 'ux-overhead', ATTEMPT_ID),
+  };
+}
+
+function roundKey(round) {
+  return `${round.side}:${round.warmup ? 'warm' : round.pairIndex}`;
+}
+
+test('T30-B1a a collection error is undecidable but keeps its raw samples', () => {
+  // Candidate business failure (never reached the artifact) -> FAIL.
+  const rounds = measuredRounds({ candidateRtt: 46, baselineRtt: 44 });
+  const business = rounds.find((r) => r.side === 'B' && r.pairIndex === 2 && !r.warmup);
+  Object.assign(business, {
+    collectionError: { code: 'E_JOURNEY_INCOMPLETE', kind: 'business', message: 'journey never reached readyAt' },
+    journey: { receivingAt: 5000 },
+  });
+  const judged = judgeRound(business, baseRules());
+  assert.equal(judged.exclusionReason, 'E_COLLECTION_ERROR');
+  assert.equal(judged.frames.length, 35, 'the salvaged raw samples stay in the record');
+  const paired = pairRounds(rounds, baseRules());
+  assert.equal(paired.validPairs, 4, 'the pair carrying the error is undecidable');
+  const decision = decideVerdict({
+    pairs: paired.pairs,
+    validPairs: paired.validPairs,
+    metrics: evaluateThresholds(summarizeSides(paired.pairs)),
+  });
+  assert.equal(decision.verdict, 'FAIL');
+  assert.ok(decision.reasons.some((r) => r.code === 'E_COLLECTION_ERROR'
+    && r.kind === 'business' && r.pairIndex === 2 && r.side === 'B'));
+
+  // A tool/environment failure is NOT_RUN, never a candidate FAIL.
+  const rounds2 = measuredRounds({ candidateRtt: 46, baselineRtt: 44 });
+  const environment = rounds2.find((r) => r.side === 'B' && r.pairIndex === 3 && !r.warmup);
+  Object.assign(environment, {
+    collectionError: { code: 'E_COLLECTION_FAILED', kind: 'environment', message: 'browser launch failed' },
+  });
+  const paired2 = pairRounds(rounds2, baseRules());
+  const decision2 = decideVerdict({
+    pairs: paired2.pairs,
+    validPairs: paired2.validPairs,
+    metrics: evaluateThresholds(summarizeSides(paired2.pairs)),
+  });
+  assert.equal(decision2.verdict, 'NOT_RUN');
+  assert.ok(decision2.reasons.some((r) => r.code === 'E_COLLECTION_ERROR'
+    && r.kind === 'environment' && r.side === 'B'));
+});
+
+test('T30-B1b a stubbed business failure still writes rounds and invalid-rounds', async (t) => {
+  const validated = minimalValidated(t, 'drive-business');
+  const records = measuredRounds({ candidateRtt: 46, baselineRtt: 44 });
+  const business = records.find((r) => r.side === 'B' && r.pairIndex === 2 && !r.warmup);
+  Object.assign(business, {
+    collectionError: { code: 'E_JOURNEY_INCOMPLETE', kind: 'business', message: 'no artifact' },
+    journey: { receivingAt: 5000 },
+  });
+  const byKey = new Map(records.map((record) => [roundKey(record), record]));
+  const result = await runAbDrive(validated, {
+    runRound: async (entry) => byKey.get(
+      `${entry.side}:${entry.warmup ? 'warm' : entry.pairIndex}`,
+    ),
+  });
+  assert.equal(result.exitCode, 1, 'a FAIL measurement exits 1, never 3');
+  assert.equal(result.output.verdict, 'FAIL');
+  const dir = validated.outputDir;
+  const saved = JSON.parse(readFileSync(join(dir, 'rounds', 'pair-2-B.json'), 'utf8'));
+  assert.equal(saved.collectionError.kind, 'business');
+  assert.equal(saved.frames.length, 35, 'salvaged frames are on disk');
+  const invalid = JSON.parse(readFileSync(join(dir, 'invalid-rounds.json'), 'utf8'));
+  assert.ok(invalid.rounds.some((r) => r.file === 'rounds/pair-2-B.json'
+    && r.reason === 'E_COLLECTION_ERROR'));
+  const comparison = JSON.parse(readFileSync(join(dir, 'comparison.json'), 'utf8'));
+  assert.equal(comparison.verdict, 'FAIL');
+  assert.equal(comparison.validPairs, 4);
+});
+
+test('T30-B1c a throwing runRound becomes an environment record, outputs still land', async (t) => {
+  const validated = minimalValidated(t, 'drive-throw');
+  const records = measuredRounds({ candidateRtt: 46, baselineRtt: 44 });
+  const byKey = new Map(records.map((record) => [roundKey(record), record]));
+  const result = await runAbDrive(validated, {
+    runRound: async (entry) => {
+      if (entry.side === 'B' && entry.pairIndex === 1 && !entry.warmup) {
+        throw new Error('stub launch exploded');
+      }
+      return byKey.get(`${entry.side}:${entry.warmup ? 'warm' : entry.pairIndex}`);
+    },
+  });
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.output.verdict, 'NOT_RUN', 'a tool failure is not a candidate FAIL');
+  const saved = JSON.parse(readFileSync(join(validated.outputDir, 'rounds', 'pair-1-B.json'), 'utf8'));
+  assert.equal(saved.collectionError.kind, 'environment');
+  assert.match(saved.collectionError.message, /stub launch exploded/);
+  const invalid = JSON.parse(readFileSync(join(validated.outputDir, 'invalid-rounds.json'), 'utf8'));
+  assert.ok(invalid.rounds.some((r) => r.file === 'rounds/pair-1-B.json'
+    && r.reason === 'E_COLLECTION_ERROR'));
+  assert.ok(existsSync(join(validated.outputDir, 'comparison.json')));
+});
+
+// --- T30-B2: event-driven telemetry arming (no polling), armed is judged ---
+
+// Execute the REAL observer script in a VM with a fake page. A module loader
+// is injected through window.__uxModuleLoader (a seam no real page uses), so
+// the wrap succeeds on the first try without the vm dynamic-import flag;
+// every timer call is recorded.
+async function runObserverScript(options = {}) {
+  const { readyState = 'complete', clock = { now: 0 }, moduleNamespace = null } = options;
+  const spans = options.spans || [];
+  const timers = { setTimeout: 0, setInterval: 0 };
+  const listeners = {};
+  const mutationObservers = [];
+  const addListener = (type, fn) => {
+    (listeners[type] || (listeners[type] = [])).push(fn);
+  };
+  const sandbox = {
+    performance: { now: () => clock.now },
+    Promise,
+    setTimeout: (...args) => { timers.setTimeout += 1; return 0; },
+    setInterval: (...args) => { timers.setInterval += 1; return 0; },
+    clearTimeout: () => {},
+    clearInterval: () => {},
+    MutationObserver: class {
+      constructor(callback) {
+        this.cb = callback;
+        this.disconnected = false;
+        mutationObservers.push(this);
+      }
+      observe() {}
+      disconnect() { this.disconnected = true; }
+    },
+    document: {
+      readyState,
+      documentElement: {},
+      addEventListener: addListener,
+      querySelectorAll: () => spans.slice(),
+    },
+    window: {
+      addEventListener: addListener,
+      __uxModuleLoader: async () => moduleNamespace,
+    },
+  };
+  sandbox.globalThis = sandbox;
+  const context = vm.createContext(sandbox);
+  const script = new vm.Script(OBSERVER_SCRIPT);
+  script.runInContext(context);
+  const drain = async () => {
+    for (let i = 0; i < 5; i += 1) await new Promise((step) => setImmediate(step));
+  };
+  const fire = (type) => {
+    for (const fn of listeners[type] || []) fn();
+  };
+  return { sandbox, spans, listeners, mutationObservers, timers, clock, drain, fire };
+}
+
+test('T30-B2a a page without numeric spans leaves no pending timer', async () => {
+  const FakeClient = class { submitFrame() { return Promise.resolve({}); } };
+  const page = await runObserverScript({
+    readyState: 'complete',
+    spans: [],
+    moduleNamespace: { DecoderClient: FakeClient },
+  });
+  await page.drain();
+  const state = page.sandbox.window.__uxObserver;
+  assert.equal(state.wrapped, true, 'the submitFrame wrapper still installs');
+  assert.equal(state.telemetryArmed, false);
+  assert.equal(state.telemetryUnavailable, true, 'absence is recorded, not polled for');
+  assert.equal(page.timers.setInterval, 0, 'no polling interval was ever scheduled');
+  assert.equal(page.timers.setTimeout, 0, 'no retry/settle timer was scheduled either');
+  assert.equal(page.mutationObservers.length, 0, 'a fully parsed page needs no root observer');
+});
+
+test('T30-B2b arming is event-driven: DOMContentLoaded arms, load disarms', async () => {
+  const FakeClient = class { submitFrame() { return Promise.resolve({}); } };
+  const page = await runObserverScript({
+    readyState: 'loading',
+    spans: [],
+    moduleNamespace: { DecoderClient: FakeClient },
+  });
+  await page.drain();
+  const state = page.sandbox.window.__uxObserver;
+  assert.equal(state.telemetryArmed, false, 'spans are not parsed yet');
+  assert.equal(page.mutationObservers.length, 1, 'a bounded root observer covers dynamic spans');
+  // The static spans appear by DOMContentLoaded (the real product shape).
+  page.spans.push({}, {}, {}, {});
+  page.fire('DOMContentLoaded');
+  assert.equal(state.telemetryArmed, true);
+  // Arming created exactly one numeric-area observer; a later root mutation
+  // must not double-arm or add another observer.
+  assert.equal(page.mutationObservers.length, 2, 'root observer + numeric-area observer');
+  page.mutationObservers[0].cb();
+  assert.equal(page.mutationObservers.length, 2);
+  // load disarms the root observer; the numeric observer stays.
+  page.fire('load');
+  assert.equal(page.mutationObservers[0].disconnected, true);
+  assert.equal(page.mutationObservers[1].disconnected, false);
+  assert.equal(state.telemetryArmed, true);
+  assert.equal(state.telemetryUnavailable, false);
+  assert.equal(page.timers.setInterval, 0);
+  assert.equal(page.timers.setTimeout, 0, 'no timer was needed to arm');
+});
+
+test('T30-B2c telemetryArmed is required on the candidate, not-applicable on the baseline', () => {
+  const candidate = judgeRound(validRoundRecord({ telemetryArmed: false }), baseRules());
+  assert.equal(candidate.exclusionReason, 'E_TELEMETRY_NOT_ARMED');
+  assert.ok(candidate.invariantViolations.some((v) => v.code === 'E_TELEMETRY_NOT_ARMED'),
+    'a candidate without the numeric area is a product fault, not noise');
+
+  const baseline = judgeRound(validRoundRecord({ side: 'A', telemetryArmed: false }), baseRules());
+  assert.equal(baseline.exclusionReason, null, 'the baseline UI has no numeric area by design');
+  assert.equal(baseline.telemetryApplicable, false);
+  assert.match(baseline.telemetryNote, /not applicable/);
+  assert.ok(!baseline.violations.some((v) => v.code === 'E_TELEMETRY_NOT_ARMED'));
+
+  const warmup = judgeRound(validRoundRecord({ warmup: true, telemetryArmed: false }), baseRules());
+  assert.ok(!warmup.violations.some((v) => v.code === 'E_TELEMETRY_NOT_ARMED'),
+    'warmups never gate the run');
+
+  // A salvaged collection-error round does not double-report as not-armed.
+  const salvaged = judgeRound(validRoundRecord({
+    telemetryArmed: false,
+    collectionError: { code: 'E_COLLECTION_FAILED', kind: 'environment', message: 'x' },
+  }), baseRules());
+  assert.ok(!salvaged.violations.some((v) => v.code === 'E_TELEMETRY_NOT_ARMED'));
+
+  // The verdict fails even though every threshold passes.
+  const rounds = measuredRounds({ candidateRtt: 46, baselineRtt: 44 });
+  const offender = rounds.find((r) => r.side === 'B' && r.pairIndex === 3 && !r.warmup);
+  offender.telemetryArmed = false;
+  const paired = pairRounds(rounds, baseRules());
+  const decision = decideVerdict({
+    pairs: paired.pairs,
+    validPairs: paired.validPairs,
+    metrics: evaluateThresholds(summarizeSides(paired.pairs)),
+  });
+  assert.equal(decision.verdict, 'FAIL');
+  assert.ok(decision.reasons.some((r) => r.code === 'E_TELEMETRY_NOT_ARMED' && r.pairIndex === 3));
+});
+
+// --- S6b: execute the wrapper, prove promise identity and settlement ------
+
+test('T28-07d executing the wrapper preserves promise identity and settlement', async () => {
+  const clock = { now: 100 };
+  const resolvedValue = { marker: 'ok' };
+  const resolvedPromise = Promise.resolve(resolvedValue);
+  const rejection = Object.assign(new Error('frame rejected downstream'), { code: 14003 });
+  const rejectedPromise = Promise.reject(rejection);
+  rejectedPromise.catch(() => {}); // the test observes it below; keep Node quiet until then
+  let mode = 'resolve';
+  class FakeClient {
+    submitFrame() {
+      if (mode === 'throw') throw new Error('sync boom');
+      return mode === 'resolve' ? resolvedPromise : rejectedPromise;
+    }
+  }
+  const page = await runObserverScript({
+    readyState: 'complete',
+    clock,
+    moduleNamespace: { DecoderClient: FakeClient },
+  });
+  await page.drain();
+  const state = page.sandbox.window.__uxObserver;
+  assert.equal(state.wrapped, true);
+
+  const client = new FakeClient();
+  clock.now = 200;
+  const returned = client.submitFrame({ width: 2, height: 2 });
+  assert.equal(returned, resolvedPromise, 'the ORIGINAL promise is returned, not a wrapper');
+  clock.now = 245;
+  assert.equal(await returned, resolvedValue, 'the caller sees the original settlement');
+  await page.drain();
+  assert.equal(state.frames.length, 1);
+  assert.equal(state.frames[0].t0Ms, 200);
+  assert.equal(state.frames[0].rttMs, 45);
+  assert.equal(state.frames[0].ok, true);
+
+  mode = 'reject';
+  clock.now = 300;
+  const returnedRejected = client.submitFrame();
+  assert.equal(returnedRejected, rejectedPromise, 'a rejected promise is also returned unchanged');
+  clock.now = 350;
+  await assert.rejects(returnedRejected, (error) => error === rejection);
+  await page.drain();
+  assert.equal(state.frames.length, 2);
+  assert.equal(state.frames[1].ok, false);
+  assert.equal(state.frames[1].rejected, true);
+  assert.equal(state.frames[1].rttMs, 50);
+
+  mode = 'throw';
+  clock.now = 400;
+  assert.throws(() => client.submitFrame(), /sync boom/, 'a synchronous throw is not swallowed');
+  await page.drain();
+  assert.equal(state.frames.length, 3);
+  assert.equal(state.frames[2].syncThrow, true);
+  assert.equal(state.frames[2].ok, false);
 });
