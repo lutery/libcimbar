@@ -1,0 +1,18 @@
+{
+  "inputSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+  "mediaSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+  "inputBytes": 131072,
+  "inputPath": "docs/tests/runs/20261025-teamexec-09b/fixtures/primary-input-128k.bin",
+  "mediaPath": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/V-LAST-with.webm",
+  "sides": {
+    "A": {
+      "inputManifest": "docs/tests/runs/20261024-teamexec-04/input-manifest.json",
+      "mediaPath": "docs/tests/runs/20261024-teamexec-04/fixtures/fixtures-media/V-LAST-with.webm"
+    },
+    "B": {
+      "inputManifest": "docs/tests/runs/20261025-teamexec-09b/input-manifest.json",
+      "mediaPath": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/V-LAST-with.webm"
+    }
+  },
+  "frozenAnchor": "the frozen input/media SHA anchor is the T6 input manifest bound by each run context (docs/tests/runs/20261024-teamexec-04/input-manifest.json); the frozen method keeps primaryInput.sha256 null until a new method version"
+}

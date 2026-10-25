@@ -368,3 +368,6 @@ git diff --check                                           exit 0
 未触碰 tools/e2e 其他文件、未执行 git 写命令；工作区仅 3 个工具文件变更
 （README/measure-ux.mjs/measure-ux.test.mjs）。冻结阈值、顺序、样本下限零改动。
 完整整改记录见 `b8-t30-tools-report.md`。
+## 收口（T33）
+
+- B1/B2 CLOSED（T30 工具侧整改 + 45/45 复验）。
