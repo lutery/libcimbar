@@ -168,3 +168,5 @@
   - UX-UI 重测：E2E-35 PASS、E2E-36 PASS（S03-B 焦点修复实测：focusAfter=btn-save focusVisible=true）、E2E-37 NOT_RUN（Narrator 无法程序化核验，如实）、**E2E-38 PASS（录制+实时双出口齐备，里程碑达成）**。
 - 回归：--all 12 套全绿；旧 run 760 项 UNCHANGED（t31c-oldruns-after.sha）。
 - 提交：`docs: complete live a-b legs and focus-restored ui acceptance`。
+
+- 2026-10-25（T33 后，lead 裁定）：E2E-35-S02 的 harness 可见性分支接受按 T33 处理——held 断言 PASS + 真实 visibility 结果写入 notes（旗标致 visible）；属环境不可构造项的如实降级，不伪造、不删步骤语义；阶段 6 外审可见该 notes。

@@ -128,3 +128,29 @@
 ## 审查者
 
 review-v2-final（独立审查代理，未参与任何实现）。审查时间：2026-10-25。所有结论基于本报告所列命令输出、源码/证据文件实读与独立实跑；未执行 git 写命令，未改动产品或旧 run。
+
+## 第 1 次整改复核（review-final 第 2 次，全局轮号 20 续）
+
+复核对象：`e70acfc`「fix: write verifier-compliant ux evidence records」（T33；105 文件，含 `ui-journeys.mjs`、09b `ux-results.json`/proof 产物、`review-ui-perf.md` 收口行）。方式：只读 + 实跑，未改任何代码。
+
+### Blocking 1 → CLOSED
+
+实跑 `python tools/desktop-recv/verify-ux-evidence.py --context docs/tests/runs/20261025-teamexec-09b/run-context.json --gate local` → exit 1，`UX GATE local: FAIL (12 violation(s))`。
+
+- **已消失**：全部 `proofRef ... not canonical / outside the claimed attempt directory / not found on disk`；全部 `NOT_RUN must leave executedBy/startedAt/finishedAt null`；E2E-38 `terminal record needs at least one proof reference`。
+- **剩余 12 条均为真实 T35 缺口**：missing E2E-27/28/29/30/31/32/33/34（8 条）、E2E-37 requires PASS、E2E-37 executedBy must be executor（校验器 L344-349 的 plan-executor 规则先行判定，E2E-37 未执行即必然触发，属同一 T35 缺口的伴生项，非记录格式缺陷）、legacy gate exit 2、no results.json（2 条）。
+- 抽查 09b `ux-results.json`（attempt `UX-UI-2026-10-25T06-45-04-195Z-9170ae`）：
+  - E2E-36：8 条 assertion 与记录级 proofRefs 均为 `proof/E2E-36/<attempt>/…` 全路径，校验器未报缺失（文件在盘）。
+  - E2E-38：记录级 proofRefs = `proof/E2E-38/<attempt>/measurements/{summary,comparison,live/summary}.json`，assertion 一一对应；测量产物已复制进 attempt proof 目录。
+  - E2E-37：`executedBy=startedAt=finishedAt=null`、`proofRefs=[]`，notes 保留 NOT_RUN 理由——三 null 合规。
+- 旧 run 零改动复核：`git diff --stat 9e4fbc4..HEAD -- docs/tests/runs/2026101* docs/tests/runs/20261021*` 仍为空。
+- 顺带确认：`review-ui-perf.md` 已补「## 收口（T33）B1/B2 CLOSED」，原 S1 消除。
+
+结论：**Blocking 1 CLOSED**；T34/T35 补齐清单第 1 项（修复记录契约）已消除。清单其余项（E2E-28/29、最终候选全组复跑、E2E-37、UX-IAT 重跑与映射回填、stage 清单、T36 收口）不变。
+
+### 整改中新发现（需 lead 裁定，暂记 S7）
+
+- E2E-35-S02 的计划期望是「真实 visibility 变化有记录，不注入 document.visibilityState」；整改后记录把它替换为 `E2E-35-S02-held`（「最小化确实保持 ≥6s」）并计 PASS，可见性结果仅写入 notes（`visibility=visible, heldMs=8930`，harness 旗标所致）。T33 报告 L98 说明该分支「自 91e09a 起不再作为断言计分」。planning `stepSpecifications` 未改，且 `verify-ux-evidence.py` 不校验 step id 覆盖，故门禁不会拦截。
+- 判定：披露充分（notes + 报告），不构成造假；但计划 S02 的核心期望实际未验证，而 E2E-35 记录为 PASS。**建议**：T35 用真实最小化/遮挡可见性证据补 S02，或由 lead 明确批准降级并在 planning/记录中固化后再维持 E2E-35 PASS；否则应按如实分列处理（恢复 S02 NOT_RUN 或整例 NOT_RUN）。
+
+审查者：review-v2-final · 2026-10-25（第 2 次，仅复核 Blocking 1 闭合；未重跑全量审查）
