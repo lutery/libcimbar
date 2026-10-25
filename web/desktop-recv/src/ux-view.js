@@ -345,6 +345,10 @@ export function readView(observation, request) {
     nextAction = '文件仍在，点击「保存文件…」可再次保存。';
   } else if (statusKey === 'save_failed') {
     nextAction = '点击「保存文件…」重试保存。';
+  } else if (statusKey === 'no_new_data') {
+    nextAction = '检查发送画面是否被遮挡或暂停。';
+  } else if (statusKey === 'progress_unavailable') {
+    nextAction = '可继续接收，或检查发送源。';
   } else if (['receiving', 'no_progress', 'progress_unknown', 'collecting_more'].includes(statusKey)) {
     nextAction = KEEP_SENDING;
   }
@@ -397,7 +401,14 @@ export function formatRate(rate) {
 export function formatProgress(progress) {
   if (!progress) return '';
   switch (progress.kind) {
-    case 'estimate': return `重建估计约 ${Math.round(progress.ratio * 100)}%`;
+    case 'estimate': {
+      // floor, never round: 0.995..0.999 must not read as a hundred while the
+      // file is still incomplete
+      const percent = Math.floor(progress.ratio * 100);
+      return progress.stale
+        ? `上次重建估计约 ${percent}%`
+        : `重建估计约 ${percent}%`;
+    }
     case 'complete': return '重建完成';
     case 'enough_data': return '数据量已达到，文件尚未完成';
     case 'ambiguous': return '进度无法判定';

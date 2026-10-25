@@ -120,7 +120,7 @@ function currentMediaPosition() {
 
 function paintUx(payload) {
   if ('primary' in payload) el.uxPrimary.textContent = payload.primary;
-  if ('secondary' in payload) el.uxSecondary.textContent = payload.secondary;
+  if ('secondary' in payload) el.uxSecondary.textContent = recoveryNotice || payload.secondary;
   if ('nextAction' in payload) el.uxNext.textContent = payload.nextAction;
   if ('save' in payload) el.uxSave.textContent = payload.save;
   if ('elapsedText' in payload) el.uxElapsed.textContent = payload.elapsedText;
@@ -179,8 +179,16 @@ function logLine(text, isError = false) {
 
 function showError(code) {
   const recovery = recoveryTextZh(code);
+  // The visible secondary line carries the recovery summary; the folded
+  // diagnostic log keeps the code and the details.
+  recoveryNotice = `${recovery.message}${recovery.nextAction}`;
+  el.uxSecondary.textContent = recoveryNotice;
   logLine(`${code}: ${recovery.message}${recovery.nextAction}`, true);
 }
+
+// The latest recovery summary stays on the visible line until the user starts
+// a new session (the recovery action itself).
+let recoveryNotice = '';
 
 // --- Measurement hooks (diagnostics only) ---------------------------------
 // The external journey runner observes these from the page; nothing here
@@ -232,7 +240,7 @@ function render() {
   if (artifact) {
     el.artifact.hidden = false;
     el.artifactName.textContent = artifact.suggestedName || artifact.name || 'file';
-    el.artifactSize.textContent = `${artifact.byteCount ?? artifact.byteLength} bytes`;
+    el.artifactSize.textContent = `${artifact.byteCount ?? artifact.byteLength} 字节`;
   } else {
     el.artifact.hidden = true;
   }
@@ -350,6 +358,7 @@ async function startLive() {
   if (!capabilities.realtime) return;
   startClicks += 1;
   const result = coordinator.startLive({ requestId: `live-${startClicks}` });
+  if (result.accepted) recoveryNotice = '';
   if (!result.accepted && result.reason === 'busy') {
     logLine('a session is already active');
   }
@@ -462,6 +471,7 @@ function startVideoImport(file) {
   if (!result.accepted && result.reason === 'busy') {
     logLine('a session is already active');
   }
+  if (result.accepted) recoveryNotice = '';
 }
 
 async function saveArtifact() {
@@ -510,7 +520,7 @@ async function init() {
   const reasons = capabilities.reasons || [];
   if (reasons.length) {
     el.caps.hidden = false;
-    el.caps.textContent = `Some features are unavailable: ${reasons.join('; ')}.`;
+    el.caps.textContent = `部分功能不可用：${reasons.join('；')}。`;
   }
 
   try {

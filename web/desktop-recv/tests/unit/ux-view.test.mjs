@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readView, formatRate } from '../../src/ux-view.js';
+import { readView, formatRate, formatProgress } from '../../src/ux-view.js';
 
 function deepFreeze(value) {
   if (Array.isArray(value)) {
@@ -641,4 +641,109 @@ test('T20 the media position normalizes independently of the file estimate', () 
   assert.notEqual(ended.data.progress.kind, 'complete');
   assert.equal(ended.data.controls.canSave, false);
   assert.equal(ended.data.mediaPosition.fraction, 1);
+});
+
+// --- T30: estimate copy, quiet-state guidance and the full copy matrix -------
+
+test('T30 formatProgress never rounds an estimate up to a hundred', () => {
+  assert.equal(formatProgress({ kind: 'estimate', ratio: 0.995, stale: false }),
+    '重建估计约 99%', '0.995 floors to 99, never rounds to 100');
+  assert.equal(formatProgress({ kind: 'estimate', ratio: 0.999, stale: false }),
+    '重建估计约 99%');
+  assert.equal(formatProgress({ kind: 'estimate', ratio: 0, stale: false }),
+    '重建估计约 0%');
+  assert.equal(formatProgress({ kind: 'estimate', ratio: 0.5, stale: false }),
+    '重建估计约 50%');
+  assert.equal(formatProgress({ kind: 'estimate', ratio: 0.5, stale: true }),
+    '上次重建估计约 50%', 'a stale estimate says it is the previous one');
+  assert.equal(formatProgress({ kind: 'complete', ratio: 1, stale: false }), '重建完成');
+  assert.equal(formatProgress({ kind: 'ambiguous', ratio: null, stale: false }), '进度无法判定');
+  assert.equal(formatProgress({ kind: 'unavailable', ratio: null, stale: false }), '进度暂不可用');
+  assert.equal(formatProgress({ kind: 'enough_data', ratio: null, stale: false }),
+    '数据量已达到，文件尚未完成');
+  assert.equal(formatProgress({ kind: 'none', ratio: null, stale: false }), '');
+});
+
+test('T30 quiet and unavailable states carry next-step guidance', () => {
+  const stale = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 2000, trustedRatio: 0.3, trustedAtMs: 2000, lastAdvanceAtMs: 2000 } });
+  const quiet = readView(stale, requestAt(7000, contextFixture()));
+  assert.equal(quiet.data.statusKey, 'no_new_data');
+  assert.notEqual(quiet.data.nextAction, '', 'the quiet state suggests what to check');
+  assert.match(quiet.data.nextAction, /遮挡|暂停/,
+    'the advice names the covered or paused sender');
+
+  const degraded = observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+    progress: { lastDataAtMs: 2000 } });
+  const unavailable = readView(degraded, requestAt(3000, contextFixture()));
+  assert.equal(unavailable.data.statusKey, 'progress_unavailable');
+  assert.notEqual(unavailable.data.nextAction, '', 'the unavailable state suggests a path');
+  assert.match(unavailable.data.nextAction, /继续接收|发送源/);
+});
+
+test('T30 every status copy stays digit-free across the whole status matrix', () => {
+  const ownerless = () => observationFixture({ sessionId: null, sessionSeq: 0,
+    inputKind: null, observationRevision: 0, receivingAtMs: null, rate: { epochMs: 0 } });
+  const cases = [
+    ['idle', 9000, ownerless(), contextFixture({ state: 'Idle', businessRevision: 0, inputKind: null })],
+    ['preparing', 9000, ownerless(), contextFixture({ state: 'Preparing', businessRevision: 1 })],
+    ['waiting_data', 9000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 } }), contextFixture()],
+    ['processing', 2600, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 1000, trustedRatio: 0.25, trustedAtMs: 1000, lastAdvanceAtMs: 1000 } }),
+      contextFixture({ inFlight: true, inFlightSinceMs: 1000 })],
+    ['receiving', 1500, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 1000, trustedRatio: 0.25, trustedAtMs: 1000, lastAdvanceAtMs: 1000 } }),
+      contextFixture()],
+
+    ['no_new_data', 9000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 2000, trustedRatio: 0.3, trustedAtMs: 2000, lastAdvanceAtMs: 2000 } }),
+      contextFixture()],
+    ['no_progress', 9000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 8999, trustedRatio: 0.25, trustedAtMs: 8999, lastAdvanceAtMs: 1000 } }),
+      contextFixture()],
+    ['progress_unknown', 3000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 2000, ambiguity: 19005 }, diagnostics: [19005] }), contextFixture()],
+    ['progress_unavailable', 3000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 2000 } }), contextFixture()],
+    ['collecting_more', 3000, observationFixture({ receivingAtMs: 0, rate: { epochMs: 0 },
+      progress: { lastDataAtMs: 2000, trustedRatio: 1.2, trustedAtMs: 2000, lastAdvanceAtMs: 2000 } }),
+      contextFixture()],
+    ['draining', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Draining' })],
+    ['reconstructing', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Reconstructing' })],
+    ['stopping', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Stopping' })],
+    ['stopped', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Stopped' })],
+    ['incomplete', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Incomplete' })],
+    ['error', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Error' })],
+    ['ready', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800 }), contextFixture({ state: 'Ready', artifactId: '42' })],
+    ['saving_selecting', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'selecting', attemptId: 'a', artifactId: '42', errorCode: null } }),
+      contextFixture({ state: 'Saving', artifactId: '42' })],
+    ['saving_writing', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'writing', attemptId: 'a', artifactId: '42', errorCode: null } }),
+      contextFixture({ state: 'Saving', artifactId: '42' })],
+    ['saving_pending', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'pending', attemptId: 'a', artifactId: '42', errorCode: null } }),
+      contextFixture({ state: 'Saving', artifactId: '42' })],
+    ['saved', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'saved', attemptId: 'a', artifactId: '42', errorCode: null } }),
+      contextFixture({ state: 'Saved', artifactId: '42' })],
+    ['save_cancelled', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'cancelled', attemptId: 'a', artifactId: '42', errorCode: 16002 } }),
+      contextFixture({ state: 'Retryable', artifactId: '42' })],
+    ['save_failed', 1200, observationFixture({ receivingAtMs: 100, endedAtMs: 800,
+      save: { phase: 'failed', attemptId: 'a', artifactId: '42', errorCode: 16005 } }),
+      contextFixture({ state: 'Retryable', artifactId: '42' })],
+  ];
+  const seen = new Set();
+  for (const [expectedKey, at, observation, context] of cases) {
+    const view = readView(observation, requestAt(at, context));
+    assert.equal(view.ok, true, expectedKey);
+    assert.equal(view.data.statusKey, expectedKey, `the matrix reaches ${expectedKey}`);
+    seen.add(view.data.statusKey);
+    for (const field of ['primary', 'secondary', 'nextAction']) {
+      assert.doesNotMatch(view.data[field], /\d/,
+        `${expectedKey}.${field} stays digit-free, got "${view.data[field]}"`);
+    }
+  }
+  assert.equal(seen.size, 23, 'all twenty-three status keys of the schema were exercised');
 });

@@ -145,3 +145,6 @@
 - 亮点：双向停止/切换 owner 更新计时清零；native 文件选择器 tier-3 探针；三时点「录像位置/用时/速率/估计」四行分列；EOF 不足→Incomplete 不可保存→with 恢复；真实取消（对话框停留 4944ms）→Retryable 文案→重存四时点+SHA；哨兵 FileShare.None 锁→如实分支→释放→恢复保存。
 - 产物：media-journeys.mjs（新）、run-e2e 媒体工厂接线、media 根 20261025-teamexec-08（ux-results PARTIAL phase=media）。
 - 提交：`docs: record real video and save recovery evidence`。
+
+
+- 2026-10-25（T30）：S10 登记——#ux-next（aside.guide）桌面单列布局为 **lead 批准的实现简化**（ui-spec 仅要求 ≤760px 下移）；保存后焦点回归仍归 **T31**。登记人：dev-v2-prod。

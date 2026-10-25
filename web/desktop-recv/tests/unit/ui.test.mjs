@@ -246,3 +246,26 @@ test('T26 long copy wraps and diagnostics fold without hiding the preview', () =
     'the preview element sits outside the diagnostics disclosure');
   assert.ok(!/display\s*:\s*none/.test(css), 'no display:none anywhere in the stylesheet');
 });
+
+// --- T30: the probe surface is hidden from AT and recovery copy surfaces -----
+
+// Given the page and app wiring
+// When assistive tech reads the page and a capability/recovery failure shows
+// Then the legacy English probe is aria-hidden, the capability banner speaks
+// Chinese, the artifact size uses Chinese units, and the recovery summary is
+// written into the visible secondary line while the folded log keeps details
+test('T30 the legacy probe hides from AT and recovery copy reaches the surface', () => {
+  const html = pageSource('web/desktop-recv/index.html');
+  assert.match(html, /id="status"[^>]*aria-hidden="true"/,
+    'the legacy probe element is aria-hidden and never announced');
+
+  const app = pageSource('web/desktop-recv/src/app.js');
+  assert.ok(app.includes('recoveryTextZh(code)'),
+    'the recovery summary comes from the Chinese mapping');
+  assert.ok(app.includes('el.uxSecondary.textContent'),
+    'the recovery summary is written into the visible secondary line');
+  assert.match(app, /部分功能不可用/,
+    'the capability banner speaks Chinese');
+  assert.ok(app.includes('字节'),
+    'the artifact size uses Chinese units');
+});

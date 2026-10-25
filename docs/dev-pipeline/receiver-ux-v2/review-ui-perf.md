@@ -271,3 +271,20 @@ readyAt` 在基线构建中是否存在。**不改冻结判据的防线成立**�
 ## 审查者
 
 review-v2-ui-perf（独立审查，未参与 T26/T27/T28 实现）
+
+
+---
+
+# 第 1 次整改结果（T30 产品侧）
+
+整改者：dev-v2-prod（实现车道；measure-ux 工具侧由 perf-tooling 并行处理，未触碰 tools/）。基线：6533965。
+
+- **S1（T31 前修）已修复**：formatProgress 的 estimate 改为向下取整（floor），0.995/0.999 显示「重建估计约 99%」，永不因四舍五入触及 100%；stale 时文案为「上次重建估计约 N%」。新增单测覆盖 0.995/0.999/0/0.5/stale 与 complete/ambiguous/unavailable/enough_data/none 全分支；RED→GREEN（先红：四舍五入 100% 与缺 stale 前缀）。
+- **S2 已修复**：no_new_data → nextAction「检查发送画面是否被遮挡或暂停。」；progress_unavailable →「可继续接收，或检查发送源。」；断言按措辞族（遮挡|暂停 / 继续接收|发送源）落测。
+- **S3 已修复**：#status legacy 探针元素加 aria-hidden="true"（textContent 探针不受影响）；T26 结构钉（app.js 赋值行）保持；新增结构断言锁 aria-hidden。
+- **S4 已修复**：showError 将 recoveryTextZh 摘要写入可见 #ux-secondary（recoveryNotice 生命周期：新会话 accepted 时清除；paint 时通知优先于视图 secondary），诊断日志保留 code+细节（仍折叠）；#caps 横幅改「部分功能不可用：…」；产物大小单位改「字节」；结构断言锁四条。
+- **S7 已落实**：digit-free 走查扩展为 schema 全部 **23** 个 statusKey 的矩阵（原 T26 声明「24」系把 receiving 的视频主文案变体误计为独立 statusKey——ui-spec/schema 枚举为 23；本矩阵另覆盖视频变体的 primary 文案）。全绿。
+- **S10 登记**：aside.guide（#ux-next）单列布局是 lead 批准的实现简化（ui-spec 仅要求 ≤760px 下移，桌面单列可接受）；保存后焦点回归仍归 T31。exec-log 已登记（2026-10-25，T30）。
+- **S11**：属工具侧输出说明（perf-tooling 车道），本整改不涉及。
+
+复验（实测）：`node --test ui ux-view ux-display` 36/36；`node tools/desktop-recv/run-unit.mjs --all` exit 0，12 套 **201** tests（ui 12 / ux-view 17 / ux-display 7，其余同 T27），0 fail/todo/skip；node --check 改动文件全 0。
