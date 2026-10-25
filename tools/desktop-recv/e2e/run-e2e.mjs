@@ -29,6 +29,7 @@ import {
 import { SourceScene, sha256FileBytes } from './source-scene.mjs';
 import { runIatSuite } from './iat-suite.mjs';
 import { createMediaJourneys } from './media-journeys.mjs';
+import { createUiJourneys } from './ui-journeys.mjs';
 import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
@@ -4221,6 +4222,18 @@ Object.assign(SCENARIOS, createMediaJourneys({
   attemptId: () => ACTIVE_ATTEMPT_ID,
 }));
 
+// receiver-ux-v2 UI/AT/measurement suite (T31): E2E-35/36 real journeys plus
+// the E2E-37/38 evidence records. Reads roots lazily like the media journeys.
+Object.assign(SCENARIOS, createUiJourneys({
+  sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
+  importVideo, saveArtifact, runHelper, captureDesktop, clickButton,
+  ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
+  externalSha256, sha256File, SourceScene,
+  CONTEXT: () => CONTEXT,
+  FIXTURES: () => FIXTURES,
+  attemptId: () => ACTIVE_ATTEMPT_ID,
+}));
+
 // --- Round-3 S-1: one attempt identity per invocation ----------------------
 //
 // A journey that throws must never leave an OLDER PASS standing in
@@ -4434,7 +4447,7 @@ async function main() {
   // ux-results.json, never in the v1 results.json.
   const plannedCase = isUxCase(scenarioId) ? null : loadPlanningCase(scenarioId);
   if (plannedCase) writeAttemptMarker(scenarioId, ATTEMPT_ID);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-30']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-30', 'E2E-35', 'E2E-36']);
   // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
   // stack receiver would clash on the shared CDP debug port (9445).
   const selfManaged = new Set(['E2E-1', 'E2E-2']);

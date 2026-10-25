@@ -148,3 +148,12 @@
 
 
 - 2026-10-25（T30）：S10 登记——#ux-next（aside.guide）桌面单列布局为 **lead 批准的实现简化**（ui-spec 仅要求 ≤760px 下移）；保存后焦点回归仍归 **T31**。登记人：dev-v2-prod。
+
+## B8-T31 — 真实浏览器/键盘/AT + A/B（dev-v2-tools → lead 提交；收口续批）
+
+- 起止：2026-10-25 09:48 ～ 10:58 (+08:00)；报告：b8-t31-report.md；日志：red-logs/t31-{green.txt,oldruns-after.sha}
+- E2E-38 录制 A/B：attempt-1 FAIL=E_TELEMETRY_NOT_ARMED×5（工具缺陷：观察器 init 在 documentElement null 时抛错——先诊断复现后修复，instrumentation SHA 42f8a949…；原始数据保留）；attempt-2 **PASS**（5/5 对，readyMs 15852/限18259、p50 63.8/72.6、p95 102.1/112.93；候选 armed=true 写间隔≥250ms；基线不适用如实）。
+- UX-UI attempt-3 PASS：E2E-35 前台/后台时钟（S02 visibility 旗标致 NOT_RUN 如实；恢复/冻结/保存全过）；E2E-36 四视口+200% 缩放矩阵、长中文名 101 字符换行、键盘全链（Enter 激活/Tab 序/录像导入/键盘重存 SHA 相等）。
+- 如实 NOT_RUN：E2E-37（Narrator 无法程序化核验真实语音）；E2E-38 实时 5×30s 腿（采集器未实现）→ E2E-38 整体 NOT_RUN。
+- 发现项：①取消保存后焦点落 BODY（T24 登记验收未满足——交 prod 修复后重测）；②后台 visibility 旗标行为记录。
+- 提交：`docs: record real UI acceptance and first a-b overhead run`。

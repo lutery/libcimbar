@@ -692,12 +692,18 @@ export const OBSERVER_SCRIPT = `(() => {
   } else if (document.readyState === 'loading') {
     // The static spans arrive with the parsed document: arm once on
     // DOMContentLoaded, keep a bounded root observer for late-inserted
-    // spans, and stop observing at load. No timers are involved.
+    // spans, and stop observing at load. No timers are involved. The
+    // listeners are registered FIRST: an init script can run before
+    // document.documentElement exists, and observing null would throw and
+    // kill the whole IIFE with telemetryArmed stuck false (observed on the
+    // real candidate page; fixed by ordering + null guard).
+    document.addEventListener('DOMContentLoaded', () => { armTelemetry(); }, { once: true });
     const rootObserver = new MutationObserver(() => {
       if (armTelemetry()) rootObserver.disconnect();
     });
-    rootObserver.observe(document.documentElement, { childList: true, subtree: true });
-    document.addEventListener('DOMContentLoaded', () => { armTelemetry(); }, { once: true });
+    if (document.documentElement) {
+      rootObserver.observe(document.documentElement, { childList: true, subtree: true });
+    }
     window.addEventListener('load', () => {
       rootObserver.disconnect();
       if (!state.telemetryArmed) state.telemetryUnavailable = true;

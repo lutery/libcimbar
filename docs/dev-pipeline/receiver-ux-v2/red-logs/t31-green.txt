@@ -1,0 +1,10 @@
+== T31 GREEN ==
+measure-ux attempt-2 (candidate-20261025-02): verdict=PASS validPairs=5 (ready 16372 vs 15852, p50 66 vs 63.8, p95 98.2 vs 102.1; all limits passed)
+run-e2e UX-UI attempt-3 (attempt UX-UI-2026-10-25T02-48-54-387Z-59060a): E2E-35 PASS(5) E2E-36 PASS(8) E2E-37 NOT_RUN(1) E2E-38 NOT_RUN(3: recorded A/B assertions PASS + live legs NOT_RUN); CASE UX-UI PASS
+
+ux-display: 7 tests, 0 failed, 0 todo, 0 skipped
+UNIT SUITES PASS (12 suite(s))
+exit=0
+SELFTEST PASS (55 cases)
+SELFTEST PASS (14 cases)
+measure-ux node --check=0

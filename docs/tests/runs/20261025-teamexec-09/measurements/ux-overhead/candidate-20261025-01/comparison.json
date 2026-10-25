@@ -1,0 +1,228 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "9235d8617559e93003525530cf806771561634accbc57253d2fc720216cd7b66",
+  "validPairs": 0,
+  "pairs": [
+    {
+      "pair": 1,
+      "valid": false,
+      "reason": "E_TELEMETRY_NOT_ARMED",
+      "a": {
+        "readyMs": 17219,
+        "p50Ms": 63.29999999701977,
+        "p95Ms": 94.20000000298023,
+        "okFrameCount": 112,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15507,
+        "p50Ms": 61.900000005960464,
+        "p95Ms": 100.20000000298023,
+        "okFrameCount": 100,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_NOT_ARMED"
+      }
+    },
+    {
+      "pair": 2,
+      "valid": false,
+      "reason": "E_TELEMETRY_NOT_ARMED",
+      "a": {
+        "readyMs": 15651,
+        "p50Ms": 66.5,
+        "p95Ms": 112.29999999701977,
+        "okFrameCount": 97,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15894,
+        "p50Ms": 67.5,
+        "p95Ms": 98.90000000596046,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_NOT_ARMED"
+      }
+    },
+    {
+      "pair": 3,
+      "valid": false,
+      "reason": "E_TELEMETRY_NOT_ARMED",
+      "a": {
+        "readyMs": 15402,
+        "p50Ms": 61.29999999701977,
+        "p95Ms": 95.1000000089407,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15282,
+        "p50Ms": 62.79999999701977,
+        "p95Ms": 91.80000001192093,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_NOT_ARMED"
+      }
+    },
+    {
+      "pair": 4,
+      "valid": false,
+      "reason": "E_TELEMETRY_NOT_ARMED",
+      "a": {
+        "readyMs": 15784,
+        "p50Ms": 67,
+        "p95Ms": 98.6000000089407,
+        "okFrameCount": 102,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 17135,
+        "p50Ms": 66.30000001192093,
+        "p95Ms": 99.09999999403954,
+        "okFrameCount": 109,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_NOT_ARMED"
+      }
+    },
+    {
+      "pair": 5,
+      "valid": false,
+      "reason": "E_TELEMETRY_NOT_ARMED",
+      "a": {
+        "readyMs": 16493,
+        "p50Ms": 61,
+        "p95Ms": 83.8999999910593,
+        "okFrameCount": 107,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 14729,
+        "p50Ms": 59.099999994039536,
+        "p95Ms": 87.79999999701977,
+        "okFrameCount": 99,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_NOT_ARMED"
+      }
+    }
+  ],
+  "metrics": {
+    "readyMs": {
+      "metric": "readyMs",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 250,
+      "formula": "candidateMedian <= baselineMedian * 1.10 + 250",
+      "limit": 250,
+      "marginMs": 250,
+      "pass": true
+    },
+    "frameRttP50Ms": {
+      "metric": "frameRttP50Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 2,
+      "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)",
+      "limit": 2,
+      "marginMs": 2,
+      "pass": true
+    },
+    "frameRttP95Ms": {
+      "metric": "frameRttP95Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.15,
+      "absoluteAllowanceMs": 5,
+      "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)",
+      "limit": 5,
+      "marginMs": 5,
+      "pass": true
+    }
+  },
+  "verdict": "FAIL",
+  "reasons": [
+    {
+      "code": "E_TELEMETRY_NOT_ARMED",
+      "side": "B",
+      "pairIndex": 1,
+      "detail": "the candidate numeric telemetry area was never observed (telemetryArmed !== true)"
+    },
+    {
+      "code": "E_TELEMETRY_NOT_ARMED",
+      "side": "B",
+      "pairIndex": 2,
+      "detail": "the candidate numeric telemetry area was never observed (telemetryArmed !== true)"
+    },
+    {
+      "code": "E_TELEMETRY_NOT_ARMED",
+      "side": "B",
+      "pairIndex": 3,
+      "detail": "the candidate numeric telemetry area was never observed (telemetryArmed !== true)"
+    },
+    {
+      "code": "E_TELEMETRY_NOT_ARMED",
+      "side": "B",
+      "pairIndex": 4,
+      "detail": "the candidate numeric telemetry area was never observed (telemetryArmed !== true)"
+    },
+    {
+      "code": "E_TELEMETRY_NOT_ARMED",
+      "side": "B",
+      "pairIndex": 5,
+      "detail": "the candidate numeric telemetry area was never observed (telemetryArmed !== true)"
+    }
+  ],
+  "formulaSource": "docs/plans/receiver-ux-v2/performance-method.json"
+}
