@@ -118,3 +118,36 @@ export function describeRecovery(code, registry) {
     requiresClick: retryAction === 'new_click',
   };
 }
+
+// Chinese recovery copy for the same registered codes (ui-spec: express the
+// actual code without inventing a specific permission reason). This is the
+// user-facing text; the English describeRecovery above stays the machine
+// surface used by the existing probes.
+export function recoveryTextZh(code) {
+  const value = Number(code);
+  if (value === 16002) {
+    return { message: '保存已取消。', nextAction: '文件仍在，点击「保存文件…」可再次保存。' };
+  }
+  if (value === 16008 || value === 16009) {
+    return { message: '保存尚未结算。', nextAction: '请稍候，不要重复打开保存窗口。' };
+  }
+  if (value >= 16003 && value <= 16006) {
+    return { message: '保存失败。', nextAction: '文件仍在，可重试保存。' };
+  }
+  if (value === 16007) {
+    return { message: '没有可保存的文件。', nextAction: '请先完成一次接收。' };
+  }
+  if (value >= 12001 && value <= 12006) {
+    return { message: '抓屏未能开始或已取消。', nextAction: '请重新点击「实时抓屏」并允许共享。' };
+  }
+  if (value >= 13001 && value <= 13005) {
+    return { message: '录像无法读取或未完成。', nextAction: '请换一个可播放的录像文件重试。' };
+  }
+  if (value >= 14003 && value <= 15012) {
+    return { message: '解码中断。', nextAction: '请重新开始接收。' };
+  }
+  if (value >= 18001 && value <= 18003) {
+    return { message: '资源校验失败。', nextAction: '请刷新页面后重试。' };
+  }
+  return { message: '操作未完成。', nextAction: '请重新开始接收。' };
+}

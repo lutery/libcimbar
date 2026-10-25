@@ -1,7 +1,7 @@
 // Desktop receiver entry. The coordinator owns session state and the single
 // in-flight frame; this file only wires DOM events to it and paints snapshots.
 import { inspectCapabilities } from './capabilities.js';
-import { deriveControls, describeRecovery, safeSuggestedName, noDataHint } from './ui.js';
+import { deriveControls, recoveryTextZh, safeSuggestedName, noDataHint } from './ui.js';
 import { DecoderClient } from './decoder-client.js';
 import { LIMITS_DEFAULT } from './contracts.js';
 import { SessionCoordinator } from './session.js';
@@ -178,8 +178,8 @@ function logLine(text, isError = false) {
 }
 
 function showError(code) {
-  const recovery = describeRecovery(code, errorRegistry);
-  logLine(`${code}: ${recovery.message} (${recovery.retryAction})`, true);
+  const recovery = recoveryTextZh(code);
+  logLine(`${code}: ${recovery.message}${recovery.nextAction}`, true);
 }
 
 // --- Measurement hooks (diagnostics only) ---------------------------------

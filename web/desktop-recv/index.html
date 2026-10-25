@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cimbar Desktop Receiver</title>
+  <title>Cimbar 桌面接收器</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>Cimbar Desktop Receiver</h1>
+    <h1>Cimbar 桌面接收器</h1>
     <span id="mode" class="pill">Mode B</span>
   </header>
 
@@ -16,27 +16,25 @@
 
   <main>
     <div class="controls">
-      <button id="btn-live" type="button">Share a window or screen</button>
-      <button id="btn-video" type="button">Import a recording</button>
-      <button id="btn-stop" type="button" disabled>Stop</button>
-      <button id="btn-save" type="button" disabled>Save file…</button>
+      <button id="btn-live" type="button">实时抓屏</button>
+      <button id="btn-video" type="button">录像导入</button>
+      <button id="btn-stop" type="button" disabled>停止</button>
+      <button id="btn-save" type="button" disabled>保存文件…</button>
       <input id="file-input" type="file" accept="video/*,.mp4,.webm,.mkv" hidden>
     </div>
 
-    <p id="status" class="status">Ready to receive</p>
+    <p id="status" class="status legacy-status">Ready to receive</p>
 
     <section id="ux-feedback" class="ux-feedback">
       <p id="ux-primary" class="ux-primary"></p>
       <p id="ux-secondary" class="ux-secondary"></p>
-      <p id="ux-next" class="ux-next"></p>
-      <p id="ux-save" class="ux-save"></p>
+      <p id="ux-progress" class="ux-progress"></p>
       <div class="ux-metrics">
         <span id="ux-elapsed" class="ux-metric"></span>
         <span id="ux-rate" class="ux-metric"></span>
-        <span id="ux-progress" class="ux-metric"></span>
         <span id="ux-media" class="ux-metric"></span>
       </div>
-      <p id="ux-announcement" class="ux-announcement" aria-live="polite"></p>
+      <p id="ux-save" class="ux-save"></p>
     </section>
 
     <div id="artifact" class="artifact" hidden>
@@ -44,8 +42,16 @@
       <span id="artifact-size" class="muted"></span>
     </div>
 
+    <p id="ux-next" class="ux-next"></p>
+
     <video id="preview" playsinline muted hidden></video>
-    <pre id="log" class="log"></pre>
+
+    <details id="ux-diagnostics" class="diagnostics">
+      <summary>诊断日志</summary>
+      <pre id="log" class="log"></pre>
+    </details>
+
+    <p id="ux-announcement" class="ux-announcement" aria-live="polite"></p>
   </main>
 
   <script type="module" src="src/app.js"></script>

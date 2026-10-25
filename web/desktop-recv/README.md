@@ -1,48 +1,46 @@
-# Cimbar Desktop Receiver
+# Cimbar 桌面接收器
 
-Receives a file from an animated cimbar code shown in another window — for
-example a cloud desktop you are viewing through Citrix — without using a phone
-camera.
+在电脑上接收另一端窗口里播放的 Cimbar 动画码文件——例如通过 Citrix 查看的
+云桌面——不需要用手机摄像头拍摄。
 
-## Run
+## 运行
 
-1. Extract the package to any folder. ASCII, spaces, and CJK characters in
-   the path are all fine - see the note below.
-2. Start it by running `launch.cmd` (double-click, or from a terminal). It
-   changes into the package folder and starts the local server; your browser
-   opens `http://127.0.0.1:8766/`. Options pass through, e.g.
-   `launch.cmd -Port 8767 -NoBrowser`.
+1. 把发布包解压到任意文件夹（路径包含中文或空格都可以）。
+2. 双击 `launch.cmd` 启动（或在终端里运行）。它会进入包目录并启动本地
+   服务器，浏览器自动打开 `http://127.0.0.1:8766/`。可带参数，例如
+   `launch.cmd -Port 8767 -NoBrowser`。
 
-   Equivalent: `pwsh -NoProfile -File launch.ps1` (also from any path).
+   等价写法：`pwsh -NoProfile -File launch.ps1`（任意路径均可）。
 
-3. Click **Share a window or screen** and pick the window that shows the code,
-   or **Import a recording** to decode a video you recorded earlier.
-4. When the file has been rebuilt, click **Save file…**.
+3. 两种输入方式：
+   - **实时抓屏**：点击后选择显示着码流的窗口并允许共享；
+   - **录像导入**：选择之前录好的包含码流的录像文件。
+4. 文件重建完成后，主状态显示「文件已接收完成，请保存」，点击
+   **保存文件…** 选择保存位置。
 
-## Notes
+## 界面与指标口径
 
-- Path correction (2026-10-21): an earlier revision of this file claimed
-  that a path mixing CJK characters and spaces breaks the launcher and that
-  pwsh cannot load `launch.ps1` from such a directory by any invocation
-  form. That attribution was wrong. The failure came from our own test
-  invocation chain, which had copied the package to a GBK-mojibake twin
-  directory while the launcher was invoked with the intended codepoints;
-  pwsh then reported the genuinely missing file as "cannot be recognized as
-  a script file name". The same-machine counterexample and the full E2E-1
-  re-run (both `launch.cmd` and absolute `pwsh -File`) pass from a
-  CJK+space directory; evidence under
-  `docs/tests/runs/20261019-teamexec-02/proof/E2E-1/`. Commit 8c59864 keeps
-  the historical (incorrect) attribution.
+- 主状态始终用一句话说明当前阶段与原因；右侧/下方给出下一步建议。
+- **重建估计**是按已识别码流推算的重建进度估计，不是文件传输百分比；
+  显示「继续补齐重建数据」时表示理论数据量已够、仍需继续采集。
+- **速率**表示「识别出的编码数据量（含协议与冗余）」，不是文件有效载荷
+  吞吐；单位 KiB/s，「<0.1」表示有少量数据但不足一位小数。
+- **已用时**从进入接收状态开始计时；保存过程不计入接收用时。
+- 录像会话额外显示**录像处理位置**（与文件进度分开，不合并为百分比）。
+- 多流或报告不可用时显示「进度暂不可用」或「进度无法判定」，仍会正常
+  显示速率与用时。
+- 「已保存」只在写入与关闭都成功后才出现；取消或失败时文件仍在，可再次
+  保存，不需要重新接收。
+- 诊断日志默认折叠（点击「诊断日志」展开）；常规操作不需要看英文日志。
 
-- The server listens on `127.0.0.1` only and never registers a Service Worker.
-- Screen capture and the save picker need a secure context; `localhost` counts.
-- This build supports **mode B**. If the sender uses another mode, the frame
-  counter stays at zero — check that the sender matches. Note the sender's
-  in-page mode switch does not restore a working stream after leaving mode B;
-  reload the sender page (its selector defaults to B) if you changed it.
-- If the port is busy, start with another one: `launch.cmd -Port 8767`.
-- If the server cannot start, the launcher waits for the loopback port, then
-  exits non-zero (code 5) and prints the child process error plus the path of
-  its diagnostic logs; it never reports success without a listening server.
-- If no frames are decoded, make sure the sender window is fully visible and
-  not scaled down by the remote-desktop client.
+## 注意
+
+- 服务器只监听 `127.0.0.1`，不注册 Service Worker。
+- 抓屏与保存对话框需要安全上下文；`localhost` 视为安全。
+- 本构建支持 **模式 B**。发送端模式不一致时画面可正常显示但始终识别不到
+  码流——请确认发送端使用 Mode B；若在发送端切换过模式，刷新发送端页面
+  恢复默认设置。
+- 端口被占用时换一个：`launch.cmd -Port 8767`。
+- 服务器无法启动时，启动器会等待本机端口后以非零码（5）退出，并打印子
+  进程错误与诊断日志路径；不会在没有监听服务器时报告成功。
+- 识别不到码流时，先确认发送窗口完整可见、没有被远程桌面客户端缩放。

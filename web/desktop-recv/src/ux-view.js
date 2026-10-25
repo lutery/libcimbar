@@ -49,10 +49,41 @@ const TEXT = {
   error: '接收发生错误',
 };
 
+// The reason line under the main status (ui-spec state matrix). Copies stay
+// digit-free so the semantic region never mirrors the throttled metrics.
+const SECONDARY = {
+  idle: '选择「实时抓屏」或「录像导入」开始接收。',
+  preparing: '正在准备画面与解码器，请稍候。',
+  waiting_data: '尚未识别到可用码流。',
+  processing: '当前帧处理时间较长，请稍候。',
+  receiving: '已识别到码流。',
+  receiving_video: '已识别到码流。',
+  no_new_data: '已超过五秒没有识别到新数据。',
+  no_progress: '已识别到码流，但重建进度一段时间没有推进。',
+  progress_unknown: '无法确定当前文件进度。',
+  progress_unavailable: '当前无法读取文件进度，仍可继续接收。',
+  collecting_more: '理论数据量已达到，文件尚未完成。',
+  draining: '正在处理最后的数据。',
+  reconstructing: '正在重建文件。',
+  ready: '文件已完整重建。',
+  saving_selecting: '请选择保存位置。',
+  saving_writing: '正在写入文件。',
+  saving_pending: '写入尚未结算，请稍候。',
+  saved: '写入与关闭均已成功。',
+  save_cancelled: '文件仍在，可以再次保存。',
+  save_failed: '文件仍在，可以重试保存。',
+  stopping: '正在停止本次接收。',
+  stopped: '本次已停止，可重新开始接收。',
+  incomplete: '本次未完成，可重新开始接收。',
+  error: '请重新开始接收。',
+};
+
 const WAITING_ADVICE = '请检查发送画面是否可见，并确认 Mode 是否匹配。';
 const KEEP_SENDING = '保持发送画面可见并继续播放。';
-const READY_NEXT = '点击保存文件。';
+const READY_NEXT = '点击「保存文件…」。';
 const SAVED_NEXT = '可以开始下一次接收。';
+const STOPPED_NEXT = '点击「实时抓屏」或「录像导入」重新开始。';
+const INCOMPLETE_NEXT = '请从头播放码流，或重新开始接收。';
 
 function isId(value) {
   return typeof value === 'string' && ID_PATTERN.test(value);
@@ -297,6 +328,7 @@ export function readView(observation, request) {
 
   const primary = statusKey === 'receiving' && context.inputKind === 'video'
     ? TEXT.receiving_video : TEXT[statusKey];
+  const secondary = SECONDARY[statusKey] || '';
   let nextAction = '';
   if (statusKey === 'waiting_data'
       && nowMs - receivingAtMs >= FIRST_DATA_NOTICE_MS) {
@@ -305,6 +337,14 @@ export function readView(observation, request) {
     nextAction = READY_NEXT;
   } else if (statusKey === 'saved') {
     nextAction = SAVED_NEXT;
+  } else if (statusKey === 'stopped') {
+    nextAction = STOPPED_NEXT;
+  } else if (statusKey === 'incomplete') {
+    nextAction = INCOMPLETE_NEXT;
+  } else if (statusKey === 'save_cancelled') {
+    nextAction = '文件仍在，点击「保存文件…」可再次保存。';
+  } else if (statusKey === 'save_failed') {
+    nextAction = '点击「保存文件…」重试保存。';
   } else if (['receiving', 'no_progress', 'progress_unknown', 'collecting_more'].includes(statusKey)) {
     nextAction = KEEP_SENDING;
   }
@@ -326,7 +366,7 @@ export function readView(observation, request) {
       state: context.state,
       statusKey,
       primary,
-      secondary: '',
+      secondary,
       nextAction,
       elapsedMs: projectElapsed(receivingAtMs, endedAtMs, nowMs),
       rate: projectRate(observation, nowMs, receivingAtMs, endedAtMs),
@@ -357,10 +397,11 @@ export function formatRate(rate) {
 export function formatProgress(progress) {
   if (!progress) return '';
   switch (progress.kind) {
-    case 'estimate': return `${Math.round(progress.ratio * 100)}%`;
-    case 'complete': return '100%';
+    case 'estimate': return `重建估计约 ${Math.round(progress.ratio * 100)}%`;
+    case 'complete': return '重建完成';
     case 'enough_data': return '数据量已达到，文件尚未完成';
     case 'ambiguous': return '进度无法判定';
+    case 'unavailable': return '进度暂不可用';
     default: return '';
   }
 }
