@@ -267,13 +267,28 @@ export function judgeRound(record, rules) {
       continue;
     }
     if (frame.ok === true) {
-      if (!isFiniteNumber(frame.settledAtMs) || !isFiniteNumber(frame.rttMs)) {
+      if (!isFiniteNumber(frame.settledAtMs)) {
         malformed += 1;
-        push('E_FRAMES', `frame ${seq}: claimed ok but has no settlement/rtt`);
+        push('E_FRAMES', `frame ${seq}: claimed ok but has no settlement`);
         continue;
       }
+      // B-R1(b): the raw start/end timestamps are the primary RTT source. A
+      // settlement before its own submission is not a usable sample, and the
+      // redundant rttMs field is only a cross-check that must agree exactly.
+      if (frame.settledAtMs < frame.t0Ms) {
+        malformed += 1;
+        push('E_RTT',
+          `frame ${seq}: settledAtMs (${frame.settledAtMs}) is before t0Ms (${frame.t0Ms})`);
+        continue;
+      }
+      const rtt = frame.settledAtMs - frame.t0Ms;
+      if (frame.rttMs !== rtt) {
+        push('E_RTT_MISMATCH',
+          `frame ${seq}: rttMs is ${JSON.stringify(frame.rttMs)},`
+          + ` settledAtMs - t0Ms is ${rtt}`);
+      }
       okCount += 1;
-      rttSamples.push(frame.rttMs);
+      rttSamples.push(rtt);
     } else if (isFiniteNumber(frame.settledAtMs)) {
       rejectedCount += 1;
     }
@@ -978,10 +993,16 @@ export function recomputeMeasurement({ measurementDir, methodBytes, method }, ex
     || summary.instrumentationSha256 !== INSTRUMENTATION_SHA256) {
     push('E_INSTRUMENTATION_BINDING', 'summary/comparison instrumentationSha256 do not match');
   }
-  if (expected.productManifestSha256 && run.candidate
-    && run.candidate.productManifestSha256 !== expected.productManifestSha256) {
-    push('E_BUILD_BINDING',
-      'run.json candidate product manifest does not match the current run context');
+  if (expected.productManifestSha256) {
+    // An expected identity that encounters no candidate is a refusal, never
+    // a skipped check: "no candidate" cannot prove any build.
+    if (!run.candidate || typeof run.candidate.productManifestSha256 !== 'string') {
+      push('E_BUILD_BINDING',
+        'run.json carries no candidate product manifest identity; the measurement cannot be bound to the run context');
+    } else if (run.candidate.productManifestSha256 !== expected.productManifestSha256) {
+      push('E_BUILD_BINDING',
+        'run.json candidate product manifest does not match the current run context');
+    }
   }
   if (expected.inputSha256 && input.inputSha256 !== expected.inputSha256) {
     push('E_INPUT_BINDING', 'input.json inputSha256 does not match the current input manifest');
@@ -1033,6 +1054,18 @@ export function recomputeMeasurement({ measurementDir, methodBytes, method }, ex
   stats.rounds = rounds.length;
   stats.summary = recomputedSummary;
   stats.metrics = metrics;
+  // Round-level judging violations (E_RTT/E_RTT_MISMATCH/...) are what
+  // invalidated a round; they change the derived verdict but not the
+  // "claims match the recomputation" success bit. Surface them so a refusal
+  // can name the exact contradiction instead of only the verdict delta.
+  stats.roundViolations = paired.allRounds.flatMap((round) => (round.violations || [])
+    .map((violation) => ({
+      side: round.side,
+      pairIndex: round.pairIndex,
+      warmup: round.warmup === true,
+      code: violation.code,
+      detail: violation.detail,
+    })));
 
   // --- compare every claimed number ------------------------------------
   for (const side of ['A', 'B']) {
@@ -1311,19 +1344,73 @@ function mirrorViolations(copyDir, originalDir, push) {
   }
 }
 
+const SHA256_RE = /^[0-9a-f]{64}$/;
+
+// Build the EXPECTED identities from the run context. Every required identity
+// is either actually obtained (the product manifest must re-hash to the value
+// the context declares; the input identities are read from the bound input
+// manifest) or reported as a violation - an empty expected object would make
+// every downstream binding check silently vacuous.
 function contextExpectations(contextPath, repoRoot, push) {
   const expected = {};
   const context = loadRunContext(contextPath, repoRoot ? { repoRoot } : {});
-  expected.productManifestSha256 = context.productManifestSha256;
-  const manifest = JSON.parse(readFileSync(context.abs.inputManifest, 'utf8'));
-  if (manifest.primaryInput && typeof manifest.primaryInput.sha256 === 'string') {
-    expected.inputSha256 = manifest.primaryInput.sha256;
+
+  if (!context.productManifest || !context.productManifestSha256) {
+    push('E_CONTEXT_BINDING',
+      'the run context does not bind a product manifest; measurements cannot be bound to the current build');
+  } else {
+    const manifestAbs = context.abs.productManifest;
+    if (!existsSync(manifestAbs) || !statSync(manifestAbs).isFile()) {
+      push('E_CONTEXT_BINDING',
+        `the product manifest declared by the run context is missing on disk: ${context.productManifest}`);
+    } else {
+      const diskSha = sha256(readFileSync(manifestAbs));
+      if (diskSha !== context.productManifestSha256) {
+        push('E_CONTEXT_BINDING',
+          `the product manifest on disk does not hash to the run context productManifestSha256`
+          + ` (disk ${diskSha.slice(0, 12)}... vs context ${context.productManifestSha256.slice(0, 12)}...)`);
+      } else {
+        expected.productManifestSha256 = context.productManifestSha256;
+      }
+    }
   }
-  if (manifest.media && typeof manifest.media.withSha256 === 'string') {
-    expected.mediaSha256 = manifest.media.withSha256;
+
+  let manifest = null;
+  if (!context.inputManifest) {
+    push('E_CONTEXT_BINDING',
+      'the run context does not bind an input manifest; the measurement cannot be bound to the current inputs');
+  } else {
+    const inputAbs = context.abs.inputManifest;
+    if (!existsSync(inputAbs) || !statSync(inputAbs).isFile()) {
+      push('E_CONTEXT_BINDING',
+        `the input manifest declared by the run context is missing on disk: ${context.inputManifest}`);
+    } else if (context.inputManifestSha256
+      && sha256(readFileSync(inputAbs)) !== context.inputManifestSha256) {
+      push('E_CONTEXT_BINDING',
+        'the input manifest on disk does not hash to the run context inputManifestSha256');
+    } else {
+      try {
+        manifest = JSON.parse(readFileSync(inputAbs, 'utf8'));
+      } catch (error) {
+        push('E_CONTEXT_BINDING', `the input manifest is not readable JSON: ${error.message}`);
+      }
+    }
   }
-  if (manifest.liveInput && typeof manifest.liveInput.sha256 === 'string') {
-    expected.liveInputSha256 = manifest.liveInput.sha256;
+  if (manifest) {
+    const take = (field, value, label) => {
+      if (typeof value === 'string' && SHA256_RE.test(value)) {
+        expected[field] = value;
+      } else {
+        push('E_CONTEXT_BINDING',
+          `the input manifest does not provide ${label}; the measurement cannot be bound`);
+      }
+    };
+    take('inputSha256', manifest.primaryInput && manifest.primaryInput.sha256,
+      'primaryInput.sha256');
+    take('mediaSha256', manifest.media && manifest.media.withSha256,
+      'media.withSha256');
+    take('liveInputSha256', manifest.liveInput && manifest.liveInput.sha256,
+      'liveInput.sha256');
   }
   return expected;
 }
@@ -1377,14 +1464,15 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         target = resolve(originalDir);
       }
       const result = recomputeMeasurement({
-        measurementDir: target, methodBytes, method, expected,
-      });
+        measurementDir: target, methodBytes, method,
+      }, expected);
       stats.measurements.push({
         requestedDir: resolve(dir),
         recomputedDir: target,
         ok: result.ok,
         validPairs: result.stats.validPairs,
         verdict: result.stats.verdict,
+        roundViolations: result.stats.roundViolations || [],
         live: result.stats.live,
       });
       violations.push(...result.violations);

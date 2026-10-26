@@ -395,6 +395,65 @@ def measurement_dir_of_ref(ref):
     return None
 
 
+def check_recomputed_live(label, live, violations):
+    """B-R1(a): all ten live sides must be VALID in the recomputation.
+
+    The shape is the one recomputeLiveDir actually prints: {sides (ten
+    pair-<n>-<side> entries), sidesValid, verdict}. A missing field is a
+    violation, never a silent pass.
+    """
+    if not isinstance(live, dict):
+        violations.append(label + " stats are missing; the ten live sides cannot be proven")
+        return
+    if live.get("verdict") != "PASS":
+        violations.append(label + " verdict is %r; the gate requires the recomputed live verdict PASS"
+                          % (live.get("verdict"),))
+    sides_valid = live.get("sidesValid")
+    if (not isinstance(sides_valid, dict)
+            or sides_valid.get("A") != 5 or sides_valid.get("B") != 5):
+        violations.append(label + " sidesValid is %r; five VALID A and five VALID B sides are required"
+                          % (sides_valid,))
+    sides = live.get("sides")
+    if not isinstance(sides, dict) or len(sides) != 10:
+        violations.append(label + " sides has %s entries; the ten pair-<n>-<side> live sides are required"
+                          % (len(sides) if isinstance(sides, dict) else "no"))
+        return
+    for name in sorted(sides):
+        side = sides[name]
+        if not isinstance(side, dict) or side.get("valid") is not True:
+            violations.append(label + " side %s is not VALID" % name)
+
+
+def check_recomputed_stats(prefix, payload, violations):
+    """B-R1(a): a successful recomputation is not itself an acceptance PASS.
+
+    The calculator keeps ok=True when it successfully derives a FAIL/NOT_RUN;
+    the outer gate must require the derived verdict itself to be PASS with
+    five valid recorded pairs and all ten live sides VALID.
+    """
+    stats = payload.get("stats")
+    if not isinstance(stats, dict):
+        violations.append(prefix + "measurement recompute returned no stats;"
+                          " the acceptance verdict cannot be proven")
+        return
+    measurements = stats.get("measurements")
+    if not isinstance(measurements, list) or not measurements:
+        violations.append(prefix + "measurement recompute returned no measurement stats")
+        return
+    for index, entry in enumerate(measurements):
+        label = prefix + "recomputed measurement[%d]" % index
+        if not isinstance(entry, dict):
+            violations.append(label + " stats must be an object")
+            continue
+        if entry.get("verdict") != "PASS":
+            violations.append(label + " verdict is %r; the gate requires the recomputed"
+                              " measurement verdict PASS" % (entry.get("verdict"),))
+        if entry.get("validPairs") != 5:
+            violations.append(label + " validPairs is %r; five valid recorded pairs are required"
+                              % (entry.get("validPairs"),))
+        check_recomputed_live(label + ".live", entry.get("live"), violations)
+
+
 def run_measurement_recompute(measurement_rel, context_payload, context_path, repo_root,
                               prefix, violations):
     """Re-run the pure calculator over the raw files (B-02).
@@ -402,6 +461,7 @@ def run_measurement_recompute(measurement_rel, context_payload, context_path, re
     The calculator re-derives every recorded number and live-side verdict and
     refuses a tampered summary, a missing raw pair file, a short/early-Ready
     live window and an input/build that is no longer bound to this context.
+    When it succeeds, the DERIVED verdicts must themselves be PASS (B-R1a).
     """
     run_root = context_payload["abs"]["runRoot"]
     measurement_abs = resolve_inside(run_root, measurement_rel)
@@ -454,6 +514,8 @@ def run_measurement_recompute(measurement_rel, context_payload, context_path, re
                 shown += 1
         if shown == 0:
             violations.append(prefix + "measurement recompute refused (exit %d)" % proc.returncode)
+        return
+    check_recomputed_stats(prefix, payload, violations)
 
 
 def validate_ux_record(record, scenario, context_payload, gate, violations,

@@ -480,6 +480,31 @@ test('T28-04g wrong input/media SHA on a round is refused', () => {
   assert.equal(wrongMedia.exclusionReason, 'E_MEDIA_SHA');
   assert.equal(wrongMedia.frames.length, 35, 'refused rounds keep their raw samples');
 });
+
+// --- Round-13 B-R1(b): RTT comes from the RAW start/end timestamps ---------
+
+test('T-R13-B1b a lying rttMs is refused and the recomputed value is used', () => {
+  const frames = frameSeq(35, 40);
+  frames[7].rttMs = 0; // redundant field lies; t0Ms/settledAtMs unchanged
+  const judged = judgeRound(validRoundRecord({ frames }), baseRules());
+  assert.ok(judged.violations.some((v) => v.code === 'E_RTT_MISMATCH'
+    && /frame 8/.test(v.detail) && /rttMs is 0/.test(v.detail) && /40/.test(v.detail)),
+  JSON.stringify(judged.violations));
+  assert.equal(judged.p50Ms, 40, 'the recomputed RTT feeds the percentile');
+  assert.equal(judged.p95Ms, 40);
+  assert.ok(judged.rttSamples.every((value) => value === 40),
+    'no raw sample carries the redundant field value');
+});
+
+test('T-R13-B1b a settlement before its submission is refused', () => {
+  const frames = frameSeq(35, 40);
+  frames[3].settledAtMs = frames[3].t0Ms - 1;
+  const judged = judgeRound(validRoundRecord({ frames }), baseRules());
+  assert.ok(judged.violations.some((v) => v.code === 'E_RTT' && /frame 4/.test(v.detail)),
+    JSON.stringify(judged.violations));
+  assert.equal(judged.exclusionReason, 'E_RTT');
+  assert.equal(judged.p50Ms, null, 'an unordered settlement is not measured');
+});
 // --- T28-05 environment matching, pair plan and pairing -------------------
 
 test('T28-05a matchEnvironment reports every mismatching field', () => {

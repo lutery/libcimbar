@@ -17,6 +17,7 @@ Run: python tools/desktop-recv/tests/ux-evidence-selftest.py
 Exit: 0 every required behaviour held, 1 otherwise.
 """
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -29,6 +30,7 @@ TOOLS = os.path.dirname(HERE)
 VERIFY_UX = os.path.join(TOOLS, "verify-ux-evidence.py")
 VERIFY_LEGACY = os.path.join(TOOLS, "verify-evidence.py")
 RUN_CONTEXT = os.path.join(TOOLS, "e2e", "run-context.mjs")
+CALC_CLI = os.path.join(TOOLS, "e2e", "measure-ux-calc.mjs")
 
 LOCAL_LEGACY = ["E2E-%d" % number for number in range(1, 21)]
 LOCAL_UX = ["E2E-%d" % number for number in range(27, 39)]
@@ -771,6 +773,333 @@ def expect(name, run, gate, expected, expect_text=None, extra=None,
                  % (code, expected, out, err))
 
 
+# --- Round-13 tool negatives: real CLI / real validate_ux_record -----------
+# S2: every negative below drives a REAL entry point. The measurement is a
+# copy of the real root11 evidence placed in an OS temp run root (root11
+# itself stays read-only), and the consistent-FAIL case calls the real
+# validate_ux_record from verify-ux-evidence.py instead of a helper stub.
+
+ROOT11_RUN_REL = "docs/tests/runs/20261026-teamexec-11"
+ROOT11_RUN = os.path.join(REPO_ROOT, *ROOT11_RUN_REL.split("/"))
+ROOT11_CONTEXT = os.path.join(ROOT11_RUN, "run-context.json")
+ROOT11_ATTEMPT = "candidate-20261026-01"
+ROOT11_MEAS_REL = "measurements/ux-overhead/%s" % ROOT11_ATTEMPT
+ROOT11_MEAS = os.path.join(ROOT11_RUN, *ROOT11_MEAS_REL.split("/"))
+ROOT11_PROOF_ATTEMPT = "UX-UI-2026-10-26T09-58-29-387Z-423ba5"
+
+_VERIFIER = None
+
+
+def load_verifier():
+    """Import the real verifier module; validate_ux_record is the entry."""
+    global _VERIFIER
+    if _VERIFIER is None:
+        spec = importlib.util.spec_from_file_location("verify_ux_evidence_r13", VERIFY_UX)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _VERIFIER = module
+    return _VERIFIER
+
+
+def read_json(path):
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def write_json_abs(path, value):
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+
+
+def root11_available():
+    return (os.path.isfile(ROOT11_CONTEXT)
+            and os.path.isdir(ROOT11_MEAS)
+            and os.path.isfile(os.path.join(ROOT11_RUN, "ux-results.json"))
+            and os.path.isdir(os.path.join(ROOT11_RUN, "proof", "E2E-38",
+                                           ROOT11_PROOF_ATTEMPT)))
+
+
+def copy_root11_measurement(temp_root):
+    """Copy the real root11 measurement into a throwaway run root.
+
+    The copy sits at the same run-root-relative path the calculator resolves
+    a proof copy to, so the CLI recomputes the copy itself instead of being
+    redirected to the (read-only) original.
+    """
+    run_root = os.path.join(temp_root, "run-root")
+    target = os.path.join(run_root, "measurements", "ux-overhead", ROOT11_ATTEMPT)
+    shutil.copytree(ROOT11_MEAS, target)
+    return run_root, target
+
+
+def run_calc(run_root, measurement_dir, context=True):
+    """Drive the real recompute CLI (the gate's own subprocess command)."""
+    node = shutil.which("node")
+    command = [node, CALC_CLI, "--recompute", run_root, measurement_dir,
+               "--method", REAL_METHOD]
+    if context:
+        command += ["--context", ROOT11_CONTEXT]
+    proc = subprocess.run(command, capture_output=True, timeout=180)
+    stdout = proc.stdout.decode("utf-8", "replace")
+    stderr = proc.stderr.decode("utf-8", "replace")
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError:
+        payload = None
+    return proc.returncode, payload, stdout, stderr
+
+
+def violation_codes(payload):
+    entries = (payload or {}).get("violations") or []
+    return [entry.get("code") for entry in entries if isinstance(entry, dict)]
+
+
+def recomputed_round_codes(payload):
+    """Round-level judge codes from stats.measurements[*].roundViolations."""
+    measurements = ((payload or {}).get("stats") or {}).get("measurements") or []
+    codes = []
+    for measurement in measurements:
+        if not isinstance(measurement, dict):
+            continue
+        for entry in measurement.get("roundViolations") or []:
+            if isinstance(entry, dict):
+                codes.append(entry.get("code"))
+    return codes
+
+
+def tamper_rounds(meas_dir, field, value):
+    rounds_dir = os.path.join(meas_dir, "rounds")
+    for name in sorted(os.listdir(rounds_dir)):
+        if not name.endswith(".json"):
+            continue
+        path = os.path.join(rounds_dir, name)
+        record = read_json(path)
+        record[field] = value
+        write_json_abs(path, record)
+
+
+def tamper_binding(kind, meas_dir):
+    """Break exactly one build/input/media/live identity in the temp copy."""
+    if kind == "product":
+        path = os.path.join(meas_dir, "run.json")
+        run = read_json(path)
+        run["candidate"]["productManifestSha256"] = "f" * 64
+        write_json_abs(path, run)
+    elif kind == "candidate-missing":
+        path = os.path.join(meas_dir, "run.json")
+        run = read_json(path)
+        run.pop("candidate", None)
+        write_json_abs(path, run)
+    elif kind == "input":
+        path = os.path.join(meas_dir, "input.json")
+        data = read_json(path)
+        data["inputSha256"] = "f" * 64
+        write_json_abs(path, data)
+        tamper_rounds(meas_dir, "inputSha256", "f" * 64)
+    elif kind == "media":
+        path = os.path.join(meas_dir, "input.json")
+        data = read_json(path)
+        data["mediaSha256"] = "f" * 64
+        write_json_abs(path, data)
+        tamper_rounds(meas_dir, "mediaSha256", "f" * 64)
+    elif kind == "live":
+        path = os.path.join(meas_dir, "live", "summary.json")
+        data = read_json(path)
+        data["liveInputSha256"] = "e" * 64
+        write_json_abs(path, data)
+    else:
+        raise AssertionError("unknown binding tamper: %s" % kind)
+
+
+def zero_round_rtt_with_claims(meas_dir):
+    """A self-consistent RTT lie: rttMs=0 in one raw round AND every derived
+    claim rewritten to 0, so only the raw start/end timestamps contradict it.
+    """
+    path = os.path.join(meas_dir, "rounds", "pair-1-B.json")
+    record = read_json(path)
+    for frame in record["frames"]:
+        if frame.get("ok") is True:
+            frame["rttMs"] = 0
+    write_json_abs(path, record)
+    summary_path = os.path.join(meas_dir, "summary.json")
+    summary = read_json(summary_path)
+    side = summary["sides"]["B"]
+    side["rttP50Values"][0] = 0
+    side["rttP95Values"][0] = 0
+    side["rttP50Median"] = _median(side["rttP50Values"])
+    side["rttP95Median"] = _median(side["rttP95Values"])
+    write_json_abs(summary_path, summary)
+    comparison_path = os.path.join(meas_dir, "comparison.json")
+    comparison = read_json(comparison_path)
+    comparison["pairs"][0]["b"]["p50Ms"] = 0
+    comparison["pairs"][0]["b"]["p95Ms"] = 0
+    write_json_abs(comparison_path, comparison)
+
+
+def settle_before_submit(meas_dir):
+    """Move one raw settlement before its own submission, claims untouched."""
+    path = os.path.join(meas_dir, "rounds", "pair-1-B.json")
+    record = read_json(path)
+    for frame in record["frames"]:
+        if frame.get("ok") is True:
+            frame["settledAtMs"] = frame["t0Ms"] - 1
+            break
+    write_json_abs(path, record)
+
+
+def root11_e2e38_record():
+    payload = read_json(os.path.join(ROOT11_RUN, "ux-results.json"))
+    return [record for record in payload["records"]
+            if record.get("caseId") == "E2E-38"][0]
+
+
+def measurement_scenario():
+    return {
+        "id": "E2E-38", "gate": "local", "scope": "local_simulated",
+        "executorRole": "executor", "caseType": "measurement",
+        "acceptanceIds": ["AC-023", "AC-024"], "required": True,
+        "steps": steps_fixture(5),
+    }
+
+
+def root11_context_payload(run_root):
+    return {
+        "identity": {},
+        "context": read_json(ROOT11_CONTEXT),
+        "repoRoot": REPO_ROOT,
+        "abs": {"runRoot": run_root, "methodFile": REAL_METHOD},
+    }
+
+
+def validate_record_violations(record, scenario, context_payload):
+    """Call the REAL validate_ux_record (no helper reimplementation)."""
+    violations = []
+    load_verifier().validate_ux_record(
+        record, scenario, context_payload, "local", violations,
+        context_path=ROOT11_CONTEXT, repo_root=None)
+    return violations
+
+
+def make_root11_consistent_fail(temp_root):
+    """root11 copy with every B-side ready pushed +60s, claims rewritten so
+    the calculator derives a self-consistent FAIL (median 75060ms > 17528.8).
+    """
+    run_root, meas_dir = copy_root11_measurement(temp_root)
+    proof_dir = os.path.join(run_root, "proof", "E2E-38", ROOT11_PROOF_ATTEMPT,
+                             "measurements")
+    shutil.copytree(os.path.join(ROOT11_RUN, "proof", "E2E-38",
+                                 ROOT11_PROOF_ATTEMPT, "measurements"), proof_dir)
+    for index in range(1, 6):
+        path = os.path.join(meas_dir, "rounds", "pair-%d-B.json" % index)
+        record = read_json(path)
+        record["journey"]["readyAt"] += 60000
+        if isinstance(record.get("readyMs"), (int, float)):
+            record["readyMs"] += 60000
+        write_json_abs(path, record)
+    summary_path = os.path.join(meas_dir, "summary.json")
+    summary = read_json(summary_path)
+    side = summary["sides"]["B"]
+    side["readyMsValues"] = [value + 60000 for value in side["readyMsValues"]]
+    side["readyMsMedian"] = _median(side["readyMsValues"])
+    write_json_abs(summary_path, summary)
+    comparison_path = os.path.join(meas_dir, "comparison.json")
+    comparison = read_json(comparison_path)
+    for pair in comparison["pairs"]:
+        pair["b"]["readyMs"] += 60000
+    metric = comparison["metrics"]["readyMs"]
+    metric["candidateMedian"] = side["readyMsMedian"]
+    metric["limit"] = (metric["baselineMedian"] * metric["relativeFactor"]
+                       + metric["absoluteAllowanceMs"])
+    metric["marginMs"] = metric["limit"] - metric["candidateMedian"]
+    metric["pass"] = metric["candidateMedian"] <= metric["limit"]
+    comparison["verdict"] = "FAIL"
+    comparison["reasons"] = [{
+        "code": "E_THRESHOLD", "metric": "readyMs",
+        "detail": "readyMs: candidate median %s > limit %s (%s)"
+                  % (metric["candidateMedian"], metric["limit"], metric["formula"]),
+    }]
+    write_json_abs(comparison_path, comparison)
+    run_path = os.path.join(meas_dir, "run.json")
+    run = read_json(run_path)
+    run["verdict"] = "FAIL"
+    write_json_abs(run_path, run)
+    for name in ("run.json", "summary.json", "comparison.json"):
+        shutil.copyfile(os.path.join(meas_dir, name), os.path.join(proof_dir, name))
+    return run_root, meas_dir
+
+
+def make_consistent_not_run(run):
+    """The selftest measurement fixture with one collection error: four valid
+    pairs, every metric still passing, verdict NOT_RUN - fully self-consistent.
+    """
+    original = measurement_original_dir(run)
+    proof_dir = os.path.join(run["run_root"], *measurement_proof_rel(run).split("/"))
+    rounds_path = os.path.join(original, "rounds", "pair-5-B.json")
+    record = read_json(rounds_path)
+    record["collectionError"] = {"kind": "environment",
+                                 "message": "fixture: pair 5 collection failed"}
+    write_json_abs(rounds_path, record)
+    summary_path = os.path.join(original, "summary.json")
+    summary = read_json(summary_path)
+    for side_name, ready, rtt in (
+        ("A", MEAS_BASE_READY[:4], MEAS_BASE_RTT),
+        ("B", MEAS_CAND_READY[:4], MEAS_CAND_RTT),
+    ):
+        side = summary["sides"][side_name]
+        side["rounds"] = 4
+        side["pairIndexes"] = [1, 2, 3, 4]
+        side["readyMsValues"] = list(ready)
+        side["readyMsMedian"] = _median(ready)
+        side["rttP50Values"] = [rtt] * 4
+        side["rttP50Median"] = rtt
+        side["rttP95Values"] = [rtt] * 4
+        side["rttP95Median"] = rtt
+        side["frameCounts"] = [MEAS_FRAMES] * 4
+        side["frameCountTotal"] = MEAS_FRAMES * 4
+    write_json_abs(summary_path, summary)
+    comparison_path = os.path.join(original, "comparison.json")
+    comparison = read_json(comparison_path)
+    comparison["validPairs"] = 4
+    comparison["verdict"] = "NOT_RUN"
+    comparison["reasons"] = [{
+        "code": "E_PAIRS",
+        "detail": "fewer than 5 valid pairs (4); the measurement is not decidable",
+    }]
+    ready_metric = comparison["metrics"]["readyMs"]
+    ready_metric["baselineRounds"] = 4
+    ready_metric["candidateRounds"] = 4
+    ready_metric["baselineMedian"] = _median(MEAS_BASE_READY[:4])
+    ready_metric["candidateMedian"] = _median(MEAS_CAND_READY[:4])
+    ready_metric["limit"] = ready_metric["baselineMedian"] * 1.1 + 250
+    ready_metric["marginMs"] = ready_metric["limit"] - ready_metric["candidateMedian"]
+    ready_metric["pass"] = ready_metric["candidateMedian"] <= ready_metric["limit"]
+    for name in ("frameRttP50Ms", "frameRttP95Ms"):
+        comparison["metrics"][name]["baselineRounds"] = 4
+        comparison["metrics"][name]["candidateRounds"] = 4
+    pair_five = comparison["pairs"][4]
+    pair_five["valid"] = False
+    pair_five["reason"] = "E_COLLECTION_ERROR"
+    pair_five["b"]["collectionError"] = dict(record["collectionError"])
+    pair_five["b"]["exclusionReason"] = "E_COLLECTION_ERROR"
+    write_json_abs(comparison_path, comparison)
+    invalid_path = os.path.join(original, "invalid-rounds.json")
+    invalid = read_json(invalid_path)
+    invalid["count"] = 4
+    invalid["rounds"] = list(invalid["rounds"]) + [
+        {"file": "rounds/pair-5-A.json", "side": "A", "pairIndex": 5,
+         "warmup": False, "reason": "E_COLLECTION_ERROR", "detail": None},
+        {"file": "rounds/pair-5-B.json", "side": "B", "pairIndex": 5,
+         "warmup": False, "reason": "E_COLLECTION_ERROR", "detail": None},
+    ]
+    write_json_abs(invalid_path, invalid)
+    run_path = os.path.join(original, "run.json")
+    run_json = read_json(run_path)
+    run_json["verdict"] = "NOT_RUN"
+    write_json_abs(run_path, run_json)
+    for name in ("run.json", "summary.json", "comparison.json"):
+        shutil.copyfile(os.path.join(original, name), os.path.join(proof_dir, name))
+
+
 def main():
     # ---- preflight: the stage-5 modules must exist ----------------------
     missing = [path for path in (VERIFY_UX, RUN_CONTEXT)
@@ -1207,6 +1536,105 @@ def main():
         run, legacy, ux = complete_local(missing_live_repo)
         os.remove(os.path.join(measurement_original_dir(run), "live", "rounds", "pair-4-A.json"))
         expect("a missing live leg raw file is refused", run, "local", 1)
+
+        # (11) Round-13 B-R1(a): a SELF-CONSISTENT NOT_RUN (four valid pairs,
+        # every metric still passing) must be refused by the outer gate; the
+        # calculator's "ok" only means the recomputation succeeded.
+        notrun_repo = repo()
+        run, legacy, ux = complete_local(notrun_repo)
+        make_consistent_not_run(run)
+        expect("a self-consistent NOT_RUN measurement is refused by the UX gate",
+               run, "local", 1, expect_text="verdict")
+
+        # ---- Round-13 A13-01 / B-R1: real CLI + real validate_ux_record ----
+        if not root11_available():
+            check("preflight: root11 measurement/context/proof available", False,
+                  "root11 evidence is missing; the round-13 real negatives cannot run")
+        else:
+            # Positive: the real root11 evidence still recomputes clean with
+            # the real run context (no regression from the binding fix).
+            code, payload, out, err = run_calc(ROOT11_RUN, ROOT11_MEAS)
+            check("A13-01 root11 real measurement + real context recomputes clean",
+                  code == 0 and (payload or {}).get("ok") is True
+                  and not violation_codes(payload),
+                  "exit=%s\nstdout:\n%s\nstderr:\n%s"
+                  % (code, out[:4000], err[:2000]))
+
+            # Positive: an untouched OS-temp copy must also pass, so the
+            # copy mechanics themselves never change the verdict.
+            temp = repo()
+            run_root, meas_dir = copy_root11_measurement(temp)
+            code, payload, out, err = run_calc(run_root, meas_dir)
+            check("A13-01 an untampered root11 copy still recomputes clean",
+                  code == 0 and (payload or {}).get("ok") is True,
+                  "exit=%s\nstdout:\n%s\nstderr:\n%s"
+                  % (code, out[:4000], err[:2000]))
+
+            # Negatives: each build/input/media/live identity is tampered in
+            # an OS-temp copy; the REAL CLI with the REAL root11 context must
+            # refuse and name the binding (empty expected is never a pass).
+            for kind, expected_code in (
+                ("product", "E_BUILD_BINDING"),
+                ("candidate-missing", "E_BUILD_BINDING"),
+                ("input", "E_INPUT_BINDING"),
+                ("media", "E_INPUT_BINDING"),
+                ("live", "E_LIVE_INPUT_BINDING"),
+            ):
+                temp = repo()
+                run_root, meas_dir = copy_root11_measurement(temp)
+                tamper_binding(kind, meas_dir)
+                code, payload, out, err = run_calc(run_root, meas_dir)
+                codes = violation_codes(payload)
+                check("A13-01 %s tamper is refused by the real CLI (names %s)"
+                      % (kind, expected_code),
+                      code != 0 and expected_code in codes,
+                      "exit=%s codes=%s\nstdout:\n%s\nstderr:\n%s"
+                      % (code, codes, out[:4000], err[:2000]))
+
+            # B-R1(b): the redundant rttMs is cross-checked against the raw
+            # timestamps; a self-consistent zero-RTT lie is refused.
+            temp = repo()
+            run_root, meas_dir = copy_root11_measurement(temp)
+            zero_round_rtt_with_claims(meas_dir)
+            code, payload, out, err = run_calc(run_root, meas_dir)
+            round_codes = recomputed_round_codes(payload)
+            check("B-R1(b) self-consistent rttMs=0 (raw timestamps unchanged) is refused",
+                  code != 0 and "E_RTT_MISMATCH" in round_codes,
+                  "exit=%s round codes=%s\nstdout:\n%s\nstderr:\n%s"
+                  % (code, round_codes, out[:6000], err[:2000]))
+
+            # B-R1(b): a settlement before its own submission is refused.
+            temp = repo()
+            run_root, meas_dir = copy_root11_measurement(temp)
+            settle_before_submit(meas_dir)
+            code, payload, out, err = run_calc(run_root, meas_dir)
+            round_codes = recomputed_round_codes(payload)
+            check("B-R1(b) settledAtMs < t0Ms is refused by the real CLI",
+                  code != 0 and "E_RTT" in round_codes,
+                  "exit=%s round codes=%s\nstdout:\n%s\nstderr:\n%s"
+                  % (code, round_codes, out[:6000], err[:2000]))
+
+            # B-R1(a): a self-consistent FAIL (75060ms vs 17528.8ms limit)
+            # must be refused by the REAL validate_ux_record, not accepted
+            # because the calculator exited 0.
+            temp = repo()
+            fail_root, _fail_meas = make_root11_consistent_fail(temp)
+            fail_violations = validate_record_violations(
+                root11_e2e38_record(), measurement_scenario(),
+                root11_context_payload(fail_root))
+            check("B-R1(a) consistent FAIL is refused by the real validate_ux_record",
+                  any("verdict" in violation and "FAIL" in violation
+                      for violation in fail_violations),
+                  "violations:\n%s" % "\n".join(fail_violations)[:6000])
+
+            # Positive: the real root11 record + measurement still has zero
+            # violations through the same real function.
+            positive_violations = validate_record_violations(
+                root11_e2e38_record(), measurement_scenario(),
+                root11_context_payload(ROOT11_RUN))
+            check("B-R1(a) root11 real E2E-38 record + measurement has zero violations",
+                  positive_violations == [],
+                  "violations:\n%s" % "\n".join(positive_violations)[:6000])
 
         # ---- T5 (S4): a junction inside the run root must not redirect
         # proof reads. The outside file deliberately MATCHES the record's

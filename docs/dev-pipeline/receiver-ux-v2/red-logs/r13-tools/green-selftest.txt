@@ -1,0 +1,78 @@
+ok   help exits 0 and documents --context/--gate
+ok   missing arguments exit 2
+ok   unknown gate exits 2
+ok   missing context file is refused
+ok   broken context JSON is refused
+ok   UX-UT-088 complete local old+new gate passes
+ok   UX-UT-088 complete field gate passes
+ok   field gate over NOT_RUN is non-zero
+ok   NOT_RUN evidence is preserved as NOT_RUN on disk
+ok   UX-UT-089 missing E2E-27 fails the local gate
+ok   UX-UT-089 missing E2E-28 fails the local gate
+ok   UX-UT-089 missing E2E-29 fails the local gate
+ok   UX-UT-089 missing E2E-30 fails the local gate
+ok   UX-UT-089 missing E2E-31 fails the local gate
+ok   UX-UT-089 missing E2E-32 fails the local gate
+ok   UX-UT-089 missing E2E-33 fails the local gate
+ok   UX-UT-089 missing E2E-34 fails the local gate
+ok   UX-UT-089 missing E2E-35 fails the local gate
+ok   UX-UT-089 missing E2E-36 fails the local gate
+ok   UX-UT-089 missing E2E-37 fails the local gate
+ok   UX-UT-089 missing E2E-38 fails the local gate
+ok   UX-UT-089 empty uxRequired cannot exempt the gate
+ok   wrong runId is refused
+ok   wrong product manifest sha in a record is refused
+ok   product bytes changed after the manifest are refused
+ok   input manifest sha mismatch is refused
+ok   equal metadata but different received bytes is refused
+ok   missing received artifact is refused
+ok   escaping proofRef is refused
+ok   empty proofRefs on PASS is refused
+ok   mock scope cannot pass a local journey
+ok   executor cannot impersonate the user
+ok   caseType cannot be relabelled to skip the artifact checks
+ok   NOT_RUN with an executor/time claim is refused
+ok   duplicate caseId is refused
+ok   unplanned extra UX id is refused
+ok   record claiming an attempt/proof mismatch is refused
+ok   record PASS with empty assertions is refused
+ok   assertion with empty observed is refused
+ok   non-PASS assertion fails the case
+ok   assertion without its proof file is refused
+ok   slice context cannot prove the final local gate
+ok   legacy field measurement without a bound threshold is refused
+ok   local evidence cannot prove the field gate
+ok   UX records inside results.json do not satisfy the UX gate
+ok   v1 results.json still follows the legacy gate rules
+ok   reversed claim timeline is refused
+ok   NOT_RUN with a received hash is refused
+ok   proof borrowed from another attempt is refused
+ok   case-folded caseId is not the planned case
+ok   backslash proofRefs are refused
+ok   field record claiming the local scope is refused
+ok   same case executed twice is a duplicate, not a merge
+ok   planning path that is a directory is an environment refusal
+ok   original and received bytes differ (each SHA correct) is refused
+ok   deleting every frozen step and keeping an unknown id is refused
+ok   a -held replacement id is refused even when a PASS remains
+ok   a lowercase step sub-suffix id is refused
+ok   a measurement PASS without any raw data is refused
+ok   a missing recorded raw round is refused
+ok   a tampered summary number is refused
+ok   an early-Ready live window is refused
+ok   a raw threshold breach is refused
+ok   a missing live leg raw file is refused
+ok   a self-consistent NOT_RUN measurement is refused by the UX gate
+ok   A13-01 root11 real measurement + real context recomputes clean
+ok   A13-01 an untampered root11 copy still recomputes clean
+ok   A13-01 product tamper is refused by the real CLI (names E_BUILD_BINDING)
+ok   A13-01 candidate-missing tamper is refused by the real CLI (names E_BUILD_BINDING)
+ok   A13-01 input tamper is refused by the real CLI (names E_INPUT_BINDING)
+ok   A13-01 media tamper is refused by the real CLI (names E_INPUT_BINDING)
+ok   A13-01 live tamper is refused by the real CLI (names E_LIVE_INPUT_BINDING)
+ok   B-R1(b) self-consistent rttMs=0 (raw timestamps unchanged) is refused
+ok   B-R1(b) settledAtMs < t0Ms is refused by the real CLI
+ok   B-R1(a) consistent FAIL is refused by the real validate_ux_record
+ok   B-R1(a) root11 real E2E-38 record + measurement has zero violations
+ok   junction inside the run root cannot redirect proof reads
+SELFTEST PASS (77 cases)
