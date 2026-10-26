@@ -1,7 +1,7 @@
-# receiver-ux-v2 迭代索引（2026-10-26 round-12 整改后；下方为 v1 历史原文，一字未改）
+# receiver-ux-v2 迭代索引（2026-10-27 round-13 整改后；下方为 v1 历史原文，一字未改）
 
-- 本迭代阶段 5 总结：docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md（实施范围 / 6 次审查与整改轮 / 测试总账 / 双门禁实跑输出 / 现场 7 项 NOT_RUN 声明 / **第 7 节 round-12 整改轮更新**）
-- 最终候选证据根：docs/tests/runs/20261026-teamexec-11（product manifest 34a9de30…，attempt candidate-20261026-01；含 reproduction.md、release-candidate-manifest.json、results.json、ux-results.json、measurements）。前候选 09b 与中间构建 root10 只读保留（round-13 披露）。
+- 本迭代阶段 5 总结：docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md（实施范围 / 6 次审查与整改轮 / 测试总账 / 双门禁实跑输出 / **第 7 节 round-12 整改轮** / **第 8 节 round-13 整改轮**）
+- 最终候选证据根：docs/tests/runs/20261027-teamexec-12（product manifest 829d7dec…，attempt candidate-20261027-01；含 reproduction.md、release-candidate-manifest.json、results.json、ux-results.json、measurements）。前候选 09b/root10/root11 只读保留（round-14 披露）。
 - 双门禁状态（lead 复跑）：legacy `GATE local: PASS (20 required cases)`；UX `UX GATE local: FAIL (4)` = E2E-35×2（用户裁定由用户侧真实验证）+ E2E-37×2（环境缺口），field exit1 设计内。
 - v1 历史入口：docs/dev-pipeline/history/desktop-receiver-v1/README.md
 
