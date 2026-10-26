@@ -104,8 +104,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -137,7 +137,12 @@
           ]
         }
       ]
-    }
+    },
+    "attemptId": "E2E-1-2026-10-26T04-51-16-939Z-fc906d",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-1/E2E-1-2026-10-26T04-51-16-939Z-fc906d"
+    ]
   },
   {
     "id": "E2E-2",
@@ -239,8 +244,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -253,6 +258,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L02",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-2-2026-10-26T04-52-36-037Z-ff79cd",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-2/E2E-2-2026-10-26T04-52-36-037Z-ff79cd"
     ]
   },
   {
@@ -372,8 +382,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -386,6 +396,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L03",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-3-2026-10-26T04-54-23-450Z-b371fe",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-3/E2E-3-2026-10-26T04-54-23-450Z-b371fe"
     ]
   },
   {
@@ -485,8 +500,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -499,6 +514,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L04",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-4-2026-10-26T04-57-35-721Z-c58cf0",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-4/E2E-4-2026-10-26T04-57-35-721Z-c58cf0"
     ]
   },
   {
@@ -599,8 +619,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -613,6 +633,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L05",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-5-2026-10-26T04-58-24-902Z-9a3ec5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-5/E2E-5-2026-10-26T04-58-24-902Z-9a3ec5"
     ]
   },
   {
@@ -713,8 +738,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -729,6 +754,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L06",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-6-2026-10-26T04-59-24-841Z-5c12c3",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-6/E2E-6-2026-10-26T04-59-24-841Z-5c12c3"
     ]
   },
   {
@@ -828,8 +858,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -842,6 +872,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L07",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-7-2026-10-26T05-01-37-432Z-992624",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-7/E2E-7-2026-10-26T05-01-37-432Z-992624"
     ]
   },
   {
@@ -941,8 +976,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -957,6 +992,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L08",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-8-2026-10-26T05-02-56-161Z-2aeec8",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-8/E2E-8-2026-10-26T05-02-56-161Z-2aeec8"
     ]
   },
   {
@@ -1060,8 +1100,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1076,6 +1116,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L09",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-9-2026-10-26T05-04-29-243Z-7336aa",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-9/E2E-9-2026-10-26T05-04-29-243Z-7336aa"
     ]
   },
   {
@@ -1178,8 +1223,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1194,6 +1239,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L10",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-10-2026-10-26T05-06-15-620Z-81d7be",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-10/E2E-10-2026-10-26T05-06-15-620Z-81d7be"
     ]
   },
   {
@@ -1296,8 +1346,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1310,6 +1360,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L11",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-11-2026-10-26T05-08-01-562Z-5bcd65",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-11/E2E-11-2026-10-26T05-08-01-562Z-5bcd65"
     ]
   },
   {
@@ -1410,8 +1465,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1424,6 +1479,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L12",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-12-2026-10-26T05-08-48-734Z-0d1fd5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-12/E2E-12-2026-10-26T05-08-48-734Z-0d1fd5"
     ]
   },
   {
@@ -1524,8 +1584,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1538,6 +1598,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L13",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-13-2026-10-26T05-09-40-201Z-daedfb",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-13/E2E-13-2026-10-26T05-09-40-201Z-daedfb"
     ]
   },
   {
@@ -1645,8 +1710,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1660,6 +1725,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L14",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-14-2026-10-26T05-13-23-810Z-bfeb38",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-14/E2E-14-2026-10-26T05-13-23-810Z-bfeb38"
     ]
   },
   {
@@ -1774,8 +1844,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1794,6 +1864,11 @@
       "docs/plans/test-acceptance-plan.md: UAT-L15",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。",
       "tools/desktop-recv/e2e/run-e2e.mjs:2085-2296：8腿逐异常真实恢复；坏输入当前仅DataTransfer，需补真实入口，不得把该路径证据冒充系统入口。"
+    ],
+    "attemptId": "E2E-15-2026-10-26T05-19-29-961Z-296943",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-15/E2E-15-2026-10-26T05-19-29-961Z-296943"
     ]
   },
   {
@@ -1912,8 +1987,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -1936,6 +2011,11 @@
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。",
       "docs/dev-pipeline/autonomous-decisions.md:26-27 D-20/D-21；reproduction.md §3：同流双录制器/声明停点/头尾配对/最多2轮校准。",
       "tools/desktop-recv/e2e/run-e2e.mjs:2297-2607；leg-verdict.mjs evaluateLastFramePair：EOF/末段/量纲判据。"
+    ],
+    "attemptId": "E2E-16-2026-10-26T05-21-31-843Z-99f433",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-16/E2E-16-2026-10-26T05-21-31-843Z-99f433"
     ]
   },
   {
@@ -2036,8 +2116,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -2050,6 +2130,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L17",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-17-2026-10-26T05-22-45-030Z-9dde05",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-17/E2E-17-2026-10-26T05-22-45-030Z-9dde05"
     ]
   },
   {
@@ -2168,8 +2253,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -2190,7 +2275,12 @@
       "tools/desktop-recv/e2e/run-e2e.mjs:3196-3505：完整10腿、录制观察边界、15008拒绝与恢复、唯一AUTHORIZED_NOT_RUN。",
       "docs/dev-pipeline/autonomous-decisions.md:25 D-19；stage5-dev-summary.md:162,189：4MiB难压缩录像已可行，TD-15旧上限关闭。"
     ],
-    "legMatrixRef": "docs/tests/receiver-ux-v2/cases/e2e18-matrix.json"
+    "legMatrixRef": "docs/tests/receiver-ux-v2/cases/e2e18-matrix.json",
+    "attemptId": "E2E-18-2026-10-26T05-58-58-424Z-b4d680",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-18/E2E-18-2026-10-26T05-58-58-424Z-b4d680"
+    ]
   },
   {
     "id": "E2E-19",
@@ -2293,8 +2383,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -2307,6 +2397,11 @@
     "sourceNotes": [
       "docs/plans/test-acceptance-plan.md: UAT-L19",
       "docs/dev-pipeline/ext-review/round-11-verdict.md: 本地/现场/阶段8/性能结论边界；历史裁决不升级本轮结果。"
+    ],
+    "attemptId": "E2E-19-2026-10-26T06-43-49-335Z-19f6ea",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-19/E2E-19-2026-10-26T06-43-49-335Z-19f6ea"
     ]
   },
   {
@@ -2415,8 +2510,8 @@
     "uxAcceptanceIds": [],
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
     "executionStage": "5",
     "sources": [
       "docs/tests/planning-cases.json",
@@ -2448,7 +2543,12 @@
           ]
         }
       ]
-    }
+    },
+    "attemptId": "E2E-20-2026-10-26T06-46-11-833Z-1e0236",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+      "docs/tests/runs/20261026-teamexec-11/proof/E2E-20/E2E-20-2026-10-26T06-46-11-833Z-1e0236"
+    ]
   },
   {
     "id": "E2E-21",

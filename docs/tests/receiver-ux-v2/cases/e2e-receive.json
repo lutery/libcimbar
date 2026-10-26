@@ -97,8 +97,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "E2E-27-2026-10-26T08-47-08-983Z-9ff601",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-27/E2E-27-2026-10-26T08-47-08-983Z-9ff601"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -200,8 +206,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "E2E-28-2026-10-26T08-49-07-259Z-f66ebc",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-28/E2E-28-2026-10-26T08-49-07-259Z-f66ebc"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -301,8 +313,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "E2E-29-2026-10-26T08-50-43-938Z-cd6e7a",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-29/E2E-29-2026-10-26T08-50-43-938Z-cd6e7a"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -393,8 +411,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -485,8 +509,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -577,8 +607,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -669,8 +705,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -759,8 +801,14 @@
     "caseType": "file_roundtrip",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [
@@ -858,6 +906,13 @@
     "required": true,
     "status": "NOT_RUN",
     "executedBy": null,
+    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-35/UX-UI-2026-10-26T09-58-29-387Z-423ba5/probe2-three-apparatuses.txt","docs/tests/runs/20261026-teamexec-11/proof/E2E-35/UX-UI-2026-10-26T09-58-29-387Z-423ba5/probe2b-real-tab-cdp.txt"
+        ],
+    "notRunReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证",
+    
     "executionStage": "5",
     "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
     "sources": [

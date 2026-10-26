@@ -54,8 +54,14 @@
     "caseType": "negative_or_lifecycle",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-36/UX-UI-2026-10-26T09-58-29-387Z-423ba5"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工/可辅助真实UI操作；真实键盘与系统窗口，实际浏览器像素核对，DOM测量只作补充",
     "sources": ["docs/tests/receiver-ux-v2/cases/acceptance.json", "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md", "docs/design-catalog/receiver-ux-v2/ui-spec.md", "web/desktop-recv/src/app.js", "web/desktop-recv/index.html", "tools/desktop-recv/e2e/native-dialog.ps1"]
@@ -116,6 +122,13 @@
     "required": true,
     "status": "NOT_RUN",
     "executedBy": null,
+    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          
+        ],
+    "notRunReason": "本机无法程序化验证屏幕阅读器真实语音输出；Narrator 二进制存在并已真实启动尝试（进程存活 5s），DOM/aria 检查按计划不能替代，真实语音核验归现场批次",
+    
     "executionStage": "5",
     "executionMethod": "手工/可辅助真实UI、实际键盘、实际Windows Narrator或可用屏幕阅读器；以真实朗读和系统窗口焦点为证",
     "sources": ["docs/tests/receiver-ux-v2/cases/acceptance.json", "docs/tests/receiver-ux-v2/fixtures.md", "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md", "docs/design-catalog/receiver-ux-v2/ui-spec.md", "web/desktop-recv/src/app.js", "tools/desktop-recv/e2e/native-dialog.ps1"]
@@ -182,8 +195,14 @@
     "caseType": "measurement",
     "gate": "local",
     "required": true,
-    "status": "NOT_RUN",
-    "executedBy": null,
+    "status": "PASS",
+    "executedBy": "executor",
+    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
+    "updatedAt": "2026-10-26",
+    "evidenceRefs": [
+          "docs/tests/runs/20261026-teamexec-11/proof/E2E-38/UX-UI-2026-10-26T09-58-29-387Z-423ba5"
+        ],
+    
     "executionStage": "5",
     "executionMethod": "手工/可辅助真实UI和预注册开发测量器；正常浏览器、原发送端、真实录像/抓屏和系统保存，录像主数值与实时行为分别裁决",
     "sources": ["docs/plans/receiver-ux-v2/performance-method.json", "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md", "docs/tests/receiver-ux-v2/cases/acceptance.json", "docs/tests/receiver-ux-v2/fixtures.md", "web/desktop-recv/src/app.js", "web/desktop-recv/src/decoder-client.js", "web/desktop-recv/src/frame-scheduler.js"]

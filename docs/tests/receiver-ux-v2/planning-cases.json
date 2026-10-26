@@ -3551,7 +3551,7 @@
           }
         ]
       },
-      "attemptId": "E2E-1-2026-10-25T09-05-44-598Z-d09fc6"
+      "attemptId": "E2E-1-2026-10-26T04-51-16-939Z-fc906d"
     },
     {
       "id": "E2E-2",
@@ -3648,7 +3648,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "工具无法制造缺依赖条件时该分支 NOT_RUN/不适用带依据；IAT 只补技术分支，不冒充真实环境。"
       ],
-      "attemptId": "E2E-2-2026-10-25T09-07-37-596Z-572d96"
+      "attemptId": "E2E-2-2026-10-26T04-52-36-037Z-ff79cd"
     },
     {
       "id": "E2E-3",
@@ -3762,7 +3762,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只有 Ready/Blob/下载按钮没有磁盘输出或外部哈希时 FAIL；保存四时点缺失也不得当量测完整。"
       ],
-      "attemptId": "E2E-3-2026-10-25T09-19-03-799Z-9a94db"
+      "attemptId": "E2E-3-2026-10-26T04-54-23-450Z-b371fe"
     },
     {
       "id": "E2E-4",
@@ -3857,7 +3857,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "若环境提供独立“拒绝授权”入口须另执行、单独记录；仅取消不能代表全部拒绝路径已测。"
       ],
-      "attemptId": "E2E-4-2026-10-25T09-10-48-618Z-628039"
+      "attemptId": "E2E-4-2026-10-26T04-57-35-721Z-c58cf0"
     },
     {
       "id": "E2E-5",
@@ -3953,7 +3953,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只扫描累计日志找到旧 no-data 行不能证明本轮；每轮取分发前基线和本轮增量。"
       ],
-      "attemptId": "E2E-5-2026-10-25T09-12-14-538Z-444a3d"
+      "attemptId": "E2E-5-2026-10-26T04-58-24-902Z-9a3ec5"
     },
     {
       "id": "E2E-6",
@@ -4049,7 +4049,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "旧 run-03 的共享指示条 UIA 不可达只证明外部关闭路径；本轮不可达时补人工，仍不可执行须单列 NOT_RUN/偏差，不将关闭源写成系统停止共享已测。"
       ],
-      "attemptId": "E2E-6-2026-10-25T09-22-51-242Z-2063ba"
+      "attemptId": "E2E-6-2026-10-26T04-59-24-841Z-5c12c3"
     },
     {
       "id": "E2E-7",
@@ -4145,7 +4145,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "仅脚本调用内部 stop/start 的压力测试归 IAT；不能替代实际用户按钮操作。"
       ],
-      "attemptId": "E2E-7-2026-10-25T09-25-46-916Z-ee5cc8"
+      "attemptId": "E2E-7-2026-10-26T05-01-37-432Z-992624"
     },
     {
       "id": "E2E-8",
@@ -4240,7 +4240,7 @@
         "非 B 候选模式实际不可用时说明条件并由 IAT 补分支；不得虚构模式已实测。",
         "发送端翻回 B 后饥饿与接收器缺陷分别归因，保留首次失败。"
       ],
-      "attemptId": "E2E-8-2026-10-25T09-27-50-697Z-c46a38"
+      "attemptId": "E2E-8-2026-10-26T05-02-56-161Z-2aeec8"
     },
     {
       "id": "E2E-9",
@@ -4338,7 +4338,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "不能将 CSS 缩放测试写成操作系统 DPI 已测；未测组合不得发布支持。"
       ],
-      "attemptId": "E2E-9-2026-10-25T09-30-05-458Z-6dfcea"
+      "attemptId": "E2E-9-2026-10-26T05-04-29-243Z-7336aa"
     },
     {
       "id": "E2E-10",
@@ -4435,7 +4435,7 @@
         "遮挡与最小化分开列；某分支未执行不能用另一分支成功冒充。",
         "不承诺平台未提供的后台持续捕获能力。"
       ],
-      "attemptId": "E2E-10-2026-10-25T09-32-40-709Z-80f2a0"
+      "attemptId": "E2E-10-2026-10-26T05-06-15-620Z-81d7be"
     },
     {
       "id": "E2E-11",
@@ -4532,7 +4532,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "误点接收端停止/重置造成产物释放属于不同操作，不能据此声称本例不支持重试或偷偷重新发送后记通过。"
       ],
-      "attemptId": "E2E-11-2026-10-25T09-39-54-867Z-4c1545"
+      "attemptId": "E2E-11-2026-10-26T05-08-01-562Z-5bcd65"
     },
     {
       "id": "E2E-12",
@@ -4627,7 +4627,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "不得用用户现有重要文件做重名试验；危险路径/缺名的纯输入边界由 IAT 补并标层级。"
       ],
-      "attemptId": "E2E-12-2026-10-25T09-41-36-989Z-a96d6e"
+      "attemptId": "E2E-12-2026-10-26T05-08-48-734Z-0d1fd5"
     },
     {
       "id": "E2E-13",
@@ -4722,7 +4722,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "选择器未返回时内部 stop、延迟 write/close 等技术竞态归 IAT，不把脚本调用冒充用户可操作路径。"
       ],
-      "attemptId": "E2E-13-2026-10-25T09-43-26-730Z-050e91"
+      "attemptId": "E2E-13-2026-10-26T05-09-40-201Z-daedfb"
     },
     {
       "id": "E2E-14",
@@ -4823,7 +4823,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "只有加载/播放成功不是文件接收成功；新录像应有新实测哈希，不粘贴历史媒体哈希。"
       ],
-      "attemptId": "E2E-14-2026-10-25T09-50-33-612Z-f4a38b"
+      "attemptId": "E2E-14-2026-10-26T05-13-23-810Z-bfeb38"
     },
     {
       "id": "E2E-15",
@@ -4934,7 +4934,7 @@
         "现有 runner 的 empty/text/corrupt 使用 DataTransfer，仅为 IMPORT-PATH-ONLY，不证明真实打开入口；本轮 UAT 必须补真实系统选择，或如实留缺口。",
         "坏输入后 Preparing/超时/旧错误码均不能 PASS；恢复对话框自动化不可达时补人工，不补则 NOT_RUN。"
       ],
-      "attemptId": "E2E-15-2026-10-25T10-01-09-729Z-f0382b"
+      "attemptId": "E2E-15-2026-10-26T05-19-29-961Z-296943"
     },
     {
       "id": "E2E-16",
@@ -5049,7 +5049,7 @@
         "缺共享前缀/尾帧、without 未真正 EOF、with 提前远离末段、frameId 当秒数、保存前快照量测均拒绝。",
         "精确 ended/Worker 回复竞态仍由 IAT 补；不能只控回调就声称真录像本例 PASS。"
       ],
-      "attemptId": "E2E-16-2026-10-25T10-51-32-547Z-59e6c9"
+      "attemptId": "E2E-16-2026-10-26T05-21-31-843Z-99f433"
     },
     {
       "id": "E2E-17",
@@ -5144,7 +5144,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "切换前未完成清理、预览隐藏致 rVFC 停滞或旧流留在 srcObject 均失败；不得刷新掩盖。"
       ],
-      "attemptId": "E2E-17-2026-10-25T10-52-47-753Z-7165af"
+      "attemptId": "E2E-17-2026-10-26T05-22-45-030Z-9dde05"
     },
     {
       "id": "E2E-18",
@@ -5259,7 +5259,7 @@
         "录像导入已呈现足够内容仍未重建或中途停滞应调查接收端 FAIL，不预先归为平台/容量限制。",
         "重跑合并须 fresh-only 打章；失败attempt不能冒领历史腿，旧run03 PASS不能带入本轮候选。"
       ],
-      "attemptId": "E2E-18-2026-10-25T11-00-04-729Z-b94f81"
+      "attemptId": "E2E-18-2026-10-26T05-58-58-424Z-b4d680"
     },
     {
       "id": "E2E-19",
@@ -5357,7 +5357,7 @@
         "自动化无法操纵真实系统步骤时改人工留证；未实际执行不得伪填 executedBy、时间或 PASS。",
         "原生保存未决时强制离页的技术竞态另归 IAT；不承诺浏览器退出事务回滚。"
       ],
-      "attemptId": "E2E-19-2026-10-25T10-46-14-176Z-9c81a2"
+      "attemptId": "E2E-19-2026-10-26T06-43-49-335Z-19f6ea"
     },
     {
       "id": "E2E-20",
@@ -5473,7 +5473,7 @@
           }
         ]
       },
-      "attemptId": "E2E-20-2026-10-25T10-54-19-096Z-ec557e"
+      "attemptId": "E2E-20-2026-10-26T06-46-11-833Z-1e0236"
     },
     {
       "id": "E2E-21",
@@ -6242,7 +6242,7 @@
           "proofDirectoryPattern": "proof/E2E-27/<attemptId>/"
         }
       ],
-      "attemptId": "E2E-27-2026-10-25T12-59-48-435Z-89769d"
+      "attemptId": "E2E-27-2026-10-26T08-47-08-983Z-9ff601"
     },
     {
       "id": "E2E-28",
@@ -6416,7 +6416,7 @@
           "proofDirectoryPattern": "proof/E2E-28/<attemptId>/"
         }
       ],
-      "attemptId": "UX-ALL-2026-10-25T11-46-31-785Z-0db9b3"
+      "attemptId": "E2E-28-2026-10-26T08-49-07-259Z-f66ebc"
     },
     {
       "id": "E2E-29",
@@ -6586,7 +6586,7 @@
           "proofDirectoryPattern": "proof/E2E-29/<attemptId>/"
         }
       ],
-      "attemptId": "E2E-29-2026-10-25T12-37-47-909Z-fa39af"
+      "attemptId": "E2E-29-2026-10-26T08-50-43-938Z-cd6e7a"
     },
     {
       "id": "E2E-30",
@@ -6731,7 +6731,7 @@
           "proofDirectoryPattern": "proof/E2E-30/<attemptId>/"
         }
       ],
-      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
     },
     {
       "id": "E2E-31",
@@ -6876,7 +6876,7 @@
           "proofDirectoryPattern": "proof/E2E-31/<attemptId>/"
         }
       ],
-      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
     },
     {
       "id": "E2E-32",
@@ -7023,7 +7023,7 @@
           "proofDirectoryPattern": "proof/E2E-32/<attemptId>/"
         }
       ],
-      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
     },
     {
       "id": "E2E-33",
@@ -7171,7 +7171,7 @@
           "proofDirectoryPattern": "proof/E2E-33/<attemptId>/"
         }
       ],
-      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
     },
     {
       "id": "E2E-34",
@@ -7320,7 +7320,7 @@
           "proofDirectoryPattern": "proof/E2E-34/<attemptId>/"
         }
       ],
-      "attemptId": "UX-MEDIA-SAVE-2026-10-25T13-04-26-528Z-13c955"
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
     },
     {
       "id": "E2E-35",
@@ -7413,8 +7413,8 @@
       "caseType": "file_roundtrip",
       "gate": "local",
       "required": true,
-      "status": "PASS",
-      "executedBy": "executor",
+      "status": "NOT_RUN",
+      "executedBy": "",
       "executionStage": "5",
       "executionMethod": "手工或阶段5补齐的正常浏览器/CDP+真实系统对话框自动化；源画面控制只在测试源，不注入接收数据",
       "sources": [
@@ -7432,7 +7432,7 @@
         "T31",
         "T35"
       ],
-      "result": "PASS",
+      "result": "NOT_RUN",
       "stepSpecifications": [
         {
           "id": "E2E-35-S01",
@@ -7475,7 +7475,7 @@
           "proofDirectoryPattern": "proof/E2E-35/<attemptId>/"
         }
       ],
-      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
+      "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5"
     },
     {
       "id": "E2E-36",
@@ -7670,7 +7670,7 @@
           "proofDirectoryPattern": "proof/E2E-36/<attemptId>/"
         }
       ],
-      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
+      "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5"
     },
     {
       "id": "E2E-37",
@@ -7783,7 +7783,7 @@
       "gate": "local",
       "required": true,
       "status": "NOT_RUN",
-      "executedBy": null,
+      "executedBy": "",
       "executionStage": "5",
       "executionMethod": "手工/可辅助真实UI、实际键盘、实际Windows Narrator或可用屏幕阅读器；以真实朗读和系统窗口焦点为证",
       "sources": [
@@ -7855,7 +7855,7 @@
           "proofDirectoryPattern": "proof/E2E-37/<attemptId>/"
         }
       ],
-      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44",
+      "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
       "notRunReason": "no verifiable screen-reader speech in this agent/host environment; Narrator start attempted (binary present, process survived 5s) and the attempt details are in the E2E-37 record notes (ux-results.json); DOM/aria checks are not a substitute per the plan. Real speech verification belongs to the field batch."
     },
     {
@@ -8076,7 +8076,7 @@
           "proofDirectoryPattern": "proof/E2E-38/<attemptId>/"
         }
       ],
-      "attemptId": "UX-UI-2026-10-25T12-39-28-069Z-d40b44"
+      "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5"
     },
     {
       "id": "E2E-39",
