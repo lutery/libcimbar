@@ -119,3 +119,34 @@ UX 门禁 4 条 = E2E-35（用户授权缺口：本机不可构造真实 visibil
 3. live 观测间隔含 1ms 观测抖动容差（只作用于 observer 通道；产品时钟阈值与方法文件未动），正负例钉在 measure-ux.test.mjs（249.9 过/240 拒/judgeRound 严格）。
 4. owner 切换重置 `lastTelemetryWriteAt` 属既有语义保留（真实流程不可能在终态写后 250ms 内发生 owner 切换）；如需全局严格解释需单独决策（r12-prod-report-r2b §5）。
 5. root10 为中间失败构建（74ca75f8…），其失败原件（A/B -01 OBSERVER import 缺陷、-02 终态写越界、legacy/UX 记录）只读保留，供 round-13 对照。
+
+## 8. Round-13 复审整改轮更新（2026-10-27）
+
+### 8.1 阻断主题与关闭证据（裁决原文为 DoD）
+
+| 主题 | 关闭证据 |
+|---|---|
+| **A13-01**（测量 CLI 丢绑定实参） | `00e0462`：CLI 真传第二实参；expected 从 context 实读构造（product manifest **磁盘重哈希自校验**、input/media/live 实读 input-manifest、64hex 强制、缺失即 E_CONTEXT_BINDING，缺 candidate 即 E_BUILD_BINDING）。真实入口负例 5 类（product/input/media/live 篡改 + candidate 整删）全部 exit≠0 且点名（`red-logs/r13-tools/`）；root12 正例 CLI（带 context）实测 `ok=true/verdict=PASS/validPairs=5/live 10 侧 VALID`（lead 独立复跑） |
+| **A13-02**（同时间戳降级） | `c106d46`：观察 progress 新增 `lastReportState`（最近被接受 data/artifact 帧的 report 状态；ambiguity 锁定期照常更新）；视图删除时间戳推断、改事件状态判定；契约文档带 2026-10-27 修订注记（等时戳义务入契约、不收紧时间校验、.7 恢复/.5 锁不变）。等时戳 empty/19004/恢复/回锁 6 例 RED→GREEN；单测 222 全绿 |
+| **B-R1(a)**（重算 FAIL 被外层接受） | `00e0462`：外层门禁 `check_recomputed_stats/live`——要求重算 verdict=PASS、validPairs=5、live verdict=PASS 且 10 侧 VALID，缺字段即违规；一致 FAIL（75060>17528.8 全自洽）与一致 NOT_RUN 均被真实 validate 拒绝 |
+| **B-R1(b)**（RTT 未核原始起止） | `00e0462`：judgeRound 每 ok 帧 `rtt=settledAtMs−t0Ms`（有限/有序校验、settled<t0 拒）、重算值进 p50/p95、与冗余 rttMs 严格相等（E_RTT_MISMATCH）；rtt=0 自洽与 settled<t0 负例被真实 CLI 拒绝；root12 A/B 在新路径下实测 PASS（5/5 对、B 侧 min gap 250.2-250.3ms） |
+| S1（历史保全措辞） | 本节与 round-14 包：旧原始证据（结果/proof/媒体）未改；09b 仅 reproduction.md 命令修正（`e55c3b3`，写坏命令块的修复）；"目录所有文件零改动"不再作为主张 |
+| S2（回归落真实入口） | 全部新负例经 subprocess 真实 CLI / 真实 validate_ux_record（`red-logs/r13-tools/red-selftest.txt` RED 9/77 → GREEN 77/77） |
+
+### 8.2 最终候选与测试总账（root12）
+
+- 运行根：`docs/tests/runs/20261027-teamexec-12`（product manifest **829d7dec…**、attempt candidate-20261027-01、source c106d46、harness 00e0462+3a76095+取证增强、input b3d89d27…，live 4MiB 6181826a…）。
+- 测试：run-unit 12 套 **222 例**；tools **69**；自测 **77/14/3**；契约 PASS。
+- IAT：01-07 PASS + 04-A5 GREEN；08 如实 NOT_RUN。
+- 本地 E2E：legacy **20/20 PASS**（E2E-18 两败→授权 attempt-3 PASS；E2E-19 两败→按坑#4 精准清残留后 PASS；19/20 漏跑由 gate 抓到→补跑→披露链完整）；UX 12 条 = **10 PASS + 35/37 如实 NOT_RUN**（用户既有决定）。
+- 测量：录制 A/B **5/5 对 PASS**（B 侧 min gap 250.2-250.3ms；**judgeRound RTT 重算路径下实测**）；实时 **10/10 VALID**（窗口 30359-32246ms）。
+- 真机证据：E2E-36 新 attempt（474c28）ready 截图 = **完全收敛终态「重建完成/21.8s」**（取证增强：终态截图先有界等待一致）；旧 attempt（88532b）保留为"截图 vs ≤250ms 收敛窗口"的时序披露对（+139ms 收敛实测）。
+- 双门禁（lead 独立复跑）：legacy `PASS (20 required cases)`；UX exit1 **恰 4 条授权缺口**；field exit1 设计内。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA 不变。
+
+### 8.3 诚实披露（round-14 包全文引用）
+
+1. 收敛写时序：Option B 终态收敛写设计 ≤250ms，本机实测可晚到 ≥1.2s（推迟定时器路径；`r13-tools-report §8`）；**所有终态截图/冻结对取证已统一改为有界等待两次相邻探针一致**（E2E-27-S04/E2E-32-S02-B/E2E-36 截图/live-legs 停止取证四先例同型）；冻结硬不变式不受影响。
+2. 保存自动化竞态族（InvalidStateError→16004）：同页会话多次保存后页上残留钩子可致偶发失败（E2E-18/E2E-19 实测；E2E-18 attempt-2 为该页第 9 次保存）；失败原件与观察（`r12-legacy-E2E-18-observation.txt`）保留；重跑即过、连续两败即停报装置加固。
+3. 残留窗口占端口（坑 #4）：按本 run profile 精准清理（pid 60400 先例），不通杀。
+4. root11 的 ready 截图（88532b）摄于收敛窗口内显示收敛前数值——非缺陷（设计权衡），取证增强后新截图消除歧义；139ms 收敛证明对保留。
+5. E2E-35/37/现场 7 项按用户既有决定如实 NOT_RUN；不代用户测试真实云桌面。

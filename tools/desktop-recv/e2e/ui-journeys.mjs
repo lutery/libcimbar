@@ -119,6 +119,27 @@ export function createUiJourneys(h) {
     throw new Error(`timeout waiting for ${label}: last=${JSON.stringify(last)}`);
   }
 
+  // The terminal projection converges ON the shared 250ms boundary (Option B),
+  // and the convergence write can land after the state transition (observed
+  // +139ms on this rig; the E2E-27 S04 stop report saw >=1.2s), so a
+  // screenshot taken the instant Ready/Saved appears can capture the
+  // pre-convergence projection. Wait (bounded) until two consecutive probes
+  // agree on the metric spans; the assertions and their criteria are
+  // untouched - only the screenshot instant moves (E2E-32-S02-B / S04 shape).
+  async function settleTerminalMetrics(page) {
+    let previous = await uxProbe(page);
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      await sleep(400);
+      const settled = await uxProbe(page);
+      if (settled.elapsed === previous.elapsed && settled.rate === previous.rate) {
+        return settled;
+      }
+      previous = settled;
+    }
+    return previous;
+  }
+
   // Minimize/restore the REAL receiver window by pid (Win32 ShowWindow over
   // UI Automation). This is a genuine OS action, not a visibility override.
   async function setWindowState(pid, cmd) {
@@ -636,6 +657,9 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
         if (probe.state === 'Incomplete') throw new Error('incomplete');
         return null;
       }, 300000, 'Ready for the long-name artifact');
+      // Terminal-metric screenshots must show the CONVERGED terminal state
+      // (see settleTerminalMetrics): settle before the ready/save-focus pair.
+      await settleTerminalMetrics(page);
       const nameCheck = await page.evaluate(() => {
         const node = document.getElementById('artifact-name');
         const size = document.getElementById('artifact-size');
@@ -675,6 +699,7 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
       }
       // Focus restore (c0d566f): after the native cancel the focus must sit on
       // an operable control again - the T24 item this journey verifies.
+      await settleTerminalMetrics(page);
       await rec.shot(page, 's36-s03-cancelled.png');
       const focusOperable = Boolean(focusAfterCancel)
         && ['BUTTON', 'A', 'SUMMARY'].includes(focusAfterCancel.tag);
@@ -695,6 +720,7 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
         return probe.status === 'Saved' ? probe : null;
       }, 30000, 'Saved after keyboard save');
       const shaEqual = externalSha256(reference) === externalSha256(target);
+      await settleTerminalMetrics(page);
       await rec.shot(page, 's36-s03-saved.png');
       rec.add('E2E-36-S03-C', 'the keyboard-driven real save writes a file whose external SHA equals the original (1MiB long-named input)',
         `focus=${JSON.stringify(saveFocus2)} saveExit=${saved.code} status=${savedProbe.status} equal=${shaEqual}`,
@@ -750,6 +776,8 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
         if (probe.state === 'Ready' && probe.artifact) return probe;
         return null;
       }, 240000, 'video Ready');
+      // Same convergence-settle before the video Ready terminal screenshots.
+      await settleTerminalMetrics(page);
       const target2 = join(rec.attemptDir, 'saved-video.bin');
       await pressTabTo(page, 'btn-save', 12);
       const saveHelper2 = runHelper(['-Action', 'save', '-Path', target2, '-TimeoutSec', '60'], stack.receiver.pid);

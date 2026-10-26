@@ -1,0 +1,29 @@
+2026-10-26T19:48:21.341Z process guard: reclaimed 0/96 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:27] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:48:28] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=58992
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] save-cancel via Cancel id 2
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-36\E2E-36-2026-10-26T19-48-21-341Z-474c28\saved-longname.bin
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\fixtures\fixtures-media\V-LAST-with.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-36\E2E-36-2026-10-26T19-48-21-341Z-474c28\saved-video.bin
+2026-10-26T19:50:03.083Z CASE E2E-36 PASS (attempt E2E-36-2026-10-26T19-48-21-341Z-474c28)

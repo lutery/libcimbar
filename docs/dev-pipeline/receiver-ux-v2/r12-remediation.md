@@ -8,11 +8,11 @@
 
 | 编号 | 主题（verdict） | 分类 | 状态 |
 |---|---|---|---|
-| A-R1 | 当前 report 失效后仍冒认旧百分比可判定 | Blocking（规格轴） | **CLOSED**（d22682e；root11 E2E-36 截图实证） |
+| A-R1 | 当前 report 失效后仍冒认旧百分比可判定 | Blocking（规格轴） | round-13 裁定 **PARTIAL**（同时间戳遗漏→A13-02）；**已由 r13-remediation.md A13-02 关闭**（c106d46，root12 等时戳用例+契约修订注记） |
 | A-R2 = B-01｜共享 250ms 节流把未绘制数值记成已绘制，终态也无法收敛 + lastBusiness 从不提交 | Blocking（双轴高置信） | **CLOSED**（d22682e + 00c5d57 Option B；A/B min gap 250.2-250.3ms、IAT-04-A5 GREEN） |
 | A-R3 | E2E-38 实时 10 侧并未持续 Receiving 30 秒，却全部 VALID | Blocking（规格轴） | **CLOSED**（5935079+5381d35；root11 实时 10/10 VALID、窗口 30127-30181ms；含 1ms 观测容差披露） |
 | A-R4 = B-03｜E2E-35 缺少真实后台步骤，替换断言后仍记 PASS | Blocking（双轴） | **CLOSED（按用户裁定）**（9cfc9cc+21f5a65：三装置探针不可构造，如实 NOT_RUN+授权入档，不修订用例） |
-| B-02 | UX 总门禁会接受不相等实物、缺必测步骤和无测量数据 | Blocking（标准轴） | **CLOSED**（5935079；自测 55→65 含裁决三负例+覆盖+测量负例；root11 门禁恰 4 条授权缺口） |
+| B-02 | UX 总门禁会接受不相等实物、缺必测步骤和无测量数据 | Blocking（标准轴） | round-13 裁定 **PARTIAL**（CLI 绑定/一致 FAIL/RTT 缺口→A13-01、B-R1）；**已由 r13-remediation.md 关闭**（00e0462，root12 门禁+CLI 实测） |
 | S1 | UX-IAT-08 状态与原因不一致（过时原因文字） | 建议 | **CLOSED**（5935079，原因如实；保持 NOT_RUN） |
 | S2 | measure-ux.mjs 纯计算/校验与运行装置拆分 | 建议 | **CLOSED**（5935079：measure-ux-calc.mjs + 门禁 --recompute 复用） |
 

@@ -202,3 +202,13 @@
 - **root 11 全量复验**：绿扫全绿（12 套 216 例/tools 67/自测 65·14·3/契约）；UX-IAT 01-07 PASS+A5 GREEN+08 NOT_RUN；legacy 20/20（5 次瞬态首败重试过、原件保留）；UX 27/28/29 一次过；30..34 首败（S02-B 抢在收敛写前，`dd20c21` 有界等待修复）后 PASS；A/B PASS（5/5 对，B 侧 min gap 250.2-250.3ms）；实时腿首跑中止（frozenA 竞态/249.9 观测抖动/http.server 瞬态——`5381d35` 修复前两项+1ms 观测容差带约束，raw 移入 live-failed-run-1/）后 10/10 VALID（窗口 30127-30181ms）；UX-UI：35 NOT_RUN/36 PASS/37 NOT_RUN/38 PASS（S01-S05）。
 - **双门禁（lead 独立复跑）**：legacy `GATE local: PASS (20 required cases)` exit0；UX `FAIL (4)` = E2E-35×2 + E2E-37×2（均为用户授权缺口）；field exit1（现场 7 项，设计内）。冻结方法 diff 0ed2e5b 为空；v1 契约 5a93bf22/B2996C84 不变；E2E-36 Ready 截图实证收敛（无旧百分比/旧速率）。
 - **交付**：root11 reproduction.md/release-candidate-manifest.json、状态回填与 runtime 重绑、stage5 总结更新、round-13 送审包（待阶段 5 整改出口确认门）。
+
+## R13 — Round-13 复审整改轮（lead 编排；r13-prod / r13-tools 执行，lead 验收提交）
+
+- 起止：2026-10-26 23:40 ～ 2026-10-27 04:00 (+08:00)；台账：r13-remediation.md；报告：r13-prod-report.md、r13-tools-report.md（§1-§9）
+- 输入：round-13 复审裁决（不通过，3 阻断 A13-01/A13-02/B-R1 + S1/S2；A-R2/A-R3/A-R4 维持 CLOSED），归档 `a292900`。
+- **B-R13-1 产品（`c106d46`）**：A13-02——观察 progress 新增 lastReportState（ambiguity 锁定仍更新），视图删除时间戳推断改事件状态判定；契约带日期修订注记；等时戳 6 例 RED→GREEN；单测 222 全绿。
+- **B-R13-2 工具（`00e0462`）**：A13-01 CLI 真传 expected 并从 context 实读三重绑定（磁盘重哈希自校验、缺失即拒）；B-R1(a) 外层要求重算 verdict=PASS/5 对/10 侧 VALID；B-R1(b) judgeRound RTT 从原始起止重算+严格核对。RED 9/77（裁决反例全复现）→ GREEN 77/69/14 全绿；root11 正例 CLI 实测通过。
+- **B-R13-3 root12 全量复验**（product 829d7dec…，attempt candidate-20261027-01）：绿扫 222/69/77/14/3 → IAT 01-07+A5 → legacy 20/20（18/19 各两败后经裁定重跑 PASS；19/20 漏跑由 gate 抓到补跑）→ UX 27/28/29（27 经 S04 有界等待修复后 PASS，`3a76095`）→ 30..34 → A/B 5/5（gap≥250ms）→ live 10/10（窗口 30359-32246ms）→ UX-UI 35/37 NOT_RUN、36/38 PASS → 双门禁 legacy PASS(20)/UX 恰 4 条授权缺口/field 设计内。取证增强：E2E-36 终态截图先有界等待一致（新 attempt 474c28 显示「重建完成/21.8s」；旧 attempt 88532b 保留为窗口时序披露对）。
+- **验收**（lead 独立复跑）：双门禁、recompute CLI（ok=true/PASS/5/10、context 三重绑定生效）、语义校验 4 文件全等、E2E-36 新截图目验、冻结方法 diff 空、v1 契约 SHA 不变。
+- **收口**：回填/runtime-map 重绑（root12）、总结第 8 节、r13 台账全 CLOSED（r12 台账 A-R1/B-02 注记 PARTIAL→由本轮关闭）、round-14 包与模板、阶段 5 整改出口确认门。

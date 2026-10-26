@@ -1,0 +1,21 @@
+{
+  "count": 2,
+  "rounds": [
+    {
+      "file": "rounds/warmup-A.json",
+      "side": "A",
+      "pairIndex": 0,
+      "warmup": true,
+      "reason": "E_WARMUP",
+      "detail": "warmup rounds are excluded from the measurement"
+    },
+    {
+      "file": "rounds/warmup-B.json",
+      "side": "B",
+      "pairIndex": 0,
+      "warmup": true,
+      "reason": "E_WARMUP",
+      "detail": "warmup rounds are excluded from the measurement"
+    }
+  ]
+}

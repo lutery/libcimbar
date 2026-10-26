@@ -1,0 +1,9 @@
+status=Saved
+artifact=sample-random-2.bin 65536 字节
+saveTimings={"initStartAt":1793033285185,"initReadyAt":1793033285292,"validInputStartAt":1793033278227,"reconstructionDoneAt":1793033290207,"saveRequestAt":1793033293742,"createWritableAccessedAt":1793033298337,"writableAt":1793033298343,"writeCloseAt":1793033298444,"lastSaveClickAt":1793033293741,"decoderInitMs":107,"sourceWaitMs":-7065,"initMs":-6958,"reconstructMs":11980,"totalToReadyMs":5022,"pickerWaitMs":4595,"writableOpenMs":6,"saveWaitMs":4601,"saveWriteMs":101,"saveMs":4702}
+saveTimingsComplete=true
+sha256 original=e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712 received=e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712 equal=true
+log=recording: 1604x1002, 9.3s
+capture stopped; the file is ready to save
+saved (1)
+

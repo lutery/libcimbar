@@ -1,0 +1,7 @@
+default: equal=true
+sender 900x700 + receiver render scale 1.5: equal=true
+sender 1400x950, scale back to 1.0: equal=true
+OS display scaling is NOT covered: not automatable from this harness and
+the support matrix claims no such combo ("其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）").
+The decode path samples the video element intrinsic size, so render scale
+changes do not silently resample the transfer (hash equality proves it).

@@ -1,0 +1,8 @@
+status=Saved
+artifact=sample-text-2.bin 65536 字节
+saveTimings={"initStartAt":1793032424577,"initReadyAt":1793032425047,"validInputStartAt":1793032382739,"reconstructionDoneAt":1793032428955,"saveRequestAt":1793032435635,"createWritableAccessedAt":1793032441180,"writableAt":1793032441187,"writeCloseAt":1793032442088,"lastSaveClickAt":1793032435635,"decoderInitMs":470,"sourceWaitMs":-42308,"initMs":-41838,"reconstructMs":46216,"totalToReadyMs":4378,"pickerWaitMs":5545,"writableOpenMs":7,"saveWaitMs":5552,"saveWriteMs":901,"saveMs":6453}
+saveTimingsComplete=true
+sha256 original=2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e received=2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e equal=true
+log=capture stopped; the file is ready to save
+saved (1)
+

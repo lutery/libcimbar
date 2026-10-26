@@ -1,0 +1,52 @@
+2026-10-26T18:41:15.850Z process guard: reclaimed 0/71 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 02:41:22] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 10298)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+2026-10-26T18:41:30.475Z E2E-27-CAL01: animation changed=true digest=dd6d28986767
+2026-10-26T18:41:30.609Z E2E-27-CAL02: sha256=ba99e7b27337ab99... file=src01-code-frame.png rect=710x710
+2026-10-26T18:41:30.665Z E2E-27-CAL03: mode=still rect={"left":285,"top":5,"width":710,"height":710}
+2026-10-26T18:41:41.170Z E2E-27-CAL04: heldMs=10505 stable=true hashes=6505765c,6505765c,6505765c
+2026-10-26T18:41:41.173Z E2E-27-CAL05: mode=blank full-viewport
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53816
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-27\E2E-27-2026-10-26T18-41-15-851Z-f08508\received.bin
+2026-10-26T18:42:20.357Z CASE E2E-27 FAIL (attempt E2E-27-2026-10-26T18-41-15-851Z-f08508)

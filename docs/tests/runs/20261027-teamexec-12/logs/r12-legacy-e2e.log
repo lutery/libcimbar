@@ -1,0 +1,1069 @@
+== CASE E2E-1
+2026-10-26T16:21:11.668Z process guard: reclaimed 0/2 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:20] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:21] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:22] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:22] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:22] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:22] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:21:22] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8767 共享的内容 pid=59296
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:21:38.687Z e2e-1: live File ready to save artifact=sample-text-2.bin
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-1\live\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-1\recorded\received.bin
+2026-10-26T16:22:29.684Z CASE E2E-1 PASS (attempt E2E-1-2026-10-26T16-21-11-669Z-e1d6fd)
+== CASE E2E-2
+2026-10-26T16:22:32.608Z process guard: reclaimed 0/3 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:22:42] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8766 共享的内容 pid=62020
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-2\live\received.bin
+2026-10-26T16:23:21.153Z CASE E2E-2 PASS (attempt E2E-2-2026-10-26T16-22-32-609Z-0aa16f)
+== CASE E2E-3
+2026-10-26T16:23:24.211Z process guard: reclaimed 0/4 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:30] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /icon-192x192.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:23:31] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 8195)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+receiver app not initialized (window.__state missing); reloading once
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:24:15.299Z round compressible-1: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False[helper] 
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-compressible-1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:24:42.428Z round compressible-2: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-compressible-2\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:25:09.070Z round compressible-3: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-compressible-3\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:25:37.961Z round incompressible-1: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-incompressible-1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share[helper] 
+2026-10-26T16:26:07.040Z round incompressible-2: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-incompressible-2\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47924
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:26:35.552Z round incompressible-3: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-3\round-incompressible-3\received.bin
+2026-10-26T16:26:53.278Z CASE E2E-3 PASS (attempt E2E-3-2026-10-26T16-23-24-212Z-0515f1)
+== CASE E2E-4
+2026-10-26T16:26:59.184Z process guard: reclaimed 0/7 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:04] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:05] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 3308)
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 6490)
+[receiver-http] Traceback (most recent call last):
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] share picker cancelled
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=61852
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:27:23.625Z round restart: File ready to save artifact=sample-text-1.bin 4096 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-4\round-restart\received.bin
+2026-10-26T16:27:42.084Z CASE E2E-4 PASS (attempt E2E-4-2026-10-26T16-26-59-184Z-bdcec0)
+== CASE E2E-5
+2026-10-26T16:27:48.056Z process guard: reclaimed 0/10 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:53] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:27:54] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 1738)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=55928
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=55928
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:28:23.865Z round reselect: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-5\round-reselect\received.bin
+2026-10-26T16:28:44.759Z CASE E2E-5 PASS (attempt E2E-5-2026-10-26T16-27-48-057Z-43afde)
+== CASE E2E-6
+2026-10-26T16:28:52.335Z process guard: reclaimed 0/13 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:58] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:28:59] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 1852)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=7684
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:29:16.972Z [e2e-6] tab-close settle=Not enough data to rebuild the file noArtifact=true
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:29:17] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=7684
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-6\round-tab-close\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=7684
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:30:15.479Z [e2e-6] window-close settle=Not enough data to rebuild the file noArtifact=true
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:30:16] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=7684
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-6\round-window-close\received.bin
+2026-10-26T16:30:58.998Z CASE E2E-6 PASS (attempt E2E-6-2026-10-26T16-28-52-335Z-1ab9b8)
+== CASE E2E-7
+2026-10-26T16:31:05.312Z process guard: reclaimed 0/16 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:31:11] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=58588
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=58588
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:32:00.062Z round fresh-B: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-7\round-fresh-B\received.bin
+2026-10-26T16:32:19.910Z CASE E2E-7 PASS (attempt E2E-7-2026-10-26T16-31-05-313Z-284162)
+== CASE E2E-8
+2026-10-26T16:32:26.924Z process guard: reclaimed 0/19 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:34] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /index.html?ww=1 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /icon-192x192.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /icon-512x512.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:32:38] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=56680
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:33:33.456Z [e2e-8] 4C bounded window: no Ready within 30155 ms, status="Receiving frames"
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:33:35] "GET /sw.js HTTP/1.1" 304 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=56680
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:33:49.964Z round recover-B: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-8\round-recover-B\received.bin
+2026-10-26T16:34:12.857Z CASE E2E-8 PASS (attempt E2E-8-2026-10-26T16-32-26-926Z-d8b16b)
+== CASE E2E-9
+2026-10-26T16:34:21.585Z process guard: reclaimed 0/22 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:28] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:29] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /index.html?ww=1 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /icon-192x192.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /icon-512x512.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:34:29] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 1717)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47444
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:34:45.697Z round default: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-9\round-default\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47444
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:35:19.827Z round small-scaled: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-9\round-small-scaled\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=47444
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:36:04.914Z round large-default-scale: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-9\round-large-default-scale\received.bin
+2026-10-26T16:36:25.938Z CASE E2E-9 PASS (attempt E2E-9-2026-10-26T16-34-21-585Z-4a1a63)
+== CASE E2E-10
+2026-10-26T16:36:32.702Z process guard: reclaimed 0/25 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:38] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:36:39] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=5720
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:36:54.854Z round receiver-front: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-10\round-receiver-front\received.bin
+2026-10-26T16:37:13.982Z [e2e-10] receiver-front roundtrip equal=true
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=5720
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:37:40.543Z [e2e-10] minimized 15 s: no false Ready, status="Receiving frames"
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-10\restored\received.bin
+2026-10-26T16:38:16.751Z CASE E2E-10 PASS (attempt E2E-10-2026-10-26T16-36-32-703Z-0a70a2)
+== CASE E2E-11
+2026-10-26T16:38:24.338Z process guard: reclaimed 0/28 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:38:31] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 4117)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=60744
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] save-cancel via Cancel id 2
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-11\retry\received.bin
+2026-10-26T16:39:07.231Z CASE E2E-11 PASS (attempt E2E-11-2026-10-26T16-38-24-339Z-7fbd5d)
+== CASE E2E-12
+2026-10-26T16:39:13.213Z process guard: reclaimed 0/31 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:19] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:19] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:39:20] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=15524
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:39:34.203Z [e2e-12] suggested name: "sample-text-2.bin" ok=true
+[helper] dismissed the Edge sync bubble
+[helper] save-cancel via Cancel id 2
+[helper] overwrite refused
+[helper] rename paste: edit text now 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-12\中文 名字-2.bin'
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-12\中文 名字-2.bin
+2026-10-26T16:40:01.237Z [e2e-12] refused=true sentinelIntact=true
+2026-10-26T16:40:01.237Z [e2e-12] helper: overwrite refused
+ | rename paste: edit text now 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-12\中文 名字-2.bin'
+ | False
+ | saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-12\中文 名字-2.bin
+2026-10-26T16:40:01.368Z CASE E2E-12 PASS (attempt E2E-12-2026-10-26T16-39-13-213Z-d0a6d0)
+== CASE E2E-13
+2026-10-26T16:40:08.292Z process guard: reclaimed 0/33 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:15] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:40:16] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=9684
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-13\one-save.bin
+2026-10-26T16:40:46.587Z CASE E2E-13 PASS (attempt E2E-13-2026-10-26T16-40-08-293Z-b5d158)
+== CASE E2E-14
+2026-10-26T16:40:53.347Z process guard: reclaimed 0/36 recorded process(es)
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-compressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-compressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-compressible-3\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-incompressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-incompressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-14\round-incompressible-3\received.bin
+2026-10-26T16:44:21.324Z CASE E2E-14 PASS (attempt E2E-14-2026-10-26T16-40-53-348Z-2cd222)
+== CASE E2E-15
+2026-10-26T16:44:27.023Z process guard: reclaimed 0/38 recorded process(es)
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 4878)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dismissed the Edge sync bubble
+[helper] open-cancel via Cancel id 2
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\fixtures-media\V-GOOD-C.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-15\recovery-cancel\received.bin
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\fixtures-media\V-GOOD-C.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-15\recovery-empty\received.bin
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\fixtures-media\V-GOOD-C.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-15\recovery-text\received.bin
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\fixtures-media\V-GOOD-C.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-15\recovery-corrupt\received.bin
+2026-10-26T16:46:20.607Z CASE E2E-15 PASS (attempt E2E-15-2026-10-26T16-44-27-024Z-32e26b)
+== CASE E2E-16
+2026-10-26T16:46:25.859Z process guard: reclaimed 0/40 recorded process(es)
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 12100)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-16\round-with\received.bin
+2026-10-26T16:47:35.349Z CASE E2E-16 PASS (attempt E2E-16-2026-10-26T16-46-25-859Z-d11e4c)
+== CASE E2E-17
+2026-10-26T16:47:40.834Z process guard: reclaimed 0/41 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:46] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:47] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:47] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:47] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:47] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:47:48] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 6707)
+[receiver-http] ----------------------------------------
+[receiver-http] Exception occurred during processing of request from ('127.0.0.1', 3917)
+[receiver-http] ----------------------------------------
+[receiver-http] Exception occurred during processing of request from ('127.0.0.1', 3867)
+[receiver-http] Traceback (most recent call last):
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] Traceback (most recent call last):
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http] ----------------------------------------
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=46948
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:48:11.027Z round live-B: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-17\round-live-B\received.bin
+2026-10-26T16:48:29.327Z [e2e-17] leg1 stop-video -> live-B equal=true
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=46948
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-17\video-B\received.bin
+2026-10-26T16:49:07.705Z [e2e-17] leg2 stop-live -> video-B equal=true
+2026-10-26T16:49:07.713Z CASE E2E-17 PASS (attempt E2E-17-2026-10-26T16-47-40-835Z-66906f)
+== CASE E2E-18
+2026-10-26T16:49:15.025Z process guard: reclaimed 0/44 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 00:49:22] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:49:38.232Z round live-c-1mib: File ready to save artifact=ext-text-1mib.bin 1048576 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-live-c-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:50:13.954Z round live-c-4mib: File ready to save artifact=ext-text-4mib.bin 4194304 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-live-c-4mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:50:58.266Z round live-n-1mib: File ready to save artifact=ext-random-1mib.bin 1048576 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-live-n-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T16:52:28.892Z round live-n-4mib: File ready to save artifact=ext-random-4mib.bin 4194304 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-live-n-4mib\received.bin
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:52:52] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:52:53] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:52:53] code 404, message File not found
+127.0.0.1 - - [27/Oct/2026 00:52:53] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=44696
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-video-c-4mib\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-video-n-128kib\received.bin
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:55:51] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:55:52] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:55:52] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [27/Oct/2026 00:55:52] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=59500
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-video-n-1mib-probe\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=53824
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T17:00:58.412Z round budget-recovery: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-18\round-budget-recovery\received.bin
+2026-10-26T17:01:15.554Z CASE E2E-18 FAIL (attempt E2E-18-2026-10-26T16-49-15-025Z-55a865)
+== CASE E2E-19
+2026-10-26T19:22:01.424Z process guard: reclaimed 0/87 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:06] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:22:07] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 13604)
+[receiver-http] ----------------------------------------
+[receiver-http] Exception occurred during processing of request from ('127.0.0.1', 9024)
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 9366)
+[receiver-http] Traceback (most recent call last):
+[receiver-http] Traceback (most recent call last):
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+[receiver-http] ----------------------------------------
+[receiver-http] ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+----------------------------------------
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=59652
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:22:22.341Z round before-reload: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False[helper] 
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-19\round-before-reload\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=59652
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:22:53.373Z round after-reload: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-19\round-after-reload\received.bin
+2026-10-26T19:23:10.986Z [e2e-19] old page closed=true; fresh page=http://127.0.0.1:8771/
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=59652
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:23:19.862Z round after-reopen: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-19\round-after-reopen\received.bin
+2026-10-26T19:23:37.172Z CASE E2E-19 FAIL (attempt E2E-19-2026-10-26T19-22-01-425Z-37f1e7)
+== CASE E2E-20
+2026-10-26T19:34:15.496Z process guard: reclaimed 0/93 recorded process(es)
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:20] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [27/Oct/2026 03:34:21] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=64560
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:34:36.296Z round live-1: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-live-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-video-2\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=64560
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:35:33.909Z round live-3: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-live-3\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-video-4\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=64560
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:36:31.576Z round live-5: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-live-5\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-video-6\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=64560
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:37:27.775Z round live-7: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-live-7\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-video-8\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=64560
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T19:38:22.298Z round live-9: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-live-9\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261027-teamexec-12\proof\E2E-20\round-video-10\received.bin
+2026-10-26T19:39:06.916Z CASE E2E-20 PASS (attempt E2E-20-2026-10-26T19-34-15-497Z-a13696)

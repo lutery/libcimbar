@@ -8,12 +8,12 @@
 
 | 编号 | 主题（verdict） | 分类 | 状态 |
 |---|---|---|---|
-| A13-01 | 测量 CLI 丢失当前上下文绑定实参（P1，旧 B-02 残留） | Blocking（规格轴） | OPEN |
-| A13-02 | 降级修复仍把"相同时间戳"误认为报告没有失效（P2，旧 A-R1 部分） | Blocking（规格轴） | OPEN |
-| B-R1(a) | 测量复算只验证自洽，外层没有要求验收结果 PASS（P1，旧 B-02 残留） | Blocking（标准轴） | OPEN |
-| B-R1(b) | 同一复算链的原始值缺口：RTT 未从原始起止重算/核对（P1，同上） | Blocking（标准轴） | OPEN |
-| S1 | 历史保全边界措辞（旧原始证据未改 ≠ 目录零改动；09b reproduction.md 修正出处 e55c3b3） | 建议 | OPEN |
-| S2 | 新增门禁回归应覆盖实际调用边界（真实 CLI/验证函数入口） | 建议 | OPEN |
+| A13-01 | 测量 CLI 丢失当前上下文绑定实参（P1，旧 B-02 残留） | Blocking（规格轴） | **CLOSED**（00e0462；真实入口负例 5 类全拒、root12 正例实测 PASS/5/10） |
+| A13-02 | 降级修复仍把"相同时间戳"误认为报告没有失效（P2，旧 A-R1 部分） | Blocking（规格轴） | **CLOSED**（c106d46；lastReportState 事件状态判定，契约 2026-10-27 修订注记；等时戳 6 例 RED→GREEN） |
+| B-R1(a) | 测量复算只验证自洽，外层没有要求验收结果 PASS（P1，旧 B-02 残留） | Blocking（标准轴） | **CLOSED**（00e0462；一致 FAIL/NOT_RUN 被真实 validate 拒绝；root12 门禁实测通过） |
+| B-R1(b) | 同一复算链的原始值缺口：RTT 未从原始起止重算/核对（P1，同上） | Blocking（标准轴） | **CLOSED**（00e0462；rtt=0/settled<t0 负例被拒；root12 A/B 新路径实测 PASS） |
+| S1 | 历史保全边界措辞 | 建议 | **CLOSED**（总结第 8 节 + round-14 包措辞修正） |
+| S2 | 新增门禁回归应覆盖实际调用边界 | 建议 | **CLOSED**（全部负例经 subprocess 真实 CLI / 真实 validate_ux_record） |
 
 ## 逐项整改义务（DoD 以 verdict 原文为准）
 

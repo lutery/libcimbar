@@ -56,10 +56,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
-    "updatedAt": "2026-10-26",
+    "attemptId": "E2E-36-2026-10-26T19-48-21-341Z-474c28",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-36/UX-UI-2026-10-26T09-58-29-387Z-423ba5"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28"
         ],
     
     "executionStage": "5",
@@ -122,8 +122,8 @@
     "required": true,
     "status": "NOT_RUN",
     "executedBy": null,
-    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
           
         ],
@@ -197,10 +197,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-38/UX-UI-2026-10-26T09-58-29-387Z-423ba5"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b"
         ],
     
     "executionStage": "5",

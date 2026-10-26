@@ -1,0 +1,724 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261027-teamexec-12",
+  "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+  "records": [
+    {
+      "caseId": "E2E-27",
+      "attemptId": "E2E-27-2026-10-26T18-50-30-839Z-5f13b0",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:50:42.046Z",
+      "finishedAt": "2026-10-26T18:51:38.004Z",
+      "proofRefs": [
+        "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin",
+        "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-27-S01",
+          "expected": "both receive buttons exist and save cannot be clicked early",
+          "observed": "videoDisabled=false saveDisabled=true status=Ready to receive",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s01-before-share.png"
+        },
+        {
+          "id": "E2E-27-S01-B",
+          "expected": "real source window chosen in the system picker; session enters waiting",
+          "observed": "state=Receiving primary=正在等待有效数据 status=Receiving frames",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s01-attached.png"
+        },
+        {
+          "id": "E2E-27-S02",
+          "expected": "no valid code >=6s: waiting text, >=5s notice, elapsed grows, no fake file progress",
+          "observed": "[{\"label\":\"0.5s\",\"atMs\":504,\"primary\":\"正在等待有效数据\",\"next\":\"\",\"elapsed\":\"0.6s\",\"revision\":2,\"processed\":0},{\"label\":\"5s\",\"atMs\":5114,\"primary\":\"正在等待有效数据\",\"next\":\"请检查发送画面是否可见，并确认 Mode 是否匹配。\",\"elapsed\":\"5.4s\",\"revision\":2,\"processed\":0},{\"label\":\"6s\",\"atMs\":6225,\"primary\":\"正在等待有效数据\",\"next\":\"请检查发送画面是否可见，并确认 Mode 是否匹配。\",\"elapsed\":\"6.4s\",\"revision\":2,\"processed\":0}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s02-wait-6s.png"
+        },
+        {
+          "id": "E2E-27-S03",
+          "expected": "after removing the blank layer the first real data appears; receiving activity and a redundancy-inclusive KiB/s are shown",
+          "observed": "restore=live firstData={\"label\":\"data\",\"atMs\":2,\"state\":\"Receiving\",\"rate\":\"0.0 KiB/s（含冗余）\",\"processed\":0,\"elapsed\":\"6.7s\",\"revision\":2} lastProbe={\"label\":\"data\",\"atMs\":2,\"state\":\"Receiving\",\"rate\":\"0.0 KiB/s（含冗余）\",\"processed\":0,\"elapsed\":\"6.7s\",\"revision\":2} trailLength=1 trail=[{\"label\":\"data\",\"atMs\":2,\"state\":\"Receiving\",\"rate\":\"0.0 KiB/s（含冗余）\",\"processed\":0,\"elapsed\":\"6.7s\",\"revision\":2}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s03-first-data.png"
+        },
+        {
+          "id": "E2E-27-S04",
+          "expected": "Ready tells the user to save with the real artifact info; elapsed freezes; sending input stopped",
+          "observed": "primary=文件已接收完成，请保存 next=点击「保存文件…」。 artifact=131072 elapsed=9.3s->9.3s pause={\"paused\":true,\"kind\":\"bounded-cooldown\"}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s04-ready.png"
+        },
+        {
+          "id": "E2E-27-S05",
+          "expected": "real system save: selecting/writing/close then Saved; external hashes equal",
+          "observed": "saveTimingsComplete=true equal=true primary=文件已保存 saveStatus=none timings={\"initStartAt\":1793040659455,\"initReadyAt\":1793040659592,\"validInputStartAt\":1793040664448,\"reconstructionDoneAt\":1793040673746,\"saveRequestAt\":1793040678729,\"createWritableAccessedAt\":1793040687061,\"writableAt\":1793040687070,\"writeCloseAt\":1793040687199,\"lastSaveClickAt\":1793040678729,\"decoderInitMs\":137,\"sourceWaitMs\":4856,\"initMs\":4993,\"reconstructMs\":9298,\"totalToReadyMs\":14291,\"pickerWaitMs\":8332,\"writableOpenMs\":9,\"saveWaitMs\":8341,\"saveWriteMs\":129,\"saveMs\":8470}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/screens/s05-saved.png"
+        },
+        {
+          "id": "E2E-27-S06",
+          "expected": "external Get-FileHash of original/received is identical and sizes match",
+          "observed": "original=8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146 received=8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146 bytes=131072",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/s06-external-sha.txt"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "slice journey E2E-27: SRC-01 calibration, wait/data/Ready/save/external-SHA all measured; phase=slice PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-28",
+      "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-020",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:52:53.214Z",
+      "finishedAt": "2026-10-26T18:53:52.300Z",
+      "proofRefs": [
+        "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin",
+        "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-28-S01",
+          "expected": "a real animated code frame from the original sender is frozen as an opaque source layer",
+          "observed": "animating=true frameSha256=1cfdb2a6d4a86a2a5ae6b2c33fda18c69b2ad55c589d7d491c5d1314ab712587 bytes=579411 rect=710x710 inputSha256=3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/src01-code-frame.png"
+        },
+        {
+          "id": "E2E-28-PRE",
+          "expected": "the live source delivers real data and an active rate before the freeze",
+          "observed": "revision=2 rate=57.6 KiB/s（含冗余） progress=重建估计约 6% frames=0 sessionId=s1",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/screens/s28-first-data.png"
+        },
+        {
+          "id": "E2E-28-S02",
+          "expected": "repeated valid codes for >=10s: the redundancy-inclusive rate stays active while the reconstruction estimate stays fixed and the no-growth notice appears",
+          "observed": "{\"heldMs\":10996,\"stillMode\":\"still\",\"pixelStable\":true,\"progressStable\":true,\"stablePercent\":9,\"rateActive\":true,\"noticeSeen\":true,\"samples\":[{\"label\":\"0.5s\",\"atMs\":510,\"progress\":\"重建估计约 9%\",\"rate\":\"53.7 KiB/s（含冗余）\",\"secondary\":\"已识别到码流。\",\"elapsed\":\"2.2s\",\"revision\":2,\"frames\":0,\"state\":\"Receiving\",\"artifact\":null},{\"label\":\"3s\",\"atMs\":3285,\"progress\":\"重建估计约 9%\",\"rate\":\"59.1 KiB/s（含冗余）\",\"secondary\":\"已识别到码流。\",\"elapsed\":\"5.0s\",\"revision\":2,\"frames\":0,\"state\":\"Receiving\",\"artifact\":null},{\"label\":\"5s\",\"atMs\":5291,\"progress\":\"重建估计约 9%\",\"rate\":\"56.2 KiB/s（含冗余）\",\"secondary\":\"已识别到码流。\",\"elapsed\":\"7.0s\",\"revision\":2,\"frames\":0,\"state\":\"Receiving\",\"artifact\":null},{\"label\":\"8s\",\"atMs\":8526,\"progress\":\"重建估计约 9%\",\"rate\":\"59.5 KiB/s（含冗余）\",\"secondary\":\"已识别到码流，但重建进度一段时间没有推进。\",\"elapsed\":\"10.1s\",\"revision\":2,\"frames\":0,\"state\":\"Receiving\",\"artifact\":null},{\"label\":\"10s\",\"atMs\":10781,\"progress\":\"重建估计约 9%\",\"rate\":\"59.0 KiB/s（含冗余）\",\"secondary\":\"已识别到码流，但重建进度一段时间没有推进。\",\"elapsed\":\"12.4s\",\"revision\":2,\"frames\":0,\"state\":\"Receiving\",\"artifact\":null}]}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/screens/s28-still-10s.png"
+        },
+        {
+          "id": "E2E-28-S03",
+          "expected": "no button touched during the freeze: elapsed keeps counting, no false Ready, save stays disabled, the session is not restarted",
+          "observed": "{\"elapsed\":[\"2.2s\",\"12.4s\"],\"states\":[\"Receiving\",\"Receiving\",\"Receiving\",\"Receiving\",\"Receiving\"],\"saveDisabledDuring\":true,\"artifacts\":[null,null,null,null,null],\"stillSessionSame\":true}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/screens/s28-still-8s.png"
+        },
+        {
+          "id": "E2E-28-S04",
+          "expected": "removing the still layer resumes real block growth without resetting the session",
+          "observed": "mode=live progress=9%->10% revision=2->2 resumedSessionSame=true trail=[{\"atMs\":12617,\"state\":\"Receiving\",\"rate\":\"58.5 KiB/s（含冗余）\",\"progress\":\"重建估计约 9%\",\"revision\":2,\"artifact\":null}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/screens/s28-resumed.png"
+        },
+        {
+          "id": "E2E-28-S05",
+          "expected": "the still phase did not fake completion; after the resume the file rebuilds exactly and saves with equal external SHA",
+          "observed": "artifact=1048576 saveOk=true equal=true bytes=1048576",
+          "result": "PASS",
+          "proofRef": "proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/screens/s28-saved.png"
+        }
+      ],
+      "referenceSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "receivedSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "notes": "repeated-code journey: still held 10996ms with the estimate fixed at 9%, resumed and saved | phase=final candidate evidence"
+    },
+    {
+      "caseId": "E2E-29",
+      "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-020",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:54:08.874Z",
+      "finishedAt": "2026-10-26T18:55:05.366Z",
+      "proofRefs": [
+        "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin",
+        "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-29-S01",
+          "expected": "a real receiving baseline exists: elapsed, active rate, and a reconstruction estimate",
+          "observed": "revision=2 elapsed=1.1s rate=58.8 KiB/s（含冗余） progress=重建估计约 6% sessionId=s1",
+          "result": "PASS",
+          "proofRef": "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/screens/s29-baseline.png"
+        },
+        {
+          "id": "E2E-29-S02",
+          "expected": "no valid code for >=6s: the rate drops to zero within 3s(+1s), the >=5s notice and stale-estimate semantics appear",
+          "observed": "{\"heldMs\":8545,\"blankMode\":\"blank\",\"zeroAfter3s\":true,\"notice5s\":true,\"staleProgress\":true,\"samples\":[{\"label\":\"1s\",\"atMs\":1004,\"rate\":\"39.2 KiB/s（含冗余）\",\"progress\":\"重建估计约 9%\",\"secondary\":\"已识别到码流。\",\"primary\":\"正在接收数据\",\"elapsed\":\"2.4s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true},{\"label\":\"3s\",\"atMs\":3016,\"rate\":\"2.7 KiB/s（含冗余）\",\"progress\":\"重建估计约 9%\",\"secondary\":\"已识别到码流。\",\"primary\":\"正在接收数据\",\"elapsed\":\"4.3s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true},{\"label\":\"4s\",\"atMs\":4135,\"rate\":\"0.0 KiB/s（含冗余）\",\"progress\":\"重建估计约 9%\",\"secondary\":\"已识别到码流。\",\"primary\":\"正在接收数据\",\"elapsed\":\"5.5s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true},{\"label\":\"5s\",\"atMs\":5151,\"rate\":\"0.0 KiB/s（含冗余）\",\"progress\":\"重建估计约 9%\",\"secondary\":\"已识别到码流。\",\"primary\":\"正在接收数据\",\"elapsed\":\"6.6s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true},{\"label\":\"6s\",\"atMs\":6294,\"rate\":\"0.0 KiB/s（含冗余）\",\"progress\":\"上次重建估计约 9%\",\"secondary\":\"已超过五秒没有识别到新数据。\",\"primary\":\"最近没有识别到新数据\",\"elapsed\":\"7.6s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true},{\"label\":\"8s\",\"atMs\":8437,\"rate\":\"0.0 KiB/s（含冗余）\",\"progress\":\"上次重建估计约 9%\",\"secondary\":\"已超过五秒没有识别到新数据。\",\"primary\":\"最近没有识别到新数据\",\"elapsed\":\"9.7s\",\"state\":\"Receiving\",\"artifact\":null,\"saveDisabled\":true}]}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/screens/s29-blank-8s.png"
+        },
+        {
+          "id": "E2E-29-S03",
+          "expected": "during the pause: elapsed keeps counting, the session is not restarted, save stays disabled, no fake progress",
+          "observed": "{\"elapsed\":[\"1.1s\",\"9.7s\"],\"states\":[\"Receiving\",\"Receiving\",\"Receiving\",\"Receiving\",\"Receiving\",\"Receiving\"],\"saveDisabled\":[true,true,true,true,true,true],\"artifacts\":[null,null,null,null,null,null],\"sessionSame\":true}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/screens/s29-blank-5s.png"
+        },
+        {
+          "id": "E2E-29-S04",
+          "expected": "lifting the blank resumes the same receiving context: active rate returns and the estimate is fresh again",
+          "observed": "mode=live rate=5.0 KiB/s（含冗余） progress=重建估计约 10% elapsed=10.5s",
+          "result": "PASS",
+          "proofRef": "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/screens/s29-recovered.png"
+        },
+        {
+          "id": "E2E-29-S05",
+          "expected": "the resumed session reaches Ready without a reload and the saved bytes match the original externally",
+          "observed": "artifact=1048576 saveOk=true equal=true bytes=1048576",
+          "result": "PASS",
+          "proofRef": "proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/screens/s29-saved.png"
+        }
+      ],
+      "referenceSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "receivedSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "notes": "no-data pause journey: blank held 8545ms, rate reached zero within 3s(+1s), resumed and saved | phase=final candidate evidence"
+    },
+    {
+      "caseId": "E2E-30",
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:55:41.960Z",
+      "finishedAt": "2026-10-26T18:57:04.735Z",
+      "proofRefs": [
+        "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-30-S01",
+          "expected": "live A shows running metrics before the stop",
+          "observed": "elapsed=0.1s rate=",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s30-d1-live-metrics.png"
+        },
+        {
+          "id": "E2E-30-S01-B",
+          "expected": "a real stop clears the stream and ends the session",
+          "observed": "state=Stopped artifactRetained=no",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s30-d1-stopped.png"
+        },
+        {
+          "id": "E2E-30-S02",
+          "expected": "after the stop the video input starts a NEW session (no cross-session numbers)",
+          "observed": "A owner=s1 B owner=s2 B elapsed=0.3s",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s30-d1-video-reset.png"
+        },
+        {
+          "id": "E2E-30-S03",
+          "expected": "video B rebuilds and saves with equal external SHA (direction 1)",
+          "observed": "equal=true timingsComplete=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/d1/received.bin"
+        },
+        {
+          "id": "E2E-30-S04",
+          "expected": "the live B session also restarts under a NEW owner after the stop",
+          "observed": "A owner=s1 B owner=s2 B elapsed=0.3s",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s30-d2-live-reset.png"
+        },
+        {
+          "id": "E2E-30-S04-B",
+          "expected": "live B rebuilds and saves with equal external SHA (direction 2)",
+          "observed": "equal=true timingsComplete=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/d2/received.bin"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "both directions: stop clears, new session resets numbers, B rebuild+save OK | phase=media PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-31",
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:57:05.341Z",
+      "finishedAt": "2026-10-26T18:57:43.500Z",
+      "proofRefs": [
+        "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-31-S01",
+          "expected": "the NATIVE OS file picker delivers the recording (app change event is the criterion)",
+          "observed": "helperExit=0 state=Receiving",
+          "result": "PASS",
+          "proofRef": "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s31-open-t2s.png"
+        },
+        {
+          "id": "E2E-31-S02",
+          "expected": "the media position line is shown next to elapsed/rate (3 time points)",
+          "observed": "[{\"name\":\"s31-open-t2s.png\",\"media\":\"录像位置 1.4s / 15%\",\"elapsed\":\"2.8s\",\"rate\":\"13.1 KiB/s（含冗余）\",\"progress\":\"重建估计约 28%\"},{\"name\":\"s31-open-t5s.png\",\"media\":\"录像位置 2.9s / 31%\",\"elapsed\":\"6.1s\",\"rate\":\"7.6 KiB/s（含冗余）\",\"progress\":\"重建估计约 45%\"},{\"name\":\"s31-open-t8s.png\",\"media\":\"录像位置 4.4s / 47%\",\"elapsed\":\"9.5s\",\"rate\":\"7.3 KiB/s（含冗余）\",\"progress\":\"重建估计约 62%\"}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s31-open-t5s.png"
+        },
+        {
+          "id": "E2E-31-S02-B",
+          "expected": "rebuild indicators (rate/estimate) run alongside, not mixed into the position",
+          "observed": "[{\"media\":\"录像位置 1.4s / 15%\",\"rate\":\"13.1 KiB/s（含冗余）\",\"progress\":\"重建估计约 28%\"},{\"media\":\"录像位置 2.9s / 31%\",\"rate\":\"7.6 KiB/s（含冗余）\",\"progress\":\"重建估计约 45%\"},{\"media\":\"录像位置 4.4s / 47%\",\"rate\":\"7.3 KiB/s（含冗余）\",\"progress\":\"重建估计约 62%\"}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s31-open-t8s.png"
+        },
+        {
+          "id": "E2E-31-S03",
+          "expected": "the artifact reaches Ready from the real rebuild (never from the media position ratio); the receive clock freezes",
+          "observed": "state=Ready artifactBytes=131072 elapsed=15.7s media=",
+          "result": "PASS",
+          "proofRef": "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s31-ready.png"
+        },
+        {
+          "id": "E2E-31-S04",
+          "expected": "Ready -> real save with equal external SHA",
+          "observed": "equal=true timingsComplete=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/save/received.bin"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "native open + position/estimate split + save OK | phase=media PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-32",
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-016",
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:57:44.105Z",
+      "finishedAt": "2026-10-26T18:58:42.685Z",
+      "proofRefs": [
+        "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-32-S02",
+          "expected": "the EOF barrier completed with no artifact: data-insufficient is stated clearly",
+          "observed": "state=Incomplete primary=数据不足，未能重建文件",
+          "result": "PASS",
+          "proofRef": "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s32-incomplete.png"
+        },
+        {
+          "id": "E2E-32-S02-B",
+          "expected": "after the EOF barrier the clock is frozen and the rate stops growing (no inflation while insufficient)",
+          "observed": "elapsed=13.1s->13.1s rate=-> state=Incomplete",
+          "result": "PASS",
+          "proofRef": "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s32-incomplete.png"
+        },
+        {
+          "id": "E2E-32-S01",
+          "expected": "no artifact means no save offer (no false completion, save stays disabled)",
+          "observed": "saveDisabled=true artifact=null",
+          "result": "PASS",
+          "proofRef": "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s32-incomplete.png"
+        },
+        {
+          "id": "E2E-32-S03",
+          "expected": "re-importing the complete clip rebuilds to Ready",
+          "observed": "state=Ready artifactBytes=131072",
+          "result": "PASS",
+          "proofRef": "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s32-ready.png"
+        },
+        {
+          "id": "E2E-32-S04",
+          "expected": "the save reproduces the original bytes; the T6 pair evidence is attached",
+          "observed": "equal=true pairPrefixVerdict=PASS(pair-manifest)",
+          "result": "PASS",
+          "proofRef": "proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/save/received.bin"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "EOF barrier held + recovery import + save OK | phase=media PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-33",
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:58:43.198Z",
+      "finishedAt": "2026-10-26T18:59:29.594Z",
+      "proofRefs": [
+        "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-33-S01",
+          "expected": "the unsaved Ready state holds >=3s: \"可保存\" not \"已保存\", the receive clock is frozen and the rate stops growing",
+          "observed": "heldMs=3227 state=Ready primary=文件已接收完成，请保存 elapsed=15.3s->15.3s rate=->",
+          "result": "PASS",
+          "proofRef": "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s33-ready.png"
+        },
+        {
+          "id": "E2E-33-S02-A",
+          "expected": "the save dialog stays open >=3s before the real cancel",
+          "observed": "helperExit=0 heldMs=4438",
+          "result": "PASS",
+          "proofRef": "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s33-dialog-open-desktop.png"
+        },
+        {
+          "id": "E2E-33-S02-B",
+          "expected": "a real cancel maps to the retryable layer with the artifact kept",
+          "observed": "saveText=保存已取消，文件仍可保存 state=Retryable artifact=primary-input-128k.bin",
+          "result": "PASS",
+          "proofRef": "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s33-cancelled.png"
+        },
+        {
+          "id": "E2E-33-S03",
+          "expected": "the second save to a NEW path completes with all four save time points",
+          "observed": "bytes=131072 fourPoints=true status=Saved marks={\"initStartAt\":1793041128465,\"initReadyAt\":1793041128613,\"receivingAt\":1793041128719,\"readyAt\":1793041143971,\"saveRequestAt\":1793041147397,\"writeCloseAt\":1793041158609,\"savedAt\":1793041158610}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s33-saved.png"
+        },
+        {
+          "id": "E2E-33-S04",
+          "expected": "external SHAs of original and re-saved file are equal",
+          "observed": "equal=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s33-saved.png"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "cancel layering + retry save OK | phase=media PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-34",
+      "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T18:59:30.119Z",
+      "finishedAt": "2026-10-26T19:00:27.365Z",
+      "proofRefs": [
+        "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-34-S01",
+          "expected": "saving onto the exclusively-locked file fails honestly (observed branch recorded as-is)",
+          "observed": "helperExit=0 saveText=保存失败，可以重试 state=Retryable",
+          "result": "PASS",
+          "proofRef": "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s34-blocked.png"
+        },
+        {
+          "id": "E2E-34-S02",
+          "expected": "after the observed failure branch the page returns to the main view with the artifact still saveable",
+          "observed": "saveText=保存失败，可以重试 state=Retryable saveDisabled=false artifact=primary-input-128k.bin",
+          "result": "PASS",
+          "proofRef": "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s34-blocked.png"
+        },
+        {
+          "id": "E2E-34-S03",
+          "expected": "after the lock is released a save to a NEW path completes",
+          "observed": "bytes=131072 status=Saved",
+          "result": "PASS",
+          "proofRef": "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s34-saved.png"
+        },
+        {
+          "id": "E2E-34-S04",
+          "expected": "external SHAs of original and recovered file are equal",
+          "observed": "equal=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/screens/s34-saved.png"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "blocked-save branch + release + recovery save OK | phase=media PARTIAL evidence (never a final gate)"
+    },
+    {
+      "caseId": "E2E-35",
+      "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "acceptanceIds": [
+        "AC-015",
+        "AC-017",
+        "AC-018",
+        "AC-021",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": [],
+      "assertions": [],
+      "referenceSha256": null,
+      "receivedSha256": null,
+      "notes": "NOT_RUN: frozen S02 needs a real visibility change; it is not constructible on this host. (1) 三种装置探针证实不可构造：Playwright 去默认后台参数 + CDP 最小化、原生 msedge + CDP 最小化、真实同窗标签切换（CDP 同 windowId、Target.activateTarget ≥6s）均无 hidden/visibilitychange；探针日志真实副本：proof/E2E-35/UX-UI-2026-10-26T19-16-56-031Z-88532b/probe2-three-apparatuses.txt; proof/E2E-35/UX-UI-2026-10-26T19-16-56-031Z-88532b/probe2b-real-tab-cdp.txt。 (2) 用户 2026-10-26 指示：真实云桌面远程会话行为由用户侧真实环境验证，不要求代理本地模拟（授权来源 docs/dev-pipeline/pipeline-state.json team-exec user_instructions 2026-10-26T10:10 条目）。 (3) 不修订冻结用例文本、不做局部/替代执行冒充；本记录无任何 PASS 断言。 | phase=final candidate evidence"
+    },
+    {
+      "caseId": "E2E-36",
+      "attemptId": "E2E-36-2026-10-26T19-48-21-341Z-474c28",
+      "scope": "local_simulated",
+      "caseType": "negative_or_lifecycle",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T19:48:33.332Z",
+      "finishedAt": "2026-10-26T19:50:03.069Z",
+      "proofRefs": [
+        "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin",
+        "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-36-S01-A",
+          "expected": "both Chinese receive entries are visible and keyboard reachable with a visible focus marker",
+          "observed": "{\"entriesVisible\":true,\"liveChinese\":true,\"tabOrder\":[\"BUTTON#btn-live:true\",\"BUTTON#btn-video:true\",\"SUMMARY#null:true\",\"BODY#null:false\",\"BUTTON#btn-live:true\",\"BUTTON#btn-video:true\"],\"liveFocus\":{\"id\":\"btn-live\",\"tag\":\"BUTTON\",\"text\":\"实时抓屏\",\"type\":\"button\",\"focusVisible\":true}}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s01-keyboard-1280.png"
+        },
+        {
+          "id": "E2E-36-S01-B",
+          "expected": "Enter activates 实时抓屏 and the real system picker starts the session",
+          "observed": "helperExit=0",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s01-keyboard-1280.png"
+        },
+        {
+          "id": "E2E-36-S02",
+          "expected": "four fixed viewport/DPR configurations keep both entries, 44px targets, no horizontal scroll, active preview and stable focus",
+          "observed": "[{\"config\":\"1280x800-100\",\"cssViewport\":\"1280x800\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"768x700-100\",\"cssViewport\":\"768x700\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"380x720-100\",\"cssViewport\":\"380x720\",\"dpr\":1.0000000149011612,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true},{\"config\":\"1280x800-200zoom\",\"cssViewport\":\"640x400\",\"dpr\":2.0000000298023224,\"noHorizontalScroll\":true,\"bothEntriesVisible\":true,\"liveHeight\":44,\"videoHeight\":44,\"primary\":\"正在等待有效数据\",\"previewVisible\":true,\"focusStable\":true}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s02-380x720-100.png"
+        },
+        {
+          "id": "E2E-36-S03-A",
+          "expected": "the real >=80-char Chinese artifact name wraps inside the layout without breaking the page",
+          "observed": "{\"name\":\"本轮接收器中文长文件名验证样本 含空格 与数字 20261025 以及足够多字符用于检查换行与滚动行为 最终接收文件名称测试 甲乙丙丁戊己庚辛壬癸 子丑寅卯辰巳午未申酉戌亥 一二三四五六七八九十.bin\",\"nameLength\":101,\"wrapped\":true,\"fitsContainer\":true,\"sizeText\":\"1048576 字节\",\"pageScrollWidth\":1358,\"innerWidth\":1358}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s03-ready-longname.png"
+        },
+        {
+          "id": "E2E-36-S03-B",
+          "expected": "keyboard cancel keeps the artifact, shows the cancel layer, and returns focus to an operable control",
+          "observed": "saveFocus={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true} cancelExit=0 text=保存已取消，文件仍可保存 focusAfter={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s03-cancelled.png"
+        },
+        {
+          "id": "E2E-36-S03-C",
+          "expected": "the keyboard-driven real save writes a file whose external SHA equals the original (1MiB long-named input)",
+          "observed": "focus={\"id\":\"btn-save\",\"tag\":\"BUTTON\",\"text\":\"保存文件…\",\"type\":\"button\",\"focusVisible\":true} saveExit=0 status=Saved equal=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s03-saved.png"
+        },
+        {
+          "id": "E2E-36-S04-A",
+          "expected": "keyboard video import works; media position, preview and controls hold in 380x720 and 200% zoom",
+          "observed": "{\"videoFocus\":{\"id\":\"btn-video\",\"tag\":\"BUTTON\",\"text\":\"录像导入\",\"type\":\"button\",\"focusVisible\":true},\"openExit\":0,\"narrowRows\":[{\"config\":\"380x720-100\",\"cssViewport\":\"380x720\",\"dpr\":1.0000000149011612,\"mediaText\":\"录像位置 1.1s / 12%\",\"previewVisible\":true,\"bothEntriesVisible\":true,\"noHorizontalScroll\":true},{\"config\":\"1280x800-200zoom\",\"cssViewport\":\"640x400\",\"dpr\":2.0000000298023224,\"mediaText\":\"录像位置 2.0s / 21%\",\"previewVisible\":true,\"bothEntriesVisible\":true,\"noHorizontalScroll\":true}]}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s04-380x720-100.png"
+        },
+        {
+          "id": "E2E-36-S04-B",
+          "expected": "the keyboard video journey also reaches Ready and saves with equal external SHA",
+          "observed": "artifact=131072 saveExit=0 equal=true",
+          "result": "PASS",
+          "proofRef": "proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/screens/s36-s04-saved.png"
+        }
+      ],
+      "referenceSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "receivedSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "notes": "E2E-36 UI matrix + keyboard + long Chinese name + native dialogs | phase=final candidate evidence"
+    },
+    {
+      "caseId": "E2E-37",
+      "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "scope": "local_simulated",
+      "caseType": "negative_or_lifecycle",
+      "result": "NOT_RUN",
+      "executedBy": null,
+      "acceptanceIds": [
+        "AC-018",
+        "AC-019",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": null,
+      "finishedAt": null,
+      "proofRefs": [],
+      "assertions": [],
+      "referenceSha256": null,
+      "receivedSha256": null,
+      "notes": "Narrator binary=present; real start attempt: launched pid=63272 alive_after_5s=yes stopped_after_attempt (exit=0); speech not programmatically verifiable in this environment | phase=final candidate evidence"
+    },
+    {
+      "caseId": "E2E-38",
+      "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "scope": "local_simulated",
+      "caseType": "measurement",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-023",
+        "AC-024"
+      ],
+      "productManifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "startedAt": "2026-10-26T19:18:38.852Z",
+      "finishedAt": "2026-10-26T19:18:38.875Z",
+      "proofRefs": [
+        "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-38-S01",
+          "expected": "frozen method SHA, both product manifests and the input SHAs are bound, and the two warmups are preserved outside the five pairs",
+          "observed": "{\"methodSha256\":\"1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29\",\"methodFileSha256\":\"1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29\",\"methodBound\":true,\"candidate\":{\"runId\":\"20261027-teamexec-12\",\"attemptId\":\"candidate-20261027-01\",\"phase\":\"final\",\"productManifestSha256\":\"829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d\"},\"baseline\":{\"runId\":\"20261024-teamexec-04\",\"attemptId\":\"baseline-001\",\"phase\":\"baseline\",\"productManifestSha256\":\"b8c78a1851e05e8558a3a7b7582c5f67f5df82f3b5429cff3749e472367e6e0d\"},\"warmupsKept\":true,\"invalidCount\":2}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json"
+        },
+        {
+          "id": "E2E-38-S02",
+          "expected": "five recorded A/B pairs in the frozen order settled >=30 ok frames per round and reached the recorded verdict",
+          "observed": "{\"verdict\":\"PASS\",\"validPairs\":5,\"aRounds\":5,\"bRounds\":5,\"reasons\":[]}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json"
+        },
+        {
+          "id": "E2E-38-S03",
+          "expected": "the three frozen thresholds recompute from the per-round medians (limit and signed margin kept, never a bare PASS)",
+          "observed": "{\"metrics\":{\"readyMs\":[15937,14817,17780.7],\"frameRttP50Ms\":[59.20000000111759,60.09999999962747,65.12000000122936],\"frameRttP95Ms\":[81.60000000149012,80.40000000037253,93.84000000171362]}}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json"
+        },
+        {
+          "id": "E2E-38-S04",
+          "expected": "five live pairs, each side one real 30s Receiving window of the same session with a settlement inside it",
+          "observed": "{\"verdict\":\"PASS\",\"sidesValid\":{\"A\":5,\"B\":5},\"invalid\":[],\"windows\":{\"pair-1-A\":32246,\"pair-1-B\":31978,\"pair-2-B\":31250,\"pair-2-A\":30711,\"pair-3-A\":31660,\"pair-3-B\":30359,\"pair-4-B\":32047,\"pair-4-A\":31618,\"pair-5-A\":31501,\"pair-5-B\":31673},\"calibration\":{\"activeWindowSeconds\":30,\"sampleInsufficient\":false,\"note\":\"每个实时侧别都在同一 session 的 Receiving 状态下观察到 >=30s 窗口\",\"shortWindows\":[]}}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json"
+        },
+        {
+          "id": "E2E-38-S05",
+          "expected": "every warmup/invalid/failed round is preserved with its reason and the independent calculator recomputes the same verdict",
+          "observed": "{\"invalidCount\":2,\"invalid\":[{\"file\":\"rounds/warmup-A.json\",\"side\":\"A\",\"pairIndex\":0,\"warmup\":true,\"reason\":\"E_WARMUP\",\"detail\":\"warmup rounds are excluded from the measurement\"},{\"file\":\"rounds/warmup-B.json\",\"side\":\"B\",\"pairIndex\":0,\"warmup\":true,\"reason\":\"E_WARMUP\",\"detail\":\"warmup rounds are excluded from the measurement\"}],\"calculator\":\"measure-ux-calc recomputes from rounds/ + live/rounds/ (gate step)\"}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json"
+        }
+      ],
+      "referenceSha256": null,
+      "receivedSha256": null,
+      "notes": "recorded A/B verdict=PASS; live legs verdict=PASS; live windows {\"pair-1-A\":32246,\"pair-1-B\":31978,\"pair-2-B\":31250,\"pair-2-A\":30711,\"pair-3-A\":31660,\"pair-3-B\":30359,\"pair-4-B\":32047,\"pair-4-A\":31618,\"pair-5-A\":31501,\"pair-5-B\":31673} | phase=final candidate evidence"
+    }
+  ]
+}

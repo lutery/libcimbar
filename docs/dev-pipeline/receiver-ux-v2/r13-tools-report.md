@@ -207,3 +207,53 @@ root11 正例不回归：其 rttMs 与起止逐帧一致，重算后零违规（
   （round 级违规按设计留在轮内、只改 derived verdict；`stats.roundViolations` 仍会点名 E_RTT_MISMATCH，
   外层门禁因 verdict≠PASS 拒绝）。本 DoD 负例（claims 保持真实 PASS）下 CLI exit≠0 且 roundViolations 点名，
   满足"经真实 CLI 必须非 0"。
+
+## 8. Round-12 终局复验（root12）追加披露 — S04 收敛写时序观察
+
+> 背景见 round-13 verdict A13-02 整改构建（root12，product manifest 829d7dec…）的全量复验。
+> 本节为 lead 指定的如实披露素材（round-14）；仅观察，未改产品，工具侧修复经 lead 明确授权。
+
+### 8.1 观察事实（E2E-27 两份失败 attempt，其余断言全 PASS，仅 S04 FAIL）
+
+- 两 attempt（`E2E-27-2026-10-26T18-35-45-440Z-3aa221`、`E2E-27-2026-10-26T18-41-15-851Z-f08508`）
+  的 S04 observed 完全同型：`elapsed=8.9s->9.0s`（相隔 1.2s 的两个冻结探针不相等）。
+- freezeB 后立即抓取的 `s04-ready.png` 显示**已完全收敛的终态**（"重建完成 9.0s"，无速率、无百分比、无降级残留）
+  → 时钟确实冻结，不是时钟继续走；是 A-R2 Option-B 的终态收敛写落在两探针之间
+  （freezeA 读到收敛前 8.9s，freezeB 读到收敛后 9.0s，其后 timer 释放）。
+- root11 同案同探针 PASS（`8.9s->8.9s`，收敛写落在探针前）。
+
+### 8.2 晚到观察（round-14 披露素材）
+
+- **收敛写实测晚到 ≥1.2s（设计 ≤250ms）**：按 ux-display.js 设计，Ready 转移时若 250ms 边界关闭，
+  应恰有一个 ≤250ms 后的 terminal timer 收敛写；实测该写落在 Ready+≥1.2s（在两探针之间），
+  疑似推迟定时器路径（≤250ms 的 timer 晚点；从外部日志无法定论，未改码，仅观察）。
+- **冻结硬不变式不受影响**：写间隔 ≥250ms 仍成立（收敛写本身过共享边界），终态后 timer=0 仍成立
+  （freezeB 后截图已完全收敛）；晚到只影响**采样时序**，不影响冻结语义。
+
+### 8.3 工具侧修复（lead 裁定 (b)，先例同型）
+
+- S04 冻结探针改为既有先例模式（`E2E-32-S02-B`、live-legs 停止取证同型）：
+  有界等待（≤5s、400ms 间隔）两次相邻探针（elapsed+rate）一致后再取冻结对（+1.5s 后 freezeB），
+  判据不变（两次一致值即终值，仍要求 freezeA==freezeB，未放宽为"允许变化"）。
+  `node --check` 通过；该断言无独立单测，行为由后续真实 E2E-27 验证。
+
+## 9. E2E-36 取证增强与收敛窗口观察（root12 收口追加）
+
+### 9.1 验收发现（旧 attempt，round-14 披露素材）
+
+- root12 first UX-UI attempt（`UX-UI-2026-10-26T19-16-56-031Z-88532b`）的
+  `s36-s03-ready-longname.png`（03:17:36.366）摄于收敛窗口内：显示「重建估计约 99% / 63.7 KiB/s」；
+  同 attempt 下一张 `s36-s03-save-focus.png`（+139ms）已显示完全收敛终态「重建完成 / 22.9s」。
+- **收敛写本次实测 +139ms 落地（设计 ≤250ms 框内）**：收敛确实发生，且落在设计窗口内；
+  旧截图仅存在"截图时序 vs 设计窗口"的复读误判风险，不是产品缺陷。
+- **冻结硬不变式不受影响**：写间隔 ≥250ms 与终态后 timer=0 仍成立（收敛写本身过共享边界）；
+  晚到/窗口内截图只影响采样时序。
+
+### 9.2 取证增强（判据与断言零改动）
+
+- `ui-journeys.mjs` E2E-36 新增 `settleTerminalMetrics(page)`（有界 ≤5s、400ms 间隔，等待两次相邻探针
+  在 elapsed+rate 上一致，同 E2E-32-S02-B / S04 先例），并在该案终态指标截图前调用
+  （s36-s03-ready-longname、s36-s03-cancelled、s36-s03-saved、s36-s04-saved）。
+- 重跑 E2E-36 solo（同根新 attempt `E2E-36-2026-10-26T19-48-21-341Z-474c28`，旧 attempt 原样保留）：
+  新 `s36-s03-ready-longname.png` 与 `s36-s03-save-focus.png` 均显示完全收敛终态
+  「重建完成 / 22.9s」、无百分比、无速率、无降级残留。`node --check` 通过。

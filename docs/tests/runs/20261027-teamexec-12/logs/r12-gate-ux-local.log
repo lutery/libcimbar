@@ -1,0 +1,5 @@
+UX GATE local: FAIL (4 violation(s))
+  - E2E-35: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-35: executedBy must be executor per the plan (got None)
+  - E2E-37: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-37: executedBy must be executor per the plan (got None)

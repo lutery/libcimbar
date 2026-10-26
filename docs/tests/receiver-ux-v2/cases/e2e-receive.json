@@ -99,10 +99,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "E2E-27-2026-10-26T08-47-08-983Z-9ff601",
-    "updatedAt": "2026-10-26",
+    "attemptId": "E2E-27-2026-10-26T18-50-30-839Z-5f13b0",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-27/E2E-27-2026-10-26T08-47-08-983Z-9ff601"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0"
         ],
     
     "executionStage": "5",
@@ -208,10 +208,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "E2E-28-2026-10-26T08-49-07-259Z-f66ebc",
-    "updatedAt": "2026-10-26",
+    "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-28/E2E-28-2026-10-26T08-49-07-259Z-f66ebc"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258"
         ],
     
     "executionStage": "5",
@@ -315,10 +315,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "E2E-29-2026-10-26T08-50-43-938Z-cd6e7a",
-    "updatedAt": "2026-10-26",
+    "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-29/E2E-29-2026-10-26T08-50-43-938Z-cd6e7a"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4"
         ],
     
     "executionStage": "5",
@@ -413,10 +413,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5"
         ],
     
     "executionStage": "5",
@@ -511,10 +511,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5"
         ],
     
     "executionStage": "5",
@@ -609,10 +609,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5"
         ],
     
     "executionStage": "5",
@@ -707,10 +707,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5"
         ],
     
     "executionStage": "5",
@@ -803,10 +803,10 @@
     "required": true,
     "status": "PASS",
     "executedBy": "executor",
-    "attemptId": "UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5"
         ],
     
     "executionStage": "5",
@@ -906,10 +906,10 @@
     "required": true,
     "status": "NOT_RUN",
     "executedBy": null,
-    "attemptId": "UX-UI-2026-10-26T09-58-29-387Z-423ba5",
-    "updatedAt": "2026-10-26",
+    "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+    "updatedAt": "2026-10-27",
     "evidenceRefs": [
-          "docs/tests/runs/20261026-teamexec-11/proof/E2E-35/UX-UI-2026-10-26T09-58-29-387Z-423ba5/probe2-three-apparatuses.txt","docs/tests/runs/20261026-teamexec-11/proof/E2E-35/UX-UI-2026-10-26T09-58-29-387Z-423ba5/probe2b-real-tab-cdp.txt"
+          "docs/tests/runs/20261027-teamexec-12/proof/E2E-35/UX-UI-2026-10-26T19-16-56-031Z-88532b/probe2-three-apparatuses.txt","docs/tests/runs/20261027-teamexec-12/proof/E2E-35/UX-UI-2026-10-26T19-16-56-031Z-88532b/probe2b-real-tab-cdp.txt"
         ],
     "notRunReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证",
     
