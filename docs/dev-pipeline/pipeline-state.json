@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 接收器体验迭代 v2",
   "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
-  "current_phase": "external-review",
+  "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-25T22:35:00+08:00",
+  "updated_at": "2026-10-26T09:05:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -233,7 +233,7 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": "docs/dev-pipeline/receiver-ux-v2/",
       "output_files": [],
       "team_mode": "native",
@@ -243,24 +243,30 @@
       "max_rounds": 10,
       "test_status": "passed",
       "started_at": "2026-10-24T14:37:17+08:00",
-      "completed_at": "2026-10-25T22:20:00+08:00",
-      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。",
+      "completed_at": null,
+      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
           "timestamp": "2026-10-24T14:37:17+08:00",
           "summary": "/goal：加载dev-pipeline从阶段5 team-exec实施receiver-ux-v2，严格按已有实施、TDD及真实E2E计划执行。用户确认全自动连续推进（里程碑汇报即可）：T1-T6完成、切片实测后、最终全量验证后。现场7项(E2E-21~26/39)保持NOT_RUN待用户本人执行。"
+        },
+        {
+          "timestamp": "2026-10-26T09:05:00+08:00",
+          "summary": "用户转达外审 round-12 裁决（不通过，5 阻断主题）并指示：阶段 6 读取该裁决、返回阶段 5 整改后再送审。整改按裁决 DoD 执行（产品模型/视图/显示补 UT 与组合 IAT 后新构建复验真实双输入、等待/进度/停止/保存及相关 UI；工具反例先失败再修复通过；新 manifest/attempt、保留失败原件、重算双门禁、更新总结与 runtime 映射）。"
         }
       ]
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "failed",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [],
-      "ext_rounds": 11,
-      "verdict_files": [],
+      "ext_rounds": 12,
+      "verdict_files": [
+        "docs/dev-pipeline/ext-review/round-12-verdict.md"
+      ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-12-package.md",
         "docs/dev-pipeline/ext-review/round-12-template.md",
@@ -272,7 +278,7 @@
       ],
       "started_at": "2026-10-25T22:20:00+08:00",
       "completed_at": null,
-      "notes": "round-12 送审包与结论模板已就绪（ext_rounds=11 保留全局轮次，下一 verdict=round-12-verdict.md）。等待外部独立审查结论；结论文件放入 docs/dev-pipeline/ext-review/ 或直接告知。通过→阶段7；不通过→回 team-exec 整改（外审问题优先），外层无轮次上限。",
+      "notes": "round-12 外审结论：不通过（2026-10-26，codex-gpt-6；双轴独立审查+主审真实模块反例/验证函数负例）。5 个阻断主题：A-R1（报告降级仍冒认旧百分比）、A-R2=B-01（显示缓存提前提交/未绘制值记成已绘制/终态不收敛/lastBusiness 不提交）、A-R3（实时腿仅 ~18s Receiving 却 10/10 VALID，样本不足 30s）、A-R4=B-03（E2E-35 真实后台步骤缺失却记 PASS）、B-02（UX 总门禁接受原收不等/缺必测步骤/无测量 raw 的记录）。建议 S1（UX-IAT-08 过时原因文字）、S2（measure-ux 拆分）。主审复跑确认旧结论仍属实（单元 202/工具 61/自测 55·14·3/契约/旧 20 门禁/manifest/30 对实物 SHA），但不足以证明体验验收。已按裁决分流回 team-exec 整改（外审问题优先），出口确认门后再送 round-13。整改台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
