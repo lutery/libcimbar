@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: UX-UT-041 readView is deterministic and read-only with controls pass-through
+ok 1 - UX-UT-041 readView is deterministic and read-only with controls pass-through
+  ---
+  duration_ms: 3.5206
+  type: 'test'
+  ...
+# Subtest: UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+ok 2 - UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+  ---
+  duration_ms: 1.5498
+  type: 'test'
+  ...
+# Subtest: UX-UT-043 the processing hint appears only at a real 1500ms pending age
+ok 3 - UX-UT-043 the processing hint appears only at a real 1500ms pending age
+  ---
+  duration_ms: 0.4879
+  type: 'test'
+  ...
+# Subtest: UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+ok 4 - UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+  ---
+  duration_ms: 0.3398
+  type: 'test'
+  ...
+# Subtest: UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+ok 5 - UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+  ---
+  duration_ms: 0.3524
+  type: 'test'
+  ...
+# Subtest: UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+ok 6 - UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+  ---
+  duration_ms: 0.4932
+  type: 'test'
+  ...
+# Subtest: UX-UT-032 the same observation revision projects with now, purely
+ok 7 - UX-UT-032 the same observation revision projects with now, purely
+  ---
+  duration_ms: 0.3589
+  type: 'test'
+  ...
+# Subtest: UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+ok 8 - UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+  ---
+  duration_ms: 0.567
+  type: 'test'
+  ...
+# Subtest: UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+ok 9 - UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+  ---
+  duration_ms: 0.8325
+  type: 'test'
+  ...
+# Subtest: T14 the view rate follows the frozen window boundaries
+ok 10 - T14 the view rate follows the frozen window boundaries
+  ---
+  duration_ms: 0.7455
+  type: 'test'
+  ...
+# Subtest: T14-R05 data with degraded reports hides the ratio but keeps the rate
+ok 11 - T14-R05 data with degraded reports hides the ratio but keeps the rate
+  ---
+  duration_ms: 0.2691
+  type: 'test'
+  ...
+# Subtest: T14 every notice threshold flips exactly at its millisecond
+ok 12 - T14 every notice threshold flips exactly at its millisecond
+  ---
+  duration_ms: 0.7018
+  type: 'test'
+  ...
+# Subtest: T15 the tiny rate displays under one decimal and frozen states show nothing
+ok 13 - T15 the tiny rate displays under one decimal and frozen states show nothing
+  ---
+  duration_ms: 0.17
+  type: 'test'
+  ...
+# Subtest: T20 the media position normalizes independently of the file estimate
+ok 14 - T20 the media position normalizes independently of the file estimate
+  ---
+  duration_ms: 0.4964
+  type: 'test'
+  ...
+# Subtest: T30 formatProgress never rounds an estimate up to a hundred
+ok 15 - T30 formatProgress never rounds an estimate up to a hundred
+  ---
+  duration_ms: 0.2475
+  type: 'test'
+  ...
+# Subtest: T30 quiet and unavailable states carry next-step guidance
+ok 16 - T30 quiet and unavailable states carry next-step guidance
+  ---
+  duration_ms: 0.3391
+  type: 'test'
+  ...
+# Subtest: T30 every status copy stays digit-free across the whole status matrix
+ok 17 - T30 every status copy stays digit-free across the whole status matrix
+  ---
+  duration_ms: 1.4174
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-1 a data frame with an empty report hides the current percentage
+ok 18 - R12-A-R1-1 a data frame with an empty report hides the current percentage
+  ---
+  duration_ms: 1.1547
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-2 an unavailable report keeps its own code in the view
+ok 19 - R12-A-R1-2 an unavailable report keeps its own code in the view
+  ---
+  duration_ms: 0.2538
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-3 a stronger single after a degraded report restores the estimate
+ok 20 - R12-A-R1-3 a stronger single after a degraded report restores the estimate
+  ---
+  duration_ms: 0.3018
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-4 a weaker single after a degraded report still locks 19006
+ok 21 - R12-A-R1-4 a weaker single after a degraded report still locks 19006
+  ---
+  duration_ms: 0.436
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-5 a continuous single stream keeps its estimate projection
+ok 22 - R12-A-R1-5 a continuous single stream keeps its estimate projection
+  ---
+  duration_ms: 0.3984
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-6 a degraded report leaves the rate and the business outputs untouched
+ok 23 - R12-A-R1-6 a degraded report leaves the rate and the business outputs untouched
+  ---
+  duration_ms: 0.2885
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 141.2668

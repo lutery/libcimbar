@@ -116,19 +116,27 @@ function fakeTimers() {
 function paintRecorder() {
   const calls = [];
   let throwCount = 0;
+  let throwTelemetryCount = 0;
+  const isTelemetry = (call) => 'elapsedText' in call || 'rateText' in call
+    || 'progressText' in call || 'mediaText' in call;
   const paint = (payload) => {
-    calls.push(payload);
+    // a throwing paint is a refused write: it never reaches the display, so it
+    // must not be recorded among the successfully painted payloads
+    if (isTelemetry(payload) && throwTelemetryCount > 0) {
+      throwTelemetryCount -= 1;
+      throw new Error('telemetry paint exploded');
+    }
     if (throwCount > 0) {
       throwCount -= 1;
       throw new Error('paint exploded');
     }
+    calls.push(payload);
   };
-  const isTelemetry = (call) => 'elapsedText' in call || 'rateText' in call
-    || 'progressText' in call || 'mediaText' in call;
   return {
     paint,
     calls,
     throwNext(times = 1) { throwCount = times; },
+    throwNextTelemetry(times = 1) { throwTelemetryCount = times; },
     telemetry: () => calls.filter(isTelemetry),
     announcements: () => calls.filter((call) => 'announcement' in call),
     business: () => calls.filter((call) => 'primary' in call || 'secondary' in call
@@ -533,4 +541,259 @@ test('T26 semantic copies stay digit-free across the full state walk', () => {
       }
     }
   }
+});
+
+
+// --- R12-A-R2 / B-01: commit semantics, terminal convergence, lastBusiness ---
+//
+// The verdict's counterexamples: a change swallowed by the 250ms gate was
+// still written into lastTelemetry (so it was never painted), a terminal
+// inside the gate released the refresher before converging, and lastBusiness
+// was never committed after a successful paint (so identical syncs rewrote the
+// same semantic sections). These cases drive the real createUxDisplay with a
+// controlled clock, controlled paint and a fake timer table.
+
+function receivingOwner() {
+  return { sessionId: 's1', sessionSeq: 1 };
+}
+
+function dataAt(atMs, ratio) {
+  return observation({
+    progress: {
+      lastDataAtMs: atMs,
+      trustedRatio: ratio,
+      trustedAtMs: atMs,
+      lastAdvanceAtMs: atMs,
+    },
+  });
+}
+
+function readyAt(endedAtMs, lastDataAtMs, ratio) {
+  return observation({
+    endedAtMs,
+    progress: {
+      lastDataAtMs,
+      trustedRatio: ratio,
+      trustedAtMs: lastDataAtMs,
+      lastAdvanceAtMs: lastDataAtMs,
+    },
+  });
+}
+
+const READY_CONTROLS = { canStartLive: false, canImportVideo: false, canStop: true, canSave: true };
+
+test('R12-A-R2-1 a change the gate swallows is painted on the next tick', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+
+  display.syncBusiness(); // t1000 baseline: elapsed 0, no ratio yet
+  assert.equal(spy.telemetry().length, 1);
+  assert.equal(spy.telemetry()[0].elapsedText, '0.0s');
+  assert.equal(spy.telemetry()[0].progressText, '');
+
+  // t1100: real data and a ratio arrive 100ms after the last write
+  clock.now = 1100;
+  current.value = {
+    owner: receivingOwner(),
+    observation: dataAt(1100, 0.2),
+    context: context(),
+  };
+  display.syncBusiness();
+  assert.equal(spy.telemetry().length, 1, 'the 250ms gate swallows the t1100 write');
+  assert.ok(!spy.telemetry().some((call) => call.progressText === '重建估计约 20%'),
+    'the swallowed value was never claimed as painted');
+
+  // t1250: the tick re-projects the same, now paint-eligible observation
+  clock.now = 1250;
+  timers.fireLast();
+  const writes = spy.telemetry();
+  assert.equal(writes.length, 2, 'the latest projection is painted at the boundary');
+  assert.equal(writes[1].progressText, '重建估计约 20%', 'the actual value, not just a count');
+  assert.equal(writes[1].elapsedText, '0.3s');
+});
+
+test('R12-A-R2-2 a terminal inside the gate converges with a final flush', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+
+  display.syncBusiness(); // t1000 baseline
+  const baseline = spy.telemetry().length;
+
+  // t2000: real data raises the estimate; elapsed and rate are outside warmup
+  clock.now = 2000;
+  current.value = {
+    owner: receivingOwner(),
+    observation: dataAt(2000, 0.2),
+    context: context(),
+  };
+  display.syncBusiness();
+  assert.equal(spy.telemetry().length, baseline + 1, 't2000 is outside the gate');
+  const active = spy.telemetry().at(-1);
+  assert.equal(active.progressText, '重建估计约 20%');
+  assert.notEqual(active.rateText, '', 'the rate is active at t2000');
+
+  // t2100: the real artifact lands 100ms later, inside the shared gate
+  clock.now = 2100;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(2100, 2000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const flushed = spy.telemetry().at(-1);
+  assert.notEqual(flushed, active, 'the final projection was painted');
+  assert.equal(flushed.progressText, '重建完成');
+  assert.equal(flushed.rateText, '', 'a frozen rate shows nothing');
+  assert.equal(flushed.elapsedText, '1.1s', 'the receiving time froze at the artifact');
+  assert.equal(timers.size(), 0, 'the terminal still releases the refresher');
+});
+
+test('R12-A-R2-3 a converged terminal never repaints and a failed flush is corrected', () => {
+  // A: a converged terminal is not rewritten by a later identical sync
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+  clock.now = 2000;
+  current.value = { owner: receivingOwner(), observation: dataAt(2000, 0.2), context: context() };
+  display.syncBusiness();
+  clock.now = 2100;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(2100, 2000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const converged = spy.telemetry().length;
+  const lastFlush = spy.telemetry().at(-1);
+  assert.equal(lastFlush.progressText, '重建完成');
+
+  clock.now = 2600;
+  display.syncBusiness();
+  assert.equal(spy.telemetry().length, converged, 'an identical terminal view is not rewritten');
+  assert.equal(spy.telemetry().at(-1), lastFlush);
+
+  // B: a failed terminal flush leaves the cache untouched; the next sync corrects it
+  const clockB = { now: 1000 };
+  const currentB = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timersB = fakeTimers();
+  const spyB = paintRecorder();
+  const displayB = makeDisplay({ current: currentB, clock: clockB, paint: spyB.paint, timers: timersB });
+  displayB.syncBusiness();
+  clockB.now = 2000;
+  currentB.value = { owner: receivingOwner(), observation: dataAt(2000, 0.2), context: context() };
+  displayB.syncBusiness();
+  const beforeTerminal = spyB.telemetry().length;
+
+  clockB.now = 2100;
+  currentB.value = {
+    owner: receivingOwner(),
+    observation: readyAt(2100, 2000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  spyB.throwNextTelemetry(1);
+  displayB.syncBusiness();
+  assert.equal(spyB.telemetry().length, beforeTerminal,
+    'the failed flush painted nothing and claimed nothing');
+  assert.ok(!spyB.telemetry().some((call) => call.progressText === '重建完成'));
+
+  clockB.now = 2700;
+  displayB.syncBusiness(); // the same terminal view, retried
+  const corrected = spyB.telemetry().at(-1);
+  assert.equal(spyB.telemetry().length, beforeTerminal + 1);
+  assert.equal(corrected.progressText, '重建完成');
+  assert.equal(corrected.elapsedText, '1.1s');
+  assert.equal(corrected.rateText, '');
+});
+
+test('R12-A-R2-4 a failed telemetry paint is not remembered as painted', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+  assert.equal(spy.telemetry().length, 1);
+
+  // t1300: data plus a ratio, outside the gate, but the paint explodes
+  clock.now = 1300;
+  current.value = { owner: receivingOwner(), observation: dataAt(1300, 0.2), context: context() };
+  spy.throwNextTelemetry(1);
+  display.syncBusiness();
+  assert.equal(spy.telemetry().length, 1, 'the failed write is not counted as painted');
+  assert.ok(!spy.telemetry().some((call) => call.progressText === '重建估计约 20%'));
+
+  // t1600: the next projection retries the same content and succeeds
+  clock.now = 1600;
+  display.syncBusiness();
+  const retried = spy.telemetry().at(-1);
+  assert.equal(spy.telemetry().length, 2);
+  assert.equal(retried.progressText, '重建估计约 20%');
+  assert.equal(retried.elapsedText, '0.6s');
+
+  // the recorded 19012 surfaces on the next semantic announcement
+  clock.now = 1700;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(1700, 1300, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const diagCalls = spy.calls.filter((call) => 'diagnostics' in call);
+  assert.ok(diagCalls.some((call) => call.diagnostics.includes(19012)),
+    'the render failure is recorded as 19012');
+});
+
+test('R12-A-R2-5 identical syncs commit the business cache once', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder();
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+
+  display.syncBusiness();
+  const businessWrites = spy.business().length;
+  assert.equal(businessWrites, 1, 'the first projection paints the business sections once');
+  assert.equal(spy.announcements().length, 1);
+
+  display.syncBusiness();
+  assert.equal(spy.business().length, businessWrites, 'the identical sync paints nothing again');
+  assert.equal(spy.announcements().length, 1, 'no duplicate live-region announcement');
+
+  clock.now = 1500; // time alone moves the numbers, never the semantics
+  timers.fireLast();
+  assert.equal(spy.business().length, businessWrites, 'a time-only tick never repaints semantics');
+  assert.ok(spy.telemetry().length >= 2, 'the numbers still advance');
 });

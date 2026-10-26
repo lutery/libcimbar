@@ -169,6 +169,27 @@ function projectElapsed(receivingAtMs, endedAtMs, nowMs) {
   return Math.floor(end - receivingAtMs);
 }
 
+// A good report (single: advancing or holding) refreshes trustedAtMs, while a
+// data frame always advances lastDataAtMs. So lastDataAtMs > trustedAtMs means
+// the most recent report was empty/unavailable: the history stays usable for
+// the recovery rollback check, but this projection must not present it as a
+// currently decidable percentage (round-12 A-R1).
+function reportDegraded(progress) {
+  return progress.lastDataAtMs != null
+    && progress.trustedAtMs != null
+    && progress.lastDataAtMs > progress.trustedAtMs;
+}
+
+// The degradation code this seq has observed: the largest report-level
+// degradation diagnostic, 0 when the degradation carried no code (empty).
+function reportDegradationCode(observation) {
+  let degradation = 0;
+  for (const code of observation.diagnostics || []) {
+    if (REPORT_DEGRADATION_CODES.has(code) && code > degradation) degradation = code;
+  }
+  return degradation;
+}
+
 function projectProgress(observation, context, nowMs) {
   const progress = observation.progress || {};
   if (COMPLETION_STATES.has(context.state)) {
@@ -184,17 +205,13 @@ function projectProgress(observation, context, nowMs) {
       diagnosticCode: progress.ambiguity };
   }
   const trusted = progress.trustedRatio;
-  if (trusted === null || trusted === undefined) {
+  if (trusted === null || trusted === undefined || reportDegraded(progress)) {
     if (progress.lastDataAtMs != null) {
       // Data is flowing but the report read degraded: hide the ratio, keep
       // the rate. The code is this seq's latest report degradation (never an
       // ambiguity code — those took the ambiguous branch above).
-      let degradation = 0;
-      for (const code of observation.diagnostics || []) {
-        if (REPORT_DEGRADATION_CODES.has(code) && code > degradation) degradation = code;
-      }
       return { kind: 'unavailable', ratio: null, asOfMs: null,
-        stale: false, diagnosticCode: degradation };
+        stale: false, diagnosticCode: reportDegradationCode(observation) };
     }
     return { kind: 'none', ratio: null, asOfMs: null, stale: false, diagnosticCode: 0 };
   }
@@ -249,6 +266,9 @@ function statusKeyFor(observation, context, nowMs) {
   if (progress.ambiguity) return 'progress_unknown';
   const trusted = progress.trustedRatio;
   if (trusted === null || trusted === undefined) return 'progress_unavailable';
+  // A retained history ratio whose newest report degraded is not decidable
+  // now either (contract: recent data + empty/unavailable -> progress_unavailable).
+  if (reportDegraded(progress)) return 'progress_unavailable';
   if (trusted >= 1) return 'collecting_more';
   if (progress.lastAdvanceAtMs != null
       && nowMs - progress.lastAdvanceAtMs >= NO_ADVANCE_NOTICE_MS) {

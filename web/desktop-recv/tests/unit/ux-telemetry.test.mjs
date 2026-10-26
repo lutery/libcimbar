@@ -10,6 +10,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ReceiverTelemetry } from '../../src/ux-telemetry.js';
+import { readView, formatProgress } from '../../src/ux-view.js';
 
 const MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -279,6 +280,40 @@ test('UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped'
 
 // --- UX-UT-023: temporary empty/unavailable reports hide, not reset ----------
 
+// R12-A-R1: the formal case used to check only the kept model history and the
+// diagnostic set; it now drives the real model -> view combination too, so
+// "hide the ratio" is asserted on the actual projection and its copy.
+function contextAtView() {
+  return {
+    state: 'Receiving',
+    businessRevision: 7,
+    inputKind: 'live',
+    cleanupComplete: true,
+    artifactId: null,
+    controls: {
+      canStartLive: false,
+      canImportVideo: false,
+      canStop: true,
+      canSave: false,
+    },
+    inFlight: false,
+    inFlightSinceMs: null,
+    mediaPosition: null,
+    mediaDiagnosticCode: 0,
+  };
+}
+
+function viewAt(telemetry, nowMs) {
+  const snapshot = telemetry.snapshot();
+  return readView(snapshot, {
+    version: 1,
+    sessionId: snapshot.sessionId,
+    sessionSeq: snapshot.sessionSeq,
+    nowMs,
+    context: contextAtView(),
+  });
+}
+
 test('UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history', () => {
   for (const [label, report, diag] of [
     ['empty report', rEmpty(), 0],
@@ -299,10 +334,33 @@ test('UX-UT-023 temporary empty or unavailable reports hide the ratio but keep t
       assert.deepEqual(snap.diagnostics, [diag], `${label}: the diagnostic is recorded once`);
     }
 
+    // R12-A-R1: the same model state projected through readView hides the
+    // current percentage and says it is undecidable, with the degradation code.
+    const degraded = viewAt(t, 1000);
+    assert.equal(degraded.ok, true, label);
+    assert.equal(degraded.data.progress.kind, 'unavailable', `${label}: the view degrades`);
+    assert.equal(degraded.data.progress.ratio, null, `${label}: no kept percentage`);
+    assert.equal(degraded.data.progress.asOfMs, null, `${label}: no current as-of`);
+    assert.equal(degraded.data.progress.stale, false, `${label}: not a stale estimate`);
+    assert.equal(degraded.data.progress.diagnosticCode, diag,
+      `${label}: the degradation code reaches the view`);
+    assert.equal(formatProgress(degraded.data.progress), '进度暂不可用',
+      `${label}: the copy never quotes the kept 60%`);
+    assert.equal(degraded.data.statusKey, 'progress_unavailable',
+      `${label}: the status is the unavailable hint, not plain receiving`);
+
     // recovery with a higher ratio advances; with a lower one it locks (19006)
     t.acceptFrame(frameInput(1, { frameId: 3, at: 1500, report: rSingle(0.7) }));
     assert.equal(t.snapshot().progress.trustedRatio, 0.7, `${label}: a stronger estimate is trusted`);
     assert.equal(t.snapshot().progress.lastAdvanceAtMs, 1500);
+
+    // R12-A-R1: recovery shows the new estimate again
+    const recovered = viewAt(t, 1500);
+    assert.equal(recovered.data.progress.kind, 'estimate', `${label}: recovery is an estimate`);
+    assert.equal(recovered.data.progress.ratio, 0.7, `${label}: the new ratio shows`);
+    assert.equal(recovered.data.progress.asOfMs, 1500, `${label}: as-of is the new sample`);
+    assert.equal(recovered.data.statusKey, 'receiving', `${label}: recovery is normal receiving`);
+    assert.equal(formatProgress(recovered.data.progress), '重建估计约 70%');
   }
 
   // recovery with the lower 0.5 against the kept 0.6 baseline: 19006
@@ -312,6 +370,16 @@ test('UX-UT-023 temporary empty or unavailable reports hide the ratio but keep t
   regress.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rEmpty() }));
   regress.acceptFrame(frameInput(1, { frameId: 3, at: 1500, report: rSingle(0.5) }));
   assert.equal(regress.snapshot().progress.ambiguity, 19006);
+
+  // R12-A-R1: the rollback lock reaches the view as an explicit ambiguity
+  const locked = viewAt(regress, 1500);
+  assert.equal(locked.ok, true);
+  assert.equal(locked.data.progress.kind, 'ambiguous');
+  assert.equal(locked.data.progress.ratio, null, 'no clamped or kept percentage');
+  assert.equal(locked.data.progress.diagnosticCode, 19006);
+  assert.equal(locked.data.statusKey, 'progress_unknown');
+  assert.equal(formatProgress(locked.data.progress), '进度无法判定',
+    'the lock is announced as undecidable, never as the old 60%');
 });
 
 // --- UX-UT-024: honest progress up to a real artifact ------------------------

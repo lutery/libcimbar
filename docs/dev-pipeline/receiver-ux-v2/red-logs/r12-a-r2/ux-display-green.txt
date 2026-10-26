@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: UX-UT-048 the same revision advances elapsed by the clock without new announcements
+ok 1 - UX-UT-048 the same revision advances elapsed by the clock without new announcements
+  ---
+  duration_ms: 4.2136
+  type: 'test'
+  ...
+# Subtest: UX-UT-049 events and ticks share one 250ms throttle while business stays immediate
+ok 2 - UX-UT-049 events and ticks share one 250ms throttle while business stays immediate
+  ---
+  duration_ms: 2.8199
+  type: 'test'
+  ...
+# Subtest: UX-UT-050 one refresher per seq and released ticks never paint
+ok 3 - UX-UT-050 one refresher per seq and released ticks never paint
+  ---
+  duration_ms: 0.9853
+  type: 'test'
+  ...
+# Subtest: UX-UT-051 returning from the background re-projects by the real clock
+ok 4 - UX-UT-051 returning from the background re-projects by the real clock
+  ---
+  duration_ms: 0.6555
+  type: 'test'
+  ...
+# Subtest: UX-UT-052 a paint failure degrades only this render and records 19012
+ok 5 - UX-UT-052 a paint failure degrades only this render and records 19012
+  ---
+  duration_ms: 0.6163
+  type: 'test'
+  ...
+# Subtest: T20 the cancel and retry texts paint and the interlocks stay with deriveControls
+ok 6 - T20 the cancel and retry texts paint and the interlocks stay with deriveControls
+  ---
+  duration_ms: 0.3591
+  type: 'test'
+  ...
+# Subtest: T26 semantic copies stay digit-free across the full state walk
+ok 7 - T26 semantic copies stay digit-free across the full state walk
+  ---
+  duration_ms: 0.907
+  type: 'test'
+  ...
+# Subtest: R12-A-R2-1 a change the gate swallows is painted on the next tick
+ok 8 - R12-A-R2-1 a change the gate swallows is painted on the next tick
+  ---
+  duration_ms: 0.4505
+  type: 'test'
+  ...
+# Subtest: R12-A-R2-2 a terminal inside the gate converges with a final flush
+ok 9 - R12-A-R2-2 a terminal inside the gate converges with a final flush
+  ---
+  duration_ms: 0.6345
+  type: 'test'
+  ...
+# Subtest: R12-A-R2-3 a converged terminal never repaints and a failed flush is corrected
+ok 10 - R12-A-R2-3 a converged terminal never repaints and a failed flush is corrected
+  ---
+  duration_ms: 1.7287
+  type: 'test'
+  ...
+# Subtest: R12-A-R2-4 a failed telemetry paint is not remembered as painted
+ok 11 - R12-A-R2-4 a failed telemetry paint is not remembered as painted
+  ---
+  duration_ms: 0.7969
+  type: 'test'
+  ...
+# Subtest: R12-A-R2-5 identical syncs commit the business cache once
+ok 12 - R12-A-R2-5 identical syncs commit the business cache once
+  ---
+  duration_ms: 0.3455
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 138.9209

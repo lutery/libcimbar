@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { readView, formatRate, formatProgress } from '../../src/ux-view.js';
+import { ReceiverTelemetry } from '../../src/ux-telemetry.js';
 
 function deepFreeze(value) {
   if (Array.isArray(value)) {
@@ -185,7 +186,9 @@ test('UX-UT-043 the processing hint appears only at a real 1500ms pending age', 
   const obs = observationFixture({
     receivingAtMs: 0,
     rate: { epochMs: 0 },
-    progress: { lastDataAtMs: 1000, trustedRatio: 0.25, lastAdvanceAtMs: 1000 },
+    // a good single report refreshes trustedAtMs at the same data frame, so a
+    // model-consistent trusted sample carries the frame's own time
+    progress: { lastDataAtMs: 1000, trustedRatio: 0.25, trustedAtMs: 1000, lastAdvanceAtMs: 1000 },
   });
   const busyCtx = contextFixture({ inFlight: true, inFlightSinceMs: 1000 });
   const idleCtx = contextFixture();
@@ -374,7 +377,7 @@ test('UX-UT-047 business terminals outrank the receiving detail and only real ar
   // the enough_data control: a trusted ratio >= 1 without a real artifact
   const enoughObs = observationFixture({
     receivingAtMs: 100,
-    progress: { lastDataAtMs: 500, trustedRatio: 1.05, lastAdvanceAtMs: 500 },
+    progress: { lastDataAtMs: 500, trustedRatio: 1.05, trustedAtMs: 500, lastAdvanceAtMs: 500 },
   });
   const enoughView = readView(enoughObs, requestAt(1200, contextFixture()));
   assert.equal(enoughView.data.statusKey, 'collecting_more');
@@ -746,4 +749,196 @@ test('T30 every status copy stays digit-free across the whole status matrix', ()
     }
   }
   assert.equal(seen.size, 23, 'all twenty-three status keys of the schema were exercised');
+});
+
+
+// --- R12-A-R1: report degradation in the model -> view combination ----------
+//
+// The verdict's counterexample: a good single (.6) followed by an empty or
+// unavailable report kept projecting `kind=estimate, ratio=.6` and formatted
+// "重建估计约 60%", because the view only degraded when the kept ratio was
+// null. These cases drive the real ReceiverTelemetry and readView; only the
+// input frames and the projection clock are controlled.
+
+function rSingle(ratio) {
+  return { state: 'single', ratios: [ratio], diagnosticCode: 0 };
+}
+function rEmpty() {
+  return { state: 'empty', ratios: [], diagnosticCode: 0 };
+}
+function rUnavailable(diag) {
+  return { state: 'unavailable', ratios: [], diagnosticCode: diag };
+}
+
+function beginRequest(seq = 1, { nowMs = 0 } = {}) {
+  return { version: 1, sessionId: 's1', sessionSeq: seq, inputKind: 'live', nowMs };
+}
+
+function frameInput(seq, { frameId, at, bytes = 625,
+  report = { state: 'not_sampled', ratios: [], diagnosticCode: 0 } } = {}) {
+  return {
+    version: 1, sessionId: 's1', sessionSeq: seq, frameId,
+    receivedAtMs: at, outcome: 'data', bytesDecoded: bytes, report,
+  };
+}
+
+function viewFromTelemetry(telemetry, context, nowMs) {
+  const snapshot = telemetry.snapshot();
+  return readView(snapshot, deepFreeze({
+    version: 1,
+    sessionId: snapshot.sessionId,
+    sessionSeq: snapshot.sessionSeq,
+    nowMs,
+    context,
+  }));
+}
+
+test('R12-A-R1-1 a data frame with an empty report hides the current percentage', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+
+  const before = viewFromTelemetry(t, contextFixture(), 1000);
+  assert.equal(before.ok, true);
+  assert.equal(before.data.progress.kind, 'estimate', 'the good report is decidable');
+  assert.equal(before.data.progress.ratio, 0.6);
+  assert.equal(formatProgress(before.data.progress), '重建估计约 60%');
+
+  // a real data frame whose report is empty: the history stays, the current
+  // projection must stop claiming the kept 60% is still decidable
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1100, report: rEmpty() }));
+  assert.equal(t.snapshot().progress.trustedRatio, 0.6, 'the history baseline survives');
+  assert.equal(t.snapshot().progress.lastDataAtMs, 1100);
+  assert.equal(t.snapshot().progress.trustedAtMs, 1000,
+    'a degraded report never refreshes the trust time');
+
+  const after = viewFromTelemetry(t, contextFixture(), 1100);
+  assert.equal(after.ok, true);
+  assert.equal(after.data.progress.kind, 'unavailable');
+  assert.equal(after.data.progress.ratio, null);
+  assert.equal(after.data.progress.asOfMs, null);
+  assert.equal(after.data.progress.stale, false);
+  assert.equal(after.data.progress.diagnosticCode, 0,
+    'an empty report carries no degradation code');
+  assert.equal(formatProgress(after.data.progress), '进度暂不可用');
+  assert.notEqual(formatProgress(after.data.progress), '重建估计约 60%',
+    'the old percentage is never presented as current');
+  assert.equal(after.data.statusKey, 'progress_unavailable');
+  assert.doesNotMatch(after.data.primary, /60|%/);
+  assert.doesNotMatch(after.data.secondary, /60|%/);
+});
+
+test('R12-A-R1-2 an unavailable report keeps its own code in the view', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1100, report: rUnavailable(19004) }));
+
+  const view = viewFromTelemetry(t, contextFixture(), 1100);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.progress.kind, 'unavailable');
+  assert.equal(view.data.progress.ratio, null);
+  assert.equal(view.data.progress.diagnosticCode, 19004,
+    'the report degradation code travels through to the view');
+  assert.deepEqual(view.data.diagnosticCodes, [19004]);
+  assert.equal(formatProgress(view.data.progress), '进度暂不可用');
+  assert.equal(view.data.statusKey, 'progress_unavailable');
+});
+
+test('R12-A-R1-3 a stronger single after a degraded report restores the estimate', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1100, report: rEmpty() }));
+
+  const degraded = viewFromTelemetry(t, contextFixture(), 1200);
+  assert.equal(degraded.data.progress.kind, 'unavailable');
+
+  t.acceptFrame(frameInput(1, { frameId: 3, at: 1300, report: rSingle(0.7) }));
+  const recovered = viewFromTelemetry(t, contextFixture(), 1300);
+  assert.equal(recovered.ok, true);
+  assert.equal(recovered.data.progress.kind, 'estimate');
+  assert.equal(recovered.data.progress.ratio, 0.7);
+  assert.equal(recovered.data.progress.asOfMs, 1300);
+  assert.equal(recovered.data.progress.stale, false);
+  assert.equal(recovered.data.progress.diagnosticCode, 0);
+  assert.equal(recovered.data.statusKey, 'receiving');
+  assert.equal(formatProgress(recovered.data.progress), '重建估计约 70%');
+});
+
+test('R12-A-R1-4 a weaker single after a degraded report still locks 19006', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1100, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 3, at: 1300, report: rSingle(0.5) }));
+
+  const snap = t.snapshot();
+  assert.equal(snap.progress.ambiguity, 19006, 'the model still locks the rollback');
+  assert.equal(snap.progress.trustedRatio, null);
+
+  const view = viewFromTelemetry(t, contextFixture(), 1300);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.progress.kind, 'ambiguous');
+  assert.equal(view.data.progress.ratio, null);
+  assert.equal(view.data.progress.asOfMs, null);
+  assert.equal(view.data.progress.diagnosticCode, 19006);
+  assert.equal(view.data.statusKey, 'progress_unknown');
+  assert.equal(formatProgress(view.data.progress), '进度无法判定');
+});
+
+test('R12-A-R1-5 a continuous single stream keeps its estimate projection', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  const ratios = [0.1, 0.2, 0.3, 0.45, 0.6, 0.75];
+  ratios.forEach((ratio, i) => {
+    const at = 1000 + i * 250;
+    t.acceptFrame(frameInput(1, { frameId: i + 1, at, report: rSingle(ratio) }));
+    const view = viewFromTelemetry(t, contextFixture(), at);
+    assert.equal(view.data.progress.kind, 'estimate', `ratio ${ratio}: still an estimate`);
+    assert.equal(view.data.progress.ratio, ratio, `ratio ${ratio}: exact value`);
+    assert.equal(view.data.progress.diagnosticCode, 0);
+    assert.equal(view.data.statusKey, 'receiving');
+  });
+
+  // an equal ratio refreshes the trust time and is not a degradation
+  const lastAt = 1000 + ratios.length * 250;
+  t.acceptFrame(frameInput(1, { frameId: ratios.length + 1, at: lastAt, report: rSingle(0.75) }));
+  const repeated = viewFromTelemetry(t, contextFixture(), lastAt);
+  assert.equal(repeated.data.progress.kind, 'estimate');
+  assert.equal(repeated.data.progress.ratio, 0.75);
+  assert.equal(repeated.data.progress.asOfMs, lastAt);
+});
+
+test('R12-A-R1-6 a degraded report leaves the rate and the business outputs untouched', () => {
+  const build = (degraded) => {
+    const t = new ReceiverTelemetry();
+    t.begin(beginRequest(1, { nowMs: 0 }));
+    t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, bytes: 625, report: rSingle(0.6) }));
+    t.acceptFrame(frameInput(1, {
+      frameId: 2, at: 1100, bytes: 625,
+      report: degraded ? rEmpty() : rSingle(0.6),
+    }));
+    return viewFromTelemetry(t, contextFixture(), 2000);
+  };
+  const clean = build(false);
+  const degraded = build(true);
+
+  assert.equal(clean.data.progress.kind, 'estimate');
+  assert.equal(clean.data.progress.ratio, 0.6);
+  assert.equal(degraded.data.progress.kind, 'unavailable');
+
+  // the rate domain is independent of the report quality: two real data
+  // frames of 625B over a 2000ms window are exactly 625 B/s
+  assert.deepEqual(degraded.data.rate, clean.data.rate, 'the rate projection is identical');
+  assert.equal(degraded.data.rate.phase, 'active');
+  assert.equal(degraded.data.rate.bytesPerSecond, 625);
+  assert.equal(degraded.data.rate.windowMs, 2000);
+  assert.equal(degraded.data.elapsedMs, 2000, 'the elapsed clock is untouched');
+  assert.equal(degraded.data.state, 'Receiving', 'the business state is untouched');
+  assert.deepEqual(degraded.data.controls, clean.data.controls);
+  assert.deepEqual(degraded.data.save, clean.data.save);
+  assert.equal(degraded.data.observationRevision, clean.data.observationRevision,
+    'the same real frames were accepted in both runs');
+  assert.equal(degraded.data.mediaPosition, null);
 });

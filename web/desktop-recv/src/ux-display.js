@@ -74,8 +74,10 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
   function safePaint(payload) {
     try {
       paint(payload);
+      return true;
     } catch (error) {
       queueDiagnostic(19012);
+      return false; // nothing was committed to the display layer
     }
   }
 
@@ -115,58 +117,78 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
     lastViewAtMs = view.viewAtMs;
     paintBusinessFrom(view);
     maybePaintTelemetryFrom(view, now);
+    if (!ACTIVE_STATES.has(current.context.state)) flushTerminalTelemetry(view, now);
     scheduleFor(current.context.state);
   }
 
   function paintBusinessFrom(view) {
     const sections = {};
+    const saveText = SAVE_TEXT[view.save.phase] ?? '';
     if (view.primary !== lastBusiness.primary) sections.primary = view.primary;
     if (view.secondary !== lastBusiness.secondary) sections.secondary = view.secondary;
     if (view.nextAction !== lastBusiness.nextAction) sections.nextAction = view.nextAction;
-    const saveText = SAVE_TEXT[view.save.phase] ?? '';
     if (saveText !== lastBusiness.save) sections.save = saveText;
-    if (view.announcementKey !== announcedKey) {
-      announcedKey = view.announcementKey;
+    const announces = view.announcementKey !== announcedKey;
+    if (announces) {
       const secondary = view.secondary ? ` ${view.secondary}` : '';
       sections.announcement = `${view.primary}${secondary}`;
       if (queuedDiagnostics.size > 0) {
         sections.diagnostics = [...queuedDiagnostics];
-        queuedDiagnostics.clear();
       }
     }
-    if (Object.keys(sections).length > 0) safePaint(sections);
+    if (Object.keys(sections).length === 0) return; // identical semantics: no write
+    if (!safePaint(sections)) return; // retry the same content on the next sync
+    lastBusiness = {
+      primary: view.primary,
+      secondary: view.secondary,
+      nextAction: view.nextAction,
+      save: saveText,
+    };
+    if (announces) {
+      announcedKey = view.announcementKey;
+      if (sections.diagnostics) queuedDiagnostics.clear();
+    }
   }
 
-  function maybePaintTelemetryFrom(view, now) {
+  // The numeric projection is committed only after a successful paint; a value
+  // the gate (or a paint failure) dropped stays pending, so the next projection
+  // recomputes it from the newest view instead of losing it (round-12 A-R2).
+  function maybePaintTelemetryFrom(view, now, { force = false } = {}) {
     if (typeof now !== 'number' || !Number.isFinite(now)) return;
-    const sections = {};
-    const elapsedChanged = view.elapsedMs !== lastTelemetry.elapsedMs;
-    if (elapsedChanged) {
-      sections.elapsedMs = view.elapsedMs;
-      sections.elapsedText = formatElapsed(view.elapsedMs);
-      lastTelemetry.elapsedMs = view.elapsedMs;
-    }
+    const elapsedText = formatElapsed(view.elapsedMs);
     const rateText = formatRate(view.rate);
-    if (rateText !== lastTelemetry.rateText) {
-      sections.rateText = rateText;
-      lastTelemetry.rateText = rateText;
-    }
     const progressText = formatProgress(view.progress);
-    if (progressText !== lastTelemetry.progressText) {
-      sections.progressText = progressText;
-      lastTelemetry.progressText = progressText;
-    }
     const mediaText = formatMedia(view.mediaPosition);
-    if (mediaText !== lastTelemetry.mediaText) {
-      sections.mediaText = mediaText;
-      lastTelemetry.mediaText = mediaText;
+    const sections = {};
+    if (view.elapsedMs !== lastTelemetry.elapsedMs) {
+      sections.elapsedMs = view.elapsedMs;
+      sections.elapsedText = elapsedText;
     }
+    if (rateText !== lastTelemetry.rateText) sections.rateText = rateText;
+    if (progressText !== lastTelemetry.progressText) sections.progressText = progressText;
+    if (mediaText !== lastTelemetry.mediaText) sections.mediaText = mediaText;
     if (Object.keys(sections).length === 0) return; // identical text: no write
-    if (lastTelemetryWriteAt !== null && now - lastTelemetryWriteAt < REFRESH_MS) return;
-    lastTelemetryWriteAt = now; // the shared boundary for events and ticks
+    if (!force && lastTelemetryWriteAt !== null && now - lastTelemetryWriteAt < REFRESH_MS) {
+      return; // the shared boundary dropped this projection; nothing is committed
+    }
     sections.observationRevision = view.observationRevision;
     sections.businessRevision = view.businessRevision;
-    safePaint(sections);
+    if (!safePaint(sections)) return; // a failed write is not a painted value
+    lastTelemetry = {
+      elapsedMs: view.elapsedMs,
+      rateText,
+      progressText,
+      mediaText,
+    };
+    lastTelemetryWriteAt = now; // the shared boundary for events and ticks
+  }
+
+  // Terminal convergence: leaving the active states owes the user the final
+  // metrics even when the shared gate would still be closed. This one write
+  // may cross the boundary; it is idempotent because a painted projection
+  // leaves no diff for the next sync.
+  function flushTerminalTelemetry(view, now) {
+    maybePaintTelemetryFrom(view, now, { force: true });
   }
 
   function scheduleFor(contextState) {
@@ -188,11 +210,9 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
   }
 
   function flushBusiness() {
-    if (queuedDiagnostics.size > 0) {
-      const payload = { diagnostics: [...queuedDiagnostics] };
-      queuedDiagnostics.clear();
-      safePaint(payload);
-    }
+    if (queuedDiagnostics.size === 0) return;
+    const payload = { diagnostics: [...queuedDiagnostics] };
+    if (safePaint(payload)) queuedDiagnostics.clear();
   }
 
   function syncBusiness() {
