@@ -273,7 +273,21 @@ export function createMediaJourneys(h) {
       }, 150000, 'Incomplete at real EOF');
       await rec.shot(page, 's32-incomplete.png');
       const saveBlocked = await pageState(page);
-      const frozenA = await uxProbe(page);
+      // The terminal projection converges ON the shared 250ms boundary
+      // (round-12 Option B), so sampling the instant Incomplete appears would
+      // race the convergence write. Wait (bounded) until two consecutive
+      // probes agree, then sample the frozen pair; the criterion is unchanged.
+      let frozenA = await uxProbe(page);
+      const settleDeadline = Date.now() + 5000;
+      while (Date.now() < settleDeadline) {
+        await sleep(400);
+        const settled = await uxProbe(page);
+        if (settled.elapsed === frozenA.elapsed && settled.rate === frozenA.rate) {
+          frozenA = settled;
+          break;
+        }
+        frozenA = settled;
+      }
       await sleep(1500);
       const frozenB = await uxProbe(page);
       rec.add('E2E-32-S02', 'the EOF barrier completed with no artifact: data-insufficient is stated clearly',
