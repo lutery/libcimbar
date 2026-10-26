@@ -265,17 +265,29 @@ async function runSide({ side, pairIndex, build, liveInput }) {
       if (!stopDisabled) await page.click('#btn-stop');
       await page.waitForFunction(() => ['Stopped', 'Idle'].includes(window.__state)
         && !document.getElementById('preview').srcObject, null, { timeout: 30000 });
-      const frozenA = await page.evaluate(() => ({
+      // The terminal projection converges ON the shared 250ms boundary
+      // (round-12 Option B), so sampling the instant the state flips would
+      // race the convergence write and fake a "clock not frozen". Wait
+      // (bounded) until two consecutive probes agree, then take the frozen
+      // pair; the criterion (elapsed identical across the pair) is unchanged.
+      const probeStop = () => page.evaluate(() => ({
         state: window.__state,
         elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
         primary: (document.getElementById('ux-primary') || {}).textContent || '',
       }));
+      let frozenA = await probeStop();
+      const settleDeadline = Date.now() + 5000;
+      while (Date.now() < settleDeadline) {
+        await sleep(400);
+        const settled = await probeStop();
+        if (settled.elapsed === frozenA.elapsed && settled.primary === frozenA.primary) {
+          frozenA = settled;
+          break;
+        }
+        frozenA = settled;
+      }
       await sleep(1600);
-      const frozenB = await page.evaluate(() => ({
-        state: window.__state,
-        elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
-        primary: (document.getElementById('ux-primary') || {}).textContent || '',
-      }));
+      const frozenB = await probeStop();
       result.observations.afterStop = { frozenA, frozenB };
     } catch (error) {
       result.observations.stopError = String((error && error.message) || error);

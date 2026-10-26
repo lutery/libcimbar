@@ -1437,6 +1437,32 @@ test('T-R12-A3e candidate feedback and stop-release checks still gate the B side
   assert.ok(!baseline.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_NOT_ARMED'));
 });
 
+test('T-R12-A3f observation jitter: a 249.9ms observed live gap passes, 240ms is still refused', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  // The product's write gate is performance.now-based; the observer sees DOM
+  // mutations up to one frame off that clock, so an observed 249.9ms gap is
+  // measurement-channel noise, not a product violation (OBSERVATION_JITTER_MS).
+  const jitter = liveRecordCompliant({
+    telemetryWrites: Array.from({ length: 12 }, (_, i) => 5100 + i * 249.9),
+  });
+  const jittered = judgeLiveSide(jitter, 'B');
+  assert.ok(!jittered.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_INTERVAL'),
+    `249.9ms observed gap must pass, got ${JSON.stringify(jittered.violations)}`);
+  // A real violation stays refused: the allowance is 1ms, not a hole.
+  const real = liveRecordCompliant({
+    telemetryWrites: Array.from({ length: 12 }, (_, i) => 5100 + i * 240),
+  });
+  const refused = judgeLiveSide(real, 'B');
+  assert.ok(refused.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_INTERVAL'),
+    'a 240ms gap must still be refused');
+  // The recorded-leg judge keeps the strict boundary (no jitter allowance).
+  const strict = judgeRound(validRoundRecord({
+    telemetryWrites: Array.from({ length: 12 }, (_, i) => 1000 + i * 249.9),
+  }), baseRules());
+  assert.ok(strict.invariantViolations.some((v) => v.code === 'E_TELEMETRY_INTERVAL'),
+    'judgeRound must keep the strict 250ms boundary');
+});
+
 test('T28-07d executing the wrapper preserves promise identity and settlement', async () => {
   const clock = { now: 100 };
   const resolvedValue = { marker: 'ok' };
