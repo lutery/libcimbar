@@ -113,8 +113,9 @@ function fakeTimers() {
   };
 }
 
-function paintRecorder() {
+function paintRecorder(clock) {
   const calls = [];
+  const stamps = []; // the clock value of each successful paint
   let throwCount = 0;
   let throwTelemetryCount = 0;
   const isTelemetry = (call) => 'elapsedText' in call || 'rateText' in call
@@ -131,10 +132,15 @@ function paintRecorder() {
       throw new Error('paint exploded');
     }
     calls.push(payload);
+    stamps.push(clock ? clock.now : null);
   };
   return {
     paint,
     calls,
+    stamps,
+    telemetryStamps: () => calls.map((call, i) => [call, stamps[i]])
+      .filter((entry) => isTelemetry(entry[0]))
+      .map((entry) => entry[1]),
     throwNext(times = 1) { throwCount = times; },
     throwNextTelemetry(times = 1) { throwTelemetryCount = times; },
     telemetry: () => calls.filter(isTelemetry),
@@ -264,7 +270,10 @@ test('UX-UT-049 events and ticks share one 250ms throttle while business stays i
   const readyPaint = spyB.business().at(-1);
   assert.ok(readyPaint && 'primary' in readyPaint,
     'the ready primary paints on the event, not on the next tick');
-  assert.equal(timersB.size(), 0, 'Ready releases the receiving timer');
+  assert.equal(timersB.callback(armedTimer), undefined,
+    'Ready releases the receiving refresher');
+  assert.equal(timersB.size(), 1,
+    'the final numbers wait for the 250ms boundary on one convergence timer');
 
   clockB.now = 200;
   currentB.value = {
@@ -274,10 +283,13 @@ test('UX-UT-049 events and ticks share one 250ms throttle while business stays i
     context: context({ state: 'Saving', artifactId: '42',
       controls: { canStartLive: false, canImportVideo: false, canStop: false, canSave: false } }),
   };
+  const setsBeforeSaving = timersB.calls.set;
   displayB.syncBusiness();
   assert.ok(spyB.business().at(-1) && 'save' in spyB.business().at(-1),
     'the saving phase paints immediately too');
-  assert.equal(timersB.size(), 0, 'Saving never rebuilds the receiving timer');
+  assert.equal(timersB.calls.set, setsBeforeSaving,
+    'Saving never rebuilds the receiving refresher');
+  assert.equal(timersB.size(), 1, 'the pending convergence timer is unchanged');
 
   // a late tick after the terminal adds no telemetry write
   const writesBefore = spyB.telemetry().length;
@@ -619,7 +631,7 @@ test('R12-A-R2-1 a change the gate swallows is painted on the next tick', () => 
   assert.equal(writes[1].elapsedText, '0.3s');
 });
 
-test('R12-A-R2-2 a terminal inside the gate converges with a final flush', () => {
+test('R12-A-R2-2 a terminal inside the gate converges at the 250ms boundary', () => {
   const clock = { now: 1000 };
   const current = { value: {
     owner: receivingOwner(),
@@ -627,7 +639,7 @@ test('R12-A-R2-2 a terminal inside the gate converges with a final flush', () =>
     context: context(),
   } };
   const timers = fakeTimers();
-  const spy = paintRecorder();
+  const spy = paintRecorder(clock);
   const display = makeDisplay({ current, clock, paint: spy.paint, timers });
 
   display.syncBusiness(); // t1000 baseline
@@ -646,7 +658,10 @@ test('R12-A-R2-2 a terminal inside the gate converges with a final flush', () =>
   assert.equal(active.progressText, '重建估计约 20%');
   assert.notEqual(active.rateText, '', 'the rate is active at t2000');
 
-  // t2100: the real artifact lands 100ms later, inside the shared gate
+  // t2100: the real artifact lands 100ms later, inside the shared boundary.
+  // The frozen hard invariant telemetryMinWriteIntervalMs=250 is unqualified,
+  // so the terminal projection must NOT write across the boundary: one
+  // convergence timer waits for the boundary instead.
   clock.now = 2100;
   current.value = {
     owner: receivingOwner(),
@@ -654,12 +669,164 @@ test('R12-A-R2-2 a terminal inside the gate converges with a final flush', () =>
     context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
   };
   display.syncBusiness();
+  assert.equal(spy.telemetry().length, baseline + 1, 'no numeric write inside the boundary');
+  assert.equal(spy.telemetry().at(-1), active, 'the displayed numbers are still the t2000 ones');
+  assert.equal(timers.size(), 1, 'one convergence timer waits for the boundary');
+  const convergenceTimer = timers.lastId();
+
+  // t2250: the boundary opens; the re-projected terminal values paint then
+  clock.now = 2250;
+  timers.fire(convergenceTimer);
   const flushed = spy.telemetry().at(-1);
-  assert.notEqual(flushed, active, 'the final projection was painted');
+  assert.notEqual(flushed, active, 'the final projection is painted at the boundary');
   assert.equal(flushed.progressText, '重建完成');
   assert.equal(flushed.rateText, '', 'a frozen rate shows nothing');
   assert.equal(flushed.elapsedText, '1.1s', 'the receiving time froze at the artifact');
-  assert.equal(timers.size(), 0, 'the terminal still releases the refresher');
+  const stamps = spy.telemetryStamps();
+  assert.equal(stamps.at(-1) - stamps.at(-2), 250,
+    'the convergence write keeps the 250ms minimum interval from the last write');
+  assert.equal(timers.size(), 0, 'convergence releases the timer');
+});
+
+test('R12-A-R2-2b a terminal with an open boundary flushes immediately', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder(clock);
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness(); // t1000 baseline, last write at 1000
+
+  // t1400: the boundary is already open (400ms later); no extra wait is owed
+  clock.now = 1400;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(1400, 1000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const flushed = spy.telemetry().at(-1);
+  assert.equal(flushed.progressText, '重建完成');
+  assert.equal(flushed.elapsedText, '0.4s');
+  const stamps = spy.telemetryStamps();
+  assert.ok(stamps.at(-1) - stamps.at(-2) >= 250,
+    'the immediate terminal write still respects the boundary');
+  assert.equal(timers.size(), 0, 'no convergence timer when the boundary is already open');
+});
+
+test('R12-A-R2-2c repeated syncs while a terminal flush is pending schedule once', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder(clock);
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+  clock.now = 2000;
+  current.value = { owner: receivingOwner(), observation: dataAt(2000, 0.2), context: context() };
+  display.syncBusiness();
+
+  clock.now = 2100;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(2100, 2000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const armed = timers.lastId();
+  const setsAfterTerminal = timers.calls.set;
+  const writesAfterTerminal = spy.telemetry().length;
+  assert.equal(timers.size(), 1, 'one convergence timer waits for the boundary');
+
+  // repeated business syncs inside the pending window: no re-scheduling, no
+  // out-of-boundary numeric write, business sections still paint immediately
+  for (const at of [2150, 2200, 2249]) {
+    clock.now = at;
+    current.value = {
+      owner: receivingOwner(),
+      observation: readyAt(2100, 2000, 0.2),
+      context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+    };
+    display.syncBusiness();
+    assert.equal(timers.calls.set, setsAfterTerminal, `t${at}: no duplicate scheduling`);
+    assert.equal(timers.size(), 1, `t${at}: still exactly one convergence timer`);
+    assert.equal(spy.telemetry().length, writesAfterTerminal,
+      `t${at}: no numeric write inside the boundary`);
+  }
+
+  clock.now = 2250;
+  timers.fire(armed);
+  const finalWrites = spy.telemetry().filter((call) => call.progressText === '重建完成');
+  assert.equal(finalWrites.length, 1, 'exactly one terminal numeric write');
+  assert.equal(timers.size(), 0, 'no further timer after convergence');
+});
+
+test('R12-A-R2-2d an owner change or dispose cancels a pending terminal flush', () => {
+  const clock = { now: 1000 };
+  const current = { value: {
+    owner: receivingOwner(),
+    observation: observation({}),
+    context: context(),
+  } };
+  const timers = fakeTimers();
+  const spy = paintRecorder(clock);
+  const display = makeDisplay({ current, clock, paint: spy.paint, timers });
+  display.syncBusiness();
+  clock.now = 2000;
+  current.value = { owner: receivingOwner(), observation: dataAt(2000, 0.2), context: context() };
+  display.syncBusiness();
+  clock.now = 2100;
+  current.value = {
+    owner: receivingOwner(),
+    observation: readyAt(2100, 2000, 0.2),
+    context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  const pending = timers.lastId();
+  assert.equal(timers.size(), 1, 'a convergence timer is pending');
+
+  // the owner advances long after the boundary: the old convergence is moot
+  clock.now = 2500;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 2 },
+    observation: observation({ sessionId: null, sessionSeq: 0, inputKind: null,
+      observationRevision: 0, receivingAtMs: null }),
+    context: context({ state: 'Idle', businessRevision: 0, inputKind: null,
+      controls: { canStartLive: true, canImportVideo: true, canStop: false, canSave: false } }),
+  };
+  display.syncBusiness();
+  assert.equal(timers.size(), 0, 'the owner change cancelled the pending flush');
+  const writesAfterSwitch = spy.telemetry().length;
+  timers.fire(pending); // the stale convergence callback
+  assert.equal(spy.telemetry().length, writesAfterSwitch, 'the stale flush never writes');
+
+  // dispose also cancels a pending flush
+  clock.now = 3000;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 2 },
+    observation: observation({ sessionId: 's1', sessionSeq: 2,
+      receivingAtMs: 3000, rate: { epochMs: 3000 } }),
+    context: context({ state: 'Receiving', businessRevision: 1 }),
+  };
+  display.syncBusiness();
+  clock.now = 3100;
+  current.value = {
+    owner: { sessionId: 's1', sessionSeq: 2 },
+    observation: observation({ sessionId: 's1', sessionSeq: 2, receivingAtMs: 3000,
+      endedAtMs: 3100, rate: { epochMs: 3000 } }),
+    context: context({ state: 'Ready', artifactId: '42', businessRevision: 2,
+      controls: READY_CONTROLS }),
+  };
+  display.syncBusiness();
+  assert.equal(timers.size(), 1, 'a convergence timer is pending again');
+  display.dispose();
+  assert.equal(timers.size(), 0, 'dispose cancelled the pending flush');
 });
 
 test('R12-A-R2-3 a converged terminal never repaints and a failed flush is corrected', () => {
@@ -684,6 +851,9 @@ test('R12-A-R2-3 a converged terminal never repaints and a failed flush is corre
     context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
   };
   display.syncBusiness();
+  const pendingTimer = timers.lastId();
+  clock.now = 2250;
+  timers.fire(pendingTimer); // converge at the 250ms boundary
   const converged = spy.telemetry().length;
   const lastFlush = spy.telemetry().at(-1);
   assert.equal(lastFlush.progressText, '重建完成');
@@ -692,6 +862,7 @@ test('R12-A-R2-3 a converged terminal never repaints and a failed flush is corre
   display.syncBusiness();
   assert.equal(spy.telemetry().length, converged, 'an identical terminal view is not rewritten');
   assert.equal(spy.telemetry().at(-1), lastFlush);
+  assert.equal(timers.size(), 0, 'the converged terminal holds no timer');
 
   // B: a failed terminal flush leaves the cache untouched; the next sync corrects it
   const clockB = { now: 1000 };
@@ -715,14 +886,22 @@ test('R12-A-R2-3 a converged terminal never repaints and a failed flush is corre
     observation: readyAt(2100, 2000, 0.2),
     context: context({ state: 'Ready', artifactId: '42', controls: READY_CONTROLS }),
   };
-  spyB.throwNextTelemetry(1);
   displayB.syncBusiness();
+  const pendingB = timersB.lastId();
+  assert.equal(timersB.size(), 1, 'the terminal waits for the boundary');
+
+  // the boundary flush itself fails: nothing is painted or claimed, and no
+  // autonomous retry spins a timer after termination
+  spyB.throwNextTelemetry(1);
+  clockB.now = 2250;
+  timersB.fire(pendingB);
   assert.equal(spyB.telemetry().length, beforeTerminal,
     'the failed flush painted nothing and claimed nothing');
   assert.ok(!spyB.telemetry().some((call) => call.progressText === '重建完成'));
+  assert.equal(timersB.size(), 0, 'a failed convergence leaves no timer behind');
 
   clockB.now = 2700;
-  displayB.syncBusiness(); // the same terminal view, retried
+  displayB.syncBusiness(); // the same terminal view, retried by the next sync
   const corrected = spyB.telemetry().at(-1);
   assert.equal(spyB.telemetry().length, beforeTerminal + 1);
   assert.equal(corrected.progressText, '重建完成');

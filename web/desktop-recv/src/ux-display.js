@@ -44,6 +44,9 @@ const SAVE_TEXT = {
 export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, paint }) {
   let owner = null; // {sessionId, sessionSeq} of the refresher's session
   let timerId = null;
+  // 'refresh' during active receiving; 'terminal' while one convergence write
+  // waits for the shared 250ms boundary after leaving the active states
+  let timerMode = null;
   let active = false;
   let disposed = false;
   let lastViewAtMs = 0;
@@ -64,6 +67,7 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
       if (typeof clearTimer === 'function') clearTimer(timerId);
       timerId = null;
     }
+    timerMode = null;
     active = false;
   }
 
@@ -116,9 +120,8 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
     if (typeof now === 'number' && now < lastViewAtMs) return; // no rollback
     lastViewAtMs = view.viewAtMs;
     paintBusinessFrom(view);
-    maybePaintTelemetryFrom(view, now);
-    if (!ACTIVE_STATES.has(current.context.state)) flushTerminalTelemetry(view, now);
-    scheduleFor(current.context.state);
+    const telemetryOutcome = maybePaintTelemetryFrom(view, now);
+    scheduleFor(current.context.state, now, telemetryOutcome);
   }
 
   function paintBusinessFrom(view) {
@@ -153,8 +156,14 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
   // The numeric projection is committed only after a successful paint; a value
   // the gate (or a paint failure) dropped stays pending, so the next projection
   // recomputes it from the newest view instead of losing it (round-12 A-R2).
-  function maybePaintTelemetryFrom(view, now, { force = false } = {}) {
-    if (typeof now !== 'number' || !Number.isFinite(now)) return;
+  // Returns one of:
+  //   'painted'  the projection was painted and committed
+  //   'noop'     the projection matches the last painted text
+  //   'blocked'  paint-eligible, but the shared 250ms boundary is still closed
+  //   'failed'   the paint threw; nothing was committed
+  //   'invalid'  a non-finite clock never paints numbers
+  function maybePaintTelemetryFrom(view, now) {
+    if (typeof now !== 'number' || !Number.isFinite(now)) return 'invalid';
     const elapsedText = formatElapsed(view.elapsedMs);
     const rateText = formatRate(view.rate);
     const progressText = formatProgress(view.progress);
@@ -167,13 +176,13 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
     if (rateText !== lastTelemetry.rateText) sections.rateText = rateText;
     if (progressText !== lastTelemetry.progressText) sections.progressText = progressText;
     if (mediaText !== lastTelemetry.mediaText) sections.mediaText = mediaText;
-    if (Object.keys(sections).length === 0) return; // identical text: no write
-    if (!force && lastTelemetryWriteAt !== null && now - lastTelemetryWriteAt < REFRESH_MS) {
-      return; // the shared boundary dropped this projection; nothing is committed
+    if (Object.keys(sections).length === 0) return 'noop'; // identical text: no write
+    if (lastTelemetryWriteAt !== null && now - lastTelemetryWriteAt < REFRESH_MS) {
+      return 'blocked'; // the shared boundary dropped this projection; nothing is committed
     }
     sections.observationRevision = view.observationRevision;
     sections.businessRevision = view.businessRevision;
-    if (!safePaint(sections)) return; // a failed write is not a painted value
+    if (!safePaint(sections)) return 'failed'; // a failed write is not a painted value
     lastTelemetry = {
       elapsedMs: view.elapsedMs,
       rateText,
@@ -181,32 +190,47 @@ export function createUxDisplay({ readCurrent, nowMs, setTimer, clearTimer, pain
       mediaText,
     };
     lastTelemetryWriteAt = now; // the shared boundary for events and ticks
+    return 'painted';
   }
 
-  // Terminal convergence: leaving the active states owes the user the final
-  // metrics even when the shared gate would still be closed. This one write
-  // may cross the boundary; it is idempotent because a painted projection
-  // leaves no diff for the next sync.
-  function flushTerminalTelemetry(view, now) {
-    maybePaintTelemetryFrom(view, now, { force: true });
-  }
-
-  function scheduleFor(contextState) {
-    const isActive = ACTIVE_STATES.has(contextState);
-    if (!isActive) {
-      releaseTimer();
-      return;
-    }
-    active = true;
-    if (timerId !== null) return;
+  function armTimer(delayMs, mode) {
     const seq = owner ? owner.sessionSeq : 0;
     const callback = () => {
       if (!owner || owner.sessionSeq !== seq) return; // a stale refresher
       if (disposed) return;
       timerId = null;
+      timerMode = null;
       project();
     };
-    timerId = setTimer(callback, REFRESH_MS);
+    timerId = setTimer(callback, delayMs);
+    timerMode = mode;
+  }
+
+  // Leaving the active states owes the user the final metrics, but the frozen
+  // hard invariant telemetryMinWriteIntervalMs=250 is unqualified, so the
+  // convergence write waits for the shared boundary instead of crossing it:
+  // with the boundary open the projection paints now; with it closed exactly
+  // one timer re-projects at the boundary (the terminal numbers are frozen, so
+  // the re-projection equals the pending one) and the timer is then released.
+  function scheduleFor(contextState, now, telemetryOutcome = 'invalid') {
+    const isActive = ACTIVE_STATES.has(contextState);
+    if (!isActive) {
+      if (telemetryOutcome === 'blocked') {
+        if (timerMode === 'terminal') return; // one convergence timer is already waiting
+        releaseTimer();
+        const since = lastTelemetryWriteAt === null
+          ? REFRESH_MS
+          : (typeof now === 'number' ? now - lastTelemetryWriteAt : REFRESH_MS);
+        armTimer(Math.max(0, REFRESH_MS - since), 'terminal');
+        return;
+      }
+      releaseTimer(); // painted / noop / failed (next sync retries) / invalid
+      return;
+    }
+    if (timerMode === 'terminal') releaseTimer(); // active again: cancel the wait
+    active = true;
+    if (timerId !== null) return;
+    armTimer(REFRESH_MS, 'refresh');
   }
 
   function flushBusiness() {
