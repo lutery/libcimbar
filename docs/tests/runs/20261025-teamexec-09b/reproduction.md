@@ -63,10 +63,11 @@ node tools/desktop-recv/e2e/measure-ux.mjs \
   --method docs/plans/receiver-ux-v2/performance-method.json
 # 期望 verdict=PASS（5/5 对；three thresholds）；输出 measurements/ux-overhead/candidate-20261025-04/
 
+# 实时腿（独立命令；写 <runRoot>/measurements/ux-overhead/<attemptId>/live/，write-once）
+node tools/desktop-recv/e2e/live-legs.mjs \
   --context docs/tests/runs/20261025-teamexec-09b/run-context.json \
-  --context docs/tests/runs/20261025-teamexec-同根 full.json \
   --baseline-context docs/tests/runs/20261024-teamexec-04/run-context.json \
-  --method docs/tests/../plans/receiver-ux-v2/performance-method.json
+  --method docs/plans/receiver-ux-v2/performance-method.json
 # 期望 5×30s 双侧 10/10 VALID，verdict=PASS；输出 .../candidate-20261025-04/live/
 ```
 
