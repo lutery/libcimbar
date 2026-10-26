@@ -102,6 +102,8 @@ Worker只提供无主线程绝对时间的观测；M2在收到结果时盖主线
 
 每次实际接受新的当前帧将observationRevision加1；data/artifact更新data字节和lastDataAt，no_data/error只更新最后结果时点。report.single的比例严格增加才更新lastAdvanceAt；第一次single建立增长基准。multiple或有效比例回退立即锁定ambiguity；即使后续变single，当前会话也不解除。临时unavailable/empty不清除最后可信比例，但当次展示不冒认仍可判定。
 
+**修订（2026-10-27，round-13 A13-02）**：观察 progress 新增 `lastReportState`——最近一次被接受的 data/artifact 帧的 `report.state`（single/multiple/empty/unavailable；首帧前为 null）；ambiguity 锁定期间仍照常更新（与降级码同属可观测事实）。当次展示以该事件状态区分当前报告质量与历史可信基线：**相同 receivedAtMs 的不同帧（frameId 不同）为 empty/unavailable 时必须隐藏当次百分比**；不依赖 receivedAtMs 的严格大小，也不因此收紧接收时间校验（仍只禁止早于）。历史可信基线语义不变：后续更高 single 仍恢复展示（如 .7 恢复），回退 single 仍锁定 ambiguity（如 .5 回退锁 19006）。
+
 ### 速率窗口精确定义
 
 固定12桶，每桶250ms；速率域有自己的rateEpochMs，初始化等于receivingAtMs。时刻t的桶号为floor((t-rateEpochMs)/250)。每次只清理/覆盖固定12槽，不因大时间跳跃循环创建任意数量桶。仅在计数溢出后的重新采样更新rateEpochMs，接收时长起点receivingAtMs保持不变。
@@ -146,6 +148,8 @@ Context由原主线程快照/能力与当前元数据构建，schema固定全部
 | diagnosticCodes | 去重int[]，必填 | ≤15，按数值排序，仅UX诊断；不混入v1 Error |
 
 进度ratio只有estimate/complete有数：estimate为0≤p<1、asOf是最近可信样本，stale表示5秒无新data；complete为1且必须存在真实当前artifact。enough_data为p≥1但文件未完成，ratio=null、不确定指示；ambiguous/unavailable不展示旧百分比。只保留单流的观测估计，不虚构文件名/总字节。
+
+当前报告质量是否可判定，以观察 progress.lastReportState 的事件状态为准（empty/unavailable→当次不展示百分比），不以 lastDataAtMs 与 trustedAtMs 的时间大小推断；相同 receivedAtMs 的降级帧同样生效，详见 UX-03 段 2026-10-27 修订注记。
 
 录像位置由原snapshot归一：position有限非负；duration非有限/非正→null，fraction=null；有效duration时fraction=min(1,position/duration)，仅用于媒体位置。position无效→整个mediaPosition=null、19011。读到录像结尾不会直接改文件状态。
 

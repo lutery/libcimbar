@@ -50,6 +50,10 @@ function observationFixture(overrides = {}) {
       trustedAtMs: 250,
       lastAdvanceAtMs: null,
       lastDataAtMs: null,
+      // the last accepted data/artifact frame's own report state (R13-A13-02):
+      // null until such a frame is accepted; degradation is this event fact,
+      // never a timestamp coincidence
+      lastReportState: null,
       lastResultAtMs: null,
       ambiguity: null,
     },
@@ -941,4 +945,95 @@ test('R12-A-R1-6 a degraded report leaves the rate and the business outputs unto
   assert.equal(degraded.data.observationRevision, clean.data.observationRevision,
     'the same real frames were accepted in both runs');
   assert.equal(degraded.data.mediaPosition, null);
+});
+
+// --- R13-A13-02: report quality is the frame's own event state --------------
+//
+// The view must read observation.progress.lastReportState (the last accepted
+// data/artifact report) instead of inferring from `lastDataAtMs > trustedAtMs`,
+// which is blind when a different frame reuses the same receivedAtMs. Hand
+// fixtures below set the fact explicitly: never a timestamp coincidence.
+
+test('R13-A13-02-V the view degrades by lastReportState, not by a timestamp inequality', () => {
+  // (1) degraded by event state alone: the frame times are equal, so the old
+  // inference could never see this degradation
+  const degraded = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0 },
+    progress: {
+      trustedRatio: 0.6,
+      trustedAtMs: 1000,
+      lastAdvanceAtMs: 1000,
+      lastDataAtMs: 1000,
+      lastResultAtMs: 1000,
+      lastReportState: 'empty',
+    },
+  });
+  const degradedView = readView(degraded, requestAt(1000, contextFixture()));
+  assert.equal(degradedView.ok, true);
+  assert.equal(degradedView.data.progress.kind, 'unavailable');
+  assert.equal(degradedView.data.progress.ratio, null);
+  assert.equal(degradedView.data.progress.asOfMs, null);
+  assert.equal(degradedView.data.progress.stale, false);
+  assert.equal(degradedView.data.progress.diagnosticCode, 0);
+  assert.equal(degradedView.data.statusKey, 'progress_unavailable');
+  assert.equal(formatProgress(degradedView.data.progress), '进度暂不可用');
+
+  // (2) a newer frame whose own report is a single: no degradation, even
+  // though lastDataAtMs > trustedAtMs would have matched the old inference
+  const current = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0 },
+    progress: {
+      trustedRatio: 0.6,
+      trustedAtMs: 1000,
+      lastAdvanceAtMs: 1000,
+      lastDataAtMs: 2000,
+      lastResultAtMs: 2000,
+      lastReportState: 'single',
+    },
+  });
+  const currentView = readView(current, requestAt(2000, contextFixture()));
+  assert.equal(currentView.data.progress.kind, 'estimate');
+  assert.equal(currentView.data.progress.ratio, 0.6);
+  assert.equal(currentView.data.progress.asOfMs, 1000);
+  assert.equal(currentView.data.statusKey, 'receiving');
+
+  // (3) unavailable carries its code, equal times again
+  const coded = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0 },
+    progress: {
+      trustedRatio: 0.6,
+      trustedAtMs: 1000,
+      lastAdvanceAtMs: 1000,
+      lastDataAtMs: 1000,
+      lastResultAtMs: 1000,
+      lastReportState: 'unavailable',
+    },
+    diagnostics: [19004],
+  });
+  const codedView = readView(coded, requestAt(1000, contextFixture()));
+  assert.equal(codedView.data.progress.kind, 'unavailable');
+  assert.equal(codedView.data.progress.ratio, null);
+  assert.equal(codedView.data.progress.diagnosticCode, 19004);
+  assert.equal(codedView.data.statusKey, 'progress_unavailable');
+
+  // (4) a legacy observation without the field invents no degradation: the
+  // timestamp inequality alone is not a report-quality signal any more
+  const legacy = observationFixture({
+    receivingAtMs: 0,
+    rate: { epochMs: 0 },
+    progress: {
+      trustedRatio: 0.6,
+      trustedAtMs: 1000,
+      lastAdvanceAtMs: 1000,
+      lastDataAtMs: 2000,
+      lastResultAtMs: 2000,
+    },
+  });
+  const legacyView = readView(legacy, requestAt(2000, contextFixture()));
+  assert.equal(legacyView.data.progress.kind, 'estimate');
+  assert.equal(legacyView.data.progress.ratio, 0.6);
+  assert.equal(legacyView.data.statusKey, 'receiving');
 });

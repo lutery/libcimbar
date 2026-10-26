@@ -88,6 +88,7 @@ export class ReceiverTelemetry {
     this._lastAcceptedFrameId = null;
     this._lastResultAtMs = null;
     this._lastDataAtMs = null;
+    this._lastReportState = null;
     this._lastAdvanceAtMs = null;
     this._trustedRatio = null;
     this._trustedAtMs = null;
@@ -157,6 +158,7 @@ export class ReceiverTelemetry {
     this._lastAcceptedFrameId = null;
     this._lastResultAtMs = null;
     this._lastDataAtMs = null;
+    this._lastReportState = null;
     this._lastAdvanceAtMs = null;
     this._trustedRatio = null;
     this._trustedAtMs = null;
@@ -221,6 +223,10 @@ export class ReceiverTelemetry {
     this._lastResultAtMs = request.receivedAtMs;
     if (request.outcome === 'data' || request.outcome === 'artifact') {
       this._lastDataAtMs = request.receivedAtMs;
+      // The accepted frame's own report state is an observable fact: it is
+      // recorded even while an ambiguity lock ignores later ratios, exactly
+      // like degradation codes (round-13 A13-02).
+      this._lastReportState = request.report.state;
       this._applyReport(request.report, request.receivedAtMs);
       this._applyRate(request.bytesDecoded, request.receivedAtMs);
     }
@@ -409,6 +415,7 @@ export class ReceiverTelemetry {
         trustedAtMs: locked ? null : this._trustedAtMs,
         lastAdvanceAtMs: this._lastAdvanceAtMs,
         lastDataAtMs: this._lastDataAtMs,
+        lastReportState: this._lastReportState,
         lastResultAtMs: this._lastResultAtMs,
         ambiguity: this._ambiguity,
       }),

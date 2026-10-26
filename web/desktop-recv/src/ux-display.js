@@ -23,6 +23,7 @@ const EMPTY_OBSERVATION = Object.freeze({
     trustedAtMs: null,
     lastAdvanceAtMs: null,
     lastDataAtMs: null,
+    lastReportState: null,
     lastResultAtMs: null,
     ambiguity: null,
   }),

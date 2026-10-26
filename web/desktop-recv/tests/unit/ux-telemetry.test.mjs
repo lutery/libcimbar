@@ -776,3 +776,137 @@ test('T14-S4 a rollback clock is refused and counts nothing', () => {
   assert.equal(later.ok, true);
   assert.equal(t.snapshot().progress.trustedRatio, 0.3);
 });
+
+// --- R13-A13-02: equal receivedAtMs degradation, real model -> view ----------
+//
+// The round-13 counterexample: two different frames sharing one receivedAtMs
+// are both valid (the frozen contract only forbids an earlier time), but the
+// view inferred degradation from `lastDataAtMs > trustedAtMs`, which is blind
+// at equality, so the kept 60% stayed on screen. The observation must carry
+// the last data frame's own report state, and the view must read that event
+// fact instead of a timestamp inequality.
+
+test('R13-A13-02-1 an empty report at the same receivedAtMs hides the kept percentage', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  const second = t.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rEmpty() }));
+  assert.equal(second.ok, true, 'an equal receivedAtMs is a legal input');
+  assert.equal(second.data.applied, true);
+
+  const snap = t.snapshot();
+  assert.equal(snap.progress.trustedRatio, 0.6, 'the trusted history is kept');
+  assert.equal(snap.progress.trustedAtMs, 1000);
+  assert.equal(snap.progress.lastDataAtMs, 1000, 'the equal time still refreshes lastData');
+  assert.equal(snap.progress.lastReportState, 'empty',
+    'the observation carries the last data frame report state');
+  assert.equal(snap.progress.ambiguity, null);
+
+  const view = viewAt(t, 1000);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.progress.kind, 'unavailable', 'the kept 60% is not decidable now');
+  assert.equal(view.data.progress.ratio, null, 'no kept percentage');
+  assert.equal(view.data.progress.asOfMs, null);
+  assert.equal(view.data.progress.stale, false);
+  assert.equal(view.data.progress.diagnosticCode, 0);
+  assert.equal(formatProgress(view.data.progress), '进度暂不可用');
+  assert.notEqual(formatProgress(view.data.progress), '重建估计约 60%');
+  assert.equal(view.data.statusKey, 'progress_unavailable');
+  assert.doesNotMatch(view.data.primary, /60|%/);
+  assert.doesNotMatch(view.data.secondary, /60|%/);
+});
+
+test('R13-A13-02-2 an unavailable report at the same receivedAtMs keeps its code', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rUnavailable(19004) }));
+
+  assert.equal(t.snapshot().progress.lastReportState, 'unavailable');
+  const view = viewAt(t, 1000);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.progress.kind, 'unavailable');
+  assert.equal(view.data.progress.ratio, null);
+  assert.equal(view.data.progress.diagnosticCode, 19004,
+    'the report degradation code travels through to the view');
+  assert.deepEqual(view.data.diagnosticCodes, [19004]);
+  assert.equal(formatProgress(view.data.progress), '进度暂不可用');
+  assert.equal(view.data.statusKey, 'progress_unavailable');
+});
+
+test('R13-A13-02-3 a stronger single at the same receivedAtMs restores the estimate', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rEmpty() }));
+  assert.equal(viewAt(t, 1000).data.progress.kind, 'unavailable');
+
+  t.acceptFrame(frameInput(1, { frameId: 3, at: 1000, report: rSingle(0.7) }));
+  const snap = t.snapshot();
+  assert.equal(snap.progress.trustedRatio, 0.7, 'a stronger estimate is trusted');
+  assert.equal(snap.progress.lastReportState, 'single');
+  assert.equal(snap.progress.ambiguity, null);
+
+  const recovered = viewAt(t, 1000);
+  assert.equal(recovered.ok, true);
+  assert.equal(recovered.data.progress.kind, 'estimate', 'recovery is an estimate');
+  assert.equal(recovered.data.progress.ratio, 0.7);
+  assert.equal(recovered.data.progress.asOfMs, 1000);
+  assert.equal(recovered.data.progress.diagnosticCode, 0);
+  assert.equal(recovered.data.statusKey, 'receiving');
+  assert.equal(formatProgress(recovered.data.progress), '重建估计约 70%');
+});
+
+test('R13-A13-02-4 a weaker single at the same receivedAtMs still locks 19006', () => {
+  const t = new ReceiverTelemetry();
+  t.begin(beginRequest(1, { nowMs: 0 }));
+  t.acceptFrame(frameInput(1, { frameId: 1, at: 1000, report: rSingle(0.6) }));
+  t.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rEmpty() }));
+  t.acceptFrame(frameInput(1, { frameId: 3, at: 1000, report: rSingle(0.5) }));
+
+  const snap = t.snapshot();
+  assert.equal(snap.progress.ambiguity, 19006, 'the rollback lock still fires at equal times');
+  assert.equal(snap.progress.trustedRatio, null);
+  assert.equal(snap.progress.lastReportState, 'single');
+
+  const view = viewAt(t, 1000);
+  assert.equal(view.ok, true);
+  assert.equal(view.data.progress.kind, 'ambiguous');
+  assert.equal(view.data.progress.ratio, null);
+  assert.equal(view.data.progress.diagnosticCode, 19006);
+  assert.equal(view.data.statusKey, 'progress_unknown');
+  assert.equal(formatProgress(view.data.progress), '进度无法判定');
+});
+
+test('R13-A13-02-5 lastReportState is an observable fact, updated during the ambiguity lock', () => {
+  // before the first data frame the fact does not exist yet
+  const fresh = new ReceiverTelemetry();
+  fresh.begin(beginRequest(1, { nowMs: 0 }));
+  assert.equal(fresh.snapshot().progress.lastReportState, null);
+
+  // a no_data frame never sets it: only accepted data/artifact frames carry reports
+  fresh.acceptFrame(frameInput(1, { frameId: 1, at: 500, report: rSingle(0.6) }));
+  fresh.acceptFrame(frameInput(1, { frameId: 2, at: 600, outcome: 'no_data', bytes: 0 }));
+  assert.equal(fresh.snapshot().progress.lastReportState, 'single');
+  assert.equal(fresh.snapshot().progress.lastDataAtMs, 500);
+
+  // during the 19006 ambiguity lock later reports still update the fact, while
+  // the trusted history stays locked and ratios change nothing
+  const locked = new ReceiverTelemetry();
+  locked.begin(beginRequest(1, { nowMs: 0 }));
+  locked.acceptFrame(frameInput(1, { frameId: 1, at: 500, report: rSingle(0.6) }));
+  locked.acceptFrame(frameInput(1, { frameId: 2, at: 1000, report: rSingle(0.4) }));
+  assert.equal(locked.snapshot().progress.ambiguity, 19006);
+  locked.acceptFrame(frameInput(1, { frameId: 3, at: 1500, report: rEmpty() }));
+  assert.equal(locked.snapshot().progress.lastReportState, 'empty',
+    'the lock never blinds the observable report state');
+  assert.equal(locked.snapshot().progress.trustedRatio, null);
+  locked.acceptFrame(frameInput(1, { frameId: 4, at: 2000, report: rUnavailable(19004) }));
+  assert.equal(locked.snapshot().progress.lastReportState, 'unavailable');
+  assert.deepEqual(locked.snapshot().diagnostics, [19004, 19006],
+    'the degradation code is recorded during the lock too');
+
+  // a new seq drops the fact with every other observation fact
+  locked.begin(beginRequest(2, { nowMs: 9000 }));
+  assert.equal(locked.snapshot().progress.lastReportState, null);
+});

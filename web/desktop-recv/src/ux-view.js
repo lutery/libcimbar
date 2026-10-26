@@ -169,15 +169,15 @@ function projectElapsed(receivingAtMs, endedAtMs, nowMs) {
   return Math.floor(end - receivingAtMs);
 }
 
-// A good report (single: advancing or holding) refreshes trustedAtMs, while a
-// data frame always advances lastDataAtMs. So lastDataAtMs > trustedAtMs means
-// the most recent report was empty/unavailable: the history stays usable for
-// the recovery rollback check, but this projection must not present it as a
-// currently decidable percentage (round-12 A-R1).
+// The current report quality is the last accepted data frame's own event
+// state, never a timestamp inequality: two different frames may legally share
+// one receivedAtMs (the receiver contract only forbids an earlier time), so
+// `lastDataAtMs > trustedAtMs` was blind at equality (round-13 A13-02). An
+// empty/unavailable report hides the current percentage while the trusted
+// history stays usable for the recovery/rollback check.
 function reportDegraded(progress) {
-  return progress.lastDataAtMs != null
-    && progress.trustedAtMs != null
-    && progress.lastDataAtMs > progress.trustedAtMs;
+  return progress.lastReportState === 'empty'
+    || progress.lastReportState === 'unavailable';
 }
 
 // The degradation code this seq has observed: the largest report-level
