@@ -62,8 +62,9 @@ export {
 } from './measure-ux-calc.mjs';
 
 import {
-  INSTRUMENTATION_SHA256, REQUIRED_ENV_FIELDS, UxMeasureError, UX_MEASURE_VERSION,
-  decideVerdict, evaluateThresholds, pairRounds, planRounds, summarizeSides, validateMethod,
+  INSTRUMENTATION_SHA256, OBSERVER_SCRIPT, REQUIRED_ENV_FIELDS, UxMeasureError,
+  UX_MEASURE_VERSION, decideVerdict, evaluateThresholds, pairRounds, planRounds,
+  summarizeSides, validateMethod,
 } from './measure-ux-calc.mjs';
 
 // --- measurement outputs ---------------------------------------------------
