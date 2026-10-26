@@ -4468,7 +4468,7 @@ async function main() {
   // ux-results.json, never in the v1 results.json.
   const plannedCase = isUxCase(scenarioId) ? null : loadPlanningCase(scenarioId);
   if (plannedCase) writeAttemptMarker(scenarioId, ATTEMPT_ID);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-35', 'E2E-36']);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-36']);
   // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
   // stack receiver would clash on the shared CDP debug port (9445).
   const selfManaged = new Set(['E2E-1', 'E2E-2']);

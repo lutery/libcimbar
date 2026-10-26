@@ -382,3 +382,28 @@ STATIC COVERAGE: PASS
 - E2E-37 既有 2 条 + measurement 复算 12 行（43 条）。
 
 下一次运行（B-R12-3）由新运行器写出的记录中，上述缺步/替换类违规预期只剩 **E2E-35**（S02 仍未真实覆盖，除非 A-R4 得到范围决策）；E2E-27/30–34 已由静态覆盖验证为 0，E2E-38 已在上一批改为 S01..S05。
+
+## 10. E2E-35 → 如实 NOT_RUN（用户裁定落地，B-R12-2 收尾）
+
+### 10.1 改动
+
+- `tools/desktop-recv/e2e/ui-journeys.mjs`：`e2e35` 处理器整体替换为**诚实 NOT_RUN**（原 journey 全身、含 held 代理计分与 `S02-held`/`S04-stop` id 一并删除，不再执行任何腿、不再注入任何东西）：
+  - `result='NOT_RUN'`，`executedBy=null`，`startedAt/finishedAt=null`，`proofRefs=[]`，`assertions=[]`（门禁 NOT_RUN 契约由 `makeRecorder.finish` 派生，无 PASS 断言）；
+  - notes 含三点：① S02 真实 visibility 变化经三种装置探针证实不可构造（Playwright 去默认后台参数 + CDP 最小化、原生 msedge + CDP 最小化、真实同窗标签切换，CDP 同 windowId + `Target.activateTarget ≥6s`）；② 用户 2026-10-26 指示真实远程会话行为由用户侧真实环境验证，不要求代理本地模拟（授权来源 `docs/dev-pipeline/pipeline-state.json` team-exec `user_instructions 2026-10-26T10:10`）；③ 不修订冻结用例、不做局部/替代执行冒充；本记录无任何 PASS 断言；
+  - 两份探针日志的**真实文件副本**复制进本 attempt 目录（`proof/E2E-35/<attempt>/probe2-three-apparatuses.txt`、`probe2b-real-tab-cdp.txt`；源文件缺失时如实记入 notes，不造假文件）。
+- `tools/desktop-recv/e2e/run-e2e.mjs`（最小接线）：`needsSender` 移除 `'E2E-35'`——solo 运行 E2E-35 不再启动无用的 Sender/Receiver 浏览器栈（UX-UI 组仍因 E2E-36 启动）。solo 运行以 exit1 + `CASE E2E-35 FAIL` 日志结束，记录本身是 NOT_RUN（诚实非 PASS 语义）。
+
+### 10.2 静态自检（`e2e35-notrun-static-selfcheck.txt`）
+
+构造与处理器输出同形的 NOT_RUN 记录过 `validate_ux_record`，结果**恰好两条预期违规，无其他**：
+
+```
+violations (2):
+  - E2E-35: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-35: executedBy must be executor per the plan (got None)
+SELF-CHECK: PASS (only the two expected violations)
+```
+
+### 10.3 回归
+
+`node --test measure-ux/run-context/process-guard` → **66/66**；`ux-evidence-selftest.py` → **65/65**；`verify-evidence-selftest.py` → **14/14**。`node --check` 两个运行器通过。

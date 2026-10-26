@@ -2,397 +2,397 @@ TAP version 13
 # Subtest: T28-01a nearest-rank percentile on fixed arrays
 ok 1 - T28-01a nearest-rank percentile on fixed arrays
   ---
-  duration_ms: 3.6046
+  duration_ms: 2.4681
   type: 'test'
   ...
 # Subtest: T28-01b percentile and median reject empty or non-finite input
 ok 2 - T28-01b percentile and median reject empty or non-finite input
   ---
-  duration_ms: 1.9378
+  duration_ms: 1.4457
   type: 'test'
   ...
 # Subtest: T28-01c median on fixed arrays
 ok 3 - T28-01c median on fixed arrays
   ---
-  duration_ms: 0.4376
+  duration_ms: 0.2625
   type: 'test'
   ...
 # Subtest: T28-02 readyMs is journey.readyAt - receivingAt on the same clock
 ok 4 - T28-02 readyMs is journey.readyAt - receivingAt on the same clock
   ---
-  duration_ms: 0.947
+  duration_ms: 0.6114
   type: 'test'
   ...
 # Subtest: T28-03a the real frozen method loads and records its SHA
 ok 5 - T28-03a the real frozen method loads and records its SHA
   ---
-  duration_ms: 1.4677
+  duration_ms: 1.0576
   type: 'test'
   ...
 # Subtest: T28-03b an unfrozen or edited method is refused
 ok 6 - T28-03b an unfrozen or edited method is refused
   ---
-  duration_ms: 6.421
+  duration_ms: 4.9151
   type: 'test'
   ...
 # Subtest: T28-04a a complete round derives readyMs, p50/p95 and invariants
 ok 7 - T28-04a a complete round derives readyMs, p50/p95 and invariants
   ---
-  duration_ms: 1.4251
+  duration_ms: 1.4549
   type: 'test'
   ...
 # Subtest: T28-04b rejected frames are kept out of the RTT samples but recorded
 ok 8 - T28-04b rejected frames are kept out of the RTT samples but recorded
   ---
-  duration_ms: 0.4358
+  duration_ms: 0.3746
   type: 'test'
   ...
 # Subtest: T28-04c too few settled frames excludes the round, samples kept
 ok 9 - T28-04c too few settled frames excludes the round, samples kept
   ---
-  duration_ms: 0.719
+  duration_ms: 0.9331
   type: 'test'
   ...
 # Subtest: T28-04d malformed frames refuse the round
 ok 10 - T28-04d malformed frames refuse the round
   ---
-  duration_ms: 0.6232
+  duration_ms: 1.0036
   type: 'test'
   ...
 # Subtest: T28-04e overlapping frame intervals break the single-flight invariant
 ok 11 - T28-04e overlapping frame intervals break the single-flight invariant
   ---
-  duration_ms: 0.4115
+  duration_ms: 0.6317
   type: 'test'
   ...
 # Subtest: T28-04f telemetry write gaps below the frozen interval are a violation
 ok 12 - T28-04f telemetry write gaps below the frozen interval are a violation
   ---
-  duration_ms: 0.3824
+  duration_ms: 0.6217
   type: 'test'
   ...
 # Subtest: T28-04g wrong input/media SHA on a round is refused
 ok 13 - T28-04g wrong input/media SHA on a round is refused
   ---
-  duration_ms: 0.3464
+  duration_ms: 0.5793
   type: 'test'
   ...
 # Subtest: T28-05a matchEnvironment reports every mismatching field
 ok 14 - T28-05a matchEnvironment reports every mismatching field
   ---
-  duration_ms: 0.5296
+  duration_ms: 0.8708
   type: 'test'
   ...
 # Subtest: T28-05b planRounds expands the frozen AB/BA/AB/BA/AB order
 ok 15 - T28-05b planRounds expands the frozen AB/BA/AB/BA/AB order
   ---
-  duration_ms: 1.0385
+  duration_ms: 0.954
   type: 'test'
   ...
 # Subtest: T28-05c five valid pairs form; warmups are kept but excluded
 ok 16 - T28-05c five valid pairs form; warmups are kept but excluded
   ---
-  duration_ms: 3.2298
+  duration_ms: 2.8324
   type: 'test'
   ...
 # Subtest: T28-05d a dropped round invalidates its whole pair
 ok 17 - T28-05d a dropped round invalidates its whole pair
   ---
-  duration_ms: 2.7116
+  duration_ms: 3.062
   type: 'test'
   ...
 # Subtest: T28-05e an excluded round invalidates its whole pair, samples kept
 ok 18 - T28-05e an excluded round invalidates its whole pair, samples kept
   ---
-  duration_ms: 2.1925
+  duration_ms: 2.2001
   type: 'test'
   ...
 # Subtest: T28-05f an environment mismatch within a pair refuses that pair
 ok 19 - T28-05f an environment mismatch within a pair refuses that pair
   ---
-  duration_ms: 1.8219
+  duration_ms: 1.9645
   type: 'test'
   ...
 # Subtest: T28-05g duplicate rounds for one slot are refused as a structural fault
 ok 20 - T28-05g duplicate rounds for one slot are refused as a structural fault
   ---
-  duration_ms: 1.6812
+  duration_ms: 1.8705
   type: 'test'
   ...
 # Subtest: T28-06a medians and thresholds recompute exactly from fixed arrays
 ok 21 - T28-06a medians and thresholds recompute exactly from fixed arrays
   ---
-  duration_ms: 3.762
+  duration_ms: 3.9864
   type: 'test'
   ...
 # Subtest: T28-06b per-round percentiles feed the median, not a pooled sample
 ok 22 - T28-06b per-round percentiles feed the median, not a pooled sample
   ---
-  duration_ms: 1.2576
+  duration_ms: 2.1948
   type: 'test'
   ...
 # Subtest: T28-06c a breached threshold fails the verdict with the numbers kept
 ok 23 - T28-06c a breached threshold fails the verdict with the numbers kept
   ---
-  duration_ms: 1.2981
+  duration_ms: 2.1138
   type: 'test'
   ...
 # Subtest: T28-06d fewer than five valid pairs is NOT_RUN, never PASS
 ok 24 - T28-06d fewer than five valid pairs is NOT_RUN, never PASS
   ---
-  duration_ms: 1.1643
+  duration_ms: 1.5133
   type: 'test'
   ...
 # Subtest: T28-06e a candidate invariant violation is FAIL, not dropped noise
 ok 25 - T28-06e a candidate invariant violation is FAIL, not dropped noise
   ---
-  duration_ms: 1.1942
+  duration_ms: 1.1492
   type: 'test'
   ...
 # Subtest: T28-06f baseline-only violations do not fail the candidate
 ok 26 - T28-06f baseline-only violations do not fail the candidate
   ---
-  duration_ms: 1.6046
+  duration_ms: 1.0779
   type: 'test'
   ...
 # Subtest: T28-07a buildOutputFiles keeps every raw round and adds the analysis
 ok 27 - T28-07a buildOutputFiles keeps every raw round and adds the analysis
   ---
-  duration_ms: 3.4953
+  duration_ms: 2.9786
   type: 'test'
   ...
 # Subtest: T28-07b the output directory is attempt-scoped and refuses overwrites
 ok 28 - T28-07b the output directory is attempt-scoped and refuses overwrites
   ---
-  duration_ms: 43.0834
+  duration_ms: 43.1642
   type: 'test'
   ...
 # Subtest: T28-07c the observer script wraps submitFrame and keeps the promise
 ok 29 - T28-07c the observer script wraps submitFrame and keeps the promise
   ---
-  duration_ms: 0.3719
+  duration_ms: 0.2555
   type: 'test'
   ...
 # Subtest: T28-08a --help exits 0 and names the three required inputs
 ok 30 - T28-08a --help exits 0 and names the three required inputs
   ---
-  duration_ms: 136.648
+  duration_ms: 152.8533
   type: 'test'
   ...
 # Subtest: T28-08b missing required arguments exit 2 before any validation
 ok 31 - T28-08b missing required arguments exit 2 before any validation
   ---
-  duration_ms: 446.6849
+  duration_ms: 478.2851
   type: 'test'
   ...
 # Subtest: T28-08c an unknown argument exits 2 (unknown-gate analogue)
 ok 32 - T28-08c an unknown argument exits 2 (unknown-gate analogue)
   ---
-  duration_ms: 152.4264
+  duration_ms: 149.9137
   type: 'test'
   ...
 # Subtest: T28-08d a missing or unfrozen method file refuses with exit 3
 ok 33 - T28-08d a missing or unfrozen method file refuses with exit 3
   ---
-  duration_ms: 338.0654
+  duration_ms: 281.3944
   type: 'test'
   ...
 # Subtest: T28-09a identical contexts are refused (one build cannot be both sides)
 ok 34 - T28-09a identical contexts are refused (one build cannot be both sides)
   ---
-  duration_ms: 185.9932
+  duration_ms: 286.1391
   type: 'test'
   ...
 # Subtest: T28-09b a tampered staged build refuses (product manifest SHA guard)
 ok 35 - T28-09b a tampered staged build refuses (product manifest SHA guard)
   ---
-  duration_ms: 181.9836
+  duration_ms: 237.9904
   type: 'test'
   ...
 # Subtest: T28-09c an input SHA mismatch between the sides refuses
 ok 36 - T28-09c an input SHA mismatch between the sides refuses
   ---
-  duration_ms: 169.2551
+  duration_ms: 316.282
   type: 'test'
   ...
 # Subtest: T28-09d an existing output directory for the attempt refuses
 ok 37 - T28-09d an existing output directory for the attempt refuses
   ---
-  duration_ms: 180.6778
+  duration_ms: 338.909
   type: 'test'
   ...
 # Subtest: T28-09e --validate-only accepts a good pair and writes nothing
 ok 38 - T28-09e --validate-only accepts a good pair and writes nothing
   ---
-  duration_ms: 205.547
+  duration_ms: 293.3049
   type: 'test'
   ...
 # Subtest: T30-B1a a collection error is undecidable but keeps its raw samples
 ok 39 - T30-B1a a collection error is undecidable but keeps its raw samples
   ---
-  duration_ms: 1.8678
+  duration_ms: 2.7173
   type: 'test'
   ...
 # Subtest: T30-B1b a stubbed business failure still writes rounds and invalid-rounds
 ok 40 - T30-B1b a stubbed business failure still writes rounds and invalid-rounds
   ---
-  duration_ms: 65.3686
+  duration_ms: 96.3835
   type: 'test'
   ...
 # Subtest: T30-B1c a throwing runRound becomes an environment record, outputs still land
 ok 41 - T30-B1c a throwing runRound becomes an environment record, outputs still land
   ---
-  duration_ms: 64.9505
+  duration_ms: 85.5928
   type: 'test'
   ...
 # Subtest: T30-B2a a page without numeric spans leaves no pending timer
 ok 42 - T30-B2a a page without numeric spans leaves no pending timer
   ---
-  duration_ms: 29.0515
+  duration_ms: 46.0277
   type: 'test'
   ...
 # Subtest: T30-B2b arming is event-driven: DOMContentLoaded arms, load disarms
 ok 43 - T30-B2b arming is event-driven: DOMContentLoaded arms, load disarms
   ---
-  duration_ms: 2.0832
+  duration_ms: 3.3864
   type: 'test'
   ...
 # Subtest: T30-B2c telemetryArmed is required on the candidate, not-applicable on the baseline
 ok 44 - T30-B2c telemetryArmed is required on the candidate, not-applicable on the baseline
   ---
-  duration_ms: 2.3595
+  duration_ms: 2.8786
   type: 'test'
   ...
 # Subtest: T-R12-A3a the 09b shape is refused: short window and Ready samples
 ok 45 - T-R12-A3a the 09b shape is refused: short window and Ready samples
   ---
-  duration_ms: 2.293
+  duration_ms: 2.5449
   type: 'test'
   ...
 # Subtest: T-R12-A3b a real 30s Receiving window passes with zero violations
 ok 46 - T-R12-A3b a real 30s Receiving window passes with zero violations
   ---
-  duration_ms: 0.6587
+  duration_ms: 0.9022
   type: 'test'
   ...
 # Subtest: T-R12-A3c a changed session identity inside the window is refused
 ok 47 - T-R12-A3c a changed session identity inside the window is refused
   ---
-  duration_ms: 0.4767
+  duration_ms: 0.6776
   type: 'test'
   ...
 # Subtest: T-R12-A3d a window without a settlement inside it is refused
 ok 48 - T-R12-A3d a window without a settlement inside it is refused
   ---
-  duration_ms: 0.4195
+  duration_ms: 0.5949
   type: 'test'
   ...
 # Subtest: T-R12-A3e candidate feedback and stop-release checks still gate the B side
 ok 49 - T-R12-A3e candidate feedback and stop-release checks still gate the B side
   ---
-  duration_ms: 0.8224
+  duration_ms: 1.0665
   type: 'test'
   ...
 # Subtest: T28-07d executing the wrapper preserves promise identity and settlement
 ok 50 - T28-07d executing the wrapper preserves promise identity and settlement
   ---
-  duration_ms: 5.7612
+  duration_ms: 6.0106
   type: 'test'
   ...
 # Subtest: no pid file: cleanup kills nothing and reports an empty result
 ok 51 - no pid file: cleanup kills nothing and reports an empty result
   ---
-  duration_ms: 5.0108
+  duration_ms: 4.2255
   type: 'test'
   ...
 # Subtest: a recorded pid whose command line does not match is never killed
 ok 52 - a recorded pid whose command line does not match is never killed
   ---
-  duration_ms: 2543.0633
+  duration_ms: 2873.1873
   type: 'test'
   ...
 # Subtest: stale recorded pids are skipped, never fatal
 ok 53 - stale recorded pids are skipped, never fatal
   ---
-  duration_ms: 2175.9741
+  duration_ms: 3063.0548
   type: 'test'
   ...
 # Subtest: an occupied port is refused with an explicit error and no process kill
 ok 54 - an occupied port is refused with an explicit error and no process kill
   ---
-  duration_ms: 4602.7902
+  duration_ms: 4660.0823
   type: 'test'
   ...
 # Subtest: free ports pass
 ok 55 - free ports pass
   ---
-  duration_ms: 3610.0888
+  duration_ms: 3741.5298
   type: 'test'
   ...
 # Subtest: the pid file is canonical, bounded and rejects bad entries
 ok 56 - the pid file is canonical, bounded and rejects bad entries
   ---
-  duration_ms: 3.5868
+  duration_ms: 4.5834
   type: 'test'
   ...
 # Subtest: run context field set is exactly the frozen recipe-A contract
 ok 57 - run context field set is exactly the frozen recipe-A contract
   ---
-  duration_ms: 2.2551
+  duration_ms: 1.8851
   type: 'test'
   ...
 # Subtest: UX-UT-081 missing run context is refused before any side effect
 ok 58 - UX-UT-081 missing run context is refused before any side effect
   ---
-  duration_ms: 1839.0238
+  duration_ms: 1958.8906
   type: 'test'
   ...
 # Subtest: UX-UT-082 Chinese and space roots propagate to every writer
 ok 59 - UX-UT-082 Chinese and space roots propagate to every writer
   ---
-  duration_ms: 1454.0909
+  duration_ms: 1876.1813
   type: 'test'
   ...
 # Subtest: UX-UT-083 path escapes and historical output roots are refused
 ok 60 - UX-UT-083 path escapes and historical output roots are refused
   ---
-  duration_ms: 136.9852
+  duration_ms: 197.7223
   type: 'test'
   ...
 # Subtest: UX-UT-084 baseline/candidate staging are separate and the old package stays read-only
 ok 61 - UX-UT-084 baseline/candidate staging are separate and the old package stays read-only
   ---
-  duration_ms: 1806.5026
+  duration_ms: 2208.1183
   type: 'test'
   ...
 # Subtest: UX-UT-085 resume accepts only the same run identity and keeps old attempts
 ok 62 - UX-UT-085 resume accepts only the same run identity and keeps old attempts
   ---
-  duration_ms: 50.9873
+  duration_ms: 70.0629
   type: 'test'
   ...
 # Subtest: UX-UT-086 product manifest and tool revision are bound separately
 ok 63 - UX-UT-086 product manifest and tool revision are bound separately
   ---
-  duration_ms: 64.1499
+  duration_ms: 95.5722
   type: 'test'
   ...
 # Subtest: T3 adversarial: case-folded twins, separators, history and forged identities
 ok 64 - T3 adversarial: case-folded twins, separators, history and forged identities
   ---
-  duration_ms: 88.9327
+  duration_ms: 141.0805
   type: 'test'
   ...
 # Subtest: T5 guard: case-folded history and verified sender staging
 ok 65 - T5 guard: case-folded history and verified sender staging
   ---
-  duration_ms: 84.2755
+  duration_ms: 116.1452
   type: 'test'
   ...
 # Subtest: T6 sender manifest: frozen package shape accepted, junk refused
 ok 66 - T6 sender manifest: frozen package shape accepted, junk refused
   ---
-  duration_ms: 43.6031
+  duration_ms: 47.4646
   type: 'test'
   ...
 1..66
@@ -403,4 +403,4 @@ ok 66 - T6 sender manifest: frozen package shape accepted, junk refused
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13113.0765
+# duration_ms 14593.1551

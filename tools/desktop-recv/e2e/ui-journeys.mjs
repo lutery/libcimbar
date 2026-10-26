@@ -425,142 +425,42 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
   }
 
   // ---------------------------------------------------------------- E2E-35
-  async function e2e35(stack) {
+  // Honest NOT_RUN (user decision, 2026-10-26): the frozen S02 branch needs a
+  // REAL visibility change, which is not constructible on this host (a cloud
+  // desktop remote session with inert Page Visibility/focus signals - three
+  // apparatuses proved it, real copies of both probe logs are copied into
+  // this attempt's proof directory), and the user directed that real
+  // remote-session behaviour is verified on the USER's real environment, not
+  // simulated locally by the agent. The frozen case text is NOT revised and
+  // no partial/stand-in execution is recorded: the record carries NO PASS
+  // assertions, executedBy/timestamps are null, exactly per the gate's
+  // NOT_RUN contract.
+  async function e2e35() {
     const rec = makeRecorder('E2E-35', helpers.attemptId());
-    const proofRef = (name) => `proof/E2E-35/${rec.attemptId}/${name}`;
-    const page = stack.receiver.page;
-    const scene = new SourceScene(stack.senderPage, { proofDir: rec.attemptDir });
-    let receivedAbs = null;
-    let visibilityNote = '';
-    try {
-      await scene.loadInput(primaryPath());
-      await stack.senderPage.bringToFront();
-      await sleep(500);
-      await scene.showBlank();
-      await stack.receiver.page.bringToFront();
-      await sleep(300);
-      await attachCapture(page, 'window', stack.receiver.pid, { waitForReady: false });
-      await waitFor(async () => {
-        const probe = await uxProbe(page);
-        return probe.primary === '正在等待有效数据' ? probe : null;
-      }, 30000, 'waiting-data phase');
-      // S01: foreground blank source, stable revision, elapsed ticks >=5s.
-      const samples = [];
-      const s01Start = Date.now();
-      for (let i = 0; i < 6; i += 1) {
-        const probe = await uxProbe(page);
-        samples.push({ atMs: Date.now() - s01Start, revision: probe.revision,
-          elapsed: parseClock(probe.elapsed), next: probe.nextAction });
-        await sleep(1000);
-      }
-      await rec.shot(page, 's35-foreground-blank-5s.png');
-      const revisionStable = samples.every((s) => s.revision === samples[0].revision);
-      const elapsedGrew = samples[5].elapsed !== null && samples[0].elapsed !== null
-        && samples[5].elapsed - samples[0].elapsed >= 4;
-      const notice = samples.slice(3).some((s) => /请检查发送画面/.test(String(s.next || '')));
-      rec.add('E2E-35-S01', 'foreground blank source: business revision stays fixed while elapsed keeps updating, >=5s notice shown',
-        JSON.stringify(samples), revisionStable && elapsedGrew && notice, proofRef(`screens/s35-foreground-blank-5s.png`));
-
-      // S02: fresh session, real minimize for >=6s, actual visibility change.
-      await clickButton(page, '#btn-stop', 'stop');
-      await waitFor(async () => {
-        const probe = await uxProbe(page);
-        const stream = await page.evaluate(() => document.getElementById('preview').srcObject);
-        return ['Stopped', 'Idle'].includes(probe.state) && stream === null ? probe : null;
-      }, 30000, 'stopped');
-      await reloadReceiverPage(stack);
-      await stack.receiver.page.bringToFront();
-      await attachCapture(page, 'window', stack.receiver.pid, { waitForReady: false });
-      await waitFor(async () => {
-        const probe = await uxProbe(page);
-        return probe.state === 'Receiving' ? probe : null;
-      }, 30000, 'new session receiving');
-      const beforeMin = await uxProbe(page);
-      const hiddenAt = Date.now();
-      await setWindowState(stack.receiver.pid, 6); // SW_MINIMIZE (real OS action)
-      await sleep(6500);
-      const hiddenMs = Date.now() - hiddenAt;
-      const visibilityObserved = await page.evaluate(() => document.visibilityState).catch(() => 'unreadable');
-      // The receiver deliberately runs with occlusion/backgrounding disabled
-      // (round-5 harness flag), so minimize may not flip visibilityState; the
-      // clock behavior across the minimized window is still fully observable.
-      if (visibilityObserved === 'hidden') {
-        rec.add('E2E-35-S02', 'the minimized window reports visibility hidden and holds >=6s in a fresh session',
-          `visibility=hidden hiddenMs=${hiddenMs} elapsedBefore=${beforeMin.elapsed}`, hiddenMs >= 6000, null);
+    const probeLogSources = [
+      'probe2-three-apparatuses.txt',
+      'probe2b-real-tab-cdp.txt',
+    ];
+    const evidence = [];
+    for (const name of probeLogSources) {
+      const source = join(getContext().repoRoot, 'docs', 'dev-pipeline',
+        'receiver-ux-v2', 'red-logs', 'r12-tools', name);
+      if (existsSync(source)) {
+        copyFileSync(source, join(rec.attemptDir, name));
+        evidence.push(`proof/E2E-35/${rec.attemptId}/${name}`);
       } else {
-        // Harness limitation, recorded in the record NOTES (not asserted): the
-        // receiver runs with occlusion/backgrounding disabled by design, so a
-        // minimized window keeps visibilityState 'visible'. Faking the state
-        // is not an option and a NOT_RUN assertion would poison the whole
-        // record's verdict.
-        visibilityNote = `S02 visibility sub-branch not concealable under this harness (visibility=${visibilityObserved}, heldMs=${hiddenMs}); clock behavior across the minimized window is asserted in S03.`;
-        rec.add('E2E-35-S02-held', 'the minimized window really held for >=6s before the foreground return',
-          `heldMs=${hiddenMs} visibility=${visibilityObserved}`, hiddenMs >= 6000,
-          proofRef('screens/s35-foreground-blank-5s.png'));
+        evidence.push(`probe log not found at copy time: docs/dev-pipeline/receiver-ux-v2/red-logs/r12-tools/${name}`);
       }
-
-      // S03: restore; the clock is recomputed from the real monotonic time.
-      await setWindowState(stack.receiver.pid, 9); // SW_RESTORE
-      const back1 = await waitFor(async () => {
-        const visibility = await page.evaluate(() => document.visibilityState);
-        return visibility === 'visible' ? uxProbe(page) : null;
-      }, 15000, 'window visible again');
-      await sleep(1100);
-      const back2 = await uxProbe(page);
-      await rec.shot(page, 's35-back-foreground.png');
-      const elapsedBeforeBg = parseClock(beforeMin.elapsed);
-      const elapsedBack = parseClock(back1.elapsed);
-      const grewWhileHidden = elapsedBeforeBg !== null && elapsedBack !== null
-        && elapsedBack - elapsedBeforeBg >= 5;
-      const stillRunning = ['Receiving', 'Preparing'].includes(back1.state);
-      rec.add('E2E-35-S03', 'returning to the foreground recomputes elapsed from the real clock (no tick replay, no restart, no stale rate)',
-        `before=${beforeMin.elapsed} back=${back1.elapsed} +1s=${back2.elapsed} state=${back1.state} rate=${back1.rate}`,
-        grewWhileHidden && stillRunning, proofRef(`screens/s35-back-foreground.png`));
-
-      // S04: restore the real code, Ready, real save, then an independent
-      // stopped sub-session shows the display timer released.
-      await scene.restore();
-      const ready = await waitFor(async () => {
-        const probe = await uxProbe(page);
-        if (probe.state === 'Ready' && probe.artifact) return probe;
-        if (probe.state === 'Incomplete') throw new Error('incomplete during recovery');
-        return null;
-      }, 240000, 'Ready after restore');
-      await rec.shot(page, 's35-ready.png');
-      receivedAbs = join(rec.attemptDir, 'received.bin');
-      await saveArtifact(page, receivedAbs, stack.receiver.pid);
-      const shaEqual = externalSha256(primaryPath()) === externalSha256(receivedAbs);
-      rec.add('E2E-35-S04', 'restoring the real source reaches Ready and a real save reproduces the original bytes',
-        `artifact=${ready.artifact.byteCount} equal=${shaEqual}`,
-        ready.artifact.byteCount === 131072 && shaEqual, proofRef(`screens/s35-ready.png`));
-
-      // Independent stop sub-leg: elapsed freezes after the stop.
-      await reloadReceiverPage(stack);
-      await stack.senderPage.bringToFront();
-      await sleep(300);
-      await attachCapture(page, 'window', stack.receiver.pid, { waitForReady: false });
-      const running = await waitFor(async () => {
-        const probe = await uxProbe(page);
-        return parseClock(probe.elapsed) > 0 ? probe : null;
-      }, 30000, 'running for the stop sub-leg');
-      await clickButton(page, '#btn-stop', 'stop');
-      await sleep(1200);
-      const frozenA = await uxProbe(page);
-      await sleep(1500);
-      const frozenB = await uxProbe(page);
-      await rec.shot(page, 's35-stop-frozen.png');
-      rec.add('E2E-35-S04-stop', 'after an independent stop the UX clock is frozen (display timer released)',
-        `elapsed=${frozenA.elapsed}->${frozenB.elapsed} state=${frozenB.state}`,
-        ['Stopped', 'Idle'].includes(frozenB.state) && parseClock(frozenA.elapsed) === parseClock(frozenB.elapsed),
-        proofRef('screens/s35-stop-frozen.png'));
-      return rec.finish('PASS', `foreground/background clock journey with real minimize/restore. ${visibilityNote}`, receivedAbs, primaryPath());
-    } catch (error) {
-      rec.add('E2E-35-ABORT', 'journey runs to completion', String(error.message).slice(0, 300), false);
-      return rec.finish('FAIL', `aborted: ${String(error.message).slice(0, 200)}`, receivedAbs, primaryPath());
     }
+    const notes = [
+      'NOT_RUN: frozen S02 needs a real visibility change; it is not constructible on this host.',
+      '(1) 三种装置探针证实不可构造：Playwright 去默认后台参数 + CDP 最小化、原生 msedge + CDP 最小化、真实同窗标签切换（CDP 同 windowId、Target.activateTarget ≥6s）均无 hidden/visibilitychange；探针日志真实副本：'
+        + evidence.join('; ') + '。',
+      '(2) 用户 2026-10-26 指示：真实云桌面远程会话行为由用户侧真实环境验证，不要求代理本地模拟（授权来源 docs/dev-pipeline/pipeline-state.json team-exec user_instructions 2026-10-26T10:10 条目）。',
+      '(3) 不修订冻结用例文本、不做局部/替代执行冒充；本记录无任何 PASS 断言。',
+    ].join(' ');
+    return rec.finish('NOT_RUN', notes, null, null, []);
   }
-
-
   // ---------------------------------------------------------------- E2E-36
   // Real Chinese UI: viewport matrix (1280x800, 768x700, 380x720 at 100%;
   // 1280x800 at 200% zoom), keyboard-only operation, >=80-char Chinese file
