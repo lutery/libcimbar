@@ -1999,31 +1999,60 @@ const SCENARIOS = {
         waitingText && noticeAt5s && elapsedGrew && revisionStable && zeroFrames,
         proofRel('screens/s02-wait-6s.png'));
 
-      // --- S03 restore the real code, first real data ----------------------
+      // --- restore the real code, first real data ---------------------------
+      // A data frame does NOT bump contractSnapshot.revision: session.js only
+      // emits on state / save-phase changes, so "revision grew" can only ever
+      // observe the Ready transition. The old revision trigger also used to
+      // pass on the stale "xx KiB/s" the pre-round-12 display left behind at
+      // Ready - the very A-R2/B-01 defect it should have caught. Sample the
+      // real Receiving activity instead (rate text or processedFrames growth)
+      // at ~400ms from the moment the overlay is removed; the frozen criterion
+      // (first real data + a redundancy-inclusive KiB/s while Receiving) is
+      // unchanged, and a Ready that arrives before any such sample is FAIL.
       const restoreState = await scene.restore();
-      await sleep(200);
-      await uxShot(stack.senderPage, caseId, attemptId, 's03-source-live.png');
-      const revisionBase = probes[2].revision;
+      const processedBase = probes[probes.length - 1].stats
+        ? (probes[probes.length - 1].stats.processedFrames || 0) : 0;
+      const s03Start = Date.now();
+      const trail = [];
+      const sampleS03 = async (label) => {
+        const probe = await uxProbe(stack.receiver.page);
+        trail.push({
+          label, atMs: Date.now() - s03Start, state: probe.state,
+          rate: probe.rate, processed: probe.stats ? probe.stats.processedFrames : null,
+          elapsed: probe.elapsed, revision: probe.revision,
+        });
+        return probe;
+      };
       let firstData = null;
+      let firstDataRow = null;
+      let activeProbe = null;
       const dataDeadline = Date.now() + 90000;
       while (Date.now() < dataDeadline) {
-        const probe = await uxProbe(stack.receiver.page);
-        if (probe.revision !== null && revisionBase !== null && probe.revision > revisionBase) {
+        const probe = await sampleS03('data');
+        const processed = probe.stats ? (probe.stats.processedFrames || 0) : 0;
+        const rateSeen = /KiB\/s/.test(String(probe.rate || ''));
+        if (probe.state === 'Receiving' && (rateSeen || processed > processedBase)) {
           firstData = probe;
+          firstDataRow = trail[trail.length - 1];
+          activeProbe = probe;
           break;
         }
-        await sleep(500);
+        if (!['Receiving', 'Preparing'].includes(probe.state)) break; // Ready first
+        await sleep(400);
       }
-      let activeProbe = firstData;
       const rateDeadline = Date.now() + 30000;
-      while (activeProbe && Date.now() < rateDeadline) {
+      while (firstData && activeProbe && Date.now() < rateDeadline) {
         if (/KiB\/s/.test(String(activeProbe.rate || ''))) break;
-        await sleep(500);
-        activeProbe = await uxProbe(stack.receiver.page);
+        if (activeProbe.state !== 'Receiving') break; // left Receiving without a rate
+        await sleep(400);
+        activeProbe = await sampleS03('rate');
       }
+      await uxShot(stack.senderPage, caseId, attemptId, 's03-source-live.png');
       await uxShot(stack.receiver.page, caseId, attemptId, 's03-first-data.png');
       add('E2E-27-S03', 'after removing the blank layer the first real data appears; receiving activity and a redundancy-inclusive KiB/s are shown',
-        `restore=${restoreState.mode} revision=${firstData && firstData.revision} (base ${revisionBase}) primary=${activeProbe && activeProbe.primary} rate=${activeProbe && activeProbe.rate}`,
+        `restore=${restoreState.mode} firstData=${JSON.stringify(firstDataRow)}`
+          + ` lastProbe=${JSON.stringify(trail[trail.length - 1])}`
+          + ` trailLength=${trail.length} trail=${JSON.stringify(trail.slice(0, 60))}`,
         Boolean(firstData) && activeProbe !== null && /KiB\/s/.test(String(activeProbe.rate || '')),
         proofRel('screens/s03-first-data.png'));
 
