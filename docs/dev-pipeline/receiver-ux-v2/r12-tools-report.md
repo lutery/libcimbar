@@ -407,3 +407,28 @@ SELF-CHECK: PASS (only the two expected violations)
 ### 10.3 回归
 
 `node --test measure-ux/run-context/process-guard` → **66/66**；`ux-evidence-selftest.py` → **65/65**；`verify-evidence-selftest.py` → **14/14**。`node --check` 两个运行器通过。
+## 11. B-R12-3 执行中发现（供 round-13 披露）
+
+### 11.1 E2E-27-S03 旧实现 "riding the fixed bug" 的证据链
+
+| 证据 | 内容 |
+|---|---|
+| 旧运行器实现 | `run-e2e.mjs` S03 用 `contractSnapshot.revision > revisionBase` 作为“首次真实 data”触发。`session.js` 的 `_emit` 只在状态/保存相位变化时递增 revision（`:91-97`），数据帧推进不递增——因此该条件只可能命中 `Receiving→Ready` 转换。 |
+| 旧记录（09b） | `E2E-27-S03` 观察值：`restore=live revision=3 (base 2) primary=文件已接收完成，请保存 rate=40.8 KiB/s（含冗余）` —— **在 Ready 状态下**凭一条陈旧速率文本通过（这正是外审 B-01/A-R2 指出的缺陷）。 |
+| 新构建（本轮） | 同一断言两次运行均得 `revision=3 (base 2) primary=文件已接收完成，请保存 rate=`（终态收敛清空速率）→ 确定性 FAIL。journey 时间戳证明真实重建 ~8.98s，其余 S01/S01-B/S02/S04/S05/S06 全 PASS。 |
+| 结论 | S03 过去不是“观察到接收活动”，而是“观察到 Ready 后残留的旧速率”；A-R2 修复后必须改为真实 Receiving 采样（本轮已修：restore 后 ~400ms 轮询，触发=Receiving 且（rate 匹配 /KiB\/s/ 或 processedFrames 增长），sender 截图移到采样后，Ready 先到则如实 FAIL；判据文本未改）。 |
+| 全仓扫描 | `git grep 'revision >|revisionBase|revisionGrew'` 仅此一处属该失效机理；S02 的 `revisionStable` 是“无数据则 revision 不变”的稳定性判据（语义正确），E2E-28/29 的 revision 仅作 null 守卫/观测字段，live-legs 的 revision 为 advisory，均未改。 |
+
+### 11.2 主录像 A/B：终态收敛写 vs 冻结 250ms 不变式（待 lead 裁定）
+
+- 重跑 attempt `candidate-20261026-02`（见 11.3）真实采集成功：recorded 三公式因 0 有效对不可判定，FAIL 全部来自 `E_TELEMETRY_INTERVAL` ×5（B 侧 70.6–216.7ms）。
+- 逐轮 raw 复核：**每轮恰好一次 sub-250ms 间隔，且都在最后一次写**（终态收敛强制写），其余相邻写全部 ≥250ms。
+- 冲突：A-R2 DoD 同时要求“终态最终指标收敛”与“保留事件/tick 共享 250ms 数字边界”；产品选择在终态跨边界强制补写一次，而 `judgeRound` 对全部相邻写取最小值。
+- 旧构建该不变式能过，同样是因为旧显示层在 Ready 后不再写（不收敛）——又一处“旧绿灯骑着被修的缺陷”。
+- 待裁定：工具侧按 ACTIVE 状态解释节奏（方法/阈值不动，observer 记录状态）或产品侧让终态收敛写等待共享边界后再画。
+
+### 11.3 工具缺陷：S2 拆分遗漏的本地 import
+
+- `measure-ux.mjs` 在 S2 拆分后只 `export { OBSERVER_SCRIPT } from './measure-ux-calc.mjs'`，未 import 本地绑定；`runRound` 真实浏览器路径抛 `OBSERVER_SCRIPT is not defined`，首跑 A/B 全轮 collectionError（attempt `candidate-20261026-01`，原件保留）。
+- 既有 66 条工具测试全部走桩 `runRound`/VM 导入，未覆盖该路径——这是测试覆盖缺口，round-13 披露。
+- 修复：补 `OBSERVER_SCRIPT` 到本地 import；按 09b 先例（`candidate-20261025-03`→`-04` 并存）把 context `attemptId` 提升为 `candidate-20261026-02` 后重跑，`-01` 失败原件原样保留。

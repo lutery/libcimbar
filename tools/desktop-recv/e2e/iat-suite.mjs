@@ -339,6 +339,89 @@ async function group04DisplayHarness(stack, deps, addAssert) {
     JSON.stringify(fail),
     fail === null,
   );
+
+  // Round-12 A-R2 follow-up (Option B): a terminal state that arrives INSIDE
+  // the closed 250ms gate must not paint immediately. The frozen
+  // telemetryMinWriteIntervalMs=250 has no terminal exemption, and the final
+  // projection must still converge: the display waits for the shared boundary
+  // (>=250ms after the previous write), paints the converged final metrics,
+  // and only then releases the display timer (no paint afterwards). RED until
+  // the product honors the boundary at the terminal transition.
+  const terminal = await page.evaluate(async () => {
+    const { createUxDisplay } = await import('/src/ux-display.js');
+    const host = document.createElement('div');
+    host.id = 'iat04-host-terminal';
+    document.body.appendChild(host);
+    const context = (over = {}) => ({
+      state: 'Receiving', businessRevision: 2, inputKind: 'live', cleanupComplete: false,
+      artifactId: null, controls: { canStartLive: false, canImportVideo: false, canStop: true, canSave: false },
+      inFlight: false, inFlightSinceMs: null, mediaPosition: null, mediaDiagnosticCode: 0, ...over,
+    });
+    let business = context();
+    const baseObservation = {
+      version: 1, sessionId: 'iat04t', sessionSeq: 1, observationRevision: 1,
+      receivingAtMs: 0, endedAtMs: null, rate: { epochMs: 0, buckets: [] },
+      progress: { trustedRatio: 0.4, trustedAtMs: 10, lastAdvanceAtMs: 10, lastDataAtMs: 10, lastResultAtMs: 10, ambiguity: null },
+      save: { phase: 'none', attemptId: null, artifactId: null, errorCode: null }, diagnostics: [],
+    };
+    let observation = baseObservation;
+    const telemetryWrites = [];
+    const paint = (payload) => {
+      const keys = Object.keys(payload);
+      if (keys.includes('elapsedText') || keys.includes('rateText')
+        || keys.includes('progressText') || keys.includes('mediaText')) {
+        telemetryWrites.push({ at: performance.now(), progressText: payload.progressText ?? null });
+      }
+    };
+    const display = createUxDisplay({
+      readCurrent: () => ({ owner: { sessionId: 'iat04t', sessionSeq: 1 }, observation, context: business }),
+      nowMs: () => performance.now(),
+      setTimer: (fn, ms) => setTimeout(fn, ms),
+      clearTimer: (id) => clearTimeout(id),
+      paint,
+    });
+    // t0: the first telemetry write is immediate (the gate starts open).
+    display.syncBusiness();
+    const first = telemetryWrites[0] || null;
+    // ~20ms later the terminal state arrives INSIDE the closed gate, carrying
+    // a different final estimate. No immediate second numeric write may happen.
+    await new Promise((r) => setTimeout(r, 20));
+    // Ready requires a real artifact identity (readView 19014 otherwise) and a
+    // saveable control set, so the terminal context is a complete one.
+    business = context({
+      state: 'Ready', businessRevision: 3, artifactId: 'art-iat04t',
+      controls: { canStartLive: false, canImportVideo: false, canStop: false, canSave: true },
+    });
+    observation = { ...baseObservation, observationRevision: 2,
+      progress: { trustedRatio: 0.9, trustedAtMs: 20, lastAdvanceAtMs: 20, lastDataAtMs: 20, lastResultAtMs: 20, ambiguity: null } };
+    display.syncBusiness(); // the terminal convergence path
+    const writesAtTerminalMoment = telemetryWrites.length;
+    // Give the boundary time to open and the converged write to happen.
+    await new Promise((r) => setTimeout(r, 700));
+    const totalWrites = telemetryWrites.length;
+    const last = totalWrites ? telemetryWrites[totalWrites - 1] : null;
+    // After convergence: a further idle period must produce no paint - the
+    // display timer is released right after the terminal projection.
+    await new Promise((r) => setTimeout(r, 700));
+    const writesAfterIdle = telemetryWrites.length;
+    host.remove();
+    return {
+      first, writesAtTerminalMoment, totalWrites, last, writesAfterIdle,
+      gapMs: last && first ? last.at - first.at : null,
+    };
+  });
+  addAssert(
+    'UX-IAT-04-A5',
+    'a terminal state inside the closed 250ms gate converges ON the boundary (>=250ms after the previous write), paints the final projection, and releases the timer',
+    JSON.stringify(terminal),
+    Boolean(terminal.first)
+      && terminal.writesAtTerminalMoment === 1
+      && terminal.totalWrites >= 2
+      && terminal.gapMs >= 250
+      && terminal.last && terminal.first
+      && terminal.last.progressText !== terminal.first.progressText
+      && terminal.writesAfterIdle === terminal.totalWrites,
+  );
 }
 
 // ------------------------------------------------------------------ group 06
