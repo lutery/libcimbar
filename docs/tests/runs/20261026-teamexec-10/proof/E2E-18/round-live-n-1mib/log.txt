@@ -1,0 +1,8 @@
+status=Saved
+artifact=ext-random-1mib.bin 1048576 字节
+saveTimings={"initStartAt":1792984839076,"initReadyAt":1792984839542,"validInputStartAt":1792984842669,"reconstructionDoneAt":1792984858607,"saveRequestAt":1792984861516,"createWritableAccessedAt":1792984865943,"writableAt":1792984865951,"writeCloseAt":1792984866077,"lastSaveClickAt":1792984861516,"decoderInitMs":466,"sourceWaitMs":3127,"initMs":3593,"reconstructMs":15938,"totalToReadyMs":19531,"pickerWaitMs":4427,"writableOpenMs":8,"saveWaitMs":4435,"saveWriteMs":126,"saveMs":4561}
+saveTimingsComplete=true
+sha256 original=3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9 received=3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9 equal=true
+log=capture stopped; the file is ready to save
+saved (1)
+

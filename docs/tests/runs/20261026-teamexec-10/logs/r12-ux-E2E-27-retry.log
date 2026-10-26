@@ -1,0 +1,28 @@
+2026-10-26T04:10:18.767Z process guard: reclaimed 0/68 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:24] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:10:25] "GET /pwa.json HTTP/1.1" 200 -
+2026-10-26T04:10:32.443Z E2E-27-CAL01: animation changed=true digest=1137bbe3f828
+2026-10-26T04:10:32.614Z E2E-27-CAL02: sha256=cfa5e023b566c52c... file=src01-code-frame.png rect=710x710
+2026-10-26T04:10:32.666Z E2E-27-CAL03: mode=still rect={"left":285,"top":5,"width":710,"height":710}
+2026-10-26T04:10:43.201Z E2E-27-CAL04: heldMs=10535 stable=true hashes=71ef5ccc,71ef5ccc,71ef5ccc
+2026-10-26T04:10:43.203Z E2E-27-CAL05: mode=blank full-viewport
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=3340
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-10\proof\E2E-27\E2E-27-2026-10-26T04-10-18-768Z-bcb835\received.bin
+2026-10-26T04:11:49.770Z CASE E2E-27 FAIL (attempt E2E-27-2026-10-26T04-10-18-768Z-bcb835)
+EXIT=1 (retry after first=1)

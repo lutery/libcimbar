@@ -1,0 +1,1269 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-1/original.bin",
+      "proof/E2E-1/received.bin"
+    ],
+    "notes": "packaged first launch from a codepoint-built CJK+space dir (C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压); README-documented launch.cmd exit=0; pwsh -File absolute preflight exit=0; live equal=true (2f5a22f95c01), V-GOOD-C recorded import equal=true (2f5a22f95c01); RETRACTION: the 8c59864 FAIL blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test invocation chain (package copied under a GBK-mojibake twin name); original evidence preserved at proof/E2E-1/first-run-fail/",
+    "attemptId": "E2E-1-2026-10-26T02-50-47-142Z-2eccda"
+  },
+  {
+    "caseId": "E2E-2",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-2/original.bin",
+      "proof/E2E-2/received.bin"
+    ],
+    "notes": "occupied-port launch exited 3 with a readable reason=true; clean relaunch exit=0; recovery live roundtrip equal=true",
+    "attemptId": "E2E-2-2026-10-26T02-52-10-132Z-a4e794"
+  },
+  {
+    "caseId": "E2E-3",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-3/original.bin",
+      "proof/E2E-3/received.bin"
+    ],
+    "notes": "live x 6 rounds (2 classes x 3); all 6 pairs equal=true; per-round proof under proof/E2E-3/round-*",
+    "attemptId": "E2E-3-2026-10-26T02-53-01-749Z-ed1a48"
+  },
+  {
+    "caseId": "E2E-4",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "receivedSha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+    "proofRefs": [
+      "proof/E2E-4/original.bin",
+      "proof/E2E-4/received.bin"
+    ],
+    "notes": "picker cancel -> Ready to receive (12002) -> restart -> roundtrip equal=true",
+    "attemptId": "E2E-4-2026-10-26T02-56-11-096Z-92b532"
+  },
+  {
+    "caseId": "E2E-5",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-5/original.bin",
+      "proof/E2E-5/received.bin"
+    ],
+    "notes": "blank window: capture status=Receiving frames; after the 7 s observation window status=Receiving frames saveDisabled=true artifact=\"\"; stop -> reselect sender -> equal=true",
+    "attemptId": "E2E-5-2026-10-26T02-57-00-523Z-2f5abf"
+  },
+  {
+    "caseId": "E2E-6",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "6c58f1582743eac74e7a2de6f86c473d4d4dbbc8d4581dbb7ed63a75e98bf0a8",
+    "receivedSha256": "6c58f1582743eac74e7a2de6f86c473d4d4dbbc8d4581dbb7ed63a75e98bf0a8",
+    "proofRefs": [
+      "proof/E2E-6/original.bin",
+      "proof/E2E-6/received.bin"
+    ],
+    "notes": "same-name/same-size A/B, external ends (tab close, window close; Edge's sharing chip not UIA-exposed on this host): tab-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true; window-close settle=Not enough data to rebuild the file noArtifact=true, B equal=true notA=true",
+    "attemptId": "E2E-6-2026-10-26T02-58-06-063Z-619e3a"
+  },
+  {
+    "caseId": "E2E-7",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "receivedSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "proofRefs": [
+      "proof/E2E-7/original.bin",
+      "proof/E2E-7/received.bin"
+    ],
+    "notes": "stop spam converged once; fresh session B roundtrip equal=true",
+    "attemptId": "E2E-7-2026-10-26T03-00-15-785Z-146490"
+  },
+  {
+    "caseId": "E2E-8",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-8/original.bin",
+      "proof/E2E-8/received.bin"
+    ],
+    "notes": "4C sender (outside the matrix's verified mode B): no Ready in 30065 ms, no false artifact; in-page flip-back to B does NOT restore a decodable stream (180 s frame-starved, PRODUCT FINDING); sender reload with default B recovers, roundtrip equal=true; matrix quoted: \"模式 | B（68） | IAT-01/05 实测\" (verified), \"8C/Bu/Bm 模式解码\" not claimed",
+    "attemptId": "E2E-8-2026-10-26T03-01-31-269Z-03143b"
+  },
+  {
+    "caseId": "E2E-9",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-9/original.bin",
+      "proof/E2E-9/received.bin"
+    ],
+    "notes": "3 window/zoom legs all hash-clean=true (default; sender 900x700 + receiver render scale 1.5; sender 1400x950 + scale 1.0). OS display scaling not covered (not automatable; matrix claims no such combo: \"其他 DPI / 缩放组合 | 需真实桌面交互（E2E-9）\")",
+    "attemptId": "E2E-9-2026-10-26T03-04-06-271Z-0c763c"
+  },
+  {
+    "caseId": "E2E-10",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "d6c39421f50703b5f59cf858f7dba5a735f6f21c7faf57043267e735fb9e4924",
+    "receivedSha256": "d6c39421f50703b5f59cf858f7dba5a735f6f21c7faf57043267e735fb9e4924",
+    "proofRefs": [
+      "proof/E2E-10/original.bin",
+      "proof/E2E-10/received.bin"
+    ],
+    "notes": "receiver-front roundtrip equal=true; sender minimized mid-capture 15 s: no false Ready (status=\"Receiving frames\"), no artifact; restore -> save equal=true; occlusion covered by the minimize leg (same starve/recover contract)",
+    "attemptId": "E2E-10-2026-10-26T03-05-52-736Z-eee817"
+  },
+  {
+    "caseId": "E2E-11",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-11/original.bin",
+      "proof/E2E-11/received.bin"
+    ],
+    "notes": "save cancelled (Save failed — you can retry) -> same artifact saved on retry -> equal=true",
+    "attemptId": "E2E-11-2026-10-26T03-07-46-776Z-09e7bd"
+  },
+  {
+    "caseId": "E2E-12",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-12/original.bin",
+      "proof/E2E-12/received.bin"
+    ],
+    "notes": "cancel: sentinel intact=true; refuse-then-rename: refused=true, sentinel intact=true, app=Saved, renamed save equal=true; suggested name \"sample-text-2.bin\" safe=true",
+    "attemptId": "E2E-12-2026-10-26T03-08-35-566Z-07fa8f"
+  },
+  {
+    "caseId": "E2E-13",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-13/original.bin",
+      "proof/E2E-13/received.bin"
+    ],
+    "notes": "save button disabled while the picker is open=true; single save equal=true; status=Saved",
+    "attemptId": "E2E-13-2026-10-26T03-09-29-086Z-242027"
+  },
+  {
+    "caseId": "E2E-14",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-14/original.bin",
+      "proof/E2E-14/received.bin"
+    ],
+    "notes": "real sender-window recordings (V-GOOD-C/N) x 6 rounds; all pairs equal=true; video sha256 9956fb11e391…",
+    "attemptId": "E2E-14-2026-10-26T03-10-13-254Z-ce83d0"
+  },
+  {
+    "caseId": "E2E-15",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-15/original.bin",
+      "proof/E2E-15/received.bin",
+      "proof/E2E-15/recovery-cancel/received.bin",
+      "proof/E2E-15/recovery-empty/received.bin",
+      "proof/E2E-15/recovery-text/received.bin",
+      "proof/E2E-15/recovery-corrupt/received.bin"
+    ],
+    "notes": "per-leg verdicts, then a REAL recovery after every failure (real-entry-cancel=PASS, recovery-cancel=PASS, empty-import=PASS, recovery-empty=PASS, text-import=PASS, recovery-text=PASS, corrupt-import=PASS, recovery-corrupt=PASS). empty/text/corrupt legs are IMPORT-PATH-ONLY evidence (DataTransfer dispatch); the cancel leg and every recovery used the real #btn-video click and the real OS dialogs; every recovery saved into its own proof dir via completeLegSave (external SHA-256 + complete/ordered save marks)",
+    "measurement": {
+      "legs": [
+        {
+          "id": "real-entry-cancel",
+          "path": "real entry (#btn-video) + OS dialog cancel",
+          "status": "PASS",
+          "basis": null,
+          "helperExit": 0,
+          "logDelta": "",
+          "failures": [],
+          "attemptId": null,
+          "notes": "real entry (#btn-video click) + OS dialog cancel; no change event may fire",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "recovery-cancel",
+          "path": "real entry (#btn-video) + OS dialog open, normal-file recovery",
+          "status": "PASS",
+          "basis": null,
+          "helperExit": 0,
+          "logDelta": "recording: 1604x1002, 17.8s\ncapture stopped; the file is ready to save\n",
+          "attemptId": "video-1",
+          "attemptIdAdvanced": true,
+          "readyReached": true,
+          "saveTimings": {
+            "initStartAt": 1792984446437,
+            "initReadyAt": 1792984446601,
+            "validInputStartAt": 1792984446948,
+            "reconstructionDoneAt": 1792984447156,
+            "saveRequestAt": 1792984451288,
+            "createWritableAccessedAt": 1792984455485,
+            "writableAt": 1792984455492,
+            "writeCloseAt": 1792984455595,
+            "lastSaveClickAt": 1792984451288,
+            "decoderInitMs": 164,
+            "sourceWaitMs": 347,
+            "initMs": 511,
+            "reconstructMs": 208,
+            "totalToReadyMs": 719,
+            "pickerWaitMs": 4197,
+            "writableOpenMs": 7,
+            "saveWaitMs": 4204,
+            "saveWriteMs": 103,
+            "saveMs": 4307
+          },
+          "saveTimingsComplete": true,
+          "saveTimingsFailures": [],
+          "hashes": {
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "equal": true
+          },
+          "received": "proof/E2E-15/recovery-cancel/received.bin",
+          "proofDir": "proof/E2E-15/recovery-cancel",
+          "failures": [],
+          "notes": "real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "empty-import",
+          "path": "import (DataTransfer dispatch)",
+          "status": "PASS",
+          "basis": null,
+          "settled": true,
+          "observedCode": "13005",
+          "rejectionPoint": "metadata_precheck",
+          "terminal": "Idle",
+          "buttons": {
+            "saveDisabled": true,
+            "videoDisabled": false,
+            "stopDisabled": true
+          },
+          "cleanupComplete": true,
+          "checks": {
+            "ingested": true,
+            "leftIdle": true,
+            "expectedCode": "13005",
+            "terminal": "Idle",
+            "cleanupComplete": true,
+            "notAlreadyActive": true
+          },
+          "failures": [],
+          "logDelta": "[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n",
+          "attemptId": "video-2",
+          "notes": "import-path-only evidence (DataTransfer change event, not the entry)",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "recovery-empty",
+          "path": "real entry (#btn-video) + OS dialog open, normal-file recovery",
+          "status": "PASS",
+          "basis": null,
+          "helperExit": 0,
+          "logDelta": "recording: 1604x1002, 17.8s\ncapture stopped; the file is ready to save\n",
+          "attemptId": "video-3",
+          "attemptIdAdvanced": true,
+          "readyReached": true,
+          "saveTimings": {
+            "initStartAt": 1792984471540,
+            "initReadyAt": 1792984471674,
+            "validInputStartAt": 1792984471826,
+            "reconstructionDoneAt": 1792984472055,
+            "saveRequestAt": 1792984475575,
+            "createWritableAccessedAt": 1792984480456,
+            "writableAt": 1792984480472,
+            "writeCloseAt": 1792984480607,
+            "lastSaveClickAt": 1792984475575,
+            "decoderInitMs": 134,
+            "sourceWaitMs": 152,
+            "initMs": 286,
+            "reconstructMs": 229,
+            "totalToReadyMs": 515,
+            "pickerWaitMs": 4881,
+            "writableOpenMs": 16,
+            "saveWaitMs": 4897,
+            "saveWriteMs": 135,
+            "saveMs": 5032
+          },
+          "saveTimingsComplete": true,
+          "saveTimingsFailures": [],
+          "hashes": {
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "equal": true
+          },
+          "received": "proof/E2E-15/recovery-empty/received.bin",
+          "proofDir": "proof/E2E-15/recovery-empty",
+          "failures": [],
+          "notes": "real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "text-import",
+          "path": "import (DataTransfer dispatch)",
+          "status": "PASS",
+          "basis": null,
+          "settled": true,
+          "observedCode": "13005",
+          "rejectionPoint": "metadata_precheck",
+          "terminal": "Idle",
+          "buttons": {
+            "saveDisabled": true,
+            "videoDisabled": false,
+            "stopDisabled": true
+          },
+          "cleanupComplete": true,
+          "checks": {
+            "ingested": true,
+            "leftIdle": true,
+            "expectedCode": "13005",
+            "terminal": "Idle",
+            "cleanupComplete": true,
+            "notAlreadyActive": true
+          },
+          "failures": [],
+          "logDelta": "[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n",
+          "attemptId": "video-4",
+          "notes": "import-path-only evidence (DataTransfer change event, not the entry)",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "recovery-text",
+          "path": "real entry (#btn-video) + OS dialog open, normal-file recovery",
+          "status": "PASS",
+          "basis": null,
+          "helperExit": 0,
+          "logDelta": "recording: 1604x1002, 17.8s\ncapture stopped; the file is ready to save\n",
+          "attemptId": "video-5",
+          "attemptIdAdvanced": true,
+          "readyReached": true,
+          "saveTimings": {
+            "initStartAt": 1792984496814,
+            "initReadyAt": 1792984496943,
+            "validInputStartAt": 1792984497101,
+            "reconstructionDoneAt": 1792984497326,
+            "saveRequestAt": 1792984500778,
+            "createWritableAccessedAt": 1792984505367,
+            "writableAt": 1792984505375,
+            "writeCloseAt": 1792984505473,
+            "lastSaveClickAt": 1792984500778,
+            "decoderInitMs": 129,
+            "sourceWaitMs": 158,
+            "initMs": 287,
+            "reconstructMs": 225,
+            "totalToReadyMs": 512,
+            "pickerWaitMs": 4589,
+            "writableOpenMs": 8,
+            "saveWaitMs": 4597,
+            "saveWriteMs": 98,
+            "saveMs": 4695
+          },
+          "saveTimingsComplete": true,
+          "saveTimingsFailures": [],
+          "hashes": {
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "equal": true
+          },
+          "received": "proof/E2E-15/recovery-text/received.bin",
+          "proofDir": "proof/E2E-15/recovery-text",
+          "failures": [],
+          "notes": "real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "corrupt-import",
+          "path": "import (DataTransfer dispatch)",
+          "status": "PASS",
+          "basis": null,
+          "settled": true,
+          "observedCode": "13005",
+          "rejectionPoint": "metadata_precheck",
+          "terminal": "Idle",
+          "buttons": {
+            "saveDisabled": true,
+            "videoDisabled": false,
+            "stopDisabled": true
+          },
+          "cleanupComplete": true,
+          "checks": {
+            "ingested": true,
+            "leftIdle": true,
+            "expectedCode": "13005",
+            "terminal": "Idle",
+            "cleanupComplete": true,
+            "notAlreadyActive": true
+          },
+          "failures": [],
+          "logDelta": "[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n[error] 13005: 录像无法读取或未完成。请换一个可播放的录像文件重试。\n",
+          "attemptId": "video-6",
+          "notes": "import-path-only evidence (DataTransfer change event, not the entry)",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        },
+        {
+          "id": "recovery-corrupt",
+          "path": "real entry (#btn-video) + OS dialog open, normal-file recovery",
+          "status": "PASS",
+          "basis": null,
+          "helperExit": 0,
+          "logDelta": "recording: 1604x1002, 17.8s\ncapture stopped; the file is ready to save\n",
+          "attemptId": "video-7",
+          "attemptIdAdvanced": true,
+          "readyReached": true,
+          "saveTimings": {
+            "initStartAt": 1792984524033,
+            "initReadyAt": 1792984524189,
+            "validInputStartAt": 1792984524323,
+            "reconstructionDoneAt": 1792984524516,
+            "saveRequestAt": 1792984528035,
+            "createWritableAccessedAt": 1792984532557,
+            "writableAt": 1792984532564,
+            "writeCloseAt": 1792984532664,
+            "lastSaveClickAt": 1792984528035,
+            "decoderInitMs": 156,
+            "sourceWaitMs": 134,
+            "initMs": 290,
+            "reconstructMs": 193,
+            "totalToReadyMs": 483,
+            "pickerWaitMs": 4522,
+            "writableOpenMs": 7,
+            "saveWaitMs": 4529,
+            "saveWriteMs": 100,
+            "saveMs": 4629
+          },
+          "saveTimingsComplete": true,
+          "saveTimingsFailures": [],
+          "hashes": {
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "equal": true
+          },
+          "received": "proof/E2E-15/recovery-corrupt/received.bin",
+          "proofDir": "proof/E2E-15/recovery-corrupt",
+          "failures": [],
+          "notes": "real entry + real OS open dialog; success is only the app-side recording: delta plus a hash-clean save",
+          "executedInAttempt": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+        }
+      ]
+    },
+    "attemptId": "E2E-15-2026-10-26T03-13-47-937Z-7924bb"
+  },
+  {
+    "caseId": "E2E-16",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+    "receivedSha256": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+    "proofRefs": [
+      "proof/E2E-16/original.bin",
+      "proof/E2E-16/received.bin",
+      "proof/E2E-16/manifest.json",
+      "proof/E2E-16/prefix-check.json",
+      "proof/E2E-16/timelines/v-short.json",
+      "proof/E2E-16/timelines/v-last-without.json",
+      "proof/E2E-16/timelines/v-last-with.json"
+    ],
+    "notes": "V-SHORT not Ready; V-LAST-without real EOF (media time 6.348s >= declared cut 6.5s minus its 1.0 s tolerance) with no artifact; V-LAST-with T*=7.838s = lastUs/1e6 vs duration 9.3s (end segment requires >= 7.300000000000001s), __mediaEnded=null, save hash-clean=true with complete/ordered save marks; pair validity T*>without duration=true",
+    "measurement": {
+      "legs": [
+        {
+          "id": "v-short",
+          "inputKind": "video",
+          "dataClass": "compressible",
+          "tier": "V-SHORT (400 ms)",
+          "status": "PASS",
+          "basis": null,
+          "timings": {
+            "initStartAt": 1792984557893,
+            "initReadyAt": 1792984558057,
+            "validInputStartAt": 1792984558187,
+            "reconstructionDoneAt": null,
+            "saveRequestAt": null,
+            "createWritableAccessedAt": null,
+            "writableAt": null,
+            "writeCloseAt": null,
+            "lastSaveClickAt": null,
+            "decoderInitMs": 164,
+            "sourceWaitMs": 130,
+            "initMs": 294,
+            "reconstructMs": null,
+            "totalToReadyMs": null,
+            "pickerWaitMs": null,
+            "writableOpenMs": null,
+            "saveWaitMs": null,
+            "saveWriteMs": null,
+            "saveMs": null
+          },
+          "sizes": {
+            "rawBytes": null,
+            "streamBytes": null,
+            "artifactBytes": null
+          },
+          "notes": "a 400 ms real recording must not produce a saveable artifact (import-path-only dispatch)",
+          "executedInAttempt": "E2E-16-2026-10-26T03-15-49-218Z-71267b"
+        },
+        {
+          "id": "v-last-without",
+          "inputKind": "video",
+          "dataClass": "incompressible",
+          "tier": "128KiB (without)",
+          "status": "PASS",
+          "basis": null,
+          "timings": {
+            "initStartAt": 1792984562926,
+            "initReadyAt": 1792984563062,
+            "validInputStartAt": 1792984563608,
+            "reconstructionDoneAt": null,
+            "saveRequestAt": null,
+            "createWritableAccessedAt": null,
+            "writableAt": null,
+            "writeCloseAt": null,
+            "lastSaveClickAt": null,
+            "decoderInitMs": 136,
+            "sourceWaitMs": 546,
+            "initMs": 682,
+            "reconstructMs": null,
+            "totalToReadyMs": null,
+            "pickerWaitMs": null,
+            "writableOpenMs": null,
+            "saveWaitMs": null,
+            "saveWriteMs": null,
+            "saveMs": null
+          },
+          "sizes": {
+            "rawBytes": null,
+            "streamBytes": null,
+            "artifactBytes": null
+          },
+          "notes": "real EOF media time 6.348s vs declared cut 6.5s; no artifact",
+          "executedInAttempt": "E2E-16-2026-10-26T03-15-49-218Z-71267b"
+        },
+        {
+          "id": "v-last-with",
+          "inputKind": "video",
+          "dataClass": "incompressible",
+          "tier": "128KiB (with final segment)",
+          "status": "PASS",
+          "basis": null,
+          "timings": {
+            "initStartAt": 1792984581008,
+            "initReadyAt": 1792984581126,
+            "validInputStartAt": 1792984581240,
+            "reconstructionDoneAt": 1792984596685,
+            "saveRequestAt": 1792984599446,
+            "createWritableAccessedAt": 1792984604889,
+            "writableAt": 1792984604898,
+            "writeCloseAt": 1792984605013,
+            "lastSaveClickAt": 1792984599446,
+            "decoderInitMs": 118,
+            "sourceWaitMs": 114,
+            "initMs": 232,
+            "reconstructMs": 15445,
+            "totalToReadyMs": 15677,
+            "pickerWaitMs": 5443,
+            "writableOpenMs": 9,
+            "saveWaitMs": 5452,
+            "saveWriteMs": 115,
+            "saveMs": 5567
+          },
+          "saveTimingsComplete": true,
+          "sizes": {
+            "rawBytes": 131072,
+            "streamBytes": 131184,
+            "artifactBytes": 131072
+          },
+          "hashes": {
+            "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+            "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+            "equal": true
+          },
+          "notes": "completion media time T*=7.838s = lastUs/1e6 (dimensional fix); withDuration=9.3s (open-precheck delta)",
+          "executedInAttempt": "E2E-16-2026-10-26T03-15-49-218Z-71267b"
+        }
+      ],
+      "pair": {
+        "tStarSec": 7.838,
+        "withDurationSec": 9.3,
+        "withoutDurationSec": 6.348,
+        "withoutEofMediaTimeSec": 6.348,
+        "declaredCutSec": 6.5,
+        "pairValidity": true,
+        "endSegmentToleranceSec": 2,
+        "withoutEofToleranceSec": 1,
+        "rerecord": null
+      },
+      "pairEvidence": {
+        "ok": true,
+        "failures": [],
+        "checks": {
+          "constructionString": true,
+          "startedInSameTask": true,
+          "startEpochMs": true,
+          "mimeType": true,
+          "videoBitsPerSecond": true,
+          "declaredCutMs": true,
+          "withMs": true,
+          "declaredCutInsideWith": true,
+          "roleClips": true,
+          "pairFileNames": true,
+          "payloadSha": true,
+          "prefixCheckPresent": true,
+          "prefixHead": true,
+          "prefixTail": true,
+          "prefixVerdict": true
+        }
+      }
+    },
+    "attemptId": "E2E-16-2026-10-26T03-15-49-218Z-71267b"
+  },
+  {
+    "caseId": "E2E-17",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "receivedSha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+    "proofRefs": [
+      "proof/E2E-17/original.bin",
+      "proof/E2E-17/received.bin"
+    ],
+    "notes": "leg1 stop-video A -> live B equal=true; leg2 stop-live A -> video B equal=true (V-GOOD-C output hash=2f5a22f95c01…); A contents never pollute B in either direction",
+    "attemptId": "E2E-17-2026-10-26T03-17-15-800Z-0d2b0a"
+  },
+  {
+    "caseId": "E2E-18",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+    "receivedSha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+    "proofRefs": [
+      "proof/E2E-18/original.bin",
+      "proof/E2E-18/received.bin"
+    ],
+    "notes": "matrix legs: live-c-1mib=PASS, live-c-4mib=PASS, live-n-1mib=PASS, live-n-4mib=PASS, video-c-4mib=PASS, video-n-128kib=PASS, video-n-1mib-probe=PASS, video-n-4mib=PASS, live-c-20mib-over-budget=PASS, live-n-20mib-over-budget=NOT_RUN; over-budget budget=16777216; performance remains NOT_EVALUATED (thresholds not frozen); every executable leg PASS; NOT_RUN legs: live-n-20mib-over-budget (sanctioned by the user-approved plan basis, AUTHORIZED_NOT_RUN per triage decision 7 / D-19); no scope revision needed",
+    "measurement": {
+      "legs": [
+        {
+          "id": "live-c-1mib",
+          "inputKind": "live",
+          "dataClass": "compressible",
+          "tier": "1MiB",
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 1048576,
+            "streamBytes": 3354,
+            "artifactBytes": 1048576
+          },
+          "timings": {
+            "initStartAt": 1792984776611,
+            "initReadyAt": 1792984776728,
+            "validInputStartAt": 1792984780747,
+            "reconstructionDoneAt": 1792984781056,
+            "saveRequestAt": 1792984784496,
+            "createWritableAccessedAt": 1792984793231,
+            "writableAt": 1792984793241,
+            "writeCloseAt": 1792984793371,
+            "lastSaveClickAt": 1792984784496,
+            "decoderInitMs": 117,
+            "sourceWaitMs": 4019,
+            "initMs": 4136,
+            "reconstructMs": 309,
+            "totalToReadyMs": 4445,
+            "pickerWaitMs": 8735,
+            "writableOpenMs": 10,
+            "saveWaitMs": 8745,
+            "saveWriteMs": 130,
+            "saveMs": 8875
+          },
+          "hashes": {
+            "original": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+            "received": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-1mib/received.bin",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "live-c-4mib",
+          "inputKind": "live",
+          "dataClass": "compressible",
+          "tier": "4MiB",
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 4194304,
+            "streamBytes": 13338,
+            "artifactBytes": 4194304
+          },
+          "timings": {
+            "initStartAt": 1792984810008,
+            "initReadyAt": 1792984810513,
+            "validInputStartAt": 1792984814231,
+            "reconstructionDoneAt": 1792984814529,
+            "saveRequestAt": 1792984818039,
+            "createWritableAccessedAt": 1792984822436,
+            "writableAt": 1792984822444,
+            "writeCloseAt": 1792984822584,
+            "lastSaveClickAt": 1792984818039,
+            "decoderInitMs": 505,
+            "sourceWaitMs": 3718,
+            "initMs": 4223,
+            "reconstructMs": 298,
+            "totalToReadyMs": 4521,
+            "pickerWaitMs": 4397,
+            "writableOpenMs": 8,
+            "saveWaitMs": 4405,
+            "saveWriteMs": 140,
+            "saveMs": 4545
+          },
+          "hashes": {
+            "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+            "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "live capture roundtrip; proof proof/E2E-18/round-live-c-4mib/received.bin",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "live-n-1mib",
+          "inputKind": "live",
+          "dataClass": "incompressible",
+          "tier": "1MiB",
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 1048576,
+            "streamBytes": 1049244,
+            "artifactBytes": 1048576
+          },
+          "timings": {
+            "initStartAt": 1792984839076,
+            "initReadyAt": 1792984839542,
+            "validInputStartAt": 1792984842669,
+            "reconstructionDoneAt": 1792984858607,
+            "saveRequestAt": 1792984861516,
+            "createWritableAccessedAt": 1792984865943,
+            "writableAt": 1792984865951,
+            "writeCloseAt": 1792984866077,
+            "lastSaveClickAt": 1792984861516,
+            "decoderInitMs": 466,
+            "sourceWaitMs": 3127,
+            "initMs": 3593,
+            "reconstructMs": 15938,
+            "totalToReadyMs": 19531,
+            "pickerWaitMs": 4427,
+            "writableOpenMs": 8,
+            "saveWaitMs": 4435,
+            "saveWriteMs": 126,
+            "saveMs": 4561
+          },
+          "hashes": {
+            "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+            "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-1mib/received.bin",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "live-n-4mib",
+          "inputKind": "live",
+          "dataClass": "incompressible",
+          "tier": "4MiB",
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 4194304,
+            "streamBytes": 4196892,
+            "artifactBytes": 4194304
+          },
+          "timings": {
+            "initStartAt": 1792984882961,
+            "initReadyAt": 1792984883354,
+            "validInputStartAt": 1792984887155,
+            "reconstructionDoneAt": 1792984950657,
+            "saveRequestAt": 1792984953517,
+            "createWritableAccessedAt": 1792984957749,
+            "writableAt": 1792984957758,
+            "writeCloseAt": 1792984957907,
+            "lastSaveClickAt": 1792984953517,
+            "decoderInitMs": 393,
+            "sourceWaitMs": 3801,
+            "initMs": 4194,
+            "reconstructMs": 63502,
+            "totalToReadyMs": 67696,
+            "pickerWaitMs": 4232,
+            "writableOpenMs": 9,
+            "saveWaitMs": 4241,
+            "saveWriteMs": 149,
+            "saveMs": 4390
+          },
+          "hashes": {
+            "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+            "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "live capture roundtrip; proof proof/E2E-18/round-live-n-4mib/received.bin",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "video-c-4mib",
+          "inputKind": "video",
+          "dataClass": "compressible",
+          "tier": "4MiB",
+          "bounds": {
+            "recordSeconds": 60,
+            "maxRecordBytes": 268435456,
+            "importWaitMs": 300000
+          },
+          "boundsRef": null,
+          "recording": {
+            "bytes": 84988955,
+            "sha256": "a3cecdb2897c1e59018a0ccc8b2b4a569e5f5784815c9c43f2772c83e4c6877b",
+            "seconds": 60
+          },
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 4194304,
+            "streamBytes": 13338,
+            "artifactBytes": 4194304
+          },
+          "timings": {
+            "initStartAt": 1792985093570,
+            "initReadyAt": 1792985093694,
+            "validInputStartAt": 1792985094159,
+            "reconstructionDoneAt": 1792985094726,
+            "saveRequestAt": 1792985097788,
+            "createWritableAccessedAt": 1792985102379,
+            "writableAt": 1792985102386,
+            "writeCloseAt": 1792985102527,
+            "lastSaveClickAt": 1792985097788,
+            "decoderInitMs": 124,
+            "sourceWaitMs": 465,
+            "initMs": 589,
+            "reconstructMs": 567,
+            "totalToReadyMs": 1156,
+            "pickerWaitMs": 4591,
+            "writableOpenMs": 7,
+            "saveWaitMs": 4598,
+            "saveWriteMs": 141,
+            "saveMs": 4739
+          },
+          "hashes": {
+            "original": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+            "received": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "recorded import roundtrip; presented frames=3, lastUs=185000",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "video-n-128kib",
+          "inputKind": "video",
+          "dataClass": "incompressible",
+          "tier": "128KiB",
+          "bounds": null,
+          "boundsRef": null,
+          "recording": null,
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 131072,
+            "streamBytes": 131184,
+            "artifactBytes": 131072
+          },
+          "timings": {
+            "initStartAt": 1792985118108,
+            "initReadyAt": 1792985118206,
+            "validInputStartAt": 1792985118318,
+            "reconstructionDoneAt": 1792985133532,
+            "saveRequestAt": 1792985136502,
+            "createWritableAccessedAt": 1792985140831,
+            "writableAt": 1792985140839,
+            "writeCloseAt": 1792985140938,
+            "lastSaveClickAt": 1792985136502,
+            "decoderInitMs": 98,
+            "sourceWaitMs": 112,
+            "initMs": 210,
+            "reconstructMs": 15214,
+            "totalToReadyMs": 15424,
+            "pickerWaitMs": 4329,
+            "writableOpenMs": 8,
+            "saveWaitMs": 4337,
+            "saveWriteMs": 99,
+            "saveMs": 4436
+          },
+          "hashes": {
+            "original": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+            "received": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "recorded import roundtrip; presented frames=98, lastUs=7715000",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "video-n-1mib-probe",
+          "inputKind": "video",
+          "dataClass": "incompressible",
+          "tier": "1MiB bounded probe",
+          "bounds": {
+            "recordSeconds": 150,
+            "maxRecordBytes": 268435456,
+            "importWaitMs": 600000
+          },
+          "boundsRef": "proof/E2E-18/probe-bounds.json",
+          "recording": {
+            "bytes": 211247352,
+            "sha256": "714bdf5701dfb5b12ff84118c8829ddbbd3f8d7e2b75bff83b89b6b54d0dfe73",
+            "seconds": 150
+          },
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 1048576,
+            "streamBytes": 1049244,
+            "artifactBytes": 1048576
+          },
+          "timings": {
+            "initStartAt": 1792985423914,
+            "initReadyAt": 1792985424069,
+            "validInputStartAt": 1792985424617,
+            "reconstructionDoneAt": 1792985561996,
+            "saveRequestAt": 1792985565072,
+            "createWritableAccessedAt": 1792985569449,
+            "writableAt": 1792985569457,
+            "writeCloseAt": 1792985569567,
+            "lastSaveClickAt": 1792985565072,
+            "decoderInitMs": 155,
+            "sourceWaitMs": 548,
+            "initMs": 703,
+            "reconstructMs": 137379,
+            "totalToReadyMs": 138082,
+            "pickerWaitMs": 4377,
+            "writableOpenMs": 8,
+            "saveWaitMs": 4385,
+            "saveWriteMs": 110,
+            "saveMs": 4495
+          },
+          "hashes": {
+            "original": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+            "received": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "recorded import roundtrip; presented frames=962, lastUs=66764000",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "video-n-4mib",
+          "inputKind": "video",
+          "dataClass": "incompressible",
+          "tier": "4MiB",
+          "bounds": {
+            "recordSeconds": 600,
+            "maxRecordBytes": 1073741824,
+            "importWaitMs": 900000
+          },
+          "boundsRef": null,
+          "recording": {
+            "bytes": 827273168,
+            "sha256": "a7266ad19981093dbc18643f95e0bf516561315aa8bfc60c3f4ce8d5c388633e",
+            "seconds": 600
+          },
+          "status": "PASS",
+          "basis": null,
+          "sizes": {
+            "rawBytes": 4194304,
+            "streamBytes": 4196892,
+            "artifactBytes": 4194304
+          },
+          "timings": {
+            "initStartAt": 1792986611151,
+            "initReadyAt": 1792986611304,
+            "validInputStartAt": 1792986612979,
+            "reconstructionDoneAt": 1792987164580,
+            "saveRequestAt": 1792987167675,
+            "createWritableAccessedAt": 1792987171996,
+            "writableAt": 1792987172002,
+            "writeCloseAt": 1792987172139,
+            "lastSaveClickAt": 1792987167675,
+            "decoderInitMs": 153,
+            "sourceWaitMs": 1675,
+            "initMs": 1828,
+            "reconstructMs": 551601,
+            "totalToReadyMs": 553429,
+            "pickerWaitMs": 4321,
+            "writableOpenMs": 6,
+            "saveWaitMs": 4327,
+            "saveWriteMs": 137,
+            "saveMs": 4464
+          },
+          "hashes": {
+            "original": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+            "received": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+            "equal": true
+          },
+          "saveTimingsComplete": true,
+          "notes": "recorded import roundtrip; presented frames=3836, lastUs=266471000",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "live-c-20mib-over-budget",
+          "inputKind": "live",
+          "dataClass": "compressible",
+          "tier": "20MiB-over-budget",
+          "budget": {
+            "maxArtifactBytes": 16777216,
+            "source": "build-desktop-recv/runs/20261026-teamexec-10/receiver/config/profile.json"
+          },
+          "rejection": {
+            "code": "15008",
+            "delta": "[error] 15008: 解码中断。请重新开始接收。\n",
+            "checks": {
+              "codeHit": true,
+              "internal": "Receiving",
+              "artifactPresent": false,
+              "stopAvailable": true
+            },
+            "failures": [],
+            "compression": {
+              "preCompressionBytes": 20971520,
+              "postCompressionBytes": null,
+              "note": "a rejected artifact surfaces no compressedBytes; the recovery roundtrip records the stream size. The compressible choice keeps the fountain stream small while its decompressed output exceeds the budget."
+            }
+          },
+          "recovery": {
+            "equal": true,
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "streamBytes": 626,
+            "artifactBytes": 65536,
+            "timings": {
+              "initStartAt": 1792987198217,
+              "initReadyAt": 1792987198674,
+              "validInputStartAt": 1792987201911,
+              "reconstructionDoneAt": 1792987202105,
+              "saveRequestAt": 1792987205623,
+              "createWritableAccessedAt": 1792987209909,
+              "writableAt": 1792987209915,
+              "writeCloseAt": 1792987210014,
+              "lastSaveClickAt": 1792987205623,
+              "decoderInitMs": 457,
+              "sourceWaitMs": 3237,
+              "initMs": 3694,
+              "reconstructMs": 194,
+              "totalToReadyMs": 3888,
+              "pickerWaitMs": 4286,
+              "writableOpenMs": 6,
+              "saveWaitMs": 4292,
+              "saveWriteMs": 99,
+              "saveMs": 4391
+            }
+          },
+          "sizes": {
+            "rawBytes": 20971520,
+            "streamBytes": null,
+            "artifactBytes": null
+          },
+          "timings": {
+            "initStartAt": 1792987198217,
+            "initReadyAt": 1792987198674,
+            "validInputStartAt": 1792987201911,
+            "reconstructionDoneAt": 1792987202105,
+            "saveRequestAt": 1792987205623,
+            "createWritableAccessedAt": 1792987209909,
+            "writableAt": 1792987209915,
+            "writeCloseAt": 1792987210014,
+            "lastSaveClickAt": 1792987205623,
+            "decoderInitMs": 457,
+            "sourceWaitMs": 3237,
+            "initMs": 3694,
+            "reconstructMs": 194,
+            "totalToReadyMs": 3888,
+            "pickerWaitMs": 4286,
+            "writableOpenMs": 6,
+            "saveWaitMs": 4292,
+            "saveWriteMs": 99,
+            "saveMs": 4391
+          },
+          "hashes": {
+            "original": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "received": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+            "equal": true
+          },
+          "rejectionTimings": {
+            "initStartAt": 1792987187927,
+            "initReadyAt": 1792987188417,
+            "validInputStartAt": 1792987191542,
+            "reconstructionDoneAt": null,
+            "saveRequestAt": null,
+            "createWritableAccessedAt": 1792987171996,
+            "writableAt": 1792987172002,
+            "writeCloseAt": null,
+            "lastSaveClickAt": 1792987167675,
+            "decoderInitMs": 490,
+            "sourceWaitMs": 3125,
+            "initMs": 3615,
+            "reconstructMs": null,
+            "totalToReadyMs": null,
+            "pickerWaitMs": null,
+            "writableOpenMs": 6,
+            "saveWaitMs": null,
+            "saveWriteMs": null,
+            "saveMs": null
+          },
+          "saveTimingsComplete": true,
+          "saveTimingsChecks": {
+            "saveRequestAt": true,
+            "createWritableAccessedAt": true,
+            "writableAt": true,
+            "writeCloseAt": true,
+            "ordered": true
+          },
+          "status": "PASS",
+          "basis": null,
+          "notes": "budget 16777216 (build-desktop-recv/runs/20261026-teamexec-10/receiver/config/profile.json); rejection then stop then hash-clean normal-file recovery",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        },
+        {
+          "id": "live-n-20mib-over-budget",
+          "inputKind": "live",
+          "dataClass": "incompressible",
+          "tier": "20MiB-over-budget",
+          "status": "NOT_RUN",
+          "basis": "code-level basis: the receiver has no early artifact-size check. build_artifact (web/desktop-recv/worker/decoder-worker.js:209-246) runs only after the fountain decoder reports a complete file, so an incompressible 20 MiB payload must transfer the full ~20 MiB encoded stream before rejection - unbounded wall time on this rig. The artifact-budget boundary itself is covered by IAT/UT-023 and by the compressible 20 MiB leg, which exercises the real 15008 rejection. The pixel budget is a different (frame-size) boundary and is explicitly NOT a substitute.",
+          "sizes": {
+            "rawBytes": 20971520,
+            "streamBytes": null,
+            "artifactBytes": null
+          },
+          "timings": null,
+          "notes": "planned 20 MiB incompressible sample; no sample generated because the leg is not executable on this rig",
+          "executedInAttempt": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+        }
+      ],
+      "matrix": {
+        "fixtures": {
+          "root": "fixtures-ext",
+          "seed": 20261018,
+          "files": 5
+        },
+        "plannedLegIds": [
+          "live-c-1mib",
+          "live-c-4mib",
+          "live-n-1mib",
+          "live-n-4mib",
+          "video-c-4mib",
+          "video-n-128kib",
+          "video-n-1mib-probe",
+          "video-n-4mib",
+          "live-c-20mib-over-budget",
+          "live-n-20mib-over-budget"
+        ]
+      }
+    },
+    "attemptId": "E2E-18-2026-10-26T03-18-50-161Z-b22535"
+  },
+  {
+    "caseId": "E2E-19",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-19/original.bin",
+      "proof/E2E-19/received.bin"
+    ],
+    "notes": "reload + REAL close/reopen (old page isClosed=true; fresh page loaded #btn-video) + receiver server restart: 4 roundtrips, all equal=true; PASS requires the old page to be closed",
+    "attemptId": "E2E-19-2026-10-26T04-00-27-078Z-12571a"
+  },
+  {
+    "caseId": "E2E-20",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-20/original.bin",
+      "proof/E2E-20/received.bin"
+    ],
+    "notes": "10 mixed rounds (live/video alternating); all 10 outputs equal=true; final-package part belongs to stage 8",
+    "attemptId": "E2E-20-2026-10-26T04-02-38-464Z-b24912"
+  }
+]

@@ -189,3 +189,16 @@
 - 处置记录：agent 曾以 578B 索引覆盖根 stage5-dev-summary.md（违反 lead 21:21 防覆盖指令，v1 38KB 正文被移出文件）；lead 从 git HEAD 取回 v1 原文（162 行逐字节、尾部比对一致），v2 索引置顶、v1 原文完整保留于下方（38874B）。遗留一次性脚本 t36-prepend-index.mjs 已删除。
 - TDD 台账合并（lead 独占）：tdd-ledger-b2.json 并入 tdd-ledger.json（10 条，T1-T7 红绿成对，去重键 taskId+phase+command+date）；coverageNote 如实声明 T8-T35 的 RED/GREEN 证据在各批报告与 red-logs，不事后伪造补录。
 - 提交：T35=`77a16b4`（工具 5 文件 + 09b 证据 566 文件）；T36=本提交（交付 + 回填 + 台账 + round-12 模板）。下一动作：round-12 送审包构建与 pipeline-state 收口后向用户请求阶段 5 出口确认。
+
+## R12 — Round-12 外审整改轮（lead 编排；r12-prod / r12-tools 执行，lead 验收提交）
+
+- 起止：2026-10-26 08:50 ～ 18:30 (+08:00)；台账：r12-remediation.md；报告：r12-prod-report.md、r12-prod-report-r2b.md、r12-tools-report.md（§8-§12）
+- 输入：外审 round-12 裁决（不通过，5 阻断主题 A-R1/A-R2=B-01/A-R3/A-R4=B-03/B-02；建议 S1/S2），归档 `dc94f92`；用户指令：读取裁决、回阶段 5 整改后再送审。
+- **B-R12-1 产品 TDD（`d22682e`）**：A-R1 报告降级视图语义（`lastDataAtMs>trustedAtMs` 推导，无 schema 改动，UX-UT-023 重写为模型→视图断言）；A-R2/B-01 显示缓存只记已成功绘制值、gate 丢弃不丢最新投影、paint 失败重试、终态收敛、lastBusiness 提交语义。RED→GREEN：12 套 213 例。
+- **B-R12-2 工具 TDD（`5935079`/`8a778b3`/`21f5a65`/`68715eb`）**：A-R3 live judge（全采样 Receiving+session 恒定+≥30s+窗口内结算、提前 Ready 即停不补睡、输入 manifest 绑定+双侧重哈希、baseline basename 推断只读）；B-02 门禁三升级（原/收 SHA 相等、必测步骤精确覆盖+非规范 id 拒绝、measurement 经 measure-ux-calc --recompute 复算）；A-R4 二轮探针（Playwright 去默认参数+CDP 最小化 / 原生 msedge+CDP / 同窗真实标签切换 7s：本机 visibilityState 恒 visible、事件 0——云桌面远程会话惰性）；S1/S2。自测 55→65（裁决三负例转正+覆盖+测量负例）、tools 61→67。
+- **E2E-35 用户裁定（`9cfc9cc`）**："真实云桌面远程会话不需要你测试"——真实后台行为由用户侧真实验证；本地整例如实 NOT_RUN（探针副本入 attempt notes 三点），不修订冻结用例（`21f5a65` 运行器如实 NOT_RUN、needsSender 移除）。
+- **执行中发现的三处"旧绿灯骑缺陷"**：① UX-IAT-04/07 过期装置假设（`a24be4e`）；② E2E-27-S03 以 revision 检测数据流（数据帧不递增，旧通过靠 Ready 后陈旧速率——被修的缺陷；`1ceb5b1` 改为真实 Receiving 采样）；③ A/B 5/5 对 B 侧违反冻结 250ms 不变式=终态 force flush 越界（旧通过同样靠未收敛）——裁定 Option B：产品侧收敛写等共享边界（`00c5d57`，UX-IAT-04-A5 RED→GREEN 实证 255.9ms），测量语义零改动。
+- **运行根演进**：root 10（product 74ca75f8，legacy 20/20+UX 27-34 PASS 记录+A/B attempt -01 OBSERVER import 缺陷与 -02 不变式 FAIL 原件）→ **root 11（最终候选）**：product 34a9de30、input cc07412f、attempt candidate-20261026-01、live 4MiB 6181826a。
+- **root 11 全量复验**：绿扫全绿（12 套 216 例/tools 67/自测 65·14·3/契约）；UX-IAT 01-07 PASS+A5 GREEN+08 NOT_RUN；legacy 20/20（5 次瞬态首败重试过、原件保留）；UX 27/28/29 一次过；30..34 首败（S02-B 抢在收敛写前，`dd20c21` 有界等待修复）后 PASS；A/B PASS（5/5 对，B 侧 min gap 250.2-250.3ms）；实时腿首跑中止（frozenA 竞态/249.9 观测抖动/http.server 瞬态——`5381d35` 修复前两项+1ms 观测容差带约束，raw 移入 live-failed-run-1/）后 10/10 VALID（窗口 30127-30181ms）；UX-UI：35 NOT_RUN/36 PASS/37 NOT_RUN/38 PASS（S01-S05）。
+- **双门禁（lead 独立复跑）**：legacy `GATE local: PASS (20 required cases)` exit0；UX `FAIL (4)` = E2E-35×2 + E2E-37×2（均为用户授权缺口）；field exit1（现场 7 项，设计内）。冻结方法 diff 0ed2e5b 为空；v1 契约 5a93bf22/B2996C84 不变；E2E-36 Ready 截图实证收敛（无旧百分比/旧速率）。
+- **交付**：root11 reproduction.md/release-candidate-manifest.json、状态回填与 runtime 重绑、stage5 总结更新、round-13 送审包（待阶段 5 整改出口确认门）。

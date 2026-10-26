@@ -1,0 +1,8 @@
+suggested=sample-text-2.bin suggestedOk=true
+cancel phase: sentinel intact=true
+refuse phase: refused=true sentinel intact=true
+rename save: app status=Saved renamedExists=true equal=true
+helper stdout: overwrite refused
+rename paste: edit text now 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-10\proof\E2E-12\中文 名字-2.bin'
+False
+saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-10\proof\E2E-12\中文 名字-2.bin

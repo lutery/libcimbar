@@ -4,6 +4,7 @@
 日期：2026-10-25　分支 receiver-ux-v2　基线提交 9e4fbc4（v1 1.0.0 之后）；最终 HEAD 5f2aa89
 运行根：09b（docs/tests/runs/20261025-teamexec-09b，最终候选，product manifest 9e2595e6…，attempt candidate-20261025-04）
 边界备注：本文件与 runtime-case-map.json、planning-cases.json 的最终回填一致；tdd-ledger 合并由 lead 负责（本车道不写 tdd-ledger*.json）。
+整改轮更新（2026-10-26）：round-12 外审（不通过，5 阻断主题）整改完成后，最终候选已迁移至 **root11**（docs/tests/runs/20261026-teamexec-11，product manifest 34a9de30…，attempt candidate-20261026-01），最终 HEAD 5381d35。第 1-6 节如实保留 09b 时代的阶段 5 收口记录（其证据根现为中间产物），第 7 节为整改轮更新与最终门禁。
 
 ## 1. 实施范围（36 任务全景，引用各批报告）
 
@@ -69,3 +70,52 @@ E2E-21..26 与 E2E-39（real_cloud/field 门）按冻结计划由用户现场执
 - E2E-37 两条 UX 门禁违规：需真实用户（现场批次）执行后消除。
 - 现场批次 E2E-21..26/39 待用户执行。
 - UX-IAT-08 占位 NOT_RUN（实质覆盖已达成，占位记录如实保留）。
+
+## 7. Round-12 外审整改轮更新（2026-10-26）
+
+### 7.1 阻断主题与关闭证据（逐项，verdict 原文为 DoD）
+
+| 主题 | 关闭证据 |
+|---|---|
+| A-R1 报告降级仍冒认旧百分比 | `d22682e`（视图推导 `lastDataAtMs>trustedAtMs`→unavailable/progress_unavailable，无 schema 改动；UX-UT-023 重写为模型→视图断言）；root11 E2E-36 Ready 截图实证：指标区=「重建完成/26.8s」，无旧百分比/旧速率 |
+| A-R2=B-01 显示缓存/终态/重复写 | `d22682e` + `00c5d57`（Option B：终态收敛写等共享 250ms 边界）；root11 A/B B 侧 min gap 250.2-250.3ms 且收敛投影完整；UX-IAT-04-A5 真实页面 GREEN（gap=255.9ms、收敛后 700ms 零写入） |
+| A-R3 实时腿非 30s Receiving | `5935079`+`5381d35`；root11 实时 10/10 VALID，windowObservedMs 30127-30181ms，4MiB 样本全程 Receiving，窗口内结算，提前 Ready 即停不补睡；观测抖动 1ms 容差仅限 live judge（249.9 过/240 拒，recorded 与 judgeRound 严格 250），机制与约束见 r12-tools-report §12 |
+| A-R4=B-03 E2E-35 假 PASS | `9cfc9cc`+`21f5a65`：三装置探针（含同窗真实标签切换 7s）证实本机（云桌面远程会话）Page Visibility 惰性；按用户 2026-10-26 裁定（真实远程会话行为由用户侧真实验证）整例如实 NOT_RUN，探针日志副本入 attempt，notes 三点齐全，不修订冻结用例 |
+| B-02 门禁弱验证 | `5935079`：原/收 SHA 相等、必测步骤精确覆盖（非规范 id 拒绝）、measurement 经 measure-ux-calc --recompute 复算（含篡改/缺对/提前 Ready 拒绝）；自测 55→65 含裁决三负例转正 |
+| S1/S2 | `5935079`：IAT-08 原因如实（保持 NOT_RUN）；measure-ux 拆分纯计算模块供门禁复用 |
+
+### 7.2 最终候选与测试总账（root11）
+
+- 运行根：`docs/tests/runs/20261026-teamexec-11`（release-candidate-manifest.json 为机器可读清单）；product manifest **34a9de30…**（27 文件；相对 09b 仅 asset-set/ux-view/ux-display 变化）；input manifest **cc07412f…**（live=4MiB 6181826a…，基线侧同 SHA 命中 run-04 只读文件）；context harnessRevision 5381d35。
+- 单元/工具：`run-unit --all` 12 套 **216 例**；tools 3 文件 **67 例**；自测 **65/14/3**；check-contracts PASS（20/27/44/6/15）。
+- IAT：UX-IAT-01..07 PASS + **04-A5（终态等边界）GREEN**；08 如实 NOT_RUN（原因已更新为"测量器已交付，义务由同构建 A/B+实时腿证据承担"）。
+- 本地 E2E：legacy **20/20 PASS**（5 次瞬态首败重试过、原件保留；E2E-18 十腿 9 PASS+D-19 NOT_RUN）；UX 12 条 = **10 PASS（27/28/29/30/31/32/33/34/36/38）+ 2 如实 NOT_RUN（35/37）**。
+- 测量（冻结方法，零改动）：录制 A/B **5/5 对 PASS**（readyMs 15060/限 17528.8、p50 60/65.56、p95 81.3/98.09）；实时 **10/10 侧 VALID**（窗口 30127-30181ms）；中止轮的 5 份 raw 于 `live-failed-run-1/`（README 记三原因）。
+- 旧证据保全：09b（前候选）与 root10（中间构建 74ca75f8…，含 A/B attempt -01/-02 失败原件）均只读保留，round-13 如实披露。
+
+### 7.3 最终双门禁（lead 独立复跑原文）
+
+```
+> python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261026-teamexec-11 --gate local --planning docs/tests/receiver-ux-v2/planning-cases.json
+GATE local: PASS (20 required cases)
+
+> python tools/desktop-recv/verify-ux-evidence.py --context docs/tests/runs/20261026-teamexec-11/run-context.json --gate local
+UX GATE local: FAIL (4 violation(s))
+  - E2E-35: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-35: executedBy must be executor per the plan (got None)
+  - E2E-37: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-37: executedBy must be executor per the plan (got None)
+
+> python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261026-teamexec-11 --gate field --planning docs/tests/receiver-ux-v2/planning-cases.json
+# exit 1（现场 E2E-21..26/39 未执行，设计内）
+```
+
+UX 门禁 4 条 = E2E-35（用户授权缺口：本机不可构造真实 visibility，用户裁定由其实环境验证）+ E2E-37（环境缺口：语音不可程序化核验）。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA B2996C84/5A93BF22 不变；09b/root10 零改动。
+
+### 7.4 诚实披露
+
+1. 旧"31 本地 PASS / 10/10 live VALID"主张基于 root10/09b 时代的实现，其中 E2E-27-S03 与 A/B min-gap 断言曾"骑着被修复的缺陷通过"（S03 靠 Ready 后陈旧速率；不变式靠未收敛），整改轮已分别以真实 Receiving 采样与 Option B 产品修复消除，证据链见 r12-tools-report §11。
+2. E2E-35 为**用户明确授权**的如实 NOT_RUN（2026-10-26 指示原话："真实云桌面远程会话不需要你测试"），非伪造 PASS、非范围删除——冻结用例文本未动。
+3. live 观测间隔含 1ms 观测抖动容差（只作用于 observer 通道；产品时钟阈值与方法文件未动），正负例钉在 measure-ux.test.mjs（249.9 过/240 拒/judgeRound 严格）。
+4. owner 切换重置 `lastTelemetryWriteAt` 属既有语义保留（真实流程不可能在终态写后 250ms 内发生 owner 切换）；如需全局严格解释需单独决策（r12-prod-report-r2b §5）。
+5. root10 为中间失败构建（74ca75f8…），其失败原件（A/B -01 OBSERVER import 缺陷、-02 终态写越界、legacy/UX 记录）只读保留，供 round-13 对照。

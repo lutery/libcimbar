@@ -1,0 +1,21 @@
+2026-10-26T05:10:22.564Z process guard: reclaimed 0/40 recorded process(es)
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-3\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-incompressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-incompressible-2\received.bin
+E2E FAILED: Error: the app reported a failed save: recording: 1604x1002, 17.8s
+capture stopped; the file is ready to save
+[error] save failed (16004); you can try again
+ | raw: {"saveError":null,"pickerResolved":{"name":"received.bin","kind":"file","at":1792991577283},"writableCreated":true,"writeSucceeded":true,"createWritableAccessed":true,"saveClicks":1,"lastCaughtError":{"name":"InvalidStateError","message":"An operation that depends on state cached in an interface object was made but the state had changed since it was read from disk.","stack":"","at":1792991577295}}
+    at saveArtifact (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:964:13)
+    at async videoRoundtrip (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:1151:3)
+    at async E2E-14 (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:2183:21)
+    at async main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:4510:16)
+EXIT=1

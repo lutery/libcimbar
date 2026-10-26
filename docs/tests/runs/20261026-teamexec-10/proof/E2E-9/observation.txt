@@ -1,0 +1,4 @@
+E2E-9 observation (2026-10-26T03:03:50.409Z)
+save helper failed: dismissed the Edge sync bubble
+the save dialog did not produce the file: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-10\proof\E2E-9\round-default\received.bin
+

@@ -1,0 +1,9 @@
+E2E FAILED: ProcessGuardError: process guard helper failed: 
+    at runPowerShellJson (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/process-guard.mjs:74:11)
+    at cleanupRecordedProcesses (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/process-guard.mjs:129:18)
+    at main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:4460:27)
+    at file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:4501:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+EXIT=1

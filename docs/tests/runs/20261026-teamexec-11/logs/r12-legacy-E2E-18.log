@@ -1,0 +1,92 @@
+2026-10-26T05:24:15.666Z process guard: reclaimed 0/53 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:21] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /pwa.json HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:24:22] "GET /icon-512x512.png HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=57936
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T05:24:36.736Z round live-c-1mib: File ready to save artifact=ext-text-1mib.bin 1048576 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-c-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=57936
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T05:25:05.242Z round live-c-4mib: File ready to save artifact=ext-text-4mib.bin 4194304 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-c-4mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=57936
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T05:25:51.444Z round live-n-1mib: File ready to save artifact=ext-random-1mib.bin 1048576 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-n-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=57936
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T05:27:30.340Z round live-n-4mib: File ready to save artifact=ext-random-4mib.bin 4194304 字节
+[helper] the save dialog did not produce the file: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-n-4mib\received.bin
+--- save failure diagnostics ---
+app status: Saving…
+app log: capture stopped; the file is ready to save
+
+desktop screenshot: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\smoke\save-failure-desktop.png
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:28:29] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:28:30] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:28:30] code 404, message File not found
+127.0.0.1 - - [26/Oct/2026 13:28:30] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=22376
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:43:38] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:43:39] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:43:39] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 13:43:39] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=64476
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+2026-10-26T05:58:41.915Z CASE E2E-18 FAIL (attempt E2E-18-2026-10-26T05-24-15-666Z-b491d2)
+[helper] dialog not found for action 'share' within 30 s
+[helper]   window        pid=32908 class=FLUTTER_RUNNER_WIN32_WINDOW name='175964202 - RustDesk'
+[helper]   window TARGET pid=57936 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=16076 class=Chrome_WidgetWin_1 name='Orca'
+[helper]   window        pid=11980 class=CabinetWClass name='tmp - 文件资源管理器'
+[helper]   window        pid=54912 class=Chrome_WidgetWin_1 name='COVER - 用户配置 1 - Microsoft​ Edge'
+[helper]   window        pid=58620 class=Chrome_WidgetWin_1 name='sider.ai 和另外 5 个页面 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=57520 class=Chrome_WidgetWin_1 name='R12P5B - 个人 - Microsoft​ Edge'
+[helper]   window        pid=66632 class=Chrome_WidgetWin_1 name='CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge'
+[helper]   window        pid=43664 class=CASCADIA_HOSTING_WINDOW_CLASS name='管理员: Windows PowerShell'
+[helper]   window        pid=37620 class=Chrome_WidgetWin_1 name='.env - .claude-mem - Visual Studio Code'
+[helper]   window        pid=21584 class=Chrome_WidgetWin_1 name='用量 - Google Chrome'
+[helper]   window        pid=19016 class=Chrome_WidgetWin_1 name='ChatGPT'
+[helper]   window        pid=42948 class=Chrome_WidgetWin_1 name='R12P6-recv - 用户配置 1 - Microsoft​ Edge'
+[helper]   window        pid=60920 class=Chrome_WidgetWin_1 name='R12P5B - 用户配置 1 - Microsoft​ Edge'
+[helper]   window        pid=20612 class=Window name='v2rayN - V7.22.7 - X64 - 以管理员身份运行'
+[helper]   window        pid=21584 class=Chrome_WidgetWin_1 name='最终幻想16|豪华中文|V1.03Fix5+预购特典+扩充通票+全DLC+修改器-支持手柄|解压即撸|-Switch520 - Google Chrome'
+[helper]   window        pid=37620 class=Chrome_WidgetWin_1 name='continue.md - tools - Visual Studio Code'
+[helper]   window        pid=37620 class=Chrome_WidgetWin_1 name='open-questions.md - libcimbar - Visual Studio Code'
+[helper]   window        pid=37620 class=Chrome_WidgetWin_1 name='审查反馈.md - setting-up-shop-today - Visual Studio Code'
+[helper]   window        pid=37620 class=Chrome_WidgetWin_1 name='外部审查建议.md - AStock - Visual Studio Code'
+[helper]   window        pid=8832 class=Window name='Citrix Workspace'
+[helper]   window        pid=6864 class=QWindowsMsgRecv name='PixPin'
+[helper]   window        pid=21584 class=Chrome_WidgetWin_1 name='图像降噪：空间域滤波算法 - 知乎 - Google Chrome'
+[helper]   window        pid=15192 class=QMGameRecommendWebViewTipsWindow name='QMGameRecommendTips64'
+[helper]   window        pid=52336 class=Chrome_WidgetWin_1 name='R12PROBE - 用户配置 1 - Microsoft​ Edge'
+[helper]   window        pid=57200 class=NarratorHelperWindow name=''
+EXIT=1

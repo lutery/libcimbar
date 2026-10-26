@@ -1,0 +1,5 @@
+support matrix: "模式 | B（68） | IAT-01/05 实测" is the only verified mode;
+非支持表 lists "8C/Bu/Bm 模式解码" as not claimed - 4C is outside the
+verified set, and the receiver never claims 4C support.
+4C mismatch: no Ready within 30065 ms (status="Receiving frames", no artifact)
+switch back to B: roundtrip equal=true

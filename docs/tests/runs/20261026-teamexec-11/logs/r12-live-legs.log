@@ -1,0 +1,146 @@
+live pair 1 side A: starting
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:33] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /send.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /main.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /sw.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /index.html HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:12:35] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-A] ----------------------------------------
+[receiver-A] Exception occurred during processing of request from ('127.0.0.1', 2759)
+[receiver-A] Traceback (most recent call last):
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-A] ----------------------------------------
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=58656
+[helper] source: CIMBAR-SENDER-WINDOW - Profile 1 - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+live pair 1 side A: VALID
+live pair 1 side B: starting
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:30] "GET / HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET / HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /send.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /main.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /sw.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /index.html HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:13:31] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=82908
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+live pair 1 side B: INVALID (E_LIVE_CLOCK_NOT_FROZEN: the display clock did not freeze after the real stop)
+live pair 2 side B: starting
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:25] "GET / HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET / HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /send.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /main.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /sw.js HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /index.html HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-B] 127.0.0.1 - - [26/Oct/2026 17:14:26] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=79652
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+live pair 2 side B: INVALID (E_LIVE_TELEMETRY_INTERVAL: telemetry write interval 249.9ms < 250ms)
+live pair 2 side A: starting
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:20] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /send.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /main.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /sw.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /index.html HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:15:21] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=82872
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+live pair 2 side A: VALID
+live pair 3 side A: starting
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:15] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET / HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /send.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /main.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /sw.js HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /index.html HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-A] 127.0.0.1 - - [26/Oct/2026 17:16:16] "GET /pwa.json HTTP/1.1" 200 -
+[receiver-A] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 7118)
+[receiver-A] Traceback (most recent call last):
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+[receiver-A]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+----------------------------------------
+live pair 3 side A: INVALID (page.waitForFunction: Timeout 60000ms exceeded.)
+LIVE LEGS FAILED: Error: port(s) already in use: [9445] - refusing to kill the owner
+    at assertPortsFree (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/live-legs.mjs:133:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/live-legs.mjs:467:7)
+EXIT=1

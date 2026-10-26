@@ -1,0 +1,34 @@
+{
+  "outputVersion": 1,
+  "kind": "ux-overhead-ab",
+  "startedAtIso": "2026-10-26T09:07:32.635Z",
+  "finishedAtIso": "2026-10-26T09:11:10.469Z",
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "candidate": {
+    "runId": "20261026-teamexec-11",
+    "attemptId": "candidate-20261026-01",
+    "phase": "final",
+    "productManifestSha256": "34a9de304d8625356565f77e5015abe0ab78ddd5aba17a4ff3c6e0674a17df8b"
+  },
+  "baseline": {
+    "runId": "20261024-teamexec-04",
+    "attemptId": "baseline-001",
+    "phase": "baseline",
+    "productManifestSha256": "b8c78a1851e05e8558a3a7b7582c5f67f5df82f3b5429cff3749e472367e6e0d"
+  },
+  "plan": {
+    "pairs": 5,
+    "order": [
+      "AB",
+      "BA",
+      "AB",
+      "BA",
+      "AB"
+    ],
+    "warmupPerBuild": 1,
+    "minSettledFrames": 30,
+    "telemetryMinWriteIntervalMs": 250
+  },
+  "verdict": "PASS"
+}

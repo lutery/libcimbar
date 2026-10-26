@@ -1,0 +1,81 @@
+{
+  "verdict": "FAIL",
+  "reasons": [
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 1,
+      "detail": "telemetry numeric area was written every 169.5ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 2,
+      "detail": "telemetry numeric area was written every 119.5ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 3,
+      "detail": "telemetry numeric area was written every 206.19999999925494ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 4,
+      "detail": "telemetry numeric area was written every 216.69999999925494ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 5,
+      "detail": "telemetry numeric area was written every 70.60000000149012ms (< 250ms)"
+    }
+  ],
+  "validPairs": 0,
+  "metrics": {
+    "readyMs": {
+      "metric": "readyMs",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 250,
+      "formula": "candidateMedian <= baselineMedian * 1.10 + 250",
+      "limit": 250,
+      "marginMs": 250,
+      "pass": true
+    },
+    "frameRttP50Ms": {
+      "metric": "frameRttP50Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 2,
+      "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)",
+      "limit": 2,
+      "marginMs": 2,
+      "pass": true
+    },
+    "frameRttP95Ms": {
+      "metric": "frameRttP95Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.15,
+      "absoluteAllowanceMs": 5,
+      "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)",
+      "limit": 5,
+      "marginMs": 5,
+      "pass": true
+    }
+  },
+  "outputDir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261026-teamexec-10\\measurements\\ux-overhead\\candidate-20261026-02",
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f"
+}
+EXIT=1

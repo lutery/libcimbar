@@ -1,0 +1,91 @@
+{
+  "checker": "video-prefix-check",
+  "version": 1,
+  "with": {
+    "path": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261021-teamexec-03\\fixtures-media\\V-LAST-with.webm",
+    "frames": 126,
+    "fps": null,
+    "effectiveFps": 13.433637829124127,
+    "ptsUsable": true,
+    "shape": [
+      98,
+      94,
+      3
+    ]
+  },
+  "without": {
+    "path": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261021-teamexec-03\\fixtures-media\\V-LAST-without.webm",
+    "frames": 81,
+    "fps": null,
+    "effectiveFps": 12.60239445494644,
+    "ptsUsable": true,
+    "shape": [
+      98,
+      94,
+      3
+    ]
+  },
+  "region": {
+    "rows": "160:940:8",
+    "cols": "430:1180:8"
+  },
+  "head": {
+    "framesUsed": 30,
+    "bestOffset": 0,
+    "bestMeanAbsDiff": 0,
+    "firstFrameDiff": 0,
+    "offsets": {
+      "0": 0,
+      "1": 69.35761402696372,
+      "2": 72.07765016655127,
+      "3": 74.48865254720052,
+      "4": 73.39442723592123,
+      "5": 74.76874821980795,
+      "6": 74.6371358235677,
+      "-6": 75.91811981201172,
+      "-5": 75.89243113199869,
+      "-4": 74.80553461710612,
+      "-3": 75.55002772013346,
+      "-2": 72.84834896822771,
+      "-1": 69.6944283987085
+    },
+    "consecutiveFloor": 0.1343175619840622,
+    "consecutiveFloorWith": 0.1343175619840622,
+    "consecutiveFloorWithout": 0.1343175619840622,
+    "threshold": 10,
+    "thresholdFormula": "max(10.0, 2.0 x intra-clip consecutive floor)",
+    "pass": true
+  },
+  "tail": {
+    "pass": true,
+    "mapping": "cut-time-pts",
+    "cutMs": 6500,
+    "windowFrames": 30,
+    "withFrames": 126,
+    "withoutFrames": 81,
+    "frames": [
+      {
+        "withoutIndex": 78,
+        "expectedWithIndex": 80,
+        "matchedWithIndex": 78,
+        "meanAbsDiff": 0,
+        "found": true
+      },
+      {
+        "withoutIndex": 79,
+        "expectedWithIndex": 81,
+        "matchedWithIndex": 79,
+        "meanAbsDiff": 0,
+        "found": true
+      },
+      {
+        "withoutIndex": 80,
+        "expectedWithIndex": 82,
+        "matchedWithIndex": 80,
+        "meanAbsDiff": 0,
+        "found": true
+      }
+    ]
+  },
+  "verdict": "PASS"
+}

@@ -1,0 +1,50 @@
+{
+  "side": "B",
+  "pairIndex": 0,
+  "slot": 0,
+  "warmup": true,
+  "startedAtIso": "2026-10-26T04:25:31.904Z",
+  "collectionError": {
+    "code": "E_COLLECTION_FAILED",
+    "kind": "environment",
+    "message": "OBSERVER_SCRIPT is not defined"
+  },
+  "salvaged": false,
+  "readyMs": null,
+  "okFrameCount": 0,
+  "rejectedFrameCount": 0,
+  "settledFrameCount": 0,
+  "rttSamples": [],
+  "p50Ms": null,
+  "p95Ms": null,
+  "maxInFlight": 0,
+  "telemetryGapMs": [],
+  "minTelemetryGapMs": null,
+  "telemetryJudged": false,
+  "telemetryApplicable": false,
+  "telemetryNote": null,
+  "violations": [
+    {
+      "code": "E_COLLECTION_ERROR",
+      "detail": "OBSERVER_SCRIPT is not defined"
+    },
+    {
+      "code": "E_READY_MS",
+      "detail": "journey.receivingAt is missing or not a finite number"
+    },
+    {
+      "code": "E_FRAMES",
+      "detail": "only 0 settled ok frames (< 30)"
+    },
+    {
+      "code": "E_INPUT_SHA",
+      "detail": "the round input SHA-256 does not match the frozen input"
+    },
+    {
+      "code": "E_MEDIA_SHA",
+      "detail": "the round media SHA-256 does not match the frozen recording"
+    }
+  ],
+  "invariantViolations": [],
+  "exclusionReason": "E_COLLECTION_ERROR"
+}

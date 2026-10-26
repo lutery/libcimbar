@@ -1,0 +1,8 @@
+status=Saved
+artifact=ext-text-1mib.bin 1048576 字节
+saveTimings={"initStartAt":1792994354665,"initReadyAt":1792994354817,"validInputStartAt":1792994358776,"reconstructionDoneAt":1792994359067,"saveRequestAt":1792994362935,"createWritableAccessedAt":1792994367975,"writableAt":1792994367981,"writeCloseAt":1792994368092,"lastSaveClickAt":1792994362935,"decoderInitMs":152,"sourceWaitMs":3959,"initMs":4111,"reconstructMs":291,"totalToReadyMs":4402,"pickerWaitMs":5040,"writableOpenMs":6,"saveWaitMs":5046,"saveWriteMs":111,"saveMs":5157}
+saveTimingsComplete=true
+sha256 original=2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2 received=2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2 equal=true
+log=capture stopped; the file is ready to save
+saved (1)
+

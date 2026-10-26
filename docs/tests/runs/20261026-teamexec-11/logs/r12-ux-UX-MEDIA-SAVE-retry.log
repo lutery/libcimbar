@@ -1,0 +1,55 @@
+2026-10-26T09:00:59.969Z process guard: reclaimed 0/90 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:05] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 17:01:06] "GET /pwa.json HTTP/1.1" 200 -
+2026-10-26T09:01:10.657Z group UX-MEDIA-SAVE: running E2E-30
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=84728
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-30\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\d1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=84728
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-30\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\d2\received.bin
+2026-10-26T09:02:41.262Z group UX-MEDIA-SAVE: E2E-30 PASS
+2026-10-26T09:02:42.095Z group UX-MEDIA-SAVE: running E2E-31
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\fixtures\fixtures-media\V-LAST-with.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-31\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\save\received.bin
+2026-10-26T09:03:23.860Z group UX-MEDIA-SAVE: E2E-31 PASS
+2026-10-26T09:03:24.393Z group UX-MEDIA-SAVE: running E2E-32
+[helper] False[helper] 
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-32\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\save\received.bin
+2026-10-26T09:04:26.372Z group UX-MEDIA-SAVE: E2E-32 PASS
+2026-10-26T09:04:26.910Z group UX-MEDIA-SAVE: running E2E-33
+[helper] save-cancel via Cancel id 2
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-33\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\retry-received.bin
+2026-10-26T09:05:16.301Z group UX-MEDIA-SAVE: E2E-33 PASS
+2026-10-26T09:05:16.850Z group UX-MEDIA-SAVE: running E2E-34
+[helper] False
+[helper] overwrite confirmed
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-34\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\locked-received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-34\UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269\recovered-received.bin
+2026-10-26T09:06:16.081Z group UX-MEDIA-SAVE: E2E-34 PASS
+2026-10-26T09:06:16.082Z CASE UX-MEDIA-SAVE PASS (attempt UX-MEDIA-SAVE-2026-10-26T09-00-59-970Z-799269)
+EXIT=0 (retry after first=1: E2E-32-S02-B sampling race fixed)

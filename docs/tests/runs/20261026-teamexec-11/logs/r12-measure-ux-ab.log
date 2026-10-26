@@ -1,0 +1,50 @@
+{
+  "verdict": "PASS",
+  "reasons": [],
+  "validPairs": 5,
+  "metrics": {
+    "readyMs": {
+      "metric": "readyMs",
+      "baselineMedian": 15708,
+      "candidateMedian": 15060,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 250,
+      "formula": "candidateMedian <= baselineMedian * 1.10 + 250",
+      "limit": 17528.800000000003,
+      "marginMs": 2468.800000000003,
+      "pass": true
+    },
+    "frameRttP50Ms": {
+      "metric": "frameRttP50Ms",
+      "baselineMedian": 59.600000001490116,
+      "candidateMedian": 60,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 2,
+      "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)",
+      "limit": 65.56000000163914,
+      "marginMs": 5.560000001639139,
+      "pass": true
+    },
+    "frameRttP95Ms": {
+      "metric": "frameRttP95Ms",
+      "baselineMedian": 85.29999999701977,
+      "candidateMedian": 81.29999999701977,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.15,
+      "absoluteAllowanceMs": 5,
+      "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)",
+      "limit": 98.09499999657272,
+      "marginMs": 16.794999999552957,
+      "pass": true
+    }
+  },
+  "outputDir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261026-teamexec-11\\measurements\\ux-overhead\\candidate-20261026-01",
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f"
+}
+EXIT=0
