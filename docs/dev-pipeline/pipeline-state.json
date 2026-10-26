@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-26T10:10:00+08:00",
+  "updated_at": "2026-10-26T18:45:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -244,7 +244,7 @@
       "test_status": "passed",
       "started_at": "2026-10-24T14:37:17+08:00",
       "completed_at": null,
-      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。",
+      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。 整改轮收口（2026-10-26 18:45）：round-12 的 5 阻断主题全部以证据关闭（台账 r12-remediation.md 全 CLOSED）。最终候选=root11（docs/tests/runs/20261026-teamexec-11，product manifest 34a9de30…，attempt candidate-20261026-01，sourceRevision 00c5d57，harnessRevision 5381d35）。测试总账：run-unit 12 套 216 例、tools 67 例、自测 65/14/3、契约 PASS；UX-IAT 01-07+A5 GREEN、08 如实 NOT_RUN；legacy E2E-1..20 全 20 PASS（5 次瞬态首败重试过、原件保留）；UX 12 条=10 PASS+35/37 如实 NOT_RUN（35=用户 2026-10-26 授权；37=环境）；录制 A/B 5/5 对 PASS（B 侧 min gap 250.2-250.3ms）；实时 10/10 VALID（窗口 30127-30181ms，4MiB 6181826a…）。双门禁（lead 独立复跑）：legacy local PASS(20) exit0；UX local exit1 恰 4 条（35×2+37×2 授权缺口）；field exit1 设计内。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA 不变；E2E-36 Ready 截图实证收敛。中间失败件：root10（74ca75f8…，A/B -01/-02 失败原件）与实时中止轮 raw（live-failed-run-1/）只读保留。round-13 送审包与模板已就绪（9baefc3/51e0726），等待阶段 5 整改出口确认门。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
