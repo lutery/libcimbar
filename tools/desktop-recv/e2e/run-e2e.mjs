@@ -1956,7 +1956,7 @@ const SCENARIOS = {
       const attached = await attachCapture(stack.receiver.page, source, stack.receiver.pid, { waitForReady: false });
       await uxShot(stack.receiver.page, caseId, attemptId, 's01-attached.png');
       const attachedProbe = await uxProbe(stack.receiver.page);
-      add('E2E-27-S01b', 'real source window chosen in the system picker; session enters waiting',
+      add('E2E-27-S01-B', 'real source window chosen in the system picker; session enters waiting',
         `state=${attachedProbe.state} primary=${attachedProbe.primary} status=${attached.status}`,
         /等待有效数据|正在接收|准备/.test(String(attachedProbe.primary || '')),
         proofRel('screens/s01-attached.png'));

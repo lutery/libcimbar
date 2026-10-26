@@ -282,3 +282,103 @@ python tools/desktop-recv/verify-evidence-selftest.py       → SELFTEST PASS (1
 6. **measurement 复算的边界**：不带 `--context` 时只做测量目录内部一致性（方法 SHA、原始数值、实时窗），不重哈希产品/输入实物；门禁始终带 `--context`，单跑 CLI 时需自行带上。
 7. **未执行**：桌面 E2E、真实 Sender/Receiver、真实 5×30s 重跑、主录像 A/B 重录、现场验收。本报告不把这些写成已完成。
 8. **09b 只读**：`git status` 对 `docs/tests/runs/**`、冻结方法、cases 步文本、`web/desktop-recv/**` 均为空；10 份实时 raw 与 `-held` 记录按失败原件保留。
+
+## 8. A-R4 第二轮探针（lead 指定三装置）— 全部失败，E2E-35 保持零改动
+
+### 8.1 装置与真实输出
+
+日志：`red-logs/r12-tools/probe2-three-apparatuses.txt`、`probe2b-real-tab-cdp.txt`。
+
+| 装置 | 做法 | 真实结果 |
+|---|---|---|
+| A（Playwright 去默认后台参数） | `chromium.launch({channel:'msedge', ignoreDefaultArgs:['--disable-background-timer-throttling','--disable-backgrounding-occluded-windows','--disable-renderer-backgrounding','--disable-features']})`，CDP `Browser.setWindowBounds{windowState:'minimized'}` | Edge 156.0.4314.42；最小化后 `visible`、`visibilitychange` 事件 0；恢复后 `visible`；`minimizeFlipsHidden=false` |
+| B（真实浏览器形态） | 直接 `msedge.exe --remote-debugging-port=9557 --user-data-dir=<temp> --no-first-run`，CDP attach 后最小化 | 最小化后 `visible`、事件 0；恢复后 `visible`；`minimizeFlipsHidden=false` |
+| C（真实标签页切换） | 同一窗口第二标签页真实激活 ≥6s 再切回接收页；先用 Playwright 第二 tab，再用 CDP `Target.createTarget{newWindow:false}` + `Target.activateTarget` 复核 | 见下 |
+
+装置 C 的 CDP 复核（关键）：两个 target 的 `Browser.getWindowForTarget` 返回**同一 windowId=1371439402**（确认是真标签页而非新窗口）；`Target.activateTarget` 激活第二标签 7.008s 期间，接收页 `document.visibilityState='visible'`、`document.hidden=false`、`hasFocus=true`、`visibilitychange` 事件 0；切回后仍 `visible`。Playwright 第二 tab 的 7.004s 保持结果相同。
+
+```
+{"sameWindow": true, "windowId": 1371439402,
+ "whileOtherTabActive": {"state":"visible","hidden":false,"hasFocus":true,"log":[]},
+ "heldMs": 7008,
+ "backOnReceiverTab": {"state":"visible","hidden":false,"hasFocus":true,"log":[]},
+ "verdict": {"sameWindowRealTab": true, "hiddenWhileOtherTab": false,
+             "visibleAfterReturn": true}}
+```
+
+### 8.2 结论
+
+- lead 指定的三种装置**全部不能**让页面自身产生 `hidden`；连“真实同窗标签切换”都不触发，且最小化期间 `hasFocus` 仍为 true——说明本机（远程/云桌面会话）的 Page Visibility 与焦点信号整体惰性，不是某个启动参数的问题（第一轮已排除 `CalculateNativeWinOcclusion`）。
+- 按指令：**E2E-35 保持零改动、停手**，不注入 `document.visibilityState`、不伪造。回退方案（整例非 PASS + 用户升级）待 lead/用户决策。
+- 门禁联动不变：`E2E-35-S02-held` 仍是替换 id、S02 仍无覆盖，下一轮运行该例会被自动判非 PASS。
+
+## 9. 断言 id 规范化（任务 2）
+
+### 9.1 media-journeys.mjs（E2E-30..34）：旧 id → 规范 id 映射
+
+按 `docs/tests/receiver-ux-v2/cases/e2e-receive.json` 的冻结 steps 语义映射（expected/observed/判据字符串**未改**）：
+
+| 用例 | 旧 id | 新 id | 对应冻结步骤依据 |
+|---|---|---|---|
+| E2E-30 | A1 | `E2E-30-S01` | S1 真实接收 A 至用时/速率可见 |
+| E2E-30 | A2 | `E2E-30-S01-B` | S1 点击停止并记录清理 |
+| E2E-30 | A3 | `E2E-30-S02` | S2 清理后另一输入的新会话/初始计时 |
+| E2E-30 | A4 | `E2E-30-S03` | S3 B 真实重建并实际保存 |
+| E2E-30 | A5 | `E2E-30-S04` | S4 反向输入重复停止/切换 |
+| E2E-30 | A6 | `E2E-30-S04-B` | S4 反向保存 |
+| E2E-31 | A1 | `E2E-31-S01` | S1 真实 OS 选文件并返回接收页 |
+| E2E-31 | A2 | `E2E-31-S02` | S2 分时点观察位置/用时/速率/估计 |
+| E2E-31 | A3 | `E2E-31-S02-B` | S2 重建指标与位置分开标注 |
+| E2E-31 | A4 | `E2E-31-S04` | S4 真实保存 + 应用外核 SHA |
+| E2E-32 | A2 | `E2E-32-S01` | S1 到尾不提前启用保存/不假完成 |
+| E2E-32 | A1 | `E2E-32-S02` | S2 EOF 屏障后明确“数据不足/未完成” |
+| E2E-32 | A3 | `E2E-32-S03` | S3 清理后重新导入完整录像 |
+| E2E-32 | A4 | `E2E-32-S04` | S4 保存相等 + T6 pair 材料 |
+| E2E-33 | A1 | `E2E-33-S02-A` | S2 保存对话框停留 ≥3s |
+| E2E-33 | A2 | `E2E-33-S02-B` | S2 真实取消后仍可保存 |
+| E2E-33 | A3 | `E2E-33-S03` | S3 第二次保存到新路径 + 四个时点 |
+| E2E-33 | A4 | `E2E-33-S04` | S4 原/收 SHA 相等 |
+| E2E-34 | A1 | `E2E-34-S01` | S1 锁文件保存真实失败分支 |
+| E2E-34 | A2 | `E2E-34-S03` | S3 解锁后保存到新路径完成 |
+| E2E-34 | A3 | `E2E-34-S04` | S4 原/成功输出 SHA 相等 |
+
+**新增的步骤覆盖断言（4 条，非改名，供 lead 复核）**——原运行器在这些冻结步骤上没有任何断言，若不补则新记录仍会被门禁判缺步：
+
+| 新 id | 冻结步骤 | 判据来源（step 原文） | 实现方式 |
+|---|---|---|---|
+| `E2E-31-S03` | S3 | “保持正常读取直到真实 artifact；若早于媒体尾完成，记录实际完成位置 / Ready 由 artifact 而非位置比例” | 复用 `waitReady` 的返回值（state/artifact/elapsed/media），不新增采样 |
+| `E2E-32-S02-B` | S2 | “速度不继续虚增、用时冻结” | Incomplete 后间隔 1.5s 采样两次，比较 elapsed 与 rate 文本 |
+| `E2E-33-S01` | S1 | “观察未保存的 Ready 主区与文件信息；记接收用时并保持 3 秒 / 用时已冻结，不继续虚显速率” | Ready 后保持 ~3.2s，两次采样比较 elapsed/rate 与主文案（非“已保存”） |
+| `E2E-34-S02` | S2 | “回页后主提示准确……artifact 仍可保存” | 复用失败分支探针 + `pageState` 的 `saveDisabled/artifactName`，不新增采样 |
+
+### 9.2 run-e2e.mjs（E2E-27）
+
+- `E2E-27-S01b` → `E2E-27-S01-B`（同一步骤的第二条断言，语义/判据一字未动）。
+
+### 9.3 静态覆盖验证（用门禁自身的规则）
+
+`red-logs/r12-tools/static-coverage-runner-ids.txt`：把两个运行器源码中实际发出的 id 送入 `verify-ux-evidence.check_step_coverage`，对冻结 steps 校验：
+
+```
+E2E-30 ids=[S01, S01-B, S02, S03, S04, S04-B, ABORT]      violations=none
+E2E-31 ids=[S01, S02, S02-B, S03, S04, ABORT]             violations=none
+E2E-32 ids=[S02, S02-B, S01, S03, S04, ABORT]             violations=none
+E2E-33 ids=[S01, S02-A, S02-B, S03, S04, ABORT]           violations=none
+E2E-34 ids=[S01, S02, S03, S04, ABORT]                    violations=none
+E2E-27 ids=[S01, S01-B, S02..S06, ABORT]                  violations=none
+STATIC COVERAGE: PASS
+```
+
+（ABORT 是非步骤型补充 id，不冒充步骤。）
+
+### 9.4 09b 门禁复跑的真实结果（与 lead 预期的差异，如实说明）
+
+`red-logs/r12-tools/gate-09b-local-after-id-normalization.txt`：**仍是 `UX GATE local: FAIL (44 violation(s))`，与改名前逐条一致**。
+
+原因：门禁读的是 `docs/tests/runs/20261025-teamexec-09b/ux-results.json` 里的**历史记录**（`A1..A6`、`S01b`、`S02-held`、`R1/R2/L1`），而本任务改的是**运行器**；09b 只读、不得改写，所以缺步/替换 id 类违规不会因运行器改名而减少。真实清单仍是：
+
+- 缺步覆盖 26 条：E2E-30–34（20，09b 记录的 A 系列 id）+ E2E-38（5，历史 R1/R2/L1）+ E2E-35 S02（1）；
+- 非规范替换 id 3 条：`E2E-27-S01b`、`E2E-35-S02-held`、`E2E-35-S04-stop`；
+- E2E-37 既有 2 条 + measurement 复算 12 行（43 条）。
+
+下一次运行（B-R12-3）由新运行器写出的记录中，上述缺步/替换类违规预期只剩 **E2E-35**（S02 仍未真实覆盖，除非 A-R4 得到范围决策）；E2E-27/30–34 已由静态覆盖验证为 0，E2E-38 已在上一批改为 S01..S05。

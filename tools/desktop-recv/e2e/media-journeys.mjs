@@ -142,9 +142,9 @@ export function createMediaJourneys(h) {
       await stopSession(page);
       const afterStop = await uxProbe(page);
       await rec.shot(page, 's30-d1-stopped.png');
-      rec.add('E2E-30-A1', 'live A shows running metrics before the stop',
+      rec.add('E2E-30-S01', 'live A shows running metrics before the stop',
         `elapsed=${aLive.elapsed} rate=${aLive.rate}`, parseClock(aLive.elapsed) > 0, 'screens/s30-d1-live-metrics.png');
-      rec.add('E2E-30-A2', 'a real stop clears the stream and ends the session',
+      rec.add('E2E-30-S01-B', 'a real stop clears the stream and ends the session',
         `state=${afterStop.state} artifactRetained=${afterStop.artifact ? 'yes' : 'no'}`,
         ['Stopped', 'Idle'].includes(afterStop.state), 'screens/s30-d1-stopped.png');
       await importVideo(page, withPath());
@@ -153,7 +153,7 @@ export function createMediaJourneys(h) {
       await rec.shot(page, 's30-d1-video-reset.png');
       const resetOk = parseClock(bVideo.elapsed) !== null
         && bSessionId && aSessionId && bSessionId !== aSessionId;
-      rec.add('E2E-30-A3', 'the video B session restarts the clock under a NEW owner (no cross-session numbers)',
+      rec.add('E2E-30-S02', 'after the stop the video input starts a NEW session (no cross-session numbers)',
         `A owner=${aSessionId} B owner=${bSessionId} B elapsed=${bVideo.elapsed}`,
         resetOk, 'screens/s30-d1-video-reset.png');
       await waitReady(page);
@@ -162,7 +162,7 @@ export function createMediaJourneys(h) {
         page, caseId: 'E2E-30', legDir: join(rec.attemptDir, 'd1'), originalPath: inputPath(), pid: stack.receiver.pid,
       });
       receivedAbs = save1.receivedPath;
-      rec.add('E2E-30-A4', 'video B rebuilds and saves with equal external SHA (direction 1)',
+      rec.add('E2E-30-S03', 'video B rebuilds and saves with equal external SHA (direction 1)',
         `equal=${save1.hashes.equal} timingsComplete=${save1.saveTimingsComplete}`,
         save1.ok, 'd1/received.bin');
 
@@ -181,7 +181,7 @@ export function createMediaJourneys(h) {
       const bLive = await waitMetricsVisible(page, 60000);
       const b2SessionId = (await pageState(page)).contractSnapshot.sessionId;
       await rec.shot(page, 's30-d2-live-reset.png');
-      rec.add('E2E-30-A5', 'the live B session also restarts under a NEW owner after the stop',
+      rec.add('E2E-30-S04', 'the live B session also restarts under a NEW owner after the stop',
         `A owner=${a2SessionId} B owner=${b2SessionId} B elapsed=${bLive.elapsed}`,
         b2SessionId && a2SessionId && b2SessionId !== a2SessionId, 'screens/s30-d2-live-reset.png');
       await waitReady(page, 240000);
@@ -190,7 +190,7 @@ export function createMediaJourneys(h) {
         page, caseId: 'E2E-30', legDir: join(rec.attemptDir, 'd2'), originalPath: inputPath(), pid: stack.receiver.pid,
       });
       receivedAbs = save2.receivedPath;
-      rec.add('E2E-30-A6', 'live B rebuilds and saves with equal external SHA (direction 2)',
+      rec.add('E2E-30-S04-B', 'live B rebuilds and saves with equal external SHA (direction 2)',
         `equal=${save2.hashes.equal} timingsComplete=${save2.saveTimingsComplete}`,
         save2.ok, 'd2/received.bin');
       return rec.finish(true, 'both directions: stop clears, new session resets numbers, B rebuild+save OK', receivedAbs);
@@ -218,7 +218,7 @@ export function createMediaJourneys(h) {
         return probe.state === 'Receiving' ? probe : null;
       }, 30000, 'native-open session start');
       void opened;
-      rec.add('E2E-31-A1', 'the NATIVE OS file picker delivers the recording (app change event is the criterion)',
+      rec.add('E2E-31-S01', 'the NATIVE OS file picker delivers the recording (app change event is the criterion)',
         `helperExit=${helper.code} state=${(await uxProbe(page)).state}`,
         helper.code === 0, 'screens/s31-open-t2s.png');
       const positions = [];
@@ -229,19 +229,25 @@ export function createMediaJourneys(h) {
         positions.push({ name, media: probe.media, elapsed: probe.elapsed, rate: probe.rate, progress: probe.progress });
       }
       const mediaShown = positions.filter((row) => /录像位置/.test(String(row.media))).length;
-      rec.add('E2E-31-A2', 'the media position line is shown next to elapsed/rate (3 time points)',
+      rec.add('E2E-31-S02', 'the media position line is shown next to elapsed/rate (3 time points)',
         JSON.stringify(positions), mediaShown >= 2, 'screens/s31-open-t5s.png');
       const estimateOrRate = positions.some((row) => row.rate || row.progress);
-      rec.add('E2E-31-A3', 'rebuild indicators (rate/estimate) run alongside, not mixed into the position',
+      rec.add('E2E-31-S02-B', 'rebuild indicators (rate/estimate) run alongside, not mixed into the position',
         JSON.stringify(positions.map((row) => ({ media: row.media, rate: row.rate, progress: row.progress }))),
         estimateOrRate, 'screens/s31-open-t8s.png');
-      await waitReady(page, 240000);
+      const ready = await waitReady(page, 240000);
       await rec.shot(page, 's31-ready.png');
+      // Frozen step S3: Ready must come from the real artifact, never from the
+      // media-position ratio; the receive clock freezes at completion.
+      rec.add('E2E-31-S03', 'the artifact reaches Ready from the real rebuild (never from the media position ratio); the receive clock freezes',
+        `state=${ready.state} artifactBytes=${ready.artifact && ready.artifact.byteCount} elapsed=${ready.elapsed} media=${ready.media}`,
+        ready.state === 'Ready' && Boolean(ready.artifact) && parseClock(ready.elapsed) !== null,
+        'screens/s31-ready.png');
       const save = await completeLegSave({
         page, caseId: 'E2E-31', legDir: join(rec.attemptDir, 'save'), originalPath: inputPath(), pid: stack.receiver.pid,
       });
       receivedAbs = save.receivedPath;
-      rec.add('E2E-31-A4', 'Ready -> real save with equal external SHA',
+      rec.add('E2E-31-S04', 'Ready -> real save with equal external SHA',
         `equal=${save.hashes.equal} timingsComplete=${save.saveTimingsComplete}`,
         save.ok, 'save/received.bin');
       return rec.finish(true, 'native open + position/estimate split + save OK', receivedAbs);
@@ -267,11 +273,18 @@ export function createMediaJourneys(h) {
       }, 150000, 'Incomplete at real EOF');
       await rec.shot(page, 's32-incomplete.png');
       const saveBlocked = await pageState(page);
-      rec.add('E2E-32-A1', 'the truncated recording ends Incomplete at its real EOF',
+      const frozenA = await uxProbe(page);
+      await sleep(1500);
+      const frozenB = await uxProbe(page);
+      rec.add('E2E-32-S02', 'the EOF barrier completed with no artifact: data-insufficient is stated clearly',
         `state=${incomplete.state} primary=${incomplete.primary}`,
         incomplete.state === 'Incomplete' && incomplete.primary === '数据不足，未能重建文件',
         'screens/s32-incomplete.png');
-      rec.add('E2E-32-A2', 'no artifact means no save offer (no false completion)',
+      rec.add('E2E-32-S02-B', 'after the EOF barrier the clock is frozen and the rate stops growing (no inflation while insufficient)',
+        `elapsed=${frozenA.elapsed}->${frozenB.elapsed} rate=${frozenA.rate}->${frozenB.rate} state=${frozenB.state}`,
+        parseClock(frozenA.elapsed) === parseClock(frozenB.elapsed) && frozenA.rate === frozenB.rate,
+        'screens/s32-incomplete.png');
+      rec.add('E2E-32-S01', 'no artifact means no save offer (no false completion, save stays disabled)',
         `saveDisabled=${saveBlocked.saveDisabled} artifact=${incomplete.artifact}`,
         saveBlocked.saveDisabled === true && incomplete.artifact === null,
         'screens/s32-incomplete.png');
@@ -280,7 +293,7 @@ export function createMediaJourneys(h) {
       await importVideo(page, withPath());
       const ready = await waitReady(page, 240000);
       await rec.shot(page, 's32-ready.png');
-      rec.add('E2E-32-A3', 're-importing the complete clip rebuilds to Ready',
+      rec.add('E2E-32-S03', 're-importing the complete clip rebuilds to Ready',
         `state=${ready.state} artifactBytes=${ready.artifact && ready.artifact.byteCount}`,
         ready.state === 'Ready' && ready.artifact && ready.artifact.byteCount === 131072,
         'screens/s32-ready.png');
@@ -291,7 +304,7 @@ export function createMediaJourneys(h) {
       // Pair provenance: the T6 same-stream pair evidence travels with this case.
       copyFileSync(join(getFixtures(), 'fixtures-media', 'prefix-check.json'), join(rec.attemptDir, 'pair-prefix-check.json'));
       copyFileSync(join(getFixtures(), 'fixtures-media', 'manifest.json'), join(rec.attemptDir, 'pair-manifest.json'));
-      rec.add('E2E-32-A4', 'the save reproduces the original bytes; the T6 pair evidence is attached',
+      rec.add('E2E-32-S04', 'the save reproduces the original bytes; the T6 pair evidence is attached',
         `equal=${save.hashes.equal} pairPrefixVerdict=PASS(pair-manifest)`,
         save.ok, 'save/received.bin');
       return rec.finish(true, 'EOF barrier held + recovery import + save OK', receivedAbs);
@@ -312,6 +325,19 @@ export function createMediaJourneys(h) {
       await importVideo(page, withPath());
       await waitReady(page, 240000);
       await rec.shot(page, 's33-ready.png');
+      // Frozen step S1: the unsaved Ready state is observed for >=3s with the
+      // receive clock frozen and no growing rate ("可保存" not "已保存").
+      const holdStart = Date.now();
+      await sleep(1600);
+      const holdA = await uxProbe(page);
+      await sleep(1600);
+      const holdB = await uxProbe(page);
+      const heldMs33 = Date.now() - holdStart;
+      rec.add('E2E-33-S01', 'the unsaved Ready state holds >=3s: "可保存" not "已保存", the receive clock is frozen and the rate stops growing',
+        `heldMs=${heldMs33} state=${holdB.state} primary=${holdB.primary} elapsed=${holdA.elapsed}->${holdB.elapsed} rate=${holdA.rate}->${holdB.rate}`,
+        heldMs33 >= 3000 && holdB.state === 'Ready' && !/已保存/.test(String(holdB.primary))
+          && parseClock(holdA.elapsed) === parseClock(holdB.elapsed) && holdA.rate === holdB.rate,
+        'screens/s33-ready.png');
       const cancelPath = join(rec.attemptDir, 'screens', 's33-dialog-open-desktop.png');
       mkdirSync(join(rec.attemptDir, 'screens'), { recursive: true });
       const cancelHelper = runHelper(['-Action', 'save-cancel', '-TimeoutSec', '60'], stack.receiver.pid);
@@ -327,10 +353,10 @@ export function createMediaJourneys(h) {
       }, 30000, 'cancelled save state');
       await rec.shot(page, 's33-cancelled.png');
       const stillArtifact = await pageState(page);
-      rec.add('E2E-33-A1', 'the save dialog stays open >=3s before the real cancel',
+      rec.add('E2E-33-S02-A', 'the save dialog stays open >=3s before the real cancel',
         `helperExit=${helper.code} heldMs=${heldMs}`, helper.code === 0 && heldMs >= 3000,
         'screens/s33-dialog-open-desktop.png');
-      rec.add('E2E-33-A2', 'a real cancel maps to the retryable layer with the artifact kept',
+      rec.add('E2E-33-S02-B', 'a real cancel maps to the retryable layer with the artifact kept',
         `saveText=${cancelled.saveText} state=${cancelled.state} artifact=${stillArtifact.artifactName}`,
         cancelled.saveText === '保存已取消，文件仍可保存' && Boolean(stillArtifact.artifactName),
         'screens/s33-cancelled.png');
@@ -344,10 +370,10 @@ export function createMediaJourneys(h) {
       const fourPoints = [marks.saveRequestAt, after.createWritableAccessedAt, after.writableAt, marks.writeCloseAt]
         .every((value) => Number.isFinite(value));
       const shaEqual = externalSha256(inputPath()) === externalSha256(retryTarget);
-      rec.add('E2E-33-A3', 'the second save to a NEW path completes with all four save time points',
+      rec.add('E2E-33-S03', 'the second save to a NEW path completes with all four save time points',
         `bytes=${bytes} fourPoints=${fourPoints} status=${after.status} marks=${JSON.stringify(marks)}`,
         after.status === 'Saved' && fourPoints, 'screens/s33-saved.png');
-      rec.add('E2E-33-A4', 'external SHAs of original and re-saved file are equal',
+      rec.add('E2E-33-S04', 'external SHAs of original and re-saved file are equal',
         `equal=${shaEqual}`, shaEqual, 'screens/s33-saved.png');
       receivedAbs = retryTarget;
       return rec.finish(true, 'cancel layering + retry save OK', receivedAbs);
@@ -392,9 +418,16 @@ export function createMediaJourneys(h) {
       }, 30000, 'blocked-save failure branch').catch(() => null);
       const blockedState = blocked || await uxProbe(page);
       await rec.shot(page, 's34-blocked.png');
-      rec.add('E2E-34-A1', 'saving onto the exclusively-locked file fails honestly (observed branch recorded as-is)',
+      rec.add('E2E-34-S01', 'saving onto the exclusively-locked file fails honestly (observed branch recorded as-is)',
         `helperExit=${helper.code} saveText=${blockedState.saveText} state=${blockedState.state}`,
         blockedState.saveText === '保存失败，可以重试' || blockedState.state === 'Retryable',
+        'screens/s34-blocked.png');
+      // Frozen step S2: the observed recovery branch is recorded as-is and the
+      // artifact is still saveable (the failure never eats the product).
+      const afterBlocked = await pageState(page);
+      rec.add('E2E-34-S02', 'after the observed failure branch the page returns to the main view with the artifact still saveable',
+        `saveText=${blockedState.saveText} state=${blockedState.state} saveDisabled=${afterBlocked.saveDisabled} artifact=${afterBlocked.artifactName}`,
+        afterBlocked.saveDisabled === false && Boolean(afterBlocked.artifactName),
         'screens/s34-blocked.png');
 
       lockProcess.kill();
@@ -404,10 +437,10 @@ export function createMediaJourneys(h) {
       const bytes = await saveArtifact(page, recovery, stack.receiver.pid);
       await rec.shot(page, 's34-saved.png');
       const shaEqual = externalSha256(inputPath()) === externalSha256(recovery);
-      rec.add('E2E-34-A2', 'after the lock is released a save to a NEW path completes',
+      rec.add('E2E-34-S03', 'after the lock is released a save to a NEW path completes',
         `bytes=${bytes} status=${(await pageState(page)).status}`,
         bytes === 131072, 'screens/s34-saved.png');
-      rec.add('E2E-34-A3', 'external SHAs of original and recovered file are equal',
+      rec.add('E2E-34-S04', 'external SHAs of original and recovered file are equal',
         `equal=${shaEqual}`, shaEqual, 'screens/s34-saved.png');
       receivedAbs = recovery;
       return rec.finish(true, 'blocked-save branch + release + recovery save OK', receivedAbs);

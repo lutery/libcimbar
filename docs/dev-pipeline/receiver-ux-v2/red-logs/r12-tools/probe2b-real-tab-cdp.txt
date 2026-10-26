@@ -1,0 +1,41 @@
+{
+  "receiverWindow": {
+    "windowId": 1371439402,
+    "bounds": {
+      "left": 80,
+      "top": 80,
+      "width": 980,
+      "height": 720,
+      "windowState": "normal"
+    }
+  },
+  "otherWindow": {
+    "windowId": 1371439402,
+    "bounds": {
+      "left": 80,
+      "top": 80,
+      "width": 980,
+      "height": 720,
+      "windowState": "normal"
+    }
+  },
+  "sameWindow": true,
+  "whileOtherTabActive": {
+    "state": "visible",
+    "hidden": false,
+    "hasFocus": true,
+    "log": []
+  },
+  "heldMs": 7019,
+  "backOnReceiverTab": {
+    "state": "visible",
+    "hidden": false,
+    "hasFocus": true,
+    "log": []
+  },
+  "verdict": {
+    "sameWindowRealTab": true,
+    "hiddenWhileOtherTab": false,
+    "visibleAfterReturn": true
+  }
+}
