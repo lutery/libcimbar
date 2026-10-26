@@ -28,4 +28,31 @@ The shared paint recorder now takes an optional clock and exposes `telemetryStam
 6. `UX-UT-049` adapted to the new contract: after Ready the receiving refresher is gone (its callback is undefined) and exactly one convergence timer remains; a Saving event still paints immediately and adds no new timer; a stale refresh tick writes nothing.
 7. Preserved and green: R2-1 (gate-swallowed value painted on the tick), R2-4 (paint failure retry), R2-5 (one semantic paint per identical view), UX-UT-048/050/051/052, T20, T26, active-period 250ms cadence, single-flight, business immediacy.
 
+## 3. RED evidence (before the fix)
+
+`node --test --test-reporter=tap web/desktop-recv/tests/unit/ux-display.test.mjs` -> `docs/dev-pipeline/receiver-ux-v2/red-logs/r12-a-r2b/ux-display-red.txt`: `# tests 14 / # pass 10 / # fail 4`.
+
+- UX-UT-049: expected 1 convergence timer after Ready, got 0 (the old code force-flushed and released immediately).
+- R12-A-R2-2: expected 2 telemetry writes, got 3 (the terminal write happened inside the boundary).
+- R12-A-R2-2c: expected 1 pending convergence timer, got 0.
+- R12-A-R2-3: expected 1 pending convergence timer, got 0.
+- `R12-A-R2-2b` passed pre-fix (the old code also painted immediately when the boundary was open); it is the regression guard for the new "no extra wait" branch. `R12-A-R2-2d` was written after the RED capture as an explicit guard for the owner-change/dispose cancellation path; against the old code its first pending-timer assertion would also have failed, so it is not a weakened case.
+
+## 4. GREEN evidence (after the fix)
+
+- `node --test web/desktop-recv/tests/unit/ux-display.test.mjs` -> 15/15 pass (`red-logs/r12-a-r2b/ux-display-green.txt`).
+- `node tools/desktop-recv/run-unit.mjs --all` -> exit 0, 12 suites, 216 tests, 0 failed/todo/skipped (`red-logs/r12-a-r2b/run-unit-all-green.txt`). Per-suite: contracts 7, session 40, scheduler 6, worker 14, client 15, save 8, video 17, ui 13, evidence 36, ux-telemetry 22, ux-view 23, ux-display 15. Count change vs the B-R12-1 state (213): +3 (R2-2b/2c/2d); vs the round-12 baseline (202): +14.
+- Focused trio: 59/59 pass.
+- Interval invariant: every numeric write still passes the same `lastTelemetryWriteAt` gate, so `telemetryMinWriteIntervalMs=250` holds by construction; the deferred convergence write happens at exactly the boundary (>=250ms) and `uxDisplayTimersAfterTermination=0` holds after convergence (timer released in the `painted`/`noop`/`failed`/`invalid` outcomes).
+
+## 5. Impact and leftovers
+
+- Impact surface: `web/desktop-recv/src/ux-display.js` (terminal scheduling only) and its test file. No view/telemetry/tool/doc changes; no commit.
+- The final numbers after Ready/Stopped now land within 250ms of the boundary instead of immediately; the main copy, save phase and buttons remain immediate. This is the contract trade-off the lead's ruling fixed.
+- The A/B live runs must be re-run by the tools side (B-R12-3) on this build; the 5/5 violation should disappear (each round's last write now keeps the >=250ms interval).
+- The owner-change reset still allows an immediate numeric write for the new owner (pre-existing semantics, reset of `lastTelemetryWriteAt`); a strict global reading of the invariant across owner changes would need a separate decision. In the real flow an owner change cannot happen within 250ms of a terminal write (a user action starts a new session).
+- Leftover for B-R12-3: re-run live A/B legs and the real-interface items on the new build.
+
+
+
 
