@@ -432,3 +432,27 @@ SELF-CHECK: PASS (only the two expected violations)
 - `measure-ux.mjs` 在 S2 拆分后只 `export { OBSERVER_SCRIPT } from './measure-ux-calc.mjs'`，未 import 本地绑定；`runRound` 真实浏览器路径抛 `OBSERVER_SCRIPT is not defined`，首跑 A/B 全轮 collectionError（attempt `candidate-20261026-01`，原件保留）。
 - 既有 66 条工具测试全部走桩 `runRound`/VM 导入，未覆盖该路径——这是测试覆盖缺口，round-13 披露。
 - 修复：补 `OBSERVER_SCRIPT` 到本地 import；按 09b 先例（`candidate-20261025-03`→`-04` 并存）把 context `attemptId` 提升为 `candidate-20261026-02` 后重跑，`-01` 失败原件原样保留。
+## 12. B-R12-3（root 11）执行披露：live 观测容差与两次装置修复
+
+### 12.1 live 观测间隔 1ms 容差（OBSERVATION_JITTER_MS，lead 2026-10-26 批准）
+
+- **机制**：产品写门是 `performance.now` 域（`now − last ≥ REFRESH_MS=250` 才写数字区）；测量 observer 记录的是 DOM 变更**可观测时刻**，与投影时钟每事件有 ≤1 帧的偏移，因此**观测到的**间隔可比真实间隔小零点几毫秒。recorded 腿（同一 observer）实测 min gap 为 250.2–250.3ms，佐证这是测量通道噪声而非产品行为。
+- **实现**：`measure-ux-calc.mjs` 新增独立常量 `OBSERVATION_JITTER_MS = 1`，**只**用于 `judgeLiveSide` 的 `E_LIVE_TELEMETRY_INTERVAL` 检查（阈值 250 − 1）。`FROZEN_TELEMETRY_INTERVAL_MS`、冻结方法文件、`judgeRound`（recorded 腿）**一字不动、不加容差**。
+- **自测**（T-R12-A3f）：观测 249.9ms 通过；观测 240ms 仍拒绝；且 `judgeRound` 在 249.9ms 下仍判 `E_TELEMETRY_INTERVAL`（recorded 侧无容差）。工具测试 66→67 全绿。
+- **触发实例**：root 11 实时腿第一次运行 pair-2-B 观测 249.9ms 被判 INVALID；容差落地后的正式重跑中**没有任何侧别**贴近边界（无需动用容差即 10/10 VALID）。
+
+### 12.2 实时腿停止取证的采样竞态修复（lead 批准，E2E-32-S02-B 同型）
+
+- 第一次运行 pair-1-B `E_LIVE_CLOCK_NOT_FROZEN`：真实停止后，终态收敛写在共享 250ms 边界内才落笔（Option B 的正确行为），frozenA 采样抢在收敛写之前 → 误判。
+- 修复：`live-legs.mjs` 冻结取证改为**有界等待两次相邻探针一致**后再取 frozenA（≤5s，400ms 间隔），判据（frozenA/frozenB elapsed 相同）不变。重跑后无任何 `E_LIVE_CLOCK_NOT_FROZEN`。
+
+### 12.3 失败原件保留（live-failed-run-1/）
+
+第一次实时腿运行 5/10 侧的原始记录（pair-1-A…pair-3-A）逐字节保存在
+`docs/tests/runs/20261026-teamexec-11/measurements/ux-overhead/candidate-20261026-01/live-failed-run-1/`，
+附 README 说明三项原因（12.1 容差、12.2 竞态、接收页 python http.server `ConnectionAbortedError` 瞬态崩溃 + 残留 Edge 占用 9445 导致中止）。`live/` 按批准的方案 (a) 删除后同 attempt 重跑；recorded A/B 的 PASS 不受影响。
+
+### 12.4 E2E-32-S02-B 采样竞态修复（UX-MEDIA-SAVE 首跑 exit1 的原因）
+
+- 我在 id 规范化批次新增的 `E2E-32-S02-B`（EOF 后用时冻结/速率不再虚增）在 Incomplete 出现瞬间采样，抢在终态收敛写之前（同 12.2 机理）→ 首跑误判 FAIL。
+- 修复：有界等待两次相邻探针一致后再取冻结对；判据文本与条件不变。重试 PASS（`elapsed=13.5s->13.5s rate=-> state=Incomplete`）。
