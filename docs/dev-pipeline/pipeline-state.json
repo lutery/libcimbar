@@ -4,7 +4,7 @@
   "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-26T09:05:00+08:00",
+  "updated_at": "2026-10-26T10:10:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -254,6 +254,10 @@
         {
           "timestamp": "2026-10-26T09:05:00+08:00",
           "summary": "用户转达外审 round-12 裁决（不通过，5 阻断主题）并指示：阶段 6 读取该裁决、返回阶段 5 整改后再送审。整改按裁决 DoD 执行（产品模型/视图/显示补 UT 与组合 IAT 后新构建复验真实双输入、等待/进度/停止/保存及相关 UI；工具反例先失败再修复通过；新 manifest/attempt、保留失败原件、重算双门禁、更新总结与 runtime 映射）。"
+        },
+        {
+          "timestamp": "2026-10-26T10:10:00+08:00",
+          "summary": "用户裁定（E2E-35 S02 处置）：\"真实云桌面远程会话不需要你测试\"——真实后台/远程会话行为由用户侧真实环境验证，不要求代理在本机（云桌面远程会话）模拟。据此：E2E-35 在本地运行根按真实覆盖如实 NOT_RUN（S02 真实 visibility 变化经三种装置探针证实不可构造，证据 docs/dev-pipeline/receiver-ux-v2/red-logs/r12-tools/probe2-*.txt）；不修订冻结用例、不做局部冒充执行；round-13 送审包如实披露该缺口与本次授权（与 E2E-37 同模式）。"
         }
       ]
     },
