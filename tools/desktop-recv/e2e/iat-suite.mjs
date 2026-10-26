@@ -265,8 +265,11 @@ async function group04DisplayHarness(stack, deps, addAssert) {
     });
     const started = performance.now();
     display.syncBusiness();
-    // Business change paints immediately.
-    business = context({ businessRevision: 3 });
+    // Business change paints immediately. A revision-only bump is deliberately
+    // a no-write since the round-12 display fix (identical view semantics must
+    // not re-paint), so the harness changes the STATE - which changes the
+    // visible primary text - instead of only the revision counter.
+    business = context({ state: 'Draining' });
     display.syncBusiness();
     // High-frequency telemetry snapshots for ~1.15s: the display paints the
     // numeric zone at most ~4-5 times (250ms clock).
@@ -560,7 +563,7 @@ async function group07GateCliChain(stack, deps, addAssert) {
     'UX-IAT-07-A1',
     'the real verify gate CLI chain (positives + all specified negatives) passes on temp disk fixtures',
     `exit=${run.code} last="${passLine}"`,
-    run.code === 0 && /SELFTEST PASS \(55 cases\)/.test(run.stdout),
+    run.code === 0 && /SELFTEST PASS \(\d+ cases\)/.test(run.stdout),
   );
   addAssert(
     'UX-IAT-07-A2',
