@@ -30,6 +30,18 @@ const NATIVE_HELPER = join(HERE, 'native-dialog.ps1');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
+// The single live judge lives in the pure calculator so the UX gate can
+// re-judge the SAME raw files (round-12 A-R3 + B-02). Imported lazily inside
+// main() because this module also runs as a CLI.
+let judgeLiveSideRef = null;
+async function liveJudge() {
+  if (!judgeLiveSideRef) {
+    judgeLiveSideRef = await import(pathToFileURL(join(HERE, 'measure-ux-calc.mjs')).href)
+      .then((m) => m.judgeLiveSide);
+  }
+  return judgeLiveSideRef;
+}
+
 function parseArgs(argv) {
   const out = { values: new Map(), help: false };
   let i = 0;
@@ -205,49 +217,85 @@ async function runSide({ side, pairIndex, build, liveInput }) {
     result.observations.shareHelperExit = helper.code;
     await page.waitForFunction(() => window.__state === 'Receiving', null, { timeout: 60000 });
 
-    // The 30s activity window: sample the real page every ~2s.
+    // The 30s activity window: sample the real page every ~2s. The window
+    // ends EARLY the moment a sample is not Receiving (an early Ready is a
+    // failed round - A-R3 forbids padding the sleep to 30s), and every sample
+    // carries the page's own session identity and performance.now anchor so
+    // the judge can place settlements INSIDE the observed window.
     const windowStart = Date.now();
-    while (Date.now() - windowStart < ACTIVE_WINDOW_SECONDS * 1000) {
+    let span = 0;
+    while (true) {
       const probe = await page.evaluate(() => ({
         at: Date.now(),
+        perfNow: performance.now(),
         state: window.__state || null,
         primary: (document.getElementById('ux-primary') || {}).textContent || '',
         elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
         rate: (document.getElementById('ux-rate') || {}).textContent || '',
+        sessionId: (window.__contractSnapshot || {}).sessionId ?? null,
+        // The frozen wire contract does not carry sessionSeq today; read it
+        // defensively so a future contract addition tightens the check
+        // without a tool change (the judge falls back to sessionId).
+        sessionSeq: (window.__contractSnapshot || {}).sessionSeq ?? null,
         revision: (window.__contractSnapshot || {}).revision ?? null,
         submitted: ((window.__contractSnapshot || {}).stats || {}).submittedFrames ?? null,
         previewVideoWidth: (document.getElementById('preview') || {}).videoWidth || 0,
       }));
+      probe.atMs = probe.at - windowStart;
       result.samples.push(probe);
+      if (probe.state !== 'Receiving') {
+        result.observations.earlyStop = {
+          index: result.samples.length, atMs: probe.atMs, state: probe.state,
+          note: 'the window stopped at the first non-Receiving sample; the round is not padded to 30s',
+        };
+        break;
+      }
+      span = probe.at - windowStart;
+      if (span >= ACTIVE_WINDOW_SECONDS * 1000) break;
       await sleep(2000);
     }
+    result.observations.sampleSpanMs = result.samples.length
+      ? result.samples[result.samples.length - 1].at - result.samples[0].at : 0;
 
-    // Real stop + release evidence.
-    const stopDisabled = await page.evaluate(() => document.getElementById('btn-stop').disabled);
-    if (!stopDisabled) await page.click('#btn-stop');
-    await page.waitForFunction(() => ['Stopped', 'Idle'].includes(window.__state)
-      && !document.getElementById('preview').srcObject, null, { timeout: 30000 });
-    const frozenA = await page.evaluate(() => ({
-      state: window.__state,
-      elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
-      primary: (document.getElementById('ux-primary') || {}).textContent || '',
-    }));
-    await sleep(1600);
-    const frozenB = await page.evaluate(() => ({
-      state: window.__state,
-      elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
-      primary: (document.getElementById('ux-primary') || {}).textContent || '',
-    }));
-    result.observations.afterStop = { frozenA, frozenB };
+    // Real stop + release evidence. A failed stop sub-leg must NOT discard the
+    // raw window samples: the failure is recorded and the judge refuses the
+    // round (clock not frozen), with the raw evidence still on disk.
+    try {
+      const stopDisabled = await page.evaluate(() => document.getElementById('btn-stop').disabled);
+      if (!stopDisabled) await page.click('#btn-stop');
+      await page.waitForFunction(() => ['Stopped', 'Idle'].includes(window.__state)
+        && !document.getElementById('preview').srcObject, null, { timeout: 30000 });
+      const frozenA = await page.evaluate(() => ({
+        state: window.__state,
+        elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
+        primary: (document.getElementById('ux-primary') || {}).textContent || '',
+      }));
+      await sleep(1600);
+      const frozenB = await page.evaluate(() => ({
+        state: window.__state,
+        elapsed: (document.getElementById('ux-elapsed') || {}).textContent || '',
+        primary: (document.getElementById('ux-primary') || {}).textContent || '',
+      }));
+      result.observations.afterStop = { frozenA, frozenB };
+    } catch (error) {
+      result.observations.stopError = String((error && error.message) || error);
+    }
 
-    const observer = await page.evaluate(() => {
-      const o = window.__uxObserver;
-      return o ? { frames: o.frames, telemetryWrites: o.telemetryWrites,
-        telemetryArmed: o.telemetryArmed === true } : null;
-    });
-    result.frames = observer ? observer.frames : [];
-    result.telemetryWrites = observer ? observer.telemetryWrites : [];
-    result.telemetryArmed = observer ? observer.telemetryArmed : null;
+    try {
+      const observer = await page.evaluate(() => {
+        const o = window.__uxObserver;
+        return o ? { frames: o.frames, telemetryWrites: o.telemetryWrites,
+          telemetryArmed: o.telemetryArmed === true } : null;
+      });
+      result.frames = observer ? observer.frames : [];
+      result.telemetryWrites = observer ? observer.telemetryWrites : [];
+      result.telemetryArmed = observer ? observer.telemetryArmed : null;
+    } catch (error) {
+      result.observations.observerError = String((error && error.message) || error);
+      result.frames = result.frames || [];
+      result.telemetryWrites = result.telemetryWrites || [];
+      result.telemetryArmed = result.telemetryArmed === undefined ? null : result.telemetryArmed;
+    }
     result.stoppedAtIso = new Date().toISOString();
     return result;
   } finally {
@@ -262,76 +310,12 @@ async function runSide({ side, pairIndex, build, liveInput }) {
   }
 }
 
-function judgeSide(record, side) {
-  const violations = [];
-  const frames = record.frames || [];
-  const writes = record.telemetryWrites || [];
-  // single-flight from the frame intervals on the same performance clock:
-  // an exact sweep over half-open [t0, settled) intervals (end before start
-  // at equal timestamps so touching frames never count as overlap).
-  const events = [];
-  for (const frame of frames) {
-    if (!Number.isFinite(frame.t0Ms) || !Number.isFinite(frame.settledAtMs)) continue;
-    if (frame.settledAtMs < frame.t0Ms) continue;
-    events.push([frame.t0Ms, 1], [frame.settledAtMs, -1]);
-  }
-  events.sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
-  let current = 0;
-  let maxInFlight = 0;
-  for (const [, delta] of events) {
-    current += delta;
-    if (current > maxInFlight) maxInFlight = current;
-  }
-  record.maxInFlight = maxInFlight;
-  const okFrames = frames.filter((f) => f.ok).length;
-  record.okFrameCount = okFrames;
-  if (record.maxInFlight > 1) violations.push(`maxInFlight=${record.maxInFlight} (single-flight broken)`);
-  if (okFrames === 0) violations.push('no settled frames during the 30s window (no real settlement)');
-  // Data must actually flow during the window.
-  const revisions = record.samples.map((s) => s.revision).filter((v) => v !== null);
-  const revisionGrew = revisions.length >= 2 && revisions[revisions.length - 1] > revisions[0];
-  record.revisionGrew = revisionGrew;
-  if (!revisionGrew) violations.push('business revision did not grow during the 30s window (no real data)');
-  const submittedLast = Math.max(...record.samples.map((s) => s.submitted ?? 0));
-  record.submittedLast = submittedLast;
-  if (side === 'B') {
-    // Candidate-only UX layer checks.
-    if (record.telemetryArmed !== true) violations.push('telemetry area not armed');
-    let minGap = null;
-    for (let i = 1; i < writes.length; i += 1) {
-      const gap = writes[i] - writes[i - 1];
-      if (minGap === null || gap < minGap) minGap = gap;
-    }
-    record.minTelemetryGapMs = minGap;
-    if (writes.length >= 2 && minGap !== null && minGap < 250 - 1e-9) {
-      violations.push(`telemetry write interval ${minGap.toFixed(1)}ms < 250ms`);
-    }
-    const numericChanges = record.samples.filter((s, i, all) => i > 0 && s.elapsed !== all[i - 1].elapsed).length;
-    record.numericChanges = numericChanges;
-    if (numericChanges === 0) violations.push('numeric feedback never updated during the window');
-    const statusChanges = record.samples.filter((s, i, all) => i > 0 && s.primary !== all[i - 1].primary).length;
-    record.statusChanges = statusChanges;
-    const stop = record.observations.afterStop;
-    const frozen = stop && stop.frozenA.elapsed === stop.frozenB.elapsed && stop.frozenA.elapsed !== '';
-    record.clockReleasedAfterStop = Boolean(frozen);
-    if (!frozen) violations.push('display clock did not freeze after the real stop');
-  }
-  record.rttAdvisory = {
-    p50: percentile(frames.filter((f) => f.ok).map((f) => f.rttMs).sort((a, b) => a - b), 50),
-    p95: percentile(frames.filter((f) => f.ok).map((f) => f.rttMs).sort((a, b) => a - b), 95),
-    note: 'advisory only; live sampling is never the primary metric',
-  };
-  record.violations = violations;
-  record.valid = violations.length === 0;
-  return record;
+// The live judge itself lives in measure-ux-calc.mjs (A-R3): the window must
+// be one session in Receiving for >=30s with a real settlement inside it.
+async function judgeSide(record, side) {
+  const judge = await liveJudge();
+  return judge(record, side);
 }
-
-function percentile(sorted, p) {
-  if (!sorted.length) return null;
-  const rank = Math.max(1, Math.ceil((p / 100) * sorted.length));
-  return sorted[rank - 1];
-}
-
 // --- main ------------------------------------------------------------------
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
@@ -365,32 +349,104 @@ async function main() {
     console.error('E_METHOD_FROZEN: liveObservation pairs/order must stay 5 and the frozen AB/BA order');
     process.exit(3);
   }
-  // Shared 1MiB live input with identical SHA on both sides.
-  const candidateLive = JSON.parse(readFileSync(candidate.abs.inputManifest, 'utf8')).liveInput;
-  const baselineLivePath = join(baseline.abs.runRoot, 'fixtures-ext', 'incompressible', 'ext-random-1mib.bin');
-  if (!candidateLive || !existsSync(baselineLivePath)) {
-    console.error('E_INPUT_MISSING: both sides need the shared 1MiB live input');
+  // Calibrated live input (A-R3): the CANDIDATE manifest must bind the live
+  // sample (path + SHA). The BASELINE side uses its own manifest binding when
+  // present, otherwise the candidate's sample basename is mapped into the
+  // baseline's T31c layout <baseline runRoot>/fixtures-ext/incompressible/.
+  // Both files are re-hashed from disk before a browser starts and the two
+  // SHAs must be equal (a shared sample keeps the legs comparable). The
+  // baseline root is READ-ONLY: when the calibrated sample is absent the run
+  // refuses and the lead decides how to provide/lock it - this tool never
+  // writes into an old run root. 09b bound a 1MiB sample that naturally
+  // reached Ready in ~18s, so the calibration sample must stay Receiving for
+  // the full 30s; an early Ready is reported as 样本不足 and stays invalid.
+  const manifestLiveBinding = (manifest) => {
+    const live = manifest.liveInput;
+    if (live && typeof live.path === 'string' && typeof live.sha256 === 'string'
+      && /^[0-9a-f]{64}$/.test(live.sha256)) {
+      return { path: live.path, sha256: live.sha256, bytes: live.bytes, binding: 'liveInput' };
+    }
+    return null;
+  };
+  const verifyLiveFile = (context, live, label) => {
+    const abs = resolve(context.repoRoot, ...live.path.split('/'));
+    if (!existsSync(abs) || !statSync(abs).isFile()) {
+      throw new Error(`E_INPUT_MISSING: the ${label} live input is not on disk: ${live.path}`);
+    }
+    const actual = sha256(readFileSync(abs));
+    if (actual !== live.sha256) {
+      throw new Error(`E_INPUT_SHA: the ${label} live input on disk (${actual.slice(0, 12)})`
+        + ` does not match its manifest/lock (${live.sha256.slice(0, 12)})`);
+    }
+    return {
+      path: abs,
+      relativePath: live.path,
+      sha256: actual,
+      bytes: typeof live.bytes === 'number' ? live.bytes : statSync(abs).size,
+      binding: live.binding,
+    };
+  };
+  let candidateLiveInput;
+  let baselineLiveInput;
+  try {
+    const candidateBinding = manifestLiveBinding(JSON.parse(readFileSync(candidate.abs.inputManifest, 'utf8')));
+    if (!candidateBinding) {
+      throw new Error('E_INPUT_MISSING: the candidate input manifest does not bind a liveInput (path + 64-hex sha256)');
+    }
+    candidateLiveInput = verifyLiveFile(candidate, candidateBinding, 'candidate');
+    const baselineBinding = manifestLiveBinding(JSON.parse(readFileSync(baseline.abs.inputManifest, 'utf8')));
+    if (baselineBinding) {
+      baselineLiveInput = verifyLiveFile(baseline, baselineBinding, 'baseline');
+    } else {
+      const basename = candidateLiveInput.relativePath.split('/').pop();
+      const inferredRel = `${baseline.runRoot}/fixtures-ext/incompressible/${basename}`;
+      const inferredAbs = resolve(baseline.repoRoot, ...inferredRel.split('/'));
+      if (!existsSync(inferredAbs) || !statSync(inferredAbs).isFile()) {
+        throw new Error(`E_INPUT_MISSING: the baseline run root has no live sample ${inferredRel}`
+          + ' (inferred by basename from the candidate liveInput). The baseline root is read-only;'
+          + ' the lead must decide how to provide/lock the calibrated sample - this tool writes nothing there.');
+      }
+      baselineLiveInput = verifyLiveFile(baseline, {
+        path: inferredRel,
+        sha256: candidateLiveInput.sha256,
+        bytes: null,
+        binding: 'basename-inferred',
+      }, 'baseline');
+    }
+  } catch (error) {
+    console.error(error.message);
     process.exit(3);
   }
-  const candidateLivePath = resolve(candidate.repoRoot, ...candidateLive.path.split('/'));
-  const liveSha = sha256(readFileSync(candidateLivePath));
-  const baselineSha = sha256(readFileSync(baselineLivePath));
-  if (liveSha !== baselineSha) {
-    console.error(`E_INPUT_SHA: live inputs differ between sides (${liveSha.slice(0, 12)} vs ${baselineSha.slice(0, 12)})`);
+  if (candidateLiveInput.sha256 !== baselineLiveInput.sha256) {
+    console.error(`E_INPUT_SHA: live inputs differ between sides (${candidateLiveInput.sha256.slice(0, 12)}`
+      + ` [${candidateLiveInput.binding}] vs ${baselineLiveInput.sha256.slice(0, 12)} [${baselineLiveInput.binding}])`);
     process.exit(3);
   }
+  const liveSha = candidateLiveInput.sha256;
   const outputDir = join(candidate.abs.runRoot, 'measurements', 'ux-overhead', candidate.attemptId, 'live');
-  if (existsSync(join(outputDir, 'summary.json'))) {
-    console.error(`E_OUTPUT_EXISTS: ${join(outputDir, 'summary.json')} already exists; live legs are write-once per attempt`);
-    process.exit(3);
-  }
+  // --validate-only is a PREFLIGHT: it validates the contexts, the method and
+  // both calibrated input bindings (which is exactly what B-R12-3 needs before
+  // an expensive run) and writes nothing, so it is answered before the
+  // write-once guard. A real run still refuses an existing attempt below.
   if (parsed.values.get('validate-only')) {
     console.log(JSON.stringify({
       kind: 'live-legs-plan', candidate: candidate.runId, baseline: baseline.runId,
       attemptId: candidate.attemptId, pairs: 5, order: live.order,
-      activeWindowSeconds: ACTIVE_WINDOW_SECONDS, liveInputSha256: liveSha, outputDir,
+      activeWindowSeconds: ACTIVE_WINDOW_SECONDS,
+      liveInputSha256: liveSha,
+      liveInputBytes: candidateLiveInput.bytes,
+      liveInputPaths: { A: baselineLiveInput.relativePath, B: candidateLiveInput.relativePath },
+      liveInputBindings: { A: baselineLiveInput.binding, B: candidateLiveInput.binding },
+      liveInputNote: 'the sample must stay in Receiving for >=30s; a naturally shorter receive'
+        + ' is reported as 样本不足 and stays invalid (never padded)',
+      outputDir,
+      outputExists: existsSync(join(outputDir, 'summary.json')),
     }, null, 2));
     process.exit(0);
+  }
+  if (existsSync(join(outputDir, 'summary.json'))) {
+    console.error(`E_OUTPUT_EXISTS: ${join(outputDir, 'summary.json')} already exists; live legs are write-once per attempt`);
+    process.exit(3);
   }
 
   mkdirSync(join(outputDir, 'rounds'), { recursive: true });
@@ -407,13 +463,13 @@ async function main() {
       const build = sideLetter === 'A'
         ? { stagingRoot: baseline.abs.stagingRoot, receiverDir: join(baseline.abs.stagingRoot, 'receiver') }
         : { stagingRoot: candidate.abs.stagingRoot, receiverDir: join(candidate.abs.stagingRoot, 'receiver') };
-      const liveInput = sideLetter === 'A' ? baselineLivePath : candidateLivePath;
+      const liveInput = sideLetter === 'A' ? baselineLiveInput.path : candidateLiveInput.path;
       await assertPortsFree([SENDER_PORT, RECEIVER_PORT, DEBUG_PORT]);
       console.log(`live pair ${pair} side ${sideLetter}: starting`);
       let record;
       try {
         record = await runSide({ side: sideLetter, pairIndex: pair, build, liveInput });
-        judgeSide(record, sideLetter);
+        await judgeSide(record, sideLetter);
       } catch (error) {
         record = { side: sideLetter, pairIndex: pair, collectionError: String((error && error.message) || error) };
         record.valid = false;
@@ -421,16 +477,44 @@ async function main() {
       rounds.push(record);
       writeFileSync(join(outputDir, 'rounds', `pair-${pair}-${sideLetter}.json`),
         `${JSON.stringify(record, null, 2)}\n`);
-      console.log(`live pair ${pair} side ${sideLetter}: ${record.valid ? 'VALID' : `INVALID (${(record.violations || [record.collectionError]).join('; ')})`}`);
+      const reasons = record.violationMessages
+        || (record.violations || []).map((v) => (typeof v === 'string' ? v : `${v.code}: ${v.detail}`));
+      console.log(`live pair ${pair} side ${sideLetter}: ${record.valid ? 'VALID' : `INVALID (${(reasons.length ? reasons : [record.collectionError]).join('; ')})`}`);
       if (!record.valid) allValid = false;
     }
   }
   const sidesValid = { A: rounds.filter((r) => r.side === 'A' && r.valid).length,
     B: rounds.filter((r) => r.side === 'B' && r.valid).length };
+  const shortWindows = rounds.filter((r) => !r.collectionError
+    && typeof r.windowObservedMs === 'number' && r.windowObservedMs < ACTIVE_WINDOW_SECONDS * 1000)
+    .map((r) => ({ round: `pair-${r.pairIndex}-${r.side}`, windowObservedMs: r.windowObservedMs }));
   const summary = {
     kind: 'live-legs-summary', attemptId: candidate.attemptId, pairs: 5,
     order: live.order, activeWindowSeconds: ACTIVE_WINDOW_SECONDS,
-    liveInputSha256: liveSha, sidesValid, verdict: allValid ? 'PASS' : 'FAIL',
+    liveInputSha256: liveSha,
+    liveInputBytes: candidateLiveInput.bytes,
+    liveInputPaths: { A: baselineLiveInput.relativePath, B: candidateLiveInput.relativePath },
+    liveInputBindings: { A: baselineLiveInput.binding, B: candidateLiveInput.binding },
+    windowObservedMs: Object.fromEntries(rounds.map(
+      (r) => [`pair-${r.pairIndex}-${r.side}`, r.windowObservedMs ?? null],
+    )),
+    firstNonReceiving: Object.fromEntries(rounds.map(
+      (r) => [`pair-${r.pairIndex}-${r.side}`, r.firstNonReceiving ?? null],
+    )),
+    rawSampleCounts: Object.fromEntries(rounds.map(
+      (r) => [`pair-${r.pairIndex}-${r.side}`, Array.isArray(r.samples) ? r.samples.length : 0],
+    )),
+    rawSamplesNote: 'every raw sample per side stays in live/rounds/pair-<n>-<side>.json (never deleted)',
+    calibration: {
+      activeWindowSeconds: ACTIVE_WINDOW_SECONDS,
+      sampleInsufficient: shortWindows.length > 0,
+      note: shortWindows.length > 0
+        ? `样本不足: ${shortWindows.map((entry) => `${entry.round} 只观察到 ${entry.windowObservedMs}ms < 30000ms`).join('; ')}`
+          + '；未补睡，按真实覆盖判 invalid'
+        : '每个实时侧别都在同一 session 的 Receiving 状态下观察到 >=30s 窗口',
+      shortWindows,
+    },
+    sidesValid, verdict: allValid ? 'PASS' : 'FAIL',
     invalidRounds: rounds.filter((r) => !r.valid).map((r) => `pair-${r.pairIndex}-${r.side}`),
     advisory: 'RTT values in the rounds are advisory only; the primary metrics stay on the recorded legs',
     generatedAt: new Date().toISOString(),

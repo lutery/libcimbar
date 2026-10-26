@@ -1,0 +1,422 @@
+ok   help exits 0 and documents --context/--gate
+ok   missing arguments exit 2
+ok   unknown gate exits 2
+ok   missing context file is refused
+ok   broken context JSON is refused
+FAIL UX-UT-088 complete local old+new gate passes
+exit=1 expected=0
+stdout:
+UX GATE local: FAIL (53 violation(s))
+
+  - E2E-27: frozen step S01 has no PASS assertion covering it
+
+  - E2E-27: frozen step S02 has no PASS assertion covering it
+
+  - E2E-27: frozen step S03 has no PASS assertion covering it
+
+  - E2E-27: frozen step S04 has no PASS assertion covering it
+
+  - E2E-27: frozen step S05 has no PASS assertion covering it
+
+  - E2E-27: frozen step S06 has no PASS assertion covering it
+
+  - E2E-28: frozen step S01 has no PASS assertion covering it
+
+  - E2E-28: frozen step S02 has no PASS assertion covering it
+
+  - E2E-28: frozen step S03 has no PASS assertion covering it
+
+  - E2E-28: frozen step S04 has no PASS assertion covering it
+
+  - E2E-28: frozen step S05 has no PASS assertion covering it
+
+  - E2E-29: frozen step S01 has no PASS assertion covering it
+
+  - E2E-29: frozen step S02 has no PASS assertion covering it
+
+  - E2E-29: frozen step S03 has no PASS assertion covering it
+
+  - E2E-29: frozen step S04 has no PASS assertion covering it
+
+  - E2E-29: frozen step S05 has no PASS assertion covering it
+
+  - E2E-30: frozen step S01 has no PASS assertion covering it
+
+  - E2E-30: frozen step S02 has no PASS assertion covering it
+
+  - E2E-30: frozen step S03 has no PASS assertion covering it
+
+  - E2E-30: frozen step S04 has no PASS assertion covering it
+
+  - E2E-31: frozen step S01 has no PASS assertion covering it
+
+  - E2E-31: frozen step S02 has no PASS assertion covering it
+
+  - E2E-31: frozen step S03 has no PASS assertion covering it
+
+  - E2E-31: frozen step S04 has no PASS assertion covering it
+
+  - E2E-32: frozen step S01 has no PASS assertion covering it
+
+  - E2E-32: frozen step S02 has no PASS assertion covering it
+
+  - E2E-32: frozen step S03 has no PASS assertion covering it
+
+  - E2E-32: frozen step S04 has no PASS assertion covering it
+
+  - E2E-33: frozen step S01 has no PASS assertion covering it
+
+  - E2E-33: frozen step S02 has no PASS assertion covering it
+
+  - E2E-33: frozen step S03 has no PASS assertion covering it
+
+  - E2E-33: frozen step S04 has no PASS assertion covering it
+
+  - E2E-34: frozen step S01 has no PASS assertion covering it
+
+  - E2E-34: frozen step S02 has no PASS assertion covering it
+
+  - E2E-34: frozen step S03 has no PASS assertion covering it
+
+  - E2E-34: frozen step S04 has no PASS assertion covering it
+
+  - E2E-35: frozen step S01 has no PASS assertion covering it
+
+  - E2E-35: frozen step S02 has no PASS assertion covering it
+
+  - E2E-35: frozen step S03 has no PASS assertion covering it
+
+  - E2E-35: frozen step S04 has no PASS assertion covering it
+
+  - E2E-36: frozen step S01 has no PASS assertion covering it
+
+  - E2E-36: frozen step S02 has no PASS assertion covering it
+
+  - E2E-36: frozen step S03 has no PASS assertion covering it
+
+  - E2E-36: frozen step S04 has no PASS assertion covering it
+
+  - E2E-37: frozen step S01 has no PASS assertion covering it
+
+  - E2E-37: frozen step S02 has no PASS assertion covering it
+
+  - E2E-37: frozen step S03 has no PASS assertion covering it
+
+  - E2E-37: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S01 has no PASS assertion covering it
+
+  - E2E-38: frozen step S02 has no PASS assertion covering it
+
+  - E2E-38: frozen step S03 has no PASS assertion covering it
+
+  - E2E-38: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S05 has no PASS assertion covering it
+
+
+stderr:
+
+FAIL UX-UT-088 complete field gate passes
+exit=1 expected=0
+stdout:
+UX GATE field: FAIL (5 violation(s))
+
+  - E2E-39: frozen step S01 has no PASS assertion covering it
+
+  - E2E-39: frozen step S02 has no PASS assertion covering it
+
+  - E2E-39: frozen step S03 has no PASS assertion covering it
+
+  - E2E-39: frozen step S04 has no PASS assertion covering it
+
+  - E2E-39: frozen step S05 has no PASS assertion covering it
+
+
+stderr:
+
+ok   field gate over NOT_RUN is non-zero
+ok   NOT_RUN evidence is preserved as NOT_RUN on disk
+ok   UX-UT-089 missing E2E-27 fails the local gate
+ok   UX-UT-089 missing E2E-28 fails the local gate
+ok   UX-UT-089 missing E2E-29 fails the local gate
+ok   UX-UT-089 missing E2E-30 fails the local gate
+ok   UX-UT-089 missing E2E-31 fails the local gate
+ok   UX-UT-089 missing E2E-32 fails the local gate
+ok   UX-UT-089 missing E2E-33 fails the local gate
+ok   UX-UT-089 missing E2E-34 fails the local gate
+ok   UX-UT-089 missing E2E-35 fails the local gate
+ok   UX-UT-089 missing E2E-36 fails the local gate
+ok   UX-UT-089 missing E2E-37 fails the local gate
+ok   UX-UT-089 missing E2E-38 fails the local gate
+ok   UX-UT-089 empty uxRequired cannot exempt the gate
+ok   wrong runId is refused
+ok   wrong product manifest sha in a record is refused
+ok   product bytes changed after the manifest are refused
+ok   input manifest sha mismatch is refused
+ok   equal metadata but different received bytes is refused
+ok   missing received artifact is refused
+ok   escaping proofRef is refused
+ok   empty proofRefs on PASS is refused
+ok   mock scope cannot pass a local journey
+ok   executor cannot impersonate the user
+ok   caseType cannot be relabelled to skip the artifact checks
+ok   NOT_RUN with an executor/time claim is refused
+ok   duplicate caseId is refused
+ok   unplanned extra UX id is refused
+ok   record claiming an attempt/proof mismatch is refused
+ok   record PASS with empty assertions is refused
+ok   assertion with empty observed is refused
+ok   non-PASS assertion fails the case
+ok   assertion without its proof file is refused
+ok   slice context cannot prove the final local gate
+ok   legacy field measurement without a bound threshold is refused
+ok   local evidence cannot prove the field gate
+ok   UX records inside results.json do not satisfy the UX gate
+ok   v1 results.json still follows the legacy gate rules
+ok   reversed claim timeline is refused
+ok   NOT_RUN with a received hash is refused
+ok   proof borrowed from another attempt is refused
+ok   case-folded caseId is not the planned case
+ok   backslash proofRefs are refused
+ok   field record claiming the local scope is refused
+ok   same case executed twice is a duplicate, not a merge
+ok   planning path that is a directory is an environment refusal
+ok   original and received bytes differ (each SHA correct) is refused
+ok   deleting every frozen step and keeping an unknown id is refused
+FAIL a -held replacement id is refused even when a PASS remains
+exit=1 expected=1
+stdout:
+UX GATE local: FAIL (53 violation(s))
+
+  - E2E-27: frozen step S01 has no PASS assertion covering it
+
+  - E2E-27: frozen step S02 has no PASS assertion covering it
+
+  - E2E-27: frozen step S03 has no PASS assertion covering it
+
+  - E2E-27: frozen step S04 has no PASS assertion covering it
+
+  - E2E-27: frozen step S05 has no PASS assertion covering it
+
+  - E2E-27: frozen step S06 has no PASS assertion covering it
+
+  - E2E-28: frozen step S01 has no PASS assertion covering it
+
+  - E2E-28: frozen step S02 has no PASS assertion covering it
+
+  - E2E-28: frozen step S03 has no PASS assertion covering it
+
+  - E2E-28: frozen step S04 has no PASS assertion covering it
+
+  - E2E-28: frozen step S05 has no PASS assertion covering it
+
+  - E2E-29: frozen step S01 has no PASS assertion covering it
+
+  - E2E-29: frozen step S02 has no PASS assertion covering it
+
+  - E2E-29: frozen step S03 has no PASS assertion covering it
+
+  - E2E-29: frozen step S04 has no PASS assertion covering it
+
+  - E2E-29: frozen step S05 has no PASS assertion covering it
+
+  - E2E-30: frozen step S01 has no PASS assertion covering it
+
+  - E2E-30: frozen step S02 has no PASS assertion covering it
+
+  - E2E-30: frozen step S03 has no PASS assertion covering it
+
+  - E2E-30: frozen step S04 has no PASS assertion covering it
+
+  - E2E-31: frozen step S01 has no PASS assertion covering it
+
+  - E2E-31: frozen step S02 has no PASS assertion covering it
+
+  - E2E-31: frozen step S03 has no PASS assertion covering it
+
+  - E2E-31: frozen step S04 has no PASS assertion covering it
+
+  - E2E-32: frozen step S01 has no PASS assertion covering it
+
+  - E2E-32: frozen step S02 has no PASS assertion covering it
+
+  - E2E-32: frozen step S03 has no PASS assertion covering it
+
+  - E2E-32: frozen step S04 has no PASS assertion covering it
+
+  - E2E-33: frozen step S01 has no PASS assertion covering it
+
+  - E2E-33: frozen step S02 has no PASS assertion covering it
+
+  - E2E-33: frozen step S03 has no PASS assertion covering it
+
+  - E2E-33: frozen step S04 has no PASS assertion covering it
+
+  - E2E-34: frozen step S01 has no PASS assertion covering it
+
+  - E2E-34: frozen step S02 has no PASS assertion covering it
+
+  - E2E-34: frozen step S03 has no PASS assertion covering it
+
+  - E2E-34: frozen step S04 has no PASS assertion covering it
+
+  - E2E-35: frozen step S01 has no PASS assertion covering it
+
+  - E2E-35: frozen step S02 has no PASS assertion covering it
+
+  - E2E-35: frozen step S03 has no PASS assertion covering it
+
+  - E2E-35: frozen step S04 has no PASS assertion covering it
+
+  - E2E-36: frozen step S01 has no PASS assertion covering it
+
+  - E2E-36: frozen step S02 has no PASS assertion covering it
+
+  - E2E-36: frozen step S03 has no PASS assertion covering it
+
+  - E2E-36: frozen step S04 has no PASS assertion covering it
+
+  - E2E-37: frozen step S01 has no PASS assertion covering it
+
+  - E2E-37: frozen step S02 has no PASS assertion covering it
+
+  - E2E-37: frozen step S03 has no PASS assertion covering it
+
+  - E2E-37: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S01 has no PASS assertion covering it
+
+  - E2E-38: frozen step S02 has no PASS assertion covering it
+
+  - E2E-38: frozen step S03 has no PASS assertion covering it
+
+  - E2E-38: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S05 has no PASS assertion covering it
+
+
+stderr:
+
+FAIL a lowercase step sub-suffix id is refused
+exit=1 expected=1
+stdout:
+UX GATE local: FAIL (53 violation(s))
+
+  - E2E-27: frozen step S01 has no PASS assertion covering it
+
+  - E2E-27: frozen step S02 has no PASS assertion covering it
+
+  - E2E-27: frozen step S03 has no PASS assertion covering it
+
+  - E2E-27: frozen step S04 has no PASS assertion covering it
+
+  - E2E-27: frozen step S05 has no PASS assertion covering it
+
+  - E2E-27: frozen step S06 has no PASS assertion covering it
+
+  - E2E-28: frozen step S01 has no PASS assertion covering it
+
+  - E2E-28: frozen step S02 has no PASS assertion covering it
+
+  - E2E-28: frozen step S03 has no PASS assertion covering it
+
+  - E2E-28: frozen step S04 has no PASS assertion covering it
+
+  - E2E-28: frozen step S05 has no PASS assertion covering it
+
+  - E2E-29: frozen step S01 has no PASS assertion covering it
+
+  - E2E-29: frozen step S02 has no PASS assertion covering it
+
+  - E2E-29: frozen step S03 has no PASS assertion covering it
+
+  - E2E-29: frozen step S04 has no PASS assertion covering it
+
+  - E2E-29: frozen step S05 has no PASS assertion covering it
+
+  - E2E-30: frozen step S01 has no PASS assertion covering it
+
+  - E2E-30: frozen step S02 has no PASS assertion covering it
+
+  - E2E-30: frozen step S03 has no PASS assertion covering it
+
+  - E2E-30: frozen step S04 has no PASS assertion covering it
+
+  - E2E-31: frozen step S01 has no PASS assertion covering it
+
+  - E2E-31: frozen step S02 has no PASS assertion covering it
+
+  - E2E-31: frozen step S03 has no PASS assertion covering it
+
+  - E2E-31: frozen step S04 has no PASS assertion covering it
+
+  - E2E-32: frozen step S01 has no PASS assertion covering it
+
+  - E2E-32: frozen step S02 has no PASS assertion covering it
+
+  - E2E-32: frozen step S03 has no PASS assertion covering it
+
+  - E2E-32: frozen step S04 has no PASS assertion covering it
+
+  - E2E-33: frozen step S01 has no PASS assertion covering it
+
+  - E2E-33: frozen step S02 has no PASS assertion covering it
+
+  - E2E-33: frozen step S03 has no PASS assertion covering it
+
+  - E2E-33: frozen step S04 has no PASS assertion covering it
+
+  - E2E-34: frozen step S01 has no PASS assertion covering it
+
+  - E2E-34: frozen step S02 has no PASS assertion covering it
+
+  - E2E-34: frozen step S03 has no PASS assertion covering it
+
+  - E2E-34: frozen step S04 has no PASS assertion covering it
+
+  - E2E-35: frozen step S01 has no PASS assertion covering it
+
+  - E2E-35: frozen step S02 has no PASS assertion covering it
+
+  - E2E-35: frozen step S03 has no PASS assertion covering it
+
+  - E2E-35: frozen step S04 has no PASS assertion covering it
+
+  - E2E-36: frozen step S01 has no PASS assertion covering it
+
+  - E2E-36: frozen step S02 has no PASS assertion covering it
+
+  - E2E-36: frozen step S03 has no PASS assertion covering it
+
+  - E2E-36: frozen step S04 has no PASS assertion covering it
+
+  - E2E-37: frozen step S01 has no PASS assertion covering it
+
+  - E2E-37: frozen step S02 has no PASS assertion covering it
+
+  - E2E-37: frozen step S03 has no PASS assertion covering it
+
+  - E2E-37: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S01 has no PASS assertion covering it
+
+  - E2E-38: frozen step S02 has no PASS assertion covering it
+
+  - E2E-38: frozen step S03 has no PASS assertion covering it
+
+  - E2E-38: frozen step S04 has no PASS assertion covering it
+
+  - E2E-38: frozen step S05 has no PASS assertion covering it
+
+
+stderr:
+
+ok   a measurement PASS without any raw data is refused
+ok   a missing recorded raw round is refused
+ok   a tampered summary number is refused
+ok   an early-Ready live window is refused
+ok   a raw threshold breach is refused
+ok   a missing live leg raw file is refused
+ok   junction inside the run root cannot redirect proof reads
+SELFTEST FAIL (4 of 65 cases)

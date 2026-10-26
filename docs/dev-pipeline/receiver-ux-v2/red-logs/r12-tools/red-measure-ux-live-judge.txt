@@ -1,0 +1,385 @@
+TAP version 13
+# Subtest: T28-01a nearest-rank percentile on fixed arrays
+ok 1 - T28-01a nearest-rank percentile on fixed arrays
+  ---
+  duration_ms: 2.4324
+  type: 'test'
+  ...
+# Subtest: T28-01b percentile and median reject empty or non-finite input
+ok 2 - T28-01b percentile and median reject empty or non-finite input
+  ---
+  duration_ms: 1.4164
+  type: 'test'
+  ...
+# Subtest: T28-01c median on fixed arrays
+ok 3 - T28-01c median on fixed arrays
+  ---
+  duration_ms: 0.257
+  type: 'test'
+  ...
+# Subtest: T28-02 readyMs is journey.readyAt - receivingAt on the same clock
+ok 4 - T28-02 readyMs is journey.readyAt - receivingAt on the same clock
+  ---
+  duration_ms: 0.5737
+  type: 'test'
+  ...
+# Subtest: T28-03a the real frozen method loads and records its SHA
+ok 5 - T28-03a the real frozen method loads and records its SHA
+  ---
+  duration_ms: 0.9561
+  type: 'test'
+  ...
+# Subtest: T28-03b an unfrozen or edited method is refused
+ok 6 - T28-03b an unfrozen or edited method is refused
+  ---
+  duration_ms: 4.6036
+  type: 'test'
+  ...
+# Subtest: T28-04a a complete round derives readyMs, p50/p95 and invariants
+ok 7 - T28-04a a complete round derives readyMs, p50/p95 and invariants
+  ---
+  duration_ms: 1.2787
+  type: 'test'
+  ...
+# Subtest: T28-04b rejected frames are kept out of the RTT samples but recorded
+ok 8 - T28-04b rejected frames are kept out of the RTT samples but recorded
+  ---
+  duration_ms: 0.3126
+  type: 'test'
+  ...
+# Subtest: T28-04c too few settled frames excludes the round, samples kept
+ok 9 - T28-04c too few settled frames excludes the round, samples kept
+  ---
+  duration_ms: 0.5847
+  type: 'test'
+  ...
+# Subtest: T28-04d malformed frames refuse the round
+ok 10 - T28-04d malformed frames refuse the round
+  ---
+  duration_ms: 0.5743
+  type: 'test'
+  ...
+# Subtest: T28-04e overlapping frame intervals break the single-flight invariant
+ok 11 - T28-04e overlapping frame intervals break the single-flight invariant
+  ---
+  duration_ms: 0.3582
+  type: 'test'
+  ...
+# Subtest: T28-04f telemetry write gaps below the frozen interval are a violation
+ok 12 - T28-04f telemetry write gaps below the frozen interval are a violation
+  ---
+  duration_ms: 0.3673
+  type: 'test'
+  ...
+# Subtest: T28-04g wrong input/media SHA on a round is refused
+ok 13 - T28-04g wrong input/media SHA on a round is refused
+  ---
+  duration_ms: 0.3345
+  type: 'test'
+  ...
+# Subtest: T28-05a matchEnvironment reports every mismatching field
+ok 14 - T28-05a matchEnvironment reports every mismatching field
+  ---
+  duration_ms: 0.4795
+  type: 'test'
+  ...
+# Subtest: T28-05b planRounds expands the frozen AB/BA/AB/BA/AB order
+ok 15 - T28-05b planRounds expands the frozen AB/BA/AB/BA/AB order
+  ---
+  duration_ms: 0.6311
+  type: 'test'
+  ...
+# Subtest: T28-05c five valid pairs form; warmups are kept but excluded
+ok 16 - T28-05c five valid pairs form; warmups are kept but excluded
+  ---
+  duration_ms: 1.9601
+  type: 'test'
+  ...
+# Subtest: T28-05d a dropped round invalidates its whole pair
+ok 17 - T28-05d a dropped round invalidates its whole pair
+  ---
+  duration_ms: 1.7341
+  type: 'test'
+  ...
+# Subtest: T28-05e an excluded round invalidates its whole pair, samples kept
+ok 18 - T28-05e an excluded round invalidates its whole pair, samples kept
+  ---
+  duration_ms: 1.067
+  type: 'test'
+  ...
+# Subtest: T28-05f an environment mismatch within a pair refuses that pair
+ok 19 - T28-05f an environment mismatch within a pair refuses that pair
+  ---
+  duration_ms: 0.9694
+  type: 'test'
+  ...
+# Subtest: T28-05g duplicate rounds for one slot are refused as a structural fault
+ok 20 - T28-05g duplicate rounds for one slot are refused as a structural fault
+  ---
+  duration_ms: 0.9755
+  type: 'test'
+  ...
+# Subtest: T28-06a medians and thresholds recompute exactly from fixed arrays
+ok 21 - T28-06a medians and thresholds recompute exactly from fixed arrays
+  ---
+  duration_ms: 2.0394
+  type: 'test'
+  ...
+# Subtest: T28-06b per-round percentiles feed the median, not a pooled sample
+ok 22 - T28-06b per-round percentiles feed the median, not a pooled sample
+  ---
+  duration_ms: 1.1815
+  type: 'test'
+  ...
+# Subtest: T28-06c a breached threshold fails the verdict with the numbers kept
+ok 23 - T28-06c a breached threshold fails the verdict with the numbers kept
+  ---
+  duration_ms: 1.056
+  type: 'test'
+  ...
+# Subtest: T28-06d fewer than five valid pairs is NOT_RUN, never PASS
+ok 24 - T28-06d fewer than five valid pairs is NOT_RUN, never PASS
+  ---
+  duration_ms: 1.0998
+  type: 'test'
+  ...
+# Subtest: T28-06e a candidate invariant violation is FAIL, not dropped noise
+ok 25 - T28-06e a candidate invariant violation is FAIL, not dropped noise
+  ---
+  duration_ms: 1.024
+  type: 'test'
+  ...
+# Subtest: T28-06f baseline-only violations do not fail the candidate
+ok 26 - T28-06f baseline-only violations do not fail the candidate
+  ---
+  duration_ms: 0.9953
+  type: 'test'
+  ...
+# Subtest: T28-07a buildOutputFiles keeps every raw round and adds the analysis
+ok 27 - T28-07a buildOutputFiles keeps every raw round and adds the analysis
+  ---
+  duration_ms: 1.8163
+  type: 'test'
+  ...
+# Subtest: T28-07b the output directory is attempt-scoped and refuses overwrites
+ok 28 - T28-07b the output directory is attempt-scoped and refuses overwrites
+  ---
+  duration_ms: 51.6479
+  type: 'test'
+  ...
+# Subtest: T28-07c the observer script wraps submitFrame and keeps the promise
+ok 29 - T28-07c the observer script wraps submitFrame and keeps the promise
+  ---
+  duration_ms: 0.2437
+  type: 'test'
+  ...
+# Subtest: T28-08a --help exits 0 and names the three required inputs
+ok 30 - T28-08a --help exits 0 and names the three required inputs
+  ---
+  duration_ms: 123.7409
+  type: 'test'
+  ...
+# Subtest: T28-08b missing required arguments exit 2 before any validation
+ok 31 - T28-08b missing required arguments exit 2 before any validation
+  ---
+  duration_ms: 299.5919
+  type: 'test'
+  ...
+# Subtest: T28-08c an unknown argument exits 2 (unknown-gate analogue)
+ok 32 - T28-08c an unknown argument exits 2 (unknown-gate analogue)
+  ---
+  duration_ms: 102.0838
+  type: 'test'
+  ...
+# Subtest: T28-08d a missing or unfrozen method file refuses with exit 3
+ok 33 - T28-08d a missing or unfrozen method file refuses with exit 3
+  ---
+  duration_ms: 209.0585
+  type: 'test'
+  ...
+# Subtest: T28-09a identical contexts are refused (one build cannot be both sides)
+ok 34 - T28-09a identical contexts are refused (one build cannot be both sides)
+  ---
+  duration_ms: 173.6743
+  type: 'test'
+  ...
+# Subtest: T28-09b a tampered staged build refuses (product manifest SHA guard)
+ok 35 - T28-09b a tampered staged build refuses (product manifest SHA guard)
+  ---
+  duration_ms: 330.217
+  type: 'test'
+  ...
+# Subtest: T28-09c an input SHA mismatch between the sides refuses
+ok 36 - T28-09c an input SHA mismatch between the sides refuses
+  ---
+  duration_ms: 209.0388
+  type: 'test'
+  ...
+# Subtest: T28-09d an existing output directory for the attempt refuses
+ok 37 - T28-09d an existing output directory for the attempt refuses
+  ---
+  duration_ms: 288.6072
+  type: 'test'
+  ...
+# Subtest: T28-09e --validate-only accepts a good pair and writes nothing
+ok 38 - T28-09e --validate-only accepts a good pair and writes nothing
+  ---
+  duration_ms: 205.4052
+  type: 'test'
+  ...
+# Subtest: T30-B1a a collection error is undecidable but keeps its raw samples
+ok 39 - T30-B1a a collection error is undecidable but keeps its raw samples
+  ---
+  duration_ms: 1.8043
+  type: 'test'
+  ...
+# Subtest: T30-B1b a stubbed business failure still writes rounds and invalid-rounds
+ok 40 - T30-B1b a stubbed business failure still writes rounds and invalid-rounds
+  ---
+  duration_ms: 75.3338
+  type: 'test'
+  ...
+# Subtest: T30-B1c a throwing runRound becomes an environment record, outputs still land
+ok 41 - T30-B1c a throwing runRound becomes an environment record, outputs still land
+  ---
+  duration_ms: 67.4329
+  type: 'test'
+  ...
+# Subtest: T30-B2a a page without numeric spans leaves no pending timer
+ok 42 - T30-B2a a page without numeric spans leaves no pending timer
+  ---
+  duration_ms: 24.172
+  type: 'test'
+  ...
+# Subtest: T30-B2b arming is event-driven: DOMContentLoaded arms, load disarms
+ok 43 - T30-B2b arming is event-driven: DOMContentLoaded arms, load disarms
+  ---
+  duration_ms: 2.5067
+  type: 'test'
+  ...
+# Subtest: T30-B2c telemetryArmed is required on the candidate, not-applicable on the baseline
+ok 44 - T30-B2c telemetryArmed is required on the candidate, not-applicable on the baseline
+  ---
+  duration_ms: 1.4259
+  type: 'test'
+  ...
+# Subtest: T-R12-A3a the 09b shape is refused: short window and Ready samples
+not ok 45 - T-R12-A3a the 09b shape is refused: short window and Ready samples
+  ---
+  duration_ms: 1.846
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs:1369:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\measure-ux-calc.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    moduleResolve (node:internal/modules/esm/resolve:861:10)
+    defaultResolve (node:internal/modules/esm/resolve:985:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:36)
+    TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+    ModuleLoader.import (node:internal/modules/esm/loader:679:21)
+    defaultImportModuleDynamicallyForModule (node:internal/modules/esm/utils:222:31)
+  ...
+# Subtest: T-R12-A3b a real 30s Receiving window passes with zero violations
+not ok 46 - T-R12-A3b a real 30s Receiving window passes with zero violations
+  ---
+  duration_ms: 1.0934
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs:1384:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\measure-ux-calc.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    moduleResolve (node:internal/modules/esm/resolve:861:10)
+    defaultResolve (node:internal/modules/esm/resolve:985:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:36)
+    TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+    ModuleLoader.import (node:internal/modules/esm/loader:679:21)
+    defaultImportModuleDynamicallyForModule (node:internal/modules/esm/utils:222:31)
+  ...
+# Subtest: T-R12-A3c a changed session identity inside the window is refused
+not ok 47 - T-R12-A3c a changed session identity inside the window is refused
+  ---
+  duration_ms: 0.8835
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs:1394:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\measure-ux-calc.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    moduleResolve (node:internal/modules/esm/resolve:861:10)
+    defaultResolve (node:internal/modules/esm/resolve:985:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:36)
+    TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+    ModuleLoader.import (node:internal/modules/esm/loader:679:21)
+    defaultImportModuleDynamicallyForModule (node:internal/modules/esm/utils:222:31)
+  ...
+# Subtest: T-R12-A3d a window without a settlement inside it is refused
+not ok 48 - T-R12-A3d a window without a settlement inside it is refused
+  ---
+  duration_ms: 0.8264
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs:1404:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\measure-ux-calc.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    moduleResolve (node:internal/modules/esm/resolve:861:10)
+    defaultResolve (node:internal/modules/esm/resolve:985:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:36)
+    TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+    ModuleLoader.import (node:internal/modules/esm/loader:679:21)
+    defaultImportModuleDynamicallyForModule (node:internal/modules/esm/utils:222:31)
+  ...
+# Subtest: T-R12-A3e candidate feedback and stop-release checks still gate the B side
+not ok 49 - T-R12-A3e candidate feedback and stop-release checks still gate the B side
+  ---
+  duration_ms: 0.9779
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs:1418:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module 'E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\measure-ux-calc.mjs' imported from E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\tests\\measure-ux.test.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    moduleResolve (node:internal/modules/esm/resolve:861:10)
+    defaultResolve (node:internal/modules/esm/resolve:985:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:36)
+    TracingChannel.tracePromise (node:diagnostics_channel:350:14)
+    ModuleLoader.import (node:internal/modules/esm/loader:679:21)
+    defaultImportModuleDynamicallyForModule (node:internal/modules/esm/utils:222:31)
+  ...
+# Subtest: T28-07d executing the wrapper preserves promise identity and settlement
+ok 50 - T28-07d executing the wrapper preserves promise identity and settlement
+  ---
+  duration_ms: 8.4027
+  type: 'test'
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 45
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2414.5327

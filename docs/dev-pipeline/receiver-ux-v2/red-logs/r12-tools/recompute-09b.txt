@@ -1,0 +1,308 @@
+{
+  "ok": false,
+  "violations": [
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900487386ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16085ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900540028ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16088ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-1-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900647959ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16069ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900593601ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16067ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-2-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900702003ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16114ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900755275ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16094ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-3-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900861278ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16112ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900807983ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16087ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-4-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900914851ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16079ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900968303ms (state=Ready)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16077ms (< 30000ms); an early Ready is a failed round, never a padded 30s window"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)"
+    },
+    {
+      "code": "E_LIVE_INVALID",
+      "detail": "pair-5-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+    },
+    {
+      "code": "E_RECOMPUTE_TAMPERED",
+      "detail": "live/summary.json sidesValid {\"A\":5,\"B\":5} != recomputed {\"A\":0,\"B\":0}"
+    },
+    {
+      "code": "E_RECOMPUTE_TAMPERED",
+      "detail": "live/summary.json verdict \"PASS\" != recomputed FAIL"
+    },
+    {
+      "code": "E_RECOMPUTE_TAMPERED",
+      "detail": "live/summary.json invalidRounds [] != recomputed [\"pair-1-A\",\"pair-1-B\",\"pair-2-A\",\"pair-2-B\",\"pair-3-A\",\"pair-3-B\",\"pair-4-A\",\"pair-4-B\",\"pair-5-A\",\"pair-5-B\"]"
+    }
+  ],
+  "stats": {
+    "measurements": [
+      {
+        "requestedDir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261025-teamexec-09b\\proof\\E2E-38\\UX-UI-2026-10-25T12-39-28-069Z-d40b44\\measurements",
+        "recomputedDir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261025-teamexec-09b\\measurements\\ux-overhead\\candidate-20261025-04",
+        "ok": false,
+        "validPairs": 5,
+        "verdict": "PASS",
+        "live": {
+          "dir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261025-teamexec-09b\\measurements\\ux-overhead\\candidate-20261025-04\\live",
+          "sides": {
+            "pair-1-A": {
+              "valid": false,
+              "windowObservedMs": 16085,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900487386ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16085ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-1-B": {
+              "valid": false,
+              "windowObservedMs": 16088,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900540028ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16088ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-2-A": {
+              "valid": false,
+              "windowObservedMs": 16069,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900647959ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16069ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-2-B": {
+              "valid": false,
+              "windowObservedMs": 16067,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900593601ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16067ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-3-A": {
+              "valid": false,
+              "windowObservedMs": 16114,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900702003ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16114ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-3-B": {
+              "valid": false,
+              "windowObservedMs": 16094,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900755275ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16094ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-4-A": {
+              "valid": false,
+              "windowObservedMs": 16112,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900861278ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16112ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-4-B": {
+              "valid": false,
+              "windowObservedMs": 16087,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900807983ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16087ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-5-A": {
+              "valid": false,
+              "windowObservedMs": 16079,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900914851ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16079ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            },
+            "pair-5-B": {
+              "valid": false,
+              "windowObservedMs": 16077,
+              "settledInWindow": 0,
+              "violations": [
+                "E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900968303ms (state=Ready)",
+                "E_LIVE_WINDOW_SHORT: the observed Receiving window was 16077ms (< 30000ms); an early Ready is a failed round, never a padded 30s window",
+                "E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)",
+                "E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window"
+              ]
+            }
+          },
+          "verdict": "FAIL",
+          "sidesValid": {
+            "A": 0,
+            "B": 0
+          }
+        }
+      }
+    ]
+  }
+}

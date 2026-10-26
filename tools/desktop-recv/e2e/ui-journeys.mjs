@@ -931,26 +931,73 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) { [WinState2]::ShowWi
       }
       const summary = JSON.parse(readFileSync(summaryPath, 'utf8'));
       const comparison = JSON.parse(readFileSync(comparisonPath, 'utf8'));
+      const runJsonPath = join(measuredDir, 'run.json');
+      const runJson = existsSync(runJsonPath) ? JSON.parse(readFileSync(runJsonPath, 'utf8')) : null;
+      const invalidPath = join(measuredDir, 'invalid-rounds.json');
+      const invalidRounds = existsSync(invalidPath) ? JSON.parse(readFileSync(invalidPath, 'utf8')) : null;
+      const methodAbs = context.abs.methodFile;
+      const methodSha = existsSync(methodAbs) ? sha256File(methodAbs) : null;
+      const methodBound = Boolean(runJson && methodSha && runJson.methodSha256 === methodSha);
+      const warmupsKept = Boolean(invalidRounds && Array.isArray(invalidRounds.rounds)
+        && invalidRounds.rounds.filter((entry) => entry && entry.warmup === true).length === 2);
       const verdict = comparison.verdict || summary.verdict || 'UNKNOWN';
       const refComparison = `${proofMeasRel}/comparison.json`;
       const refSummary = `${proofMeasRel}/summary.json`;
-      rec38.add('E2E-38-R1', 'frozen-method recorded A/B verdict from measure-ux (three thresholds, 5 pairs, >=30 settled frames)',
-        JSON.stringify({ verdict, reasons: comparison.reasons || [], thresholds: comparison.thresholds || null }),
-        verdict === 'PASS', refComparison);
-      rec38.add('E2E-38-R2', 'each recorded round settled >=30 frames and the tool recomputed the frozen formulas',
-        JSON.stringify({ rounds: summary.rounds || summary.validRounds || null }),
-        verdict === 'PASS', refSummary);
+      // The frozen case has five steps; every assertion id below is the
+      // canonical `<caseId>-S<n>` form the UX gate requires (round-12 B-02).
+      rec38.add('E2E-38-S01', 'frozen method SHA, both product manifests and the input SHAs are bound, and the two warmups are preserved outside the five pairs',
+        JSON.stringify({
+          methodSha256: runJson ? runJson.methodSha256 : null,
+          methodFileSha256: methodSha, methodBound,
+          candidate: runJson ? runJson.candidate : null,
+          baseline: runJson ? runJson.baseline : null,
+          warmupsKept, invalidCount: invalidRounds ? invalidRounds.count : null,
+        }),
+        methodBound && warmupsKept, refSummary);
+      rec38.add('E2E-38-S02', 'five recorded A/B pairs in the frozen order settled >=30 ok frames per round and reached the recorded verdict',
+        JSON.stringify({ verdict, validPairs: comparison.validPairs || null,
+          aRounds: summary.sides && summary.sides.A ? summary.sides.A.rounds : null,
+          bRounds: summary.sides && summary.sides.B ? summary.sides.B.rounds : null,
+          reasons: comparison.reasons || [] }),
+        verdict === 'PASS' && comparison.validPairs === 5, refComparison);
+      const metrics = comparison.metrics || {};
+      const metricNames = ['readyMs', 'frameRttP50Ms', 'frameRttP95Ms'];
+      const metricsKept = metricNames.every((name) => metrics[name]
+        && typeof metrics[name].limit === 'number'
+        && typeof metrics[name].candidateMedian === 'number'
+        && typeof metrics[name].marginMs === 'number');
+      rec38.add('E2E-38-S03', 'the three frozen thresholds recompute from the per-round medians (limit and signed margin kept, never a bare PASS)',
+        JSON.stringify({ metrics: metricsKept ? {
+          readyMs: [metrics.readyMs.baselineMedian, metrics.readyMs.candidateMedian, metrics.readyMs.limit],
+          frameRttP50Ms: [metrics.frameRttP50Ms.baselineMedian, metrics.frameRttP50Ms.candidateMedian, metrics.frameRttP50Ms.limit],
+          frameRttP95Ms: [metrics.frameRttP95Ms.baselineMedian, metrics.frameRttP95Ms.candidateMedian, metrics.frameRttP95Ms.limit],
+        } : null }),
+        metricsKept, refComparison);
       if (existsSync(liveSummaryPath)) {
         const liveSummary = JSON.parse(readFileSync(liveSummaryPath, 'utf8'));
-        rec38.add('E2E-38-L1', '5 live 30s activity-window pairs: single-flight both sides; candidate feedback/throttle/clock release',
+        const windows = liveSummary.windowObservedMs || {};
+        const windowValues = Object.values(windows).filter((value) => typeof value === 'number');
+        const allWindowsLong = windowValues.length === 10
+          && windowValues.every((value) => value >= 30000);
+        const calibrationOk = Boolean(liveSummary.calibration)
+          && liveSummary.calibration.sampleInsufficient === false;
+        rec38.add('E2E-38-S04', 'five live pairs, each side one real 30s Receiving window of the same session with a settlement inside it',
           JSON.stringify({ verdict: liveSummary.verdict, sidesValid: liveSummary.sidesValid,
-            invalid: liveSummary.invalidRounds }),
-          liveSummary.verdict === 'PASS',
+            invalid: liveSummary.invalidRounds, windows,
+            calibration: liveSummary.calibration || null }),
+          liveSummary.verdict === 'PASS' && allWindowsLong && calibrationOk,
           `${proofMeasRel}/live/summary.json`);
-        const overall = verdict === 'PASS' && liveSummary.verdict === 'PASS' ? 'PASS' : 'FAIL';
+        rec38.add('E2E-38-S05', 'every warmup/invalid/failed round is preserved with its reason and the independent calculator recomputes the same verdict',
+          JSON.stringify({ invalidCount: invalidRounds ? invalidRounds.count : null,
+            invalid: invalidRounds ? invalidRounds.rounds : null,
+            calculator: 'measure-ux-calc recomputes from rounds/ + live/rounds/ (gate step)' }),
+          warmupsKept && Boolean(invalidRounds), refSummary);
+        const overall = verdict === 'PASS' && liveSummary.verdict === 'PASS'
+          && allWindowsLong && calibrationOk && methodBound ? 'PASS' : 'FAIL';
         overall38 = overall;
-        rec38.finish(overall, `recorded A/B verdict=${verdict}; live legs verdict=${liveSummary.verdict}`,
-          null, null, [refSummary, refComparison, `${proofMeasRel}/live/summary.json`]);
+        rec38.finish(overall, `recorded A/B verdict=${verdict}; live legs verdict=${liveSummary.verdict}`
+          + `; live windows ${JSON.stringify(windows)}`, null, null,
+        [refSummary, refComparison, `${proofMeasRel}/live/summary.json`]);
       } else {
         rec38.finish('NOT_RUN', `recorded A/B verdict=${verdict}; live 30s legs NOT_RUN (no live output)`, null, null, []);
       }

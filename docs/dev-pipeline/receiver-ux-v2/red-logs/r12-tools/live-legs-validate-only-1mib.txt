@@ -1,0 +1,28 @@
+{
+  "kind": "live-legs-plan",
+  "candidate": "20261025-teamexec-09b",
+  "baseline": "20261024-teamexec-04",
+  "attemptId": "candidate-20261025-04",
+  "pairs": 5,
+  "order": [
+    "AB",
+    "BA",
+    "AB",
+    "BA",
+    "AB"
+  ],
+  "activeWindowSeconds": 30,
+  "liveInputSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+  "liveInputBytes": 1048576,
+  "liveInputPaths": {
+    "A": "docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-1mib.bin",
+    "B": "docs/tests/runs/20261025-teamexec-09b/fixtures/ext-random-1mib.bin"
+  },
+  "liveInputBindings": {
+    "A": "basename-inferred",
+    "B": "liveInput"
+  },
+  "liveInputNote": "the sample must stay in Receiving for >=30s; a naturally shorter receive is reported as 样本不足 and stays invalid (never padded)",
+  "outputDir": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261025-teamexec-09b\\measurements\\ux-overhead\\candidate-20261025-04\\live",
+  "outputExists": true
+}

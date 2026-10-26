@@ -62,6 +62,69 @@ UX_AC = {
 
 PLAN_REL = "docs/tests/receiver-ux-v2/frozen-plan-fixture.json"
 METHOD_REL = "docs/plans/receiver-ux-v2/performance-method-fixture.json"
+REPO_ROOT = os.path.dirname(os.path.dirname(TOOLS))
+REAL_METHOD = os.path.join(REPO_ROOT, "docs", "plans", "receiver-ux-v2",
+                           "performance-method.json")
+
+# Frozen step counts per UX case (the real planning file has 4/5/6/... steps;
+# the fixture keeps the same shape so the coverage rule is exercised).
+UX_STEPS = {case_id: 2 for case_id in LOCAL_UX}
+UX_STEPS.update({
+    "E2E-27": 6, "E2E-28": 5, "E2E-29": 5, "E2E-30": 4, "E2E-31": 4,
+    "E2E-32": 4, "E2E-33": 4, "E2E-34": 4, "E2E-35": 4, "E2E-36": 4,
+    "E2E-37": 4, "E2E-38": 5, "E2E-39": 5,
+})
+
+# The measurement fixture's real bytes: the input manifest binds them by SHA,
+# the measurement input.json claims the same values, and the recompute CLI
+# re-hashes the files it is pointed at. (The SHA constants are derived below,
+# after sha_bytes is defined.)
+MEAS_INPUT = b"ux-measurement-primary-input"
+MEAS_MEDIA = b"ux-measurement-media"
+MEAS_LIVE = b"ux-measurement-live-input"
+MEAS_FRAMES = 35
+MEAS_BASE_READY = [1000, 1100, 1000, 1200, 1100]
+MEAS_CAND_READY = [1150, 1250, 1200, 1300, 1200]
+MEAS_BASE_RTT = 44
+MEAS_CAND_RTT = 46
+_INSTRUMENTATION_SHA = None
+
+
+def steps_fixture(count):
+    return [
+        {"action": "fixture step %d action" % number,
+         "expected": "fixture step %d expected" % number,
+         "evidence": ["fixture step %d evidence" % number]}
+        for number in range(1, count + 1)
+    ]
+
+
+def instrumentation_sha():
+    """The observer SHA the calculator embeds (asked from node once)."""
+    global _INSTRUMENTATION_SHA
+    if _INSTRUMENTATION_SHA is None:
+        node = shutil.which("node")
+        if not node:
+            raise RuntimeError("node is required for the measurement fixture")
+        calc = os.path.join(TOOLS, "e2e", "measure-ux-calc.mjs")
+        from pathlib import Path
+        calc_url = Path(calc).as_uri()
+        proc = subprocess.run(
+            [node, "-e",
+             "import(process.argv[1]).then(m=>console.log(m.INSTRUMENTATION_SHA256))",
+             calc_url],
+            capture_output=True, timeout=60,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError("cannot read INSTRUMENTATION_SHA256: %s"
+                               % proc.stderr.decode("utf-8", "replace")[:300])
+        _INSTRUMENTATION_SHA = proc.stdout.decode("utf-8").strip()
+    return _INSTRUMENTATION_SHA
+
+
+def method_bytes():
+    with open(REAL_METHOD, "rb") as handle:
+        return handle.read()
 
 
 def plan_fixture():
@@ -71,6 +134,7 @@ def plan_fixture():
             "id": "E2E-%d" % number, "gate": "local", "scope": "local_simulated",
             "executorRole": "executor", "caseType": "file_roundtrip",
             "acceptanceIds": ["AC-001"], "required": True,
+            "steps": steps_fixture(3),
         })
     for number in range(21, 27):
         if number == 26:
@@ -83,6 +147,7 @@ def plan_fixture():
             "id": "E2E-%d" % number, "gate": "field", "scope": "real_cloud",
             "executorRole": "user", "caseType": case_type,
             "acceptanceIds": ["AC-011"], "required": True,
+            "steps": steps_fixture(3),
         })
     for case_id in LOCAL_UX + FIELD_UX:
         field = case_id == "E2E-39"
@@ -91,7 +156,7 @@ def plan_fixture():
             "scope": "real_cloud" if field else "local_simulated",
             "executorRole": "user" if field else "executor",
             "caseType": UX_TYPES[case_id], "acceptanceIds": UX_AC[case_id],
-            "required": True,
+            "required": True, "steps": steps_fixture(UX_STEPS[case_id]),
         })
     return {
         "kind": "receiver-ux-v2-plan-fixture",
@@ -107,6 +172,11 @@ def plan_fixture():
 
 def sha_bytes(data):
     return hashlib.sha256(data).hexdigest()
+
+
+MEAS_INPUT_SHA = sha_bytes(MEAS_INPUT)
+MEAS_MEDIA_SHA = sha_bytes(MEAS_MEDIA)
+MEAS_LIVE_SHA = sha_bytes(MEAS_LIVE)
 
 
 def put(root, rel, data):
@@ -157,19 +227,50 @@ def build_run(repo, gate, phase=None, legacy_threshold=False):
     manifest_bytes = (json.dumps(manifest, indent=2) + "\n").encode("utf-8")
     put(repo, manifest_rel, manifest_bytes)
     manifest_sha = sha_bytes(manifest_bytes)
+    # The input manifest binds the primary/media/live inputs by SHA; the files
+    # are materialised so the recompute CLI can re-hash them.
+    run_root_rel = "docs/tests/runs/%s" % run_id
+    fixtures = {
+        "primary-input.bin": MEAS_INPUT,
+        "media.webm": MEAS_MEDIA,
+        "live-input.bin": MEAS_LIVE,
+    }
+    for name, data in fixtures.items():
+        put(repo, "%s/fixtures/%s" % (run_root_rel, name), data)
     input_rel = "docs/tests/runs/%s/input-manifest.json" % run_id
-    input_bytes = (json.dumps({"inputs": []}, indent=2) + "\n").encode("utf-8")
+    input_manifest = {
+        "version": 1,
+        "iterationId": "receiver-ux-v2",
+        "runId": run_id,
+        "phase": phase,
+        "primaryInput": {
+            "path": "docs/tests/runs/%s/fixtures/primary-input.bin" % run_id,
+            "sha256": MEAS_INPUT_SHA, "bytes": len(MEAS_INPUT),
+        },
+        "media": {"withSha256": MEAS_MEDIA_SHA},
+        "liveInput": {
+            "path": "docs/tests/runs/%s/fixtures/live-input.bin" % run_id,
+            "sha256": MEAS_LIVE_SHA, "bytes": len(MEAS_LIVE),
+        },
+        "files": [
+            {"path": "docs/tests/runs/%s/fixtures/primary-input.bin" % run_id,
+             "sha256": MEAS_INPUT_SHA, "bytes": len(MEAS_INPUT), "role": "fixture"},
+            {"path": "docs/tests/runs/%s/fixtures/media.webm" % run_id,
+             "sha256": MEAS_MEDIA_SHA, "bytes": len(MEAS_MEDIA), "role": "media"},
+            {"path": "docs/tests/runs/%s/fixtures/live-input.bin" % run_id,
+             "sha256": MEAS_LIVE_SHA, "bytes": len(MEAS_LIVE), "role": "fixture"},
+        ],
+    }
+    input_bytes = (json.dumps(input_manifest, indent=2) + "\n").encode("utf-8")
     put(repo, input_rel, input_bytes)
     write_json(repo, PLAN_REL, plan_fixture())
-    write_json(repo, METHOD_REL, {
-        "version": 1, "kind": "frozen_method_only", "frozen": True,
-        "iterationId": "receiver-ux-v2", "productAcceptance": "NOT_RUN",
-    })
+    # The measurement PASS path re-validates the FULL frozen method, so the
+    # fixture carries the real frozen bytes (never a loosened stub).
+    put(repo, METHOD_REL, method_bytes())
     threshold_rel = None
     if legacy_threshold:
         threshold_rel = "docs/tests/runs/%s/legacy-threshold.json" % run_id
         write_json(repo, threshold_rel, {"frozen": True})
-    run_root_rel = "docs/tests/runs/%s" % run_id
     context = {
         "version": 1,
         "iterationId": "receiver-ux-v2",
@@ -243,10 +344,6 @@ def ux_record(case_id, run, attempt_id=None, case_type=None, scope=None,
     scope = scope or ("real_cloud" if field else "local_simulated")
     executor = executor or ("user" if field else "executor")
     proof_dir = "proof/%s/%s" % (case_id, attempt_id)
-    assertion_one = "%s/assertion-1.log" % proof_dir
-    assertion_two = "%s/assertion-2.log" % proof_dir
-    put(run["run_root"], assertion_one, b"assertion one observed")
-    put(run["run_root"], assertion_two, b"assertion two observed")
     reference = None
     received = None
     if case_type == "file_roundtrip":
@@ -255,13 +352,26 @@ def ux_record(case_id, run, attempt_id=None, case_type=None, scope=None,
         recv = "%s/received.bin" % proof_dir
         put(run["run_root"], orig, payload)
         put(run["run_root"], recv, payload)
-        proof_refs = [orig, recv, assertion_one, assertion_two]
+        proof_refs = [orig, recv]
         reference = sha_bytes(payload)
         received = sha_bytes(payload)
     else:
         log = "%s/log.txt" % proof_dir
         put(run["run_root"], log, b"journey log")
-        proof_refs = [log, assertion_one, assertion_two]
+        proof_refs = [log]
+    # Canonical step ids only: <caseId>-S<n> (or a single uppercase letter
+    # sub-suffix). A PASS record must cover every frozen step.
+    assertions = []
+    for number in range(1, UX_STEPS[case_id] + 1):
+        proof = "%s/step-%02d.log" % (proof_dir, number)
+        put(run["run_root"], proof, ("step %d observed" % number).encode("utf-8"))
+        assertions.append({
+            "id": "%s-S%02d" % (case_id, number),
+            "expected": "frozen %s step %d expected" % (case_id, number),
+            "observed": "step %d observed in this run" % number,
+            "result": "PASS",
+            "proofRef": proof,
+        })
     record = {
         "caseId": case_id,
         "attemptId": attempt_id,
@@ -274,22 +384,313 @@ def ux_record(case_id, run, attempt_id=None, case_type=None, scope=None,
         "startedAt": "2026-10-24T10:00:00Z",
         "finishedAt": "2026-10-24T10:00:05Z",
         "proofRefs": proof_refs,
-        "assertions": [
-            {"id": "%s-A1" % case_id,
-             "expected": "saved bytes equal the reference",
-             "observed": "sha256 equal", "result": "PASS",
-             "proofRef": assertion_one},
-            {"id": "%s-A2" % case_id,
-             "expected": "status shows the real receiving state",
-             "observed": "status snapshot recorded", "result": "PASS",
-             "proofRef": assertion_two},
-        ],
+        "assertions": assertions,
         "referenceSha256": reference,
         "receivedSha256": received,
         "notes": "%s executed in this run" % case_id,
     }
     record.update(overrides)
     return record
+
+
+# --- the measurement fixture (E2E-38) -------------------------------------
+# A complete measurement directory as measure-ux writes it: a run root copy
+# with rounds/ + live/rounds/, and the proof copy the journey record points at
+# (no rounds/, mirroring the real ui-journeys copy). The claims are computed
+# here independently and the gate's calculator must reproduce them.
+
+def _measurement_env():
+    return {
+        "wasmSha256": sha_bytes(b"\x00asm"),
+        "inputSha256": MEAS_INPUT_SHA,
+        "mediaSha256": MEAS_MEDIA_SHA,
+        "browserVersion": "edge-fixture",
+        "mode": "B",
+        "viewport": {"width": 1280, "height": 800},
+        "deviceScaleFactor": 1,
+        "screenResolution": {"width": 1920, "height": 1080},
+        "powerMode": "balanced",
+        "instrumentationSha256": instrumentation_sha(),
+    }
+
+
+def _median(values):
+    ordered = sorted(values)
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2
+
+
+def measurement_round(side, pair_index, warmup, ready_ms, rtt_ms):
+    frames = []
+    for index in range(MEAS_FRAMES):
+        t0 = 1000 + index * 100
+        frames.append({"seq": index + 1, "t0Ms": t0, "settledAtMs": t0 + rtt_ms,
+                       "ok": True, "rttMs": rtt_ms})
+    env = _measurement_env()
+    return {
+        "side": side,
+        "pairIndex": pair_index,
+        "slot": 0 if warmup else (1 if side == "A" else 2),
+        "warmup": warmup,
+        "journey": {"receivingAt": 5000, "readyAt": 5000 + ready_ms},
+        "frames": frames,
+        "telemetryWrites": [1000, 1300, 1600],
+        "telemetryArmed": True,
+        "env": env,
+        "inputSha256": MEAS_INPUT_SHA,
+        "mediaSha256": MEAS_MEDIA_SHA,
+    }
+
+
+def live_round(side, pair_index):
+    samples = []
+    for index in range(16):
+        samples.append({
+            "at": 1000000 + index * 2000,
+            "atMs": index * 2000,
+            "perfNow": 5000 + index * 2000,
+            "state": "Receiving",
+            "primary": "正在等待有效数据" if index == 0 else "正在接收数据",
+            "elapsed": "%.1fs" % (index * 2),
+            "rate": "60.0 KiB/s（含冗余）",
+            "sessionId": "sess-fixture",
+            "sessionSeq": 7,
+            "revision": 2,
+            "submitted": 1 + index,
+        })
+    frames = []
+    for index in range(60):
+        t0 = 5200 + index * 500
+        frames.append({"seq": index + 1, "t0Ms": t0, "settledAtMs": t0 + 60,
+                       "ok": True, "rttMs": 60})
+    return {
+        "side": side,
+        "pairIndex": pair_index,
+        "startedAtIso": "2026-10-24T10:00:00Z",
+        "samples": samples,
+        "frames": frames,
+        "telemetryWrites": [5100 + index * 260 for index in range(60)],
+        "telemetryArmed": True,
+        "observations": {"afterStop": {
+            "frozenA": {"state": "Stopped", "elapsed": "32.0s", "primary": "已停止"},
+            "frozenB": {"state": "Stopped", "elapsed": "32.0s", "primary": "已停止"},
+        }},
+        "violations": [],
+        "valid": True,
+    }
+
+
+def _metric(name, baseline, candidate):
+    if name == "readyMs":
+        factor, allowance = 1.1, 250
+        limit = baseline * factor + allowance
+        formula = "candidateMedian <= baselineMedian * 1.10 + 250"
+    elif name == "frameRttP50Ms":
+        factor, allowance = 1.1, 2
+        limit = max(baseline * factor, baseline + allowance)
+        formula = "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)"
+    else:
+        factor, allowance = 1.15, 5
+        limit = max(baseline * factor, baseline + allowance)
+        formula = "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)"
+    return {
+        "metric": name, "baselineMedian": baseline, "candidateMedian": candidate,
+        "baselineRounds": 5, "candidateRounds": 5,
+        "relativeFactor": factor, "absoluteAllowanceMs": allowance, "formula": formula,
+        "limit": limit, "marginMs": limit - candidate, "pass": candidate <= limit,
+    }
+
+
+def _summary_side(role, ready_values, rtt):
+    return {
+        "role": role,
+        "rounds": 5,
+        "pairIndexes": [1, 2, 3, 4, 5],
+        "readyMsValues": list(ready_values),
+        "readyMsMedian": _median(ready_values),
+        "rttP50Values": [rtt] * 5,
+        "rttP50Median": rtt,
+        "rttP95Values": [rtt] * 5,
+        "rttP95Median": rtt,
+        "frameCounts": [MEAS_FRAMES] * 5,
+        "frameCountTotal": MEAS_FRAMES * 5,
+    }
+
+
+def measurement_files(run):
+    method_sha = sha_bytes(method_bytes())
+    instrumentation = instrumentation_sha()
+    files = {}
+    files["run.json"] = {
+        "outputVersion": 1,
+        "kind": "ux-overhead-ab",
+        "startedAtIso": "2026-10-24T10:00:00.000Z",
+        "finishedAtIso": "2026-10-24T10:10:00.000Z",
+        "methodSha256": method_sha,
+        "instrumentationSha256": instrumentation,
+        "candidate": {
+            "runId": run["run_id"], "attemptId": run["attempt_id"],
+            "phase": run["phase"], "productManifestSha256": run["manifest_sha"],
+        },
+        "baseline": {
+            "runId": "20261024-uxgate-baseline", "attemptId": "baseline-001",
+            "phase": "baseline", "productManifestSha256": "b" * 64,
+        },
+        "plan": {"pairs": 5, "order": ["AB", "BA", "AB", "BA", "AB"],
+                 "warmupPerBuild": 1, "minSettledFrames": 30,
+                 "telemetryMinWriteIntervalMs": 250},
+        "verdict": "PASS",
+    }
+    files["environment.json"] = {"matchedEnvironment": ["wasmSha256"],
+                                 "sides": {"A": _measurement_env(), "B": _measurement_env()}}
+    files["input.json"] = {
+        "inputSha256": MEAS_INPUT_SHA, "mediaSha256": MEAS_MEDIA_SHA,
+        "inputBytes": len(MEAS_INPUT),
+        "inputPath": "docs/tests/runs/%s/fixtures/primary-input.bin" % run["run_id"],
+        "mediaPath": "docs/tests/runs/%s/fixtures/media.webm" % run["run_id"],
+        "sides": {"A": {"inputManifest": "fixture"}, "B": {"inputManifest": "fixture"}},
+        "frozenAnchor": "fixture",
+    }
+    files["manifest.json"] = {"methodSha256": method_sha, "sides": {"A": None, "B": None}}
+    files["summary.json"] = {
+        "outputVersion": 1,
+        "methodSha256": method_sha,
+        "instrumentationSha256": instrumentation,
+        "counting": {"gate": "okFrameCount", "note": "settledFrameCount is recorded per round"},
+        "sides": {
+            "A": _summary_side("baseline", MEAS_BASE_READY, MEAS_BASE_RTT),
+            "B": _summary_side("candidate", MEAS_CAND_READY, MEAS_CAND_RTT),
+        },
+    }
+    cell = lambda ready, rtt: {
+        "readyMs": ready, "p50Ms": rtt, "p95Ms": rtt, "okFrameCount": MEAS_FRAMES,
+        "rejectedFrameCount": 0, "maxInFlight": 1, "minTelemetryGapMs": 300,
+        "telemetryArmed": True, "collectionError": None, "exclusionReason": None,
+    }
+    files["comparison.json"] = {
+        "outputVersion": 1,
+        "methodSha256": method_sha,
+        "instrumentationSha256": instrumentation,
+        "validPairs": 5,
+        "pairs": [
+            {"pair": index + 1, "valid": True, "reason": None,
+             "a": cell(MEAS_BASE_READY[index], MEAS_BASE_RTT),
+             "b": cell(MEAS_CAND_READY[index], MEAS_CAND_RTT)}
+            for index in range(5)
+        ],
+        "metrics": {
+            "readyMs": _metric("readyMs", _median(MEAS_BASE_READY), _median(MEAS_CAND_READY)),
+            "frameRttP50Ms": _metric("frameRttP50Ms", MEAS_BASE_RTT, MEAS_CAND_RTT),
+            "frameRttP95Ms": _metric("frameRttP95Ms", MEAS_BASE_RTT, MEAS_CAND_RTT),
+        },
+        "verdict": "PASS",
+        "reasons": [],
+        "formulaSource": "fixture",
+    }
+    files["invalid-rounds.json"] = {
+        "count": 2,
+        "rounds": [
+            {"file": "rounds/warmup-%s.json" % side, "side": side, "pairIndex": 0,
+             "warmup": True, "reason": "E_WARMUP", "detail": None}
+            for side in ("A", "B")
+        ],
+    }
+    files["live/summary.json"] = {
+        "kind": "live-legs-summary",
+        "attemptId": run["attempt_id"],
+        "pairs": 5,
+        "order": ["AB", "BA", "AB", "BA", "AB"],
+        "activeWindowSeconds": 30,
+        "liveInputSha256": MEAS_LIVE_SHA,
+        "sidesValid": {"A": 5, "B": 5},
+        "verdict": "PASS",
+        "invalidRounds": [],
+        "advisory": "RTT values are advisory only",
+        "generatedAt": "2026-10-24T10:20:00.000Z",
+    }
+    return files
+
+
+def measurement_round_files(run):
+    rounds = {
+        "warmup-A.json": measurement_round("A", 0, True, 1000, MEAS_BASE_RTT),
+        "warmup-B.json": measurement_round("B", 0, True, 1100, MEAS_CAND_RTT),
+    }
+    for index in range(5):
+        rounds["pair-%d-A.json" % (index + 1)] = measurement_round(
+            "A", index + 1, False, MEAS_BASE_READY[index], MEAS_BASE_RTT)
+        rounds["pair-%d-B.json" % (index + 1)] = measurement_round(
+            "B", index + 1, False, MEAS_CAND_READY[index], MEAS_CAND_RTT)
+    return rounds
+
+
+def measurement_original_dir(run):
+    return os.path.join(run["run_root"], "measurements", "ux-overhead", run["attempt_id"])
+
+
+def measurement_proof_rel(run, case_id="E2E-38"):
+    return "proof/%s/%s/measurements" % (case_id, run["attempt_id"])
+
+
+def build_measurement(run):
+    """Write the original measurement dir and its proof copy (no rounds/)."""
+    files = measurement_files(run)
+    rounds = measurement_round_files(run)
+    original = measurement_original_dir(run)
+    for rel, value in files.items():
+        write_json(original, rel, value)
+    for name, value in rounds.items():
+        write_json(original, "rounds/" + name, value)
+    for index in range(1, 6):
+        for side in ("A", "B"):
+            write_json(original, "live/rounds/pair-%d-%s.json" % (index, side),
+                       live_round(side, index))
+    proof_rel = measurement_proof_rel(run)
+    for name in ("run.json", "environment.json", "input.json", "manifest.json",
+                 "summary.json", "comparison.json"):
+        write_json(run["run_root"], proof_rel + "/" + name, files[name])
+    write_json(run["run_root"], proof_rel + "/live/summary.json", files["live/summary.json"])
+    for index in range(1, 6):
+        for side in ("A", "B"):
+            write_json(run["run_root"],
+                       proof_rel + "/live/rounds/pair-%d-%s.json" % (index, side),
+                       live_round(side, index))
+    return original
+
+
+def measurement_record(run, case_id="E2E-38"):
+    build_measurement(run)
+    proof_rel = measurement_proof_rel(run, case_id)
+    refs = [proof_rel + "/summary.json", proof_rel + "/comparison.json",
+            proof_rel + "/live/summary.json"]
+    assertions = []
+    for number in range(1, UX_STEPS[case_id] + 1):
+        assertions.append({
+            "id": "%s-S%02d" % (case_id, number),
+            "expected": "frozen %s step %d is evidenced by the measurement" % (case_id, number),
+            "observed": "recomputed from the raw measurement files",
+            "result": "PASS",
+            "proofRef": refs[0],
+        })
+    return {
+        "caseId": case_id,
+        "attemptId": run["attempt_id"],
+        "scope": "local_simulated",
+        "caseType": "measurement",
+        "result": "PASS",
+        "executedBy": "executor",
+        "acceptanceIds": list(UX_AC[case_id]),
+        "productManifestSha256": run["manifest_sha"],
+        "startedAt": "2026-10-24T10:00:00Z",
+        "finishedAt": "2026-10-24T10:10:00Z",
+        "proofRefs": refs,
+        "assertions": assertions,
+        "referenceSha256": None,
+        "receivedSha256": None,
+        "notes": "%s measurement executed in this run" % case_id,
+    }
 
 
 def ux_results(run, records):
@@ -312,7 +713,8 @@ def complete_local(repo):
     run = build_run(repo, "local")
     legacy = [legacy_record(case_id, run, "local_simulated", "executor",
                             "file_roundtrip") for case_id in LOCAL_LEGACY]
-    ux = [ux_record(case_id, run) for case_id in LOCAL_UX]
+    ux = [(measurement_record(run) if case_id == "E2E-38" else ux_record(case_id, run))
+          for case_id in LOCAL_UX]
     write_results(run, legacy, ux)
     return run, legacy, ux
 
@@ -693,6 +1095,118 @@ def main():
         os.makedirs(plan_path)
         expect("planning path that is a directory is an environment refusal",
                run, "local", 3)
+
+        # ---- Round-12 B-02: prove the claimed properties, not the metadata
+        # (1) original and received bytes DIFFER while each SHA is correct.
+        unequal_repo = repo()
+        run, legacy, ux = complete_local(unequal_repo)
+        target = [entry for entry in ux if entry["caseId"] == "E2E-27"][0]
+        other = b"different received bytes with a correct sha"
+        put(run["run_root"], target["proofRefs"][1], other)
+        target["receivedSha256"] = sha_bytes(other)
+        write_results(run, legacy, ux)
+        expect("original and received bytes differ (each SHA correct) is refused",
+               run, "local", 1, expect_text="differ")
+
+        # (2) every frozen step assertion deleted, one unknown id left behind.
+        deleted_repo = repo()
+        run, legacy, ux = complete_local(deleted_repo)
+        target = [entry for entry in ux if entry["caseId"] == "E2E-30"][0]
+        target["assertions"] = [{
+            "id": "E2E-30-UNPLANNED", "expected": "x", "observed": "y",
+            "result": "PASS", "proofRef": target["proofRefs"][0],
+        }]
+        write_results(run, legacy, ux)
+        expect("deleting every frozen step and keeping an unknown id is refused",
+               run, "local", 1, expect_text="S01")
+
+        # (3) a replaced step id (-held) must not stand for the frozen step.
+        held_repo = repo()
+        run, legacy, ux = complete_local(held_repo)
+        target = [entry for entry in ux if entry["caseId"] == "E2E-35"][0]
+        target["assertions"][1]["id"] = "E2E-35-S02-held"
+        write_results(run, legacy, ux)
+        expect("a -held replacement id is refused even when a PASS remains",
+               run, "local", 1, expect_text="non-canonical")
+
+        # (4) lowercase sub-suffix ids are not canonical either.
+        lower_repo = repo()
+        run, legacy, ux = complete_local(lower_repo)
+        target = [entry for entry in ux if entry["caseId"] == "E2E-27"][0]
+        target["assertions"].append(dict(target["assertions"][0], id="E2E-27-S01b"))
+        write_results(run, legacy, ux)
+        expect("a lowercase step sub-suffix id is refused", run, "local", 1,
+               expect_text="non-canonical")
+
+        # (5) a measurement PASS with no raw/pair/summary, only proof text.
+        fake_measure_repo = repo()
+        run, legacy, ux = complete_local(fake_measure_repo)
+        target = [entry for entry in ux if entry["caseId"] == "E2E-38"][0]
+        proof_rel = "proof/E2E-38/%s/proof.txt" % run["attempt_id"]
+        put(run["run_root"], proof_rel, b"proof text only")
+        target.update({
+            "proofRefs": [proof_rel],
+            "assertions": [{"id": "E2E-38-UNKNOWN", "expected": "x", "observed": "y",
+                            "result": "PASS", "proofRef": proof_rel}],
+        })
+        write_results(run, legacy, ux)
+        expect("a measurement PASS without any raw data is refused",
+               run, "local", 1)
+
+        # (6) a deleted raw round in the original measurement.
+        missing_raw_repo = repo()
+        run, legacy, ux = complete_local(missing_raw_repo)
+        os.remove(os.path.join(measurement_original_dir(run), "rounds", "pair-3-B.json"))
+        expect("a missing recorded raw round is refused", run, "local", 1,
+               expect_text="RAW_MISSING")
+
+        # (7) a tampered summary claim in the original measurement.
+        tamper_repo = repo()
+        run, legacy, ux = complete_local(tamper_repo)
+        summary_path = os.path.join(measurement_original_dir(run), "summary.json")
+        with open(summary_path, encoding="utf-8") as handle:
+            summary = json.load(handle)
+        summary["sides"]["B"]["readyMsMedian"] += 500
+        write_json(measurement_original_dir(run), "summary.json", summary)
+        expect("a tampered summary number is refused", run, "local", 1,
+               expect_text="TAMPERED")
+
+        # (8) an early-Ready live window (the 09b shape).
+        early_live_repo = repo()
+        run, legacy, ux = complete_local(early_live_repo)
+        early = live_round("A", 1)
+        for index, sample in enumerate(early["samples"]):
+            if index >= 9:
+                sample["state"] = "Ready"
+                sample["primary"] = "文件已接收完成，请保存"
+        proof_live_rounds = os.path.join(
+            run["run_root"], *measurement_proof_rel(run).split("/"), "live", "rounds")
+        for base in (os.path.join(measurement_original_dir(run), "live", "rounds"),
+                     proof_live_rounds):
+            write_json(base, "pair-1-A.json", early)
+        expect("an early-Ready live window is refused", run, "local", 1,
+               expect_text="WINDOW_SHORT")
+
+        # (9) a raw threshold breach that the record still claims as PASS.
+        breach_repo = repo()
+        run, legacy, ux = complete_local(breach_repo)
+        for index in range(1, 6):
+            path = os.path.join(measurement_original_dir(run), "rounds",
+                                "pair-%d-B.json" % index)
+            with open(path, encoding="utf-8") as handle:
+                record = json.load(handle)
+            for frame in record["frames"]:
+                frame["settledAtMs"] = frame["t0Ms"] + 90
+                frame["rttMs"] = 90
+            write_json(measurement_original_dir(run), "rounds/pair-%d-B.json" % index, record)
+        expect("a raw threshold breach is refused", run, "local", 1,
+               expect_text="VERDICT_MISMATCH")
+
+        # (10) a missing live leg raw file.
+        missing_live_repo = repo()
+        run, legacy, ux = complete_local(missing_live_repo)
+        os.remove(os.path.join(measurement_original_dir(run), "live", "rounds", "pair-4-A.json"))
+        expect("a missing live leg raw file is refused", run, "local", 1)
 
         # ---- T5 (S4): a junction inside the run root must not redirect
         # proof reads. The outside file deliberately MATCHES the record's

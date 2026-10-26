@@ -632,7 +632,14 @@ async function runIatSuite({ stack, context, attemptId, deps, log }) {
     log(`IAT ${group.id} ${result}`);
   }
 
-  // UX-IAT-08: NOT_RUN - the T28 observer tool is not delivered yet.
+  // UX-IAT-08: NOT_RUN. The measurement tooling IS delivered (measure-ux,
+  // measure-ux-calc and the live legs run in this build); this group stays
+  // NOT_RUN because the frozen IAT obligation - one same-build A/B group
+  // inside the IAT suite - is carried by the same-build recorded A/B
+  // measurement plus the real 30s live legs (E2E-38), whose evidence is
+  // recomputed by measure-ux-calc. Recording the obligation as NOT_RUN here
+  // is honest: the placeholder is never turned into a PASS merely because
+  // other tests exist.
   records.push({
     caseId: 'UX-IAT-08',
     attemptId,
@@ -643,9 +650,11 @@ async function runIatSuite({ stack, context, attemptId, deps, log }) {
     startedAt: null,
     finishedAt: null,
     assertions: [],
-    notes: 'NOT_RUN: T28 measure-ux 观测器工具未交付；按计划不伪造测量链路结果',
+    notes: 'NOT_RUN: 测量器（measure-ux / measure-ux-calc / 实时腿）已交付并实跑；'
+      + '本组对应的 IAT 义务由同构建真实 A/B 录像测量（recorded）与 5×真实 30 秒实时腿证据承担，'
+      + '不在此重复执行，也不因其他测试存在而伪造 PASS',
   });
-  log('IAT UX-IAT-08 NOT_RUN (T28 tool pending)');
+  log('IAT UX-IAT-08 NOT_RUN (obligation carried by same-build recorded + live A/B evidence)');
 
   const payload = {
     version: 1,

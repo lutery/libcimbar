@@ -29,6 +29,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 VERIFY_LEGACY = os.path.join(HERE, "verify-evidence.py")
 RUN_CONTEXT_CLI = os.path.join(HERE, "e2e", "run-context.mjs")
+CALC_CLI = os.path.join(HERE, "e2e", "measure-ux-calc.mjs")
 
 ITERATION_ID = "receiver-ux-v2"
 GATE_PHASES = {"local": "final", "field": "field"}
@@ -329,7 +330,134 @@ def parse_timestamp(value):
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def validate_ux_record(record, scenario, context_payload, gate, violations):
+# --- round-12 B-02 helpers -------------------------------------------------
+
+def assertion_step(case_id, assertion_id):
+    """Classify one assertion id against the frozen step-id convention.
+
+    Returns (step_number, canonical):
+      * (n, True)  for the canonical form `<caseId>-S<n>` or `<caseId>-S<n>-<A-Z>`
+      * (None, True) for a supplementary id that does not claim a step at all
+      * (None, False) for a step-shaped but non-canonical id (`-S02-held`,
+        `-S01b`, `-S04-stop`, ...): a replacement id can never stand for a
+        frozen step it did not execute.
+    """
+    prefix = "%s-S" % case_id
+    if assertion_id != prefix and not assertion_id.startswith(prefix):
+        return (None, True)
+    rest = assertion_id[len(prefix):]
+    match = re.fullmatch(r"(\d+)(?:-([A-Z]))?", rest)
+    if not match:
+        return (None, False)
+    return (int(match.group(1)), True)
+
+
+def check_step_coverage(case_id, scenario, assertions, prefix, violations):
+    """Every frozen step needs its own PASS assertion; no fake replacements."""
+    steps = scenario.get("steps")
+    if not isinstance(steps, list) or not steps:
+        violations.append(prefix + "the frozen plan declares no steps for this case;"
+                          " complete coverage cannot be proven")
+        return
+    required = set(range(1, len(steps) + 1))
+    covered = set()
+    for assertion in assertions:
+        if not isinstance(assertion, dict):
+            continue
+        assertion_id = assertion.get("id")
+        if not isinstance(assertion_id, str):
+            continue
+        number, canonical = assertion_step(case_id, assertion_id)
+        if not canonical:
+            violations.append(prefix + "assertion id %r is a non-canonical/replaced step id"
+                              " (expected %s-S{n} or %s-S{n}-<A-Z>)" % (assertion_id, case_id, case_id))
+            continue
+        if number is None:
+            continue
+        if number not in required:
+            violations.append(prefix + "assertion id %r claims step S%d which the frozen case"
+                              " does not have" % (assertion_id, number))
+            continue
+        covered.add(number)
+    for number in sorted(required - covered):
+        violations.append(prefix + "frozen step S%02d has no PASS assertion covering it" % number)
+
+
+def measurement_dir_of_ref(ref):
+    """The measurement directory a proofRef points into (if any)."""
+    norm = ref.replace("\\", "/")
+    for suffix in ("/live/summary.json", "/summary.json", "/comparison.json"):
+        if norm.endswith(suffix):
+            base = norm[: -len(suffix)]
+            if suffix == "/live/summary.json":
+                return base[:-len("/live")] if base.endswith("/live") else None
+            return base if base.endswith("/measurements") else None
+    return None
+
+
+def run_measurement_recompute(measurement_rel, context_payload, context_path, repo_root,
+                              prefix, violations):
+    """Re-run the pure calculator over the raw files (B-02).
+
+    The calculator re-derives every recorded number and live-side verdict and
+    refuses a tampered summary, a missing raw pair file, a short/early-Ready
+    live window and an input/build that is no longer bound to this context.
+    """
+    run_root = context_payload["abs"]["runRoot"]
+    measurement_abs = resolve_inside(run_root, measurement_rel)
+    if measurement_abs is None or not os.path.isdir(measurement_abs):
+        violations.append(prefix + "measurement evidence directory not found on disk: %s"
+                          % measurement_rel)
+        return
+    for required in ("summary.json", "comparison.json",
+                     os.path.join("live", "summary.json")):
+        if not os.path.isfile(os.path.join(measurement_abs, required)):
+            violations.append(prefix + "measurement evidence is incomplete: missing %s"
+                              % required.replace(os.sep, "/"))
+    node = shutil.which("node")
+    if not node:
+        violations.append(prefix + "measurement recompute needs node on PATH")
+        return
+    method_abs = context_payload["abs"]["methodFile"]
+    command = [node, CALC_CLI, "--recompute", run_root, measurement_abs,
+               "--method", method_abs]
+    if context_path:
+        command += ["--context", context_path]
+    if repo_root:
+        command += ["--repo-root", repo_root]
+    try:
+        proc = subprocess.run(command, capture_output=True, timeout=180)
+    except subprocess.TimeoutExpired:
+        violations.append(prefix + "measurement recompute timed out after 180s")
+        return
+    stdout = proc.stdout.decode("utf-8", "replace")
+    stderr = proc.stderr.decode("utf-8", "replace")
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError:
+        payload = None
+    if payload is None:
+        violations.append(prefix + "measurement recompute printed no JSON (exit %d): %s"
+                          % (proc.returncode, (stderr or stdout)[:300]))
+        return
+    if proc.returncode != 0 or payload.get("ok") is not True:
+        entries = payload.get("violations") or []
+        shown = 0
+        for entry in entries:
+            if shown >= 12:
+                violations.append(prefix + "measurement recompute: ... and %d more"
+                                  % (len(entries) - shown))
+                break
+            if isinstance(entry, dict):
+                violations.append(prefix + "measurement recompute refused [%s]: %s"
+                                  % (entry.get("code"), str(entry.get("detail"))[:240]))
+                shown += 1
+        if shown == 0:
+            violations.append(prefix + "measurement recompute refused (exit %d)" % proc.returncode)
+
+
+def validate_ux_record(record, scenario, context_payload, gate, violations,
+                       context_path=None, repo_root=None):
     """One UX record against the frozen plan contract and real disk state."""
     case_id = record.get("caseId")
     prefix = "%s: " % case_id
@@ -373,6 +501,15 @@ def validate_ux_record(record, scenario, context_payload, gate, violations):
                 violations.append(prefix + "NOT_RUN must leave %s null" % field)
         if not isinstance(record.get("notes"), str) or not record.get("notes").strip():
             violations.append(prefix + "NOT_RUN must explain the reason in notes")
+        # A NOT_RUN record may carry no assertions at all, but it must never
+        # carry PASS assertions that pretend a frozen step was executed.
+        assertions = record.get("assertions")
+        if isinstance(assertions, list):
+            fake = [entry for entry in assertions
+                    if isinstance(entry, dict) and entry.get("result") == "PASS"]
+            if fake:
+                violations.append(prefix + "NOT_RUN must not carry PASS assertions"
+                                  " (fake step coverage)")
         return
     for field in ("startedAt", "finishedAt"):
         if not is_timestamp(record.get(field)):
@@ -412,6 +549,14 @@ def validate_ux_record(record, scenario, context_payload, gate, violations):
                     violations.append(prefix + "%s artifact not found on disk: %r" % (label, ref))
                 elif sha_file(path) != expected:
                     violations.append(prefix + "%s artifact SHA-256 does not match the record" % label)
+            # Round-12 B-02: re-hashing each side against its own claim is not
+            # enough - the original and the received bytes must be EQUAL.
+            reference_sha = record.get("referenceSha256")
+            received_sha = record.get("receivedSha256")
+            if is_hex64(reference_sha) and is_hex64(received_sha) and reference_sha != received_sha:
+                violations.append(prefix + "the original and received artifacts differ"
+                                  " (referenceSha256 != receivedSha256): a roundtrip must reproduce"
+                                  " the original bytes")
     else:
         for field in ("referenceSha256", "receivedSha256"):
             value = record.get(field)
@@ -445,6 +590,10 @@ def validate_ux_record(record, scenario, context_payload, gate, violations):
                 violations.append(label + " proofRef is outside the claimed attempt directory: %s" % ref)
             if not os.path.isfile(path):
                 violations.append(label + " proofRef not found on disk: %s" % ref)
+        # Round-12 B-02: every frozen step of this case must be covered by a
+        # canonical step assertion; a deleted step or a replaced id
+        # (`-held`, lowercase suffix) fails even when the record still passes.
+        check_step_coverage(case_id, scenario, assertions, prefix, violations)
     if planned_type == "measurement" and result == "PASS":
         method_abs = context_payload["abs"]["methodFile"]
         method_rel = context_payload["context"]["methodFile"]
@@ -459,6 +608,29 @@ def validate_ux_record(record, scenario, context_payload, gate, violations):
             else:
                 if method.get("frozen") is not True:
                     violations.append(prefix + "measurement PASS requires method.frozen == true")
+        # Round-12 B-02: a measurement PASS must bind the COMPLETE raw
+        # measurement (recorded pairs + the 5x30s live window) and the gate
+        # re-runs the calculator over those raw files instead of trusting the
+        # written verdict.
+        measurement_dirs = []
+        for ref in proof_refs:
+            if not isinstance(ref, str) or not canonical_rel(ref):
+                continue
+            directory = measurement_dir_of_ref(ref)
+            if directory and directory not in measurement_dirs:
+                measurement_dirs.append(directory)
+        if not measurement_dirs:
+            violations.append(prefix + "measurement PASS needs its summary/comparison/live"
+                              " files under proof/<caseId>/<attempt>/measurements/")
+        else:
+            live_bound = any(str(ref).replace("\\", "/").endswith("/measurements/live/summary.json")
+                             for ref in proof_refs if isinstance(ref, str))
+            if not live_bound:
+                violations.append(prefix + "measurement PASS must bind the live 5x30s summary"
+                                  " as a proofRef")
+            for directory in measurement_dirs:
+                run_measurement_recompute(directory, context_payload, context_path,
+                                          repo_root, prefix, violations)
 
 
 def run_legacy_gate(context_payload, gate):
@@ -476,7 +648,7 @@ def run_legacy_gate(context_payload, gate):
     return subprocess.run(command, capture_output=True)
 
 
-def run_gate(context_payload, gate):
+def run_gate(context_payload, gate, context_path=None, repo_root=None):
     """Return every violation; an empty list is the only PASS."""
     violations = []
     context = context_payload["context"]
@@ -507,7 +679,8 @@ def run_gate(context_payload, gate):
             violations.append("missing UX record for required case %s" % case_id)
             continue
         scenario = plan["scenarios"].get(case_id) or {}
-        validate_ux_record(record, scenario, context_payload, gate, violations)
+        validate_ux_record(record, scenario, context_payload, gate, violations,
+                           context_path=context_path, repo_root=repo_root)
     planned = set(plan["ux_required"])
     for case_id in by_id:
         if case_id not in planned:
@@ -540,7 +713,8 @@ def main():
         print("CONTEXT REFUSED: %s" % error, file=sys.stderr)
         return 3
     try:
-        violations = run_gate(context_payload, args.gate)
+        violations = run_gate(context_payload, args.gate,
+                              context_path=args.context, repo_root=args.repo_root)
     except ContextError as error:
         print("CONTEXT REFUSED: %s" % error, file=sys.stderr)
         return 3

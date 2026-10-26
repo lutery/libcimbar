@@ -1268,6 +1268,175 @@ test('T30-B2c telemetryArmed is required on the candidate, not-applicable on the
 
 // --- S6b: execute the wrapper, prove promise identity and settlement ------
 
+// --- Round-12 A-R3: the live leg needs a REAL 30s Receiving window ---------
+//
+// The round-12 external review showed every 09b live record: 15 samples at
+// ~2s, only the first 9 Receiving, Ready at ~18.1s, yet valid=true because the
+// old judge only asked "did frames settle / did revision ever change". The
+// judge now verifies the WINDOW ITSELF: all samples Receiving, one constant
+// session identity, >=30000ms observed, and at least one settlement inside the
+// window. These tests are RED until tools/desktop-recv/e2e/measure-ux-calc.mjs
+// exports judgeLiveSide (the module split also serves B-02/S2).
+
+async function loadCalc() {
+  return import('../e2e/measure-ux-calc.mjs');
+}
+
+// 09b shape: 15 samples ~2s apart, 9 Receiving then 6 Ready, Ready at ~18.1s.
+function liveRecord09bShape(overrides = {}) {
+  const base = 1792900521929;
+  const samples = [];
+  for (let i = 0; i < 15; i += 1) {
+    const receiving = i < 9;
+    samples.push({
+      at: base + i * 2010,
+      atMs: i * 2010,
+      perfNow: 6000 + i * 2010,
+      state: receiving ? 'Receiving' : 'Ready',
+      primary: receiving ? (i === 0 ? '正在等待有效数据' : '正在接收数据') : '文件已接收完成，请保存',
+      elapsed: receiving ? `${(i * 1.8).toFixed(1)}s` : '16.4s',
+      rate: receiving ? '62.4 KiB/s（含冗余）' : '65.4 KiB/s（含冗余）',
+      sessionId: 'sess-09b',
+      sessionSeq: null,
+      revision: receiving ? 2 : 3,
+      submitted: receiving ? 1 : 142,
+    });
+  }
+  const frames = [];
+  for (let i = 0; i < 142; i += 1) {
+    const t0 = 6488 + i * 115;
+    frames.push({ seq: i + 1, t0Ms: t0, settledAtMs: t0 + 60, ok: true, rttMs: 60 });
+  }
+  return {
+    side: 'B',
+    pairIndex: 1,
+    samples,
+    frames,
+    telemetryWrites: Array.from({ length: 60 }, (_, i) => 6489 + i * 260),
+    telemetryArmed: true,
+    observations: {
+      afterStop: {
+        frozenA: { state: 'Stopped', elapsed: '16.4s', primary: '已停止' },
+        frozenB: { state: 'Stopped', elapsed: '16.4s', primary: '已停止' },
+      },
+    },
+    ...overrides,
+  };
+}
+
+// A compliant live record: 16 samples covering 30s, every one Receiving, one
+// session identity, settlements inside the perf-domain window, candidate
+// telemetry armed with >=250ms gaps, numeric/status feedback, frozen clock.
+function liveRecordCompliant(overrides = {}) {
+  const samples = [];
+  for (let i = 0; i <= 15; i += 1) {
+    samples.push({
+      at: 1000000 + i * 2000,
+      atMs: i * 2000,
+      perfNow: 5000 + i * 2000,
+      state: 'Receiving',
+      primary: i === 0 ? '正在等待有效数据' : '正在接收数据',
+      elapsed: `${(i * 2).toFixed(1)}s`,
+      rate: '60.0 KiB/s（含冗余）',
+      sessionId: 'sess-live-1',
+      sessionSeq: 7,
+      revision: 2,
+      submitted: 1 + i,
+    });
+  }
+  const frames = [];
+  for (let i = 0; i < 70; i += 1) {
+    const t0 = 5200 + i * 450;
+    frames.push({ seq: i + 1, t0Ms: t0, settledAtMs: t0 + 60, ok: true, rttMs: 60 });
+  }
+  return {
+    side: 'B',
+    pairIndex: 1,
+    samples,
+    frames,
+    telemetryWrites: Array.from({ length: 60 }, (_, i) => 5100 + i * 260),
+    telemetryArmed: true,
+    observations: {
+      afterStop: {
+        frozenA: { state: 'Stopped', elapsed: '32.0s', primary: '已停止' },
+        frozenB: { state: 'Stopped', elapsed: '32.0s', primary: '已停止' },
+      },
+    },
+    ...overrides,
+  };
+}
+
+test('T-R12-A3a the 09b shape is refused: short window and Ready samples', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  const judged = judgeLiveSide(liveRecord09bShape(), 'B');
+  assert.equal(judged.valid, false, 'the 09b shape must never be VALID again');
+  assert.ok(judged.violations.some((v) => v.code === 'E_LIVE_WINDOW_SHORT'),
+    `window-short violation expected, got ${JSON.stringify(judged.violations)}`);
+  assert.ok(judged.violations.some((v) => v.code === 'E_LIVE_NOT_RECEIVING'),
+    'the Ready samples must be reported');
+  assert.ok(judged.windowObservedMs < 30000);
+  assert.ok(judged.firstNonReceiving && judged.firstNonReceiving.state === 'Ready');
+  assert.equal(judged.windowObservedMs, 8 * 2010, 'first to last Receiving sample');
+  assert.equal(judged.firstNonReceiving.at, 1792900521929 + 9 * 2010);
+  assert.equal(judged.samples.length, 15, 'every raw sample is kept in the record');
+});
+
+test('T-R12-A3b a real 30s Receiving window passes with zero violations', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  const judged = judgeLiveSide(liveRecordCompliant(), 'B');
+  assert.deepEqual(judged.violations, [], JSON.stringify(judged.violations));
+  assert.equal(judged.valid, true);
+  assert.ok(judged.windowObservedMs >= 30000);
+  assert.equal(judged.sessionIdentity, 'id:sess-live-1');
+  assert.ok(judged.settledInWindow >= 1, 'a real settlement inside the window');
+});
+
+test('T-R12-A3c a changed session identity inside the window is refused', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  const record = liveRecordCompliant();
+  record.samples[8].sessionId = 'sess-live-2';
+  record.samples[8].sessionSeq = 8;
+  const judged = judgeLiveSide(record, 'B');
+  assert.equal(judged.valid, false);
+  assert.ok(judged.violations.some((v) => v.code === 'E_LIVE_SESSION_IDENTITY'));
+});
+
+test('T-R12-A3d a window without a settlement inside it is refused', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  const record = liveRecordCompliant();
+  // Settlements exist, but all of them happened BEFORE the observed window.
+  for (const frame of record.frames) {
+    frame.t0Ms = 500 + frame.seq;
+    frame.settledAtMs = 560 + frame.seq;
+  }
+  const judged = judgeLiveSide(record, 'B');
+  assert.equal(judged.valid, false);
+  assert.equal(judged.settledInWindow, 0);
+  assert.ok(judged.violations.some((v) => v.code === 'E_LIVE_NO_SETTLEMENT'));
+});
+
+test('T-R12-A3e candidate feedback and stop-release checks still gate the B side', async () => {
+  const { judgeLiveSide } = await loadCalc();
+  const unarmed = judgeLiveSide(liveRecordCompliant({ telemetryArmed: false }), 'B');
+  assert.ok(unarmed.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_NOT_ARMED'));
+  const fast = judgeLiveSide(liveRecordCompliant({
+    telemetryWrites: [1000, 1100, 1500, 1800],
+  }), 'B');
+  assert.ok(fast.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_INTERVAL'));
+  const stale = liveRecordCompliant();
+  stale.observations = {
+    afterStop: {
+      frozenA: { state: 'Stopped', elapsed: '32.0s' },
+      frozenB: { state: 'Stopped', elapsed: '33.0s' },
+    },
+  };
+  const notFrozen = judgeLiveSide(stale, 'B');
+  assert.ok(notFrozen.violations.some((v) => v.code === 'E_LIVE_CLOCK_NOT_FROZEN'));
+  // The baseline (A) has no numeric area by design: it is not judged for it.
+  const baseline = judgeLiveSide(liveRecordCompliant({ side: 'A', telemetryArmed: false }), 'A');
+  assert.ok(!baseline.violations.some((v) => v.code === 'E_LIVE_TELEMETRY_NOT_ARMED'));
+});
+
 test('T28-07d executing the wrapper preserves promise identity and settlement', async () => {
   const clock = { now: 100 };
   const resolvedValue = { marker: 'ok' };
