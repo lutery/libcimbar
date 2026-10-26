@@ -2063,8 +2063,24 @@ const SCENARIOS = {
       }, null, { timeout: 240000 });
       const readyProbe = await uxProbe(stack.receiver.page);
       const pause = await scene.pauseSending();
-      const freezeA = await uxProbe(stack.receiver.page);
-      await sleep(1200);
+      // The terminal projection converges ON the shared 250ms boundary
+      // (round-12 Option B), and the convergence write was observed landing
+      // >=1.2s after Ready on this rig (r12-final E2E-27 stop report), so
+      // sampling the instant pause returns races the convergence write. Wait
+      // (bounded) until two consecutive probes agree, then sample the frozen
+      // pair (same shape as E2E-32-S02-B); the criterion is unchanged.
+      let freezeA = await uxProbe(stack.receiver.page);
+      const settleDeadline = Date.now() + 5000;
+      while (Date.now() < settleDeadline) {
+        await sleep(400);
+        const settled = await uxProbe(stack.receiver.page);
+        if (settled.elapsed === freezeA.elapsed && settled.rate === freezeA.rate) {
+          freezeA = settled;
+          break;
+        }
+        freezeA = settled;
+      }
+      await sleep(1500);
       const freezeB = await uxProbe(stack.receiver.page);
       const elapsedFrozen = numericElapsed(freezeA.elapsed) !== null
         && numericElapsed(freezeA.elapsed) === numericElapsed(freezeB.elapsed);
