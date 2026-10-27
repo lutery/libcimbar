@@ -1,0 +1,59 @@
+2026-10-26T04:54:23.449Z process guard: reclaimed 0/7 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:29] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:29] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:29] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:29] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:29] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 12:54:30] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:54:45.299Z round compressible-1: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-compressible-1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:55:13.449Z round compressible-2: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-compressible-2\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:55:45.009Z round compressible-3: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-compressible-3\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:56:13.616Z round incompressible-1: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-incompressible-1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:56:41.974Z round incompressible-2: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-incompressible-2\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=52472
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T04:57:10.745Z round incompressible-3: File ready to save artifact=sample-random-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-3\round-incompressible-3\received.bin
+2026-10-26T04:57:28.795Z CASE E2E-3 PASS (attempt E2E-3-2026-10-26T04-54-23-450Z-b371fe)
+EXIT=0 (retry after first=1)

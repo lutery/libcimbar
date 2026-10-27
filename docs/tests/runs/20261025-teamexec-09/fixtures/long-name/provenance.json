@@ -1,0 +1,8 @@
+{
+  "nameLength": 101,
+  "newSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+  "newPath": "docs/tests/runs/20261025-teamexec-09/fixtures/long-name/本轮接收器中文长文件名验证样本 含空格 与数字 20261025 以及足够多字符用于检查换行与滚动行为 最终接收文件名称测试 甲乙丙丁戊己庚辛壬癸 子丑寅卯辰巳午未申酉戌亥 一二三四五六七八九十.bin",
+  "note": "T31 E2E-36 long Chinese input: read-only copy of the T6 1MiB incompressible sample under a >=80-char real filename (spaces kept).",
+  "source": "docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-1mib.bin",
+  "sourceSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9"
+}

@@ -1,0 +1,23 @@
+2026-10-26T02:52:10.131Z process guard: reclaimed 0/5 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:19] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:19] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:19] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:19] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:19] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 10:52:20] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8766 共享的内容 pid=69604
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-10\proof\E2E-2\live\received.bin
+2026-10-26T02:52:58.858Z CASE E2E-2 PASS (attempt E2E-2-2026-10-26T02-52-10-132Z-a4e794)
+EXIT=0

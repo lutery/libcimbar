@@ -1,0 +1,97 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "counting": {
+    "gate": "okFrameCount",
+    "note": "the 30-frame gate counts resolved (ok) frames only, which is stricter than the frozen method wording \"settled frames\"; settledFrameCount in each round file additionally counts rejected settlements and never gates anything"
+  },
+  "sides": {
+    "A": {
+      "role": "baseline",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        16998,
+        16372,
+        15638,
+        17197,
+        15259
+      ],
+      "readyMsMedian": 16372,
+      "rttP50Values": [
+        62.8999999910593,
+        66.3999999910593,
+        66,
+        66.80000001192093,
+        61
+      ],
+      "rttP50Median": 66,
+      "rttP95Values": [
+        98.19999998807907,
+        106.59999999403954,
+        96.3999999910593,
+        106.20000000298023,
+        92
+      ],
+      "rttP95Median": 98.19999998807907,
+      "frameCounts": [
+        113,
+        104,
+        100,
+        109,
+        101
+      ],
+      "frameCountTotal": 527
+    },
+    "B": {
+      "role": "candidate",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        16296,
+        15852,
+        17005,
+        15706,
+        15415
+      ],
+      "readyMsMedian": 15852,
+      "rttP50Values": [
+        69.20000000298023,
+        68.5,
+        62.69999998807907,
+        63.79999999701977,
+        62.099999994039536
+      ],
+      "rttP50Median": 63.79999999701977,
+      "rttP95Values": [
+        104.09999999403954,
+        99.59999999403954,
+        96.90000000596046,
+        102.09999999403954,
+        106.20000000298023
+      ],
+      "rttP95Median": 102.09999999403954,
+      "frameCounts": [
+        102,
+        101,
+        112,
+        101,
+        99
+      ],
+      "frameCountTotal": 515
+    }
+  }
+}

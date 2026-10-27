@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261024-teamexec-06",
+  "productManifestSha256": "adb59205bb4879c52f78f7703f16d1d737d50b33e751906dbaba1fd834891c4a",
+  "records": [
+    {
+      "caseId": "E2E-27",
+      "attemptId": "UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5",
+      "scope": "local_simulated",
+      "caseType": "file_roundtrip",
+      "result": "PASS",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-020",
+        "AC-022",
+        "AC-024"
+      ],
+      "productManifestSha256": "adb59205bb4879c52f78f7703f16d1d737d50b33e751906dbaba1fd834891c4a",
+      "startedAt": "2026-10-24T14:19:05.911Z",
+      "finishedAt": "2026-10-24T14:19:58.293Z",
+      "proofRefs": [
+        "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/original.bin",
+        "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/received.bin"
+      ],
+      "assertions": [
+        {
+          "id": "E2E-27-CAL01",
+          "expected": "original sender Mode B plays the locked input (canvas animating)",
+          "observed": "animation changed=true digest=1137bbe3f828",
+          "result": "PASS",
+          "proofRef": null
+        },
+        {
+          "id": "E2E-27-CAL02",
+          "expected": "capture one real code frame with SHA and natural size",
+          "observed": "sha256=ad74f522d0307317... file=src01-code-frame.png rect=710x710",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/src01-code-frame.png"
+        },
+        {
+          "id": "E2E-27-CAL03",
+          "expected": "opaque still-code layer covers the real code area (source pixels only)",
+          "observed": "mode=still rect={\"left\":285,\"top\":5,\"width\":710,\"height\":710}",
+          "result": "PASS",
+          "proofRef": null
+        },
+        {
+          "id": "E2E-27-CAL04",
+          "expected": "still layer holds >=10s with stable pixels",
+          "observed": "heldMs=10529 stable=true hashes=dbe07aa2,dbe07aa2,dbe07aa2",
+          "result": "PASS",
+          "proofRef": null
+        },
+        {
+          "id": "E2E-27-CAL05",
+          "expected": "blank layer fully covers the source window (no valid code)",
+          "observed": "mode=blank full-viewport",
+          "result": "PASS",
+          "proofRef": null
+        },
+        {
+          "id": "E2E-27-S01",
+          "expected": "both receive buttons exist and save cannot be clicked early",
+          "observed": "videoDisabled=false saveDisabled=true status=Ready to receive",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s01-before-share.png"
+        },
+        {
+          "id": "E2E-27-S01b",
+          "expected": "real source window chosen in the system picker; session enters waiting",
+          "observed": "state=Receiving primary=正在等待有效数据 status=Receiving frames",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s01-attached.png"
+        },
+        {
+          "id": "E2E-27-S02",
+          "expected": "no valid code >=6s: waiting text, >=5s notice, elapsed grows, no fake file progress",
+          "observed": "[{\"label\":\"0.5s\",\"atMs\":515,\"primary\":\"正在等待有效数据\",\"next\":\"\",\"elapsed\":\"0.6s\",\"revision\":2,\"processed\":0},{\"label\":\"5s\",\"atMs\":5144,\"primary\":\"正在等待有效数据\",\"next\":\"请检查发送画面是否可见，并确认 Mode 是否匹配。\",\"elapsed\":\"5.3s\",\"revision\":2,\"processed\":0},{\"label\":\"6s\",\"atMs\":6255,\"primary\":\"正在等待有效数据\",\"next\":\"请检查发送画面是否可见，并确认 Mode 是否匹配。\",\"elapsed\":\"6.4s\",\"revision\":2,\"processed\":0}]",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s02-wait-6s.png"
+        },
+        {
+          "id": "E2E-27-S03",
+          "expected": "after removing the blank layer the first real data appears; receiving activity and a redundancy-inclusive KiB/s are shown",
+          "observed": "restore=live revision=3 (base 2) primary=文件已接收完成，请保存 rate=41.7 KiB/s（含冗余）",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s03-first-data.png"
+        },
+        {
+          "id": "E2E-27-S04",
+          "expected": "Ready tells the user to save with the real artifact info; elapsed freezes; sending input stopped",
+          "observed": "primary=文件已接收完成，请保存 next=点击保存文件。 artifact=131072 elapsed=9.0s->9.0s pause={\"paused\":true,\"kind\":\"bounded-cooldown\"}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s04-ready.png"
+        },
+        {
+          "id": "E2E-27-S05",
+          "expected": "real system save: selecting/writing/close then Saved; external hashes equal",
+          "observed": "saveTimingsComplete=true equal=true primary=文件已保存 saveStatus=none timings={\"initStartAt\":1792851565448,\"initReadyAt\":1792851565526,\"validInputStartAt\":1792851569440,\"reconstructionDoneAt\":1792851578446,\"saveRequestAt\":1792851582625,\"createWritableAccessedAt\":1792851587405,\"writableAt\":1792851587410,\"writeCloseAt\":1792851587561,\"lastSaveClickAt\":1792851582625,\"decoderInitMs\":78,\"sourceWaitMs\":3914,\"initMs\":3992,\"reconstructMs\":9006,\"totalToReadyMs\":12998,\"pickerWaitMs\":4780,\"writableOpenMs\":5,\"saveWaitMs\":4785,\"saveWriteMs\":151,\"saveMs\":4936}",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/screens/s05-saved.png"
+        },
+        {
+          "id": "E2E-27-S06",
+          "expected": "external Get-FileHash of original/received is identical and sizes match",
+          "observed": "original=8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146 received=8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146 bytes=131072",
+          "result": "PASS",
+          "proofRef": "proof/E2E-27/UX-SLICE-2026-10-24T14-18-26-306Z-c3b7f5/s06-external-sha.txt"
+        }
+      ],
+      "referenceSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "receivedSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "notes": "slice journey E2E-27: SRC-01 calibration, wait/data/Ready/save/external-SHA all measured; phase=slice PARTIAL evidence (never a final gate)"
+    }
+  ]
+}

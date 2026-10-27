@@ -1,0 +1,15 @@
+{
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "sides": {
+    "A": {
+      "productManifest": "docs/tests/runs/20261024-teamexec-04/product-manifest.json",
+      "productManifestSha256": "b8c78a1851e05e8558a3a7b7582c5f67f5df82f3b5429cff3749e472367e6e0d",
+      "verifiedFileCount": 24
+    },
+    "B": {
+      "productManifest": "docs/tests/runs/20261025-teamexec-09b/product-manifest.json",
+      "productManifestSha256": "9e2595e6ef880335edb391b1178d4959c91eb6ad72d0b8123663a2a732132c0b",
+      "verifiedFileCount": 27
+    }
+  }
+}

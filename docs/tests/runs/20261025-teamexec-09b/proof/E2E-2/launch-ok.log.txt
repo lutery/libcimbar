@@ -1,0 +1,4 @@
+exit=0
+serving E:\Project\OpenSource\c++\libcimbar\build-desktop-recv\runs\20261025-teamexec-09b\receiver
+open http://127.0.0.1:8766/
+server pid 74100

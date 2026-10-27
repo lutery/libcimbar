@@ -1,0 +1,40 @@
+2026-10-25T09:50:33.611Z process guard: reclaimed 0/79 recorded process(es)
+[receiver-http] ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 11049)
+[receiver-http] Traceback (most recent call last):
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 671, in __init__
+    super().__init__(*args, **kwargs)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 755, in __init__
+    self.handle()
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 424, in handle_one_request
+    method()
+  File "D:\ProgramData\anaconda3\Lib\http\server.py", line 678, in do_GET
+    self.copyfile(f, self.wfile)
+[receiver-http]   File "D:\ProgramData\anaconda3\Lib\http\server.py", line 877, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "D:\ProgramData\anaconda3\Lib\shutil.py", line 200, in copyfileobj
+    fdst_write(buf)
+  File "D:\ProgramData\anaconda3\Lib\socketserver.py", line 834, in write
+    self._sock.sendall(b)
+ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+[receiver-http] ----------------------------------------
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-compressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-compressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-compressible-3\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-incompressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-incompressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\proof\E2E-14\round-incompressible-3\received.bin
+2026-10-25T09:53:58.901Z CASE E2E-14 PASS (attempt E2E-14-2026-10-25T09-50-33-612Z-f4a38b)

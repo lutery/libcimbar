@@ -1,0 +1,187 @@
+{
+  "side": "A",
+  "pairIndex": 1,
+  "startedAtIso": "2026-10-25T03:39:13.144Z",
+  "samples": [
+    {
+      "at": 1792899564764,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899566781,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899568800,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899570830,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899572836,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899574844,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899576856,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899578879,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899580882,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899582899,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899584917,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899586929,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899588939,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899590947,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792899592965,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    }
+  ],
+  "frames": [],
+  "telemetryWrites": [],
+  "telemetryArmed": null,
+  "observations": {
+    "shareHelperExit": 0,
+    "afterStop": {
+      "frozenA": {
+        "state": "Stopped",
+        "elapsed": "",
+        "primary": ""
+      },
+      "frozenB": {
+        "state": "Stopped",
+        "elapsed": "",
+        "primary": ""
+      }
+    }
+  },
+  "stoppedAtIso": "2026-10-25T03:39:56.626Z",
+  "maxInFlight": 0,
+  "okFrameCount": 0,
+  "revisionGrew": true,
+  "submittedLast": 142,
+  "rttAdvisory": {
+    "p50": null,
+    "p95": null,
+    "note": "advisory only; live sampling is never the primary metric"
+  },
+  "violations": [],
+  "valid": true
+}

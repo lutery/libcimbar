@@ -1,0 +1,19 @@
+flowchart LR
+  A[宿主机使用者]:::actor --> C[选择实时抓屏或录像导入]:::command
+  C --> B[浏览器源选择器]:::system --> E1[输入与解码器已就绪]:::event
+  E1 --> S[接收会话]:::aggregate --> E2[帧结果已返回]:::event
+  E2 --> T[会话遥测]:::aggregate --> P[投影中文状态与观测]:::policy
+  P --> E3[反馈已更新]:::event
+  E2 --> E4[完整产物已构造]:::event --> C2[点击保存文件]:::command
+  C2 --> FS[系统文件选择与写入]:::system --> E5[文件已写入并关闭]:::event
+  T -.-> H1[H-01 可选报告能力与解析]:::hotspot
+  T -.-> H2[H-02 多流缺乏稳定身份]:::hotspot
+  P -.-> H3[H-03 刷新开销待实测]:::hotspot
+  P -.-> H4[H-04 窗口与可读性核验]:::hotspot
+  classDef event fill:#ff9800,stroke:#e65100,color:#000
+  classDef command fill:#2196f3,stroke:#0d47a1,color:#fff
+  classDef actor fill:#ffeb3b,stroke:#f57f17,color:#000
+  classDef system fill:#9c27b0,stroke:#4a148c,color:#fff
+  classDef aggregate fill:#4caf50,stroke:#1b5e20,color:#000
+  classDef policy fill:#00bcd4,stroke:#006064,color:#000
+  classDef hotspot fill:#f44336,stroke:#b71c1c,color:#fff

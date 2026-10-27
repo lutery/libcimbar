@@ -1,0 +1,316 @@
+TAP version 13
+# Subtest: UX-UT-017 begin is idempotent per owner and fully resets on a newer seq
+ok 1 - UX-UT-017 begin is idempotent per owner and fully resets on a newer seq
+  ---
+  duration_ms: 3.7352
+  type: 'test'
+  ...
+# Subtest: UX-UT-018 invalid FrameInput is refused before any ux state moves
+ok 2 - UX-UT-018 invalid FrameInput is refused before any ux state moves
+  ---
+  duration_ms: 1.3913
+  type: 'test'
+  ...
+# Subtest: UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007
+ok 3 - UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007
+  ---
+  duration_ms: 0.4877
+  type: 'test'
+  ...
+# Subtest: UX-UT-020 repeated single ratios do not fake progress though bytes still count
+ok 4 - UX-UT-020 repeated single ratios do not fake progress though bytes still count
+  ---
+  duration_ms: 0.3598
+  type: 'test'
+  ...
+# Subtest: UX-UT-021 multiple stream reports lock ambiguity until a new seq
+ok 5 - UX-UT-021 multiple stream reports lock ambiguity until a new seq
+  ---
+  duration_ms: 0.3705
+  type: 'test'
+  ...
+# Subtest: UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped
+ok 6 - UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped
+  ---
+  duration_ms: 0.3021
+  type: 'test'
+  ...
+# Subtest: UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history
+ok 7 - UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history
+  ---
+  duration_ms: 1.8793
+  type: 'test'
+  ...
+# Subtest: UX-UT-024 ratios at or above one stay non-completed until a real artifact
+ok 8 - UX-UT-024 ratios at or above one stay non-completed until a real artifact
+  ---
+  duration_ms: 0.215
+  type: 'test'
+  ...
+# Subtest: UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable
+ok 9 - UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable
+  ---
+  duration_ms: 0.6234
+  type: 'test'
+  ...
+# Subtest: UX-UT-026 the warmup boundary uses the actual coverage window
+ok 10 - UX-UT-026 the warmup boundary uses the actual coverage window
+  ---
+  duration_ms: 0.5281
+  type: 'test'
+  ...
+# Subtest: UX-UT-027 after the data stops the rate reaches zero within three seconds
+ok 11 - UX-UT-027 after the data stops the rate reaches zero within three seconds
+  ---
+  duration_ms: 0.349
+  type: 'test'
+  ...
+# Subtest: UX-UT-028 only real decoded bytes are counted and redundancy is explicit
+ok 12 - UX-UT-028 only real decoded bytes are counted and redundancy is explicit
+  ---
+  duration_ms: 0.2142
+  type: 'test'
+  ...
+# Subtest: UX-UT-029 a safe-integer overflow resets only the rate domain
+ok 13 - UX-UT-029 a safe-integer overflow resets only the rate domain
+  ---
+  duration_ms: 0.4186
+  type: 'test'
+  ...
+# Subtest: UX-UT-030 big time jumps and long sequences keep fixed bounded state
+ok 14 - UX-UT-030 big time jumps and long sequences keep fixed bounded state
+  ---
+  duration_ms: 0.5926
+  type: 'test'
+  ...
+# Subtest: UX-UT-031 regressed and non-finite clocks are refused and later recover honestly
+ok 15 - UX-UT-031 regressed and non-finite clocks are refused and later recover honestly
+  ---
+  duration_ms: 1.0107
+  type: 'test'
+  ...
+# Subtest: UX-UT-033 finish freezes the endpoint, repeats are idempotent, cleanup cannot erase
+ok 16 - UX-UT-033 finish freezes the endpoint, repeats are idempotent, cleanup cannot erase
+  ---
+  duration_ms: 0.6443
+  type: 'test'
+  ...
+# Subtest: T14-S2 the save normalization matrix maps every raw shape
+ok 17 - T14-S2 the save normalization matrix maps every raw shape
+  ---
+  duration_ms: 0.6558
+  type: 'test'
+  ...
+# Subtest: T14-S2 identical save events are idempotent and terminals never regress
+ok 18 - T14-S2 identical save events are idempotent and terminals never regress
+  ---
+  duration_ms: 0.1926
+  type: 'test'
+  ...
+# Subtest: T14-S2 a new attempt is established only by selecting
+ok 19 - T14-S2 a new attempt is established only by selecting
+  ---
+  duration_ms: 0.2094
+  type: 'test'
+  ...
+# Subtest: T14-S2 stale owners and attempts are refused with 19007/19008
+ok 20 - T14-S2 stale owners and attempts are refused with 19007/19008
+  ---
+  duration_ms: 0.1582
+  type: 'test'
+  ...
+# Subtest: T14-S4 two frames in the same millisecond both count
+ok 21 - T14-S4 two frames in the same millisecond both count
+  ---
+  duration_ms: 0.1973
+  type: 'test'
+  ...
+# Subtest: T14-S4 a rollback clock is refused and counts nothing
+ok 22 - T14-S4 a rollback clock is refused and counts nothing
+  ---
+  duration_ms: 0.2401
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-1 an empty report at the same receivedAtMs hides the kept percentage
+ok 23 - R13-A13-02-1 an empty report at the same receivedAtMs hides the kept percentage
+  ---
+  duration_ms: 0.4864
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-2 an unavailable report at the same receivedAtMs keeps its code
+ok 24 - R13-A13-02-2 an unavailable report at the same receivedAtMs keeps its code
+  ---
+  duration_ms: 0.2201
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-3 a stronger single at the same receivedAtMs restores the estimate
+ok 25 - R13-A13-02-3 a stronger single at the same receivedAtMs restores the estimate
+  ---
+  duration_ms: 0.2369
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-4 a weaker single at the same receivedAtMs still locks 19006
+ok 26 - R13-A13-02-4 a weaker single at the same receivedAtMs still locks 19006
+  ---
+  duration_ms: 0.2936
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-5 lastReportState is an observable fact, updated during the ambiguity lock
+ok 27 - R13-A13-02-5 lastReportState is an observable fact, updated during the ambiguity lock
+  ---
+  duration_ms: 0.2952
+  type: 'test'
+  ...
+# Subtest: UX-UT-041 readView is deterministic and read-only with controls pass-through
+ok 28 - UX-UT-041 readView is deterministic and read-only with controls pass-through
+  ---
+  duration_ms: 3.5
+  type: 'test'
+  ...
+# Subtest: UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+ok 29 - UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+  ---
+  duration_ms: 1.9937
+  type: 'test'
+  ...
+# Subtest: UX-UT-043 the processing hint appears only at a real 1500ms pending age
+ok 30 - UX-UT-043 the processing hint appears only at a real 1500ms pending age
+  ---
+  duration_ms: 0.5084
+  type: 'test'
+  ...
+# Subtest: UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+ok 31 - UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+  ---
+  duration_ms: 0.3509
+  type: 'test'
+  ...
+# Subtest: UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+ok 32 - UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+  ---
+  duration_ms: 0.3685
+  type: 'test'
+  ...
+# Subtest: UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+ok 33 - UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+  ---
+  duration_ms: 0.538
+  type: 'test'
+  ...
+# Subtest: UX-UT-032 the same observation revision projects with now, purely
+ok 34 - UX-UT-032 the same observation revision projects with now, purely
+  ---
+  duration_ms: 0.4465
+  type: 'test'
+  ...
+# Subtest: UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+ok 35 - UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+  ---
+  duration_ms: 0.851
+  type: 'test'
+  ...
+# Subtest: UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+ok 36 - UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+  ---
+  duration_ms: 1.5108
+  type: 'test'
+  ...
+# Subtest: T14 the view rate follows the frozen window boundaries
+ok 37 - T14 the view rate follows the frozen window boundaries
+  ---
+  duration_ms: 1.3455
+  type: 'test'
+  ...
+# Subtest: T14-R05 data with degraded reports hides the ratio but keeps the rate
+ok 38 - T14-R05 data with degraded reports hides the ratio but keeps the rate
+  ---
+  duration_ms: 0.4223
+  type: 'test'
+  ...
+# Subtest: T14 every notice threshold flips exactly at its millisecond
+ok 39 - T14 every notice threshold flips exactly at its millisecond
+  ---
+  duration_ms: 1.0692
+  type: 'test'
+  ...
+# Subtest: T15 the tiny rate displays under one decimal and frozen states show nothing
+ok 40 - T15 the tiny rate displays under one decimal and frozen states show nothing
+  ---
+  duration_ms: 0.3952
+  type: 'test'
+  ...
+# Subtest: T20 the media position normalizes independently of the file estimate
+ok 41 - T20 the media position normalizes independently of the file estimate
+  ---
+  duration_ms: 0.8106
+  type: 'test'
+  ...
+# Subtest: T30 formatProgress never rounds an estimate up to a hundred
+ok 42 - T30 formatProgress never rounds an estimate up to a hundred
+  ---
+  duration_ms: 0.2435
+  type: 'test'
+  ...
+# Subtest: T30 quiet and unavailable states carry next-step guidance
+ok 43 - T30 quiet and unavailable states carry next-step guidance
+  ---
+  duration_ms: 0.3746
+  type: 'test'
+  ...
+# Subtest: T30 every status copy stays digit-free across the whole status matrix
+ok 44 - T30 every status copy stays digit-free across the whole status matrix
+  ---
+  duration_ms: 1.0955
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-1 a data frame with an empty report hides the current percentage
+ok 45 - R12-A-R1-1 a data frame with an empty report hides the current percentage
+  ---
+  duration_ms: 1.3311
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-2 an unavailable report keeps its own code in the view
+ok 46 - R12-A-R1-2 an unavailable report keeps its own code in the view
+  ---
+  duration_ms: 0.3044
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-3 a stronger single after a degraded report restores the estimate
+ok 47 - R12-A-R1-3 a stronger single after a degraded report restores the estimate
+  ---
+  duration_ms: 0.4578
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-4 a weaker single after a degraded report still locks 19006
+ok 48 - R12-A-R1-4 a weaker single after a degraded report still locks 19006
+  ---
+  duration_ms: 0.6449
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-5 a continuous single stream keeps its estimate projection
+ok 49 - R12-A-R1-5 a continuous single stream keeps its estimate projection
+  ---
+  duration_ms: 0.6493
+  type: 'test'
+  ...
+# Subtest: R12-A-R1-6 a degraded report leaves the rate and the business outputs untouched
+ok 50 - R12-A-R1-6 a degraded report leaves the rate and the business outputs untouched
+  ---
+  duration_ms: 0.3191
+  type: 'test'
+  ...
+# Subtest: R13-A13-02-V the view degrades by lastReportState, not by a timestamp inequality
+ok 51 - R13-A13-02-V the view degrades by lastReportState, not by a timestamp inequality
+  ---
+  duration_ms: 0.2834
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 175.9902

@@ -1,0 +1,52 @@
+{
+  "matchedEnvironment": [
+    "wasmSha256",
+    "inputSha256",
+    "mediaSha256",
+    "browserVersion",
+    "mode",
+    "viewport",
+    "deviceScaleFactor",
+    "screenResolution",
+    "powerMode",
+    "instrumentationSha256"
+  ],
+  "sides": {
+    "A": {
+      "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+      "inputSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "mediaSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+      "browserVersion": "156.0.4314.42",
+      "mode": "B",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "deviceScaleFactor": 1,
+      "screenResolution": {
+        "width": 1280,
+        "height": 800
+      },
+      "powerMode": "电源方案 GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (平衡)",
+      "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f"
+    },
+    "B": {
+      "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+      "inputSha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "mediaSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+      "browserVersion": "156.0.4314.42",
+      "mode": "B",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "deviceScaleFactor": 1,
+      "screenResolution": {
+        "width": 1280,
+        "height": 800
+      },
+      "powerMode": "电源方案 GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (平衡)",
+      "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f"
+    }
+  }
+}

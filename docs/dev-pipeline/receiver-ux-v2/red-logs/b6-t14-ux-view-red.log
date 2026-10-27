@@ -1,0 +1,104 @@
+TAP version 13
+# Subtest: UX-UT-041 readView is deterministic and read-only with controls pass-through
+ok 1 - UX-UT-041 readView is deterministic and read-only with controls pass-through
+  ---
+  duration_ms: 3.2905
+  type: 'test'
+  ...
+# Subtest: UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+ok 2 - UX-UT-042 stale owners and invalid contexts are refused without inventing completion
+  ---
+  duration_ms: 0.8396
+  type: 'test'
+  ...
+# Subtest: UX-UT-043 the processing hint appears only at a real 1500ms pending age
+ok 3 - UX-UT-043 the processing hint appears only at a real 1500ms pending age
+  ---
+  duration_ms: 0.4383
+  type: 'test'
+  ...
+# Subtest: UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+ok 4 - UX-UT-044 the first-data wait advice crosses exactly at 5000ms
+  ---
+  duration_ms: 0.3492
+  type: 'test'
+  ...
+# Subtest: UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+ok 5 - UX-UT-045 five seconds without data mark the estimate stale and the window zeroes
+  ---
+  duration_ms: 0.3639
+  type: 'test'
+  ...
+# Subtest: UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+ok 6 - UX-UT-046 the no-progress hint needs a trusted single and crosses at 8000ms
+  ---
+  duration_ms: 0.5177
+  type: 'test'
+  ...
+# Subtest: UX-UT-032 the same observation revision projects with now, purely
+ok 7 - UX-UT-032 the same observation revision projects with now, purely
+  ---
+  duration_ms: 1.5329
+  type: 'test'
+  ...
+# Subtest: UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+ok 8 - UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete
+  ---
+  duration_ms: 0.5787
+  type: 'test'
+  ...
+# Subtest: UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+ok 9 - UX-UT-034 the 1500/5000/8000 hint boundaries land on the exact millisecond
+  ---
+  duration_ms: 0.7712
+  type: 'test'
+  ...
+# Subtest: T14 the view rate follows the frozen window boundaries
+ok 10 - T14 the view rate follows the frozen window boundaries
+  ---
+  duration_ms: 0.7205
+  type: 'test'
+  ...
+# Subtest: T14-R05 data with degraded reports hides the ratio but keeps the rate
+not ok 11 - T14-R05 data with degraded reports hides the ratio but keeps the rate
+  ---
+  duration_ms: 1.2087
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\ux-view.test.mjs:512:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'none'
+    - 'unavailable'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'unavailable'
+  actual: 'none'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/ux-view.test.mjs:523:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: T14 every notice threshold flips exactly at its millisecond
+ok 12 - T14 every notice threshold flips exactly at its millisecond
+  ---
+  duration_ms: 0.712
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 159.2382

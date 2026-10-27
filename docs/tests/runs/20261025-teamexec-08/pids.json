@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 58104,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 59228,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 65764,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 72640,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 73932,
+      "kind": "receiver-server"
+    },
+    {
+      "pid": 70496,
+      "kind": "receiver-edge"
+    }
+  ]
+}

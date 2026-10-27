@@ -1,0 +1,1034 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "kind": "runtime_case_map",
+  "source": "docs/design-catalog/receiver-ux-v2/contracts/validation-vectors.json#implementationCases",
+  "plan": "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+  "notes": "初值 NOT_RUN。仅在实际执行后由 T16/T34/T36 写入 testBindings/caseBindings/manifestSha256/attemptId/proofRefs；不得以计划文本或骨架当通过证据。 | T36 final backfill (2026-10-25): caseBindings for R-01..R-12 now point at the final 09b attempts (27=89769d standalone; 28=0db9b3 from the aborted UX-ALL group; 29=fa39af; 30..34=13c955; 35/36/38=d40b44; 37=NOT_RUN in d40b44 with a real Narrator start attempt). E2E-37's two gate violations (requires PASS/executedBy) remain the only open UVS-gate items; E2E-21..26/39 stay NOT_RUN for the user field batch. | Root-11 rebind (2026-10-26): all caseBindings/manifest/attempt/proof fields now point at 20261026-teamexec-11 (manifest 34a9de304d8625356565f77e5015abe0ab78ddd5aba17a4ff3c6e0674a17df8b; IAT attempt UX-IAT-2026-10-26T04-47-50-339Z-8e02a5); E2E-35 is NOT_RUN per the user decision (S02 real visibility not constructible on this host, user-side verification), E2E-37 NOT_RUN stays environment-held. The earlier sentences in this notes field are historical annotations only. | Root-12 rebind (2026-10-27): all caseBindings/manifest/attempt/proof fields now point at 20261027-teamexec-12 (manifest 829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d; IAT attempt UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; measurement docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01); E2E-36 binds its solo resettle attempt; E2E-35/37 NOT_RUN stay per the user decision and the environment hold; R-05 keeps its honest empty e2e binding. The earlier sentences in this notes field are historical annotations only.",
+  "productAcceptance": "NOT_RUN",
+  "fieldStatus": "NOT_RUN",
+  "entries": [
+    {
+      "id": "R-01",
+      "scenario": "旧seq、相同frameId或冻结后的当前帧",
+      "expected": "UX-03返回19007且bytes/revision/lastData不变；原业务结果独立处理",
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T10",
+        "T16",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-019 stale frames, stale seqs and frozen states are refused with 19007",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-014 stale results never feed the model of the next session",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T10 a duplicate result from either entry counts exactly once",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ]
+    },
+    {
+      "id": "R-02",
+      "scenario": "相同begin重复与新seq开始",
+      "expected": "重复不清零；新seq所有UX字段和桶清空；旧tick无效",
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T16",
+        "T22",
+        "T25",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-017 begin is idempotent per owner and fully resets on a newer seq",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-012 Receiving begins the observation once with the real owner and clock",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "UX-UT-012 the video entry and reversed readiness order also begin exactly once",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5; UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ]
+    },
+    {
+      "id": "R-03",
+      "scenario": "同流重复比例、增加、多流后回single、有效比例回退",
+      "expected": "重复无增；新值推进；多流/回退锁歧义至新会话",
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T19",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-020 repeated single ratios do not fake progress though bytes still count",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-021 multiple stream reports lock ambiguity until a new seq",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-022 a regressed single ratio locks ambiguity and nothing is clamped",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-28",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+      ]
+    },
+    {
+      "id": "R-04",
+      "scenario": "数据落于0/249.9/250/2999.9/3000ms桶边界",
+      "expected": "按12桶原点定义精确归属；无数据后不超3秒归零",
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-025 twelve buckets place boundary bytes exactly and keep the denominator stable",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-026 the warmup boundary uses the actual coverage window",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-027 after the data stops the rate reaches zero within three seconds",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14 the view rate follows the frozen window boundaries",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-28",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-29",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-28-2026-10-26T18-52-42-597Z-fe8258; E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+      ]
+    },
+    {
+      "id": "R-05",
+      "scenario": "收到data但report缺失或格式失败",
+      "expected": "字节速率可更新，百分比隐藏；不改frame outcome或业务错误",
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T16",
+        "T19",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "worker",
+          "case": "UX-UT-004 invalid JSON and UTF-8 reject the whole report without partial trust",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-023 temporary empty or unavailable reports hide the ratio but keep the trust history",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14-R05 data with degraded reports hides the ratio but keeps the rate",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e",
+      "proofRefs": []
+    },
+    {
+      "id": "R-06",
+      "scenario": "原artifact或写盘尚未成功，仅比例>=1或录像EOF",
+      "expected": "不得Ready/Saved，不得启用保存；沿原完成条件",
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T20",
+        "T21",
+        "T22",
+        "T25",
+        "T35"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-024 ratios at or above one stay non-completed until a real artifact",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "UX-UT-047 business terminals outrank the receiving detail and only real artifacts complete",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-01",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-06",
+          "phase": "iat"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T20 the media position normalizes independently of the file estimate",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a video session reclaims exactly one source at stop and at EOF",
+          "phase": "unit"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-27",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-27-2026-10-26T18-50-30-839Z-5f13b0",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-31",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-32",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-27-2026-10-26T18-50-30-839Z-5f13b0; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ]
+    },
+    {
+      "id": "R-07",
+      "scenario": "普通短inFlight与>=1500ms慢帧",
+      "expected": "普通帧不覆盖receiving提示；仅真实主线程提交时点支撑processing",
+      "responsibilityTasks": [
+        "T7",
+        "T8",
+        "T14",
+        "T15",
+        "T19",
+        "T31"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "client",
+          "case": "UX-UT-008 pending submittedAtMs comes from the real main-thread post",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "UX-UT-043 the processing hint appears only at a real 1500ms pending age",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-view",
+          "case": "T14 every notice threshold flips exactly at its millisecond",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-29",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-29-2026-10-26T18-53-58-406Z-a1a4e4; UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+      ]
+    },
+    {
+      "id": "R-08",
+      "scenario": "倒退/非有限时钟、数值溢出、页面后台后返回",
+      "expected": "错误UX不应用或速率重新预热；业务继续；返回按当前时钟计算",
+      "responsibilityTasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T19",
+        "T31"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-031 regressed and non-finite clocks are refused and later recover honestly",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "UX-UT-029 a safe-integer overflow resets only the rate domain",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-display",
+          "case": "UX-UT-051 returning from the background re-projects by the real clock",
+          "phase": "unit"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-02",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-05",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; UX-UI-2026-10-26T19-16-56-031Z-88532b",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+      ]
+    },
+    {
+      "id": "R-09",
+      "scenario": "raw failed+16002、writing+16008、pending与迟到旧保存事件",
+      "expected": "分别取消/仍写入/等待；旧owner不串入；无需重接收",
+      "responsibilityTasks": [
+        "T20",
+        "T21",
+        "T22",
+        "T25",
+        "T34"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "save",
+          "case": "T20 the raw event shapes the session binding consumes",
+          "phase": "unit"
+        },
+        {
+          "suite": "ux-telemetry",
+          "case": "T14-S2 the save normalization matrix maps every raw shape",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T12-S1 save events drive Saving/Saved/Retryable observations through a real save",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a cancelled then retried save keeps the artifact and lands Saved",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a close failure is never Saved and stays retryable",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 a pending write never reopens and settles honestly",
+          "phase": "unit"
+        },
+        {
+          "suite": "session",
+          "case": "T22 an old save owner never disturbs a new receiving session",
+          "phase": "unit"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-34",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+      ]
+    },
+    {
+      "id": "R-10",
+      "scenario": "事件观测revision不变但时钟前进",
+      "expected": "时长和窗口速率仍更新；不伪造业务revision或重复播报",
+      "responsibilityTasks": [
+        "T7",
+        "T9",
+        "T10",
+        "T19",
+        "T22",
+        "T31"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-03",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        },
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-06",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-27",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-27-2026-10-26T18-50-30-839Z-5f13b0",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-28",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-29",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-31",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-36",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-36-2026-10-26T19-48-21-341Z-474c28",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-37",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "本机无法程序化验证屏幕阅读器真实语音输出；Narrator 二进制存在并已真实启动尝试（进程存活 5s），DOM/aria 检查按计划不能替代，真实语音核验归现场批次"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-27-2026-10-26T18-50-30-839Z-5f13b0; E2E-28-2026-10-26T18-52-42-597Z-fe8258; E2E-29-2026-10-26T18-53-58-406Z-a1a4e4; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5; UX-UI-2026-10-26T19-16-56-031Z-88532b; E2E-36-2026-10-26T19-48-21-341Z-474c28",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+      ]
+    },
+    {
+      "id": "R-11",
+      "scenario": "onSnapshot频繁触发与250ms时钟并存",
+      "expected": "遥测DOM写入≤4Hz；业务终态/按钮可及时更新；不触发额外抓帧",
+      "responsibilityTasks": [
+        "T9",
+        "T10",
+        "T26",
+        "T27",
+        "T28",
+        "T31"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-04",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-36",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-36-2026-10-26T19-48-21-341Z-474c28",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-37",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "本机无法程序化验证屏幕阅读器真实语音输出；Narrator 二进制存在并已真实启动尝试（进程存活 5s），DOM/aria 检查按计划不能替代，真实语音核验归现场批次"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; UX-UI-2026-10-26T19-16-56-031Z-88532b; E2E-36-2026-10-26T19-48-21-341Z-474c28",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+      ]
+    },
+    {
+      "id": "R-12",
+      "scenario": "真实抓屏/录像/保存恢复与旧关键旅程",
+      "expected": "使用原发送端、真实选择器与外部SHA；本地和现场证据分列",
+      "responsibilityTasks": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T13",
+        "T25",
+        "T31",
+        "T35",
+        "T36"
+      ],
+      "status": "VERIFIED",
+      "testBindings": [
+        {
+          "suite": "UX-IAT",
+          "case": "UX-IAT-07",
+          "phase": "iat"
+        }
+      ],
+      "caseBindings": [
+        {
+          "suite": "e2e",
+          "case": "E2E-27",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-27-2026-10-26T18-50-30-839Z-5f13b0",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-28",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-28-2026-10-26T18-52-42-597Z-fe8258",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-29",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-29-2026-10-26T18-53-58-406Z-a1a4e4",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-30",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-31",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-32",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-33",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-34",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-35",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "S02 真实 visibility 本机不可构造（三装置探针）+ 用户 2026-10-26 授权由用户侧真实环境验证"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-36",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "E2E-36-2026-10-26T19-48-21-341Z-474c28",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-37",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "NOT_RUN",
+          "proofRefs": "",
+          "resultReason": "本机无法程序化验证屏幕阅读器真实语音输出；Narrator 二进制存在并已真实启动尝试（进程存活 5s），DOM/aria 检查按计划不能替代，真实语音核验归现场批次"
+        },
+        {
+          "suite": "e2e",
+          "case": "E2E-38",
+          "phase": "e2e",
+          "runId": "20261027-teamexec-12",
+          "attemptId": "UX-UI-2026-10-26T19-16-56-031Z-88532b",
+          "result": "PASS",
+          "proofRefs": "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+        }
+      ],
+      "manifestSha256": "829d7dec4358feaf391c86876bf3e20e9c600f1557c6b1537c4c5e2eb258958d",
+      "attemptId": "UX-IAT-2026-10-26T16-18-01-915Z-a9c20e; E2E-27-2026-10-26T18-50-30-839Z-5f13b0; E2E-28-2026-10-26T18-52-42-597Z-fe8258; E2E-29-2026-10-26T18-53-58-406Z-a1a4e4; UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5; UX-UI-2026-10-26T19-16-56-031Z-88532b; E2E-36-2026-10-26T19-48-21-341Z-474c28",
+      "proofRefs": [
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-27/E2E-27-2026-10-26T18-50-30-839Z-5f13b0/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-28/E2E-28-2026-10-26T18-52-42-597Z-fe8258/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-29/E2E-29-2026-10-26T18-53-58-406Z-a1a4e4/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-30/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-31/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-32/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-33/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-34/UX-MEDIA-SAVE-2026-10-26T18-55-31-088Z-6a8fa5/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/original.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-36/E2E-36-2026-10-26T19-48-21-341Z-474c28/received.bin",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/proof/E2E-38/UX-UI-2026-10-26T19-16-56-031Z-88532b/measurements/live/summary.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/comparison.json",
+        "docs/tests/runs/20261027-teamexec-12/measurements/ux-overhead/candidate-20261027-01/live/summary.json"
+      ],
+      "notes": "E2E-27 PASS on the teamexec-06 build; E2E-30..34 on teamexec-08; E2E-35/36/38 on the final 09b candidate (9e2595e6). E2E-37 NOT_RUN (field/AT leg). UX-IAT-08 NOT_RUN: the IAT runner still hardcodes the T28 note (tools lane wiring pending); measure-ux itself passed its 61-test suite."
+    }
+  ]
+}

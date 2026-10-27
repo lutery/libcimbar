@@ -1,0 +1,45 @@
+UX GATE local: FAIL (44 violation(s))
+  - E2E-27: assertion id 'E2E-27-S01b' is a non-canonical/replaced step id (expected E2E-27-S{n} or E2E-27-S{n}-<A-Z>)
+  - E2E-30: frozen step S01 has no PASS assertion covering it
+  - E2E-30: frozen step S02 has no PASS assertion covering it
+  - E2E-30: frozen step S03 has no PASS assertion covering it
+  - E2E-30: frozen step S04 has no PASS assertion covering it
+  - E2E-31: frozen step S01 has no PASS assertion covering it
+  - E2E-31: frozen step S02 has no PASS assertion covering it
+  - E2E-31: frozen step S03 has no PASS assertion covering it
+  - E2E-31: frozen step S04 has no PASS assertion covering it
+  - E2E-32: frozen step S01 has no PASS assertion covering it
+  - E2E-32: frozen step S02 has no PASS assertion covering it
+  - E2E-32: frozen step S03 has no PASS assertion covering it
+  - E2E-32: frozen step S04 has no PASS assertion covering it
+  - E2E-33: frozen step S01 has no PASS assertion covering it
+  - E2E-33: frozen step S02 has no PASS assertion covering it
+  - E2E-33: frozen step S03 has no PASS assertion covering it
+  - E2E-33: frozen step S04 has no PASS assertion covering it
+  - E2E-34: frozen step S01 has no PASS assertion covering it
+  - E2E-34: frozen step S02 has no PASS assertion covering it
+  - E2E-34: frozen step S03 has no PASS assertion covering it
+  - E2E-34: frozen step S04 has no PASS assertion covering it
+  - E2E-35: assertion id 'E2E-35-S02-held' is a non-canonical/replaced step id (expected E2E-35-S{n} or E2E-35-S{n}-<A-Z>)
+  - E2E-35: assertion id 'E2E-35-S04-stop' is a non-canonical/replaced step id (expected E2E-35-S{n} or E2E-35-S{n}-<A-Z>)
+  - E2E-35: frozen step S02 has no PASS assertion covering it
+  - E2E-37: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-37: executedBy must be executor per the plan (got None)
+  - E2E-38: frozen step S01 has no PASS assertion covering it
+  - E2E-38: frozen step S02 has no PASS assertion covering it
+  - E2E-38: frozen step S03 has no PASS assertion covering it
+  - E2E-38: frozen step S04 has no PASS assertion covering it
+  - E2E-38: frozen step S05 has no PASS assertion covering it
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900487386ms (state=Ready)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16085ms (< 30000ms); an early Ready is a failed round, never a padded 30s window
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-B: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900540028ms (state=Ready)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-B: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16088ms (< 30000ms); an early Ready is a failed round, never a padded 30s window
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-B: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-1-B: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-2-A: E_LIVE_NOT_RECEIVING: a sample left Receiving at 1792900647959ms (state=Ready)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-2-A: E_LIVE_WINDOW_SHORT: the observed Receiving window was 16069ms (< 30000ms); an early Ready is a failed round, never a padded 30s window
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-2-A: E_LIVE_SESSION_IDENTITY: the Receiving samples carry no session identity (sessionId/sessionSeq)
+  - E2E-38: measurement recompute refused [E_LIVE_INVALID]: pair-2-A: E_LIVE_WINDOW_BOUNDS: the samples carry no performance.now anchor, so settlements cannot be placed inside the window
+  - E2E-38: measurement recompute: ... and 31 more

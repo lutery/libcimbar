@@ -1,0 +1,74 @@
+{
+  "kind": "live-legs-summary",
+  "attemptId": "candidate-20261026-01",
+  "pairs": 5,
+  "order": [
+    "AB",
+    "BA",
+    "AB",
+    "BA",
+    "AB"
+  ],
+  "activeWindowSeconds": 30,
+  "liveInputSha256": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+  "liveInputBytes": 4194304,
+  "liveInputPaths": {
+    "A": "docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-4mib.bin",
+    "B": "docs/tests/runs/20261026-teamexec-11/fixtures/ext-random-4mib.bin"
+  },
+  "liveInputBindings": {
+    "A": "basename-inferred",
+    "B": "liveInput"
+  },
+  "windowObservedMs": {
+    "pair-1-A": 30165,
+    "pair-1-B": 30168,
+    "pair-2-B": 30162,
+    "pair-2-A": 30162,
+    "pair-3-A": 30163,
+    "pair-3-B": 30127,
+    "pair-4-B": 30147,
+    "pair-4-A": 30143,
+    "pair-5-A": 30148,
+    "pair-5-B": 30181
+  },
+  "firstNonReceiving": {
+    "pair-1-A": null,
+    "pair-1-B": null,
+    "pair-2-B": null,
+    "pair-2-A": null,
+    "pair-3-A": null,
+    "pair-3-B": null,
+    "pair-4-B": null,
+    "pair-4-A": null,
+    "pair-5-A": null,
+    "pair-5-B": null
+  },
+  "rawSampleCounts": {
+    "pair-1-A": 16,
+    "pair-1-B": 16,
+    "pair-2-B": 16,
+    "pair-2-A": 16,
+    "pair-3-A": 16,
+    "pair-3-B": 16,
+    "pair-4-B": 16,
+    "pair-4-A": 16,
+    "pair-5-A": 16,
+    "pair-5-B": 16
+  },
+  "rawSamplesNote": "every raw sample per side stays in live/rounds/pair-<n>-<side>.json (never deleted)",
+  "calibration": {
+    "activeWindowSeconds": 30,
+    "sampleInsufficient": false,
+    "note": "每个实时侧别都在同一 session 的 Receiving 状态下观察到 >=30s 窗口",
+    "shortWindows": []
+  },
+  "sidesValid": {
+    "A": 5,
+    "B": 5
+  },
+  "verdict": "PASS",
+  "invalidRounds": [],
+  "advisory": "RTT values in the rounds are advisory only; the primary metrics stay on the recorded legs",
+  "generatedAt": "2026-10-26T09:55:09.681Z"
+}

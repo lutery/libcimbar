@@ -1,0 +1,16 @@
+[
+  {
+    "id": "UX-IAT-07-A1",
+    "expected": "the real verify gate CLI chain (positives + all specified negatives) passes on temp disk fixtures",
+    "observed": "exit=0 last=\"SELFTEST PASS (65 cases)\"",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-07-A2",
+    "expected": "the negative matrix covers missing-UX/missing/wrong-binding/fake-hash/escape/no-assertion/phase refusals",
+    "observed": "{\"hasMissingId\":true,\"hasWrongBinding\":true,\"hasFakeHash\":true,\"hasEscape\":true,\"hasAssertion\":true,\"hasPhase\":true}",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

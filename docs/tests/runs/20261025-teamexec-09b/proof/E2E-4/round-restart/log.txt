@@ -1,0 +1,9 @@
+status=Saved
+artifact=sample-text-1.bin 4096 字节
+saveTimings={"initStartAt":1792919468665,"initReadyAt":1792919469137,"validInputStartAt":1792919472161,"reconstructionDoneAt":1792919472395,"saveRequestAt":1792919476140,"createWritableAccessedAt":1792919481064,"writableAt":1792919481071,"writeCloseAt":1792919481174,"lastSaveClickAt":1792919476139,"decoderInitMs":472,"sourceWaitMs":3024,"initMs":3496,"reconstructMs":234,"totalToReadyMs":3730,"pickerWaitMs":4924,"writableOpenMs":7,"saveWaitMs":4931,"saveWriteMs":103,"saveMs":5034}
+saveTimingsComplete=true
+sha256 original=083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d received=083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d equal=true
+log=[error] 12002: 抓屏未能开始或已取消。请重新点击「实时抓屏」并允许共享。
+capture stopped; the file is ready to save
+saved (1)
+

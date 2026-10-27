@@ -1,0 +1,22 @@
+{
+  "runId": "20261026-teamexec-10",
+  "sourceRevision": "9cfc9ccc451c31b160a1245a964e842a3fa59e9c",
+  "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+  "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+  "gate": "CMD-02",
+  "gateCommand": "ctest --test-dir <build> -R '^(compression_test|cimbar_js_test)$' --output-on-failure; <compression_test> --list-tests; <cimbar_js_test> --list-tests; ctest --test-dir <build> --output-on-failure",
+  "gateResult": "PASS",
+  "gateLogPath": "./docs/tests/runs/20261018-teamexec-01/cmd-02-gate.log",
+  "gateLogSha256": "8a32910edff07808e4870e3cea2626fa5428119615baf9482732cd6f51db5665",
+  "cases": [
+    "UT-049",
+    "UT-050",
+    "UT-051",
+    "UT-052",
+    "UT-053",
+    "UT-054",
+    "cimbar_recv_jsTest/testStrictEof.Export"
+  ],
+  "executedAt": "2026-10-26T10:16:19+08:00",
+  "platform": "WSL2 Ubuntu-22.04 (Linux GCC); Windows MSVC toolchain unavailable"
+}

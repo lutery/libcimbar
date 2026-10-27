@@ -1,0 +1,20 @@
+2026-10-24T14:05:04.015Z process guard: reclaimed 0/3 recorded process(es)
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [24/Oct/2026 22:05:09] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=67600
+[helper] source: CIMBAR-SENDER-WINDOW - Profile 1 - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-24T14:06:34.559Z E2E-27 aborted: slice journey did not complete: receiver never reached Ready (status=Receiving frames)
+2026-10-24T14:06:34.561Z CASE UX-SLICE FAIL (attempt UX-SLICE-2026-10-24T14-05-04-016Z-4a7e73)

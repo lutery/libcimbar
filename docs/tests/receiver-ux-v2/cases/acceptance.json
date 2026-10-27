@@ -1,0 +1,379 @@
+[
+  {
+    "id": "UX-AT-01",
+    "title": "实时等待到数据识别再到实际保存",
+    "taskIds": [
+      "T13",
+      "T35",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "executorRole": "executor",
+    "requires": [
+      "原发送端、正常浏览器、真实getDisplayMedia和系统保存",
+      "足够长样本以看到等待/数据/用时，原/收实物外部SHA一致"
+    ],
+    "success": [
+      "有图无有效码明确等待；开始data才表示接收",
+      "Ready只随真实artifact，Saved只在write+close后",
+      "闭环的UI时序和实存文件均能定位"
+    ],
+    "boundary": "小文件瞬时完成不能证明中间态；具体E2E编号/操作步骤由4.7冻结",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-02",
+    "title": "重复有效数据、无有效数据暂停及恢复",
+    "taskIds": [
+      "T19",
+      "T31",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-04",
+      "R-07",
+      "R-10",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "executorRole": "executor",
+    "requires": [
+      "真实有效静止码与明确无有效码两段，来源可控",
+      "同一真实会话恢复发送并最终实际保存"
+    ],
+    "success": [
+      "重复data可能有识别速率但估计不虚增",
+      "无新data速率按窗口归零/5秒提示/恢复，时长继续",
+      "提示不自动停止重启，完整文件外部SHA相等"
+    ],
+    "boundary": "最小化可能冻结重复码，不未经data观察认定无数据；不能虚构慢帧源",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-03",
+    "title": "录像位置与文件重建独立",
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-019",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "executorRole": "executor",
+    "requires": [
+      "原发送端真实录制、原文件/媒体SHA",
+      "实际file input，至少一次真实OS选文件操作"
+    ],
+    "success": [
+      "媒体读取位置和重建估计分开标注",
+      "preview实际呈现并持续读取，真实产物Ready后再保存",
+      "录像可能提前完成但不能仅位置100%假报；实存SHA一致"
+    ],
+    "boundary": "setInputFiles作为浏览器级选择自动化可以用；DataTransfer假change不是用户入口",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-04",
+    "title": "录像不足、末帧与原严格EOF",
+    "taskIds": [
+      "T25",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-019",
+      "AC-020",
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "executorRole": "executor",
+    "requires": [
+      "当前已批准V-LAST pair/不足录像构造和前缀证据",
+      "原E2E-16/18体量/末帧及合法例外义务保持"
+    ],
+    "success": [
+      "到尾无artifact显示Incomplete且保存不可用",
+      "有末尾有效数据仍按真实EOF屏障和最后采样重建",
+      "不因新UI隐藏preview使rVFC停转"
+    ],
+    "boundary": "不得删除原必测腿或以历史对话选项替代当前批准矩阵",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-05",
+    "title": "真实保存取消、可构造失败与重试",
+    "taskIds": [
+      "T25",
+      "T31",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-09",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "executorRole": "executor",
+    "requires": [
+      "真实Ready及系统保存对话框，实际取消/重新点击",
+      "真实可构造的系统失败与注入IO明确分列"
+    ],
+    "success": [
+      "取消保留artifact且主界面指明可重试",
+      "真实写盘/close完成前不Saved，重试无需重接收",
+      "系统返回焦点可继续操作，最终外部SHA相等"
+    ],
+    "boundary": "write/close失败仅能安全注入时由IAT-06证明该分支，不能冒称OS分支通过",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-06",
+    "title": "停止、重开和双入口切换",
+    "taskIds": [
+      "T13",
+      "T25",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-09",
+      "R-10",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "executorRole": "executor",
+    "requires": [
+      "接收中真实停止；清理后从另一输入入口重开",
+      "实际源/Worker/URL/timer清理观察"
+    ],
+    "success": [
+      "新seq的时间/速率/进度不继承旧数值",
+      "互锁与原cleanup门保持，不忙时重开/丢旧回调",
+      "无新接收timer残留、正常下一次可接收"
+    ],
+    "boundary": "晚消息/坏owner极端情况用IAT-02/06补，真实切换仍执行",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-07",
+    "title": "中文主路径、窗口、键盘与辅助技术",
+    "taskIds": [
+      "T31",
+      "T35"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-10",
+      "R-11",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "executorRole": "executor",
+    "requires": [
+      "真实页面、380/768/1280视口及200%缩放、长中文名",
+      "真实Tab/Enter/焦点和Narrator或可用屏幕阅读器"
+    ],
+    "success": [
+      "两个入口保留，主状态/下一步无需英文日志可理解",
+      "主要按钮不遮挡/键盘可达，取消对话框后焦点合理",
+      "数字持续变不重复主语义朗读，active preview可呈现"
+    ],
+    "boundary": "原型/jsdom/DOM存在性不能代替本组真实操作；环境缺失NOT_RUN",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-08",
+    "title": "预注册同输入A/B与实时体验约束",
+    "taskIds": [
+      "T6",
+      "T28",
+      "T31",
+      "T35",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-07",
+      "R-08",
+      "R-10",
+      "R-11",
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "measurement",
+    "executorRole": "executor",
+    "requires": [
+      "冻结performance-method与T6输入/录像SHA",
+      "两构建各预热1轮后5对同录像、5对30秒实时行为"
+    ],
+    "success": [
+      "Ready/RTT按固定阈值复算通过，所有原始样本/失败保留",
+      "single-flight/数字节流/有界资源/终结UX timer等不变式成立",
+      "真实实时采样与录像主数值、可选longtask明确分列"
+    ],
+    "boundary": "method.frozen只表示方法；少配对/少样本不能PASS，不能用它代旧field26阈值",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-09",
+    "title": "最终新构建旧全矩阵及新UX总出口",
+    "taskIds": [
+      "T34",
+      "T35",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-021",
+      "AC-022",
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "executorRole": "executor",
+    "requires": [
+      "同一最终产品清单，旧E2E-1～20全量和全部新UX必测",
+      "完整caseType/scope/执行者/实物/哈希/attempt与断言"
+    ],
+    "success": [
+      "旧门禁及新汇总均实际通过，遗漏UX例不能绿",
+      "改产品后受影响项重跑且绑定最终manifest",
+      "真实录像/大样本/预算/启动/中文空格路径义务无静默删减"
+    ],
+    "boundary": "后续外审/包验/用户现场分开；包装仅字节不变时复用相应证据并补表面检查",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  },
+  {
+    "id": "UX-AT-10",
+    "title": "用户真实云桌面体验及原现场矩阵",
+    "taskIds": [
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "scope": "real_cloud",
+    "caseType": "file_roundtrip",
+    "executorRole": "user",
+    "requires": [
+      "阶段8最终包可用，用户实际云桌面→宿主机",
+      "适用原E2E-21～26和新增体验场景由4.7冻结"
+    ],
+    "success": [
+      "用户能判断等待/接收/停顿恢复/完成与保存",
+      "实际原/收文件SHA和现场步骤/环境记录",
+      "未执行就NOT_RUN，不用既有成功口述代填全部"
+    ],
+    "boundary": "这是路线图T4.2.d后续用户职责；T36只准备材料和核验真实状态，不执行/代填现场",
+    "level": "acceptance_definition",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "e2eCaseIds": null
+  }
+]

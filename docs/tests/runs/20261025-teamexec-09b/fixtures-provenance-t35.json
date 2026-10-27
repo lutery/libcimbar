@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "note": "T35 full legacy matrix: v1 fixtures copied verbatim onto the 09b final-candidate root from the read-only earlier roots (no bytes changed; the locked input-manifest.json is untouched); RUN/fixtures-media same-stream pair + V-SHORT added for E2E-16/17/18 (identical bytes from the read-only 03 root or the run root fixture copy)",
+  "copiedAt": "2026-10-25T17:05:04.1447905+08:00",
+  "files": [
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/compressible/sample-text-1.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/compressible/sample-text-1.bin",
+      "sha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+      "bytes": 4096
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/compressible/sample-text-2.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/compressible/sample-text-2.bin",
+      "sha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+      "bytes": 65536
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/compressible/sample-text-3.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/compressible/sample-text-3.bin",
+      "sha256": "ecbd8bfd5d2da153cf1b446c94be79c80492976790964e07bdf5103686831208",
+      "bytes": 524288
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/incompressible/sample-random-1.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/incompressible/sample-random-1.bin",
+      "sha256": "1e9c1cd9d155bd88a9ef960ae1d0d062a229553c787dfe7a8c118774fa051717",
+      "bytes": 4096
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/incompressible/sample-random-2.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/incompressible/sample-random-2.bin",
+      "sha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+      "bytes": 65536
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/incompressible/sample-random-3.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/incompressible/sample-random-3.bin",
+      "sha256": "07e0da834d66a9667586e882c96aaa4bb3487ddbb037bd944a24453ed6296504",
+      "bytes": 524288
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/name-collision/a.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/name-collision/a.bin",
+      "sha256": "c10e5e7db3dce426eca25e1f85fefcf1a4d764d38735ca2bd210ec2a7cd4d5a0",
+      "bytes": 4096
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/name-collision/b.bin",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/name-collision/b.bin",
+      "sha256": "4ba6d23e4cb972d9e3fcb677722e465dbdd8ab172a35bc6a2d77d52bb1109402",
+      "bytes": 4096
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/manifest.json",
+      "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/manifest.json",
+      "sha256": "b960bb488d1587ae1385f568eba620fbc326b4397b7beb1f9dab52a0937fb547",
+      "bytes": 1608
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/V-GOOD-C.webm",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/V-GOOD-C.webm",
+      "sha256": "9956fb11e391bba34e9529ed746ec37b45c04bd640331497995f9a989c8255b3",
+      "bytes": 21464029
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/V-GOOD-N.webm",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/V-GOOD-N.webm",
+      "sha256": "7ff78b0d396d32845b34ca97e49be21cbd29179f4ce7dd0794a70ee2d3a3582b",
+      "bytes": 26111606
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/payload-1m-e2e10.bin",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/payload-1m-e2e10.bin",
+      "sha256": "b3bb39f4b52a84665a006c547229ea6b3cbd8697ccc09fa0401cb14704b5af20",
+      "bytes": 1048576
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/payload-128k-random.bin",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/payload-128k-random.bin",
+      "sha256": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+      "bytes": 131072
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/manifest.json",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/manifest.json",
+      "sha256": "24e50d9d285e3ebddcd3d6f85b2daf3aafebb2e3a038d2ab4077a060e46447d3",
+      "bytes": 1965
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/compressible/ext-text-1mib.bin",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/compressible/ext-text-1mib.bin",
+      "sha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+      "bytes": 1048576
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/compressible/ext-text-4mib.bin",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/compressible/ext-text-4mib.bin",
+      "sha256": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+      "bytes": 4194304
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/incompressible/ext-random-1mib.bin",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-1mib.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/incompressible/ext-random-4mib.bin",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-4mib.bin",
+      "sha256": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+      "bytes": 4194304
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-ext/over-budget/ext-text-20mib.bin",
+      "sourcePath": "E:/Project/OpenSource/c++/libcimbar/docs/tests/runs/20261024-teamexec-04/fixtures-ext/over-budget/ext-text-20mib.bin",
+      "sha256": "e828774cbe25606a10b5adb48e4996f0e809b9df7d06b5ecc91df05b04c914a4",
+      "bytes": 20971520
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/V-SHORT.webm",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/V-SHORT.webm",
+      "sha256": "7450099f6ce8b53eb26f864f0185690d56187100b87c7d2e6ab1b937f8e5aa5a",
+      "bytes": 1449793
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/V-LAST-with.webm",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/V-LAST-with.webm",
+      "sha256": "ee93071c67430ebf5e6cef1bdf59e568ddac3a87457e78801a014d6172fd520d",
+      "bytes": 13594823
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/V-LAST-without.webm",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/V-LAST-without.webm",
+      "sha256": "8c13c8213b1819bc729b2d3cd77616c7c903ae35e187035f1b73f9d46b362eef",
+      "bytes": 8705772
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/manifest.json",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/manifest.json",
+      "sha256": "00dfd6cf21aaefa541c44f08727e89300fe9cd355f87b084015e59cebfe2608a",
+      "bytes": 4792
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures-media/prefix-check.json",
+      "sourcePath": "docs/tests/runs/20261021-teamexec-03/fixtures-media/prefix-check.json",
+      "sha256": "6bd8d45ae8057bc463dd314394f440a6a90d53823395a23852cf2c80ad5d739e",
+      "bytes": 2261
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+violations (2):
+  - E2E-35: the local gate requires result PASS (got 'NOT_RUN')
+  - E2E-35: executedBy must be executor per the plan (got None)
+SELF-CHECK: PASS (only the two expected violations)

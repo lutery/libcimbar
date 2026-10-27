@@ -1,3 +1,8 @@
+// HISTORICAL DIAGNOSTIC (pre-receiver-ux-v2). Do not run as an acceptance
+// entry point: this script writes the FROZEN run
+// docs/tests/runs/20261019-teamexec-02 (historical material is read-only).
+// An explicit --legacy-write-frozen-run switch is required to start it.
+//
 // Smoke: one real live roundtrip (E2E-3 shape) to validate the harness.
 // Sender: the original web sender (staging copy), real Edge window, real
 // file input. Receiver: staging receiver served on loopback, real Edge
@@ -20,6 +25,15 @@ const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
 const FIXTURE = join(REPO, 'docs', 'tests', 'runs', '20261018-teamexec-01', 'fixtures', 'compressible', 'sample-text-2.bin');
 const SAVE_DIR = join(RUN, 'proof', 'smoke');
 const SAVE_PATH = join(SAVE_DIR, 'smoke-received.bin');
+
+// T4 review Blocking 2: refuse to start without the explicit legacy switch.
+// This guard is the first executable statement; nothing is written before it.
+if (!process.argv.includes('--legacy-write-frozen-run')) {
+  console.error('smoke-live.mjs is HISTORICAL: it writes the FROZEN run docs/tests/runs/20261019-teamexec-02.');
+  console.error('It is not a receiver-ux-v2 acceptance entry point.');
+  console.error('Pass --legacy-write-frozen-run only for historical traceability.');
+  process.exit(2);
+}
 
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

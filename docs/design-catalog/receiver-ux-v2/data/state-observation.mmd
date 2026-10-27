@@ -1,0 +1,24 @@
+stateDiagram-v2
+  [*] --> Waiting: 进入Receiving
+  Waiting --> Active: 首个data结果
+  Active --> NoRecentData: 5秒无data且未在处理本帧
+  NoRecentData --> Active: 新data且无歧义锁
+  NoRecentData --> Unknown: 新data但进度不可判定
+  Active --> NoAdvance: 有data但可信比例8秒未增长
+  NoAdvance --> Active: 可信比例增长
+  NoAdvance --> NoRecentData: 5秒无data且未在处理本帧
+  Active --> Unknown: 无可用报告或流身份不明确
+  NoAdvance --> Unknown: 报告不可判定
+  Unknown --> Active: 有效单流恢复且无歧义锁
+  Unknown --> NoRecentData: 5秒无data且未在处理本帧
+  Unknown --> Unknown: 多流或回退锁定至本会话结束
+  Waiting --> Frozen: 原业务状态已终结
+  Active --> Frozen: 原业务状态已终结
+  NoRecentData --> Frozen: 原业务状态已终结
+  NoAdvance --> Frozen: 原业务状态已终结
+  Unknown --> Frozen: 原业务状态已终结
+  Frozen --> [*]
+  note right of Unknown
+    这是只读观察状态
+    不修改业务Receiving或完成判据
+  end note

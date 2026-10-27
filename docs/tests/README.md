@@ -1,6 +1,12 @@
 # 测试规划导航
 
-以下是Codex阶段4.x的计划和骨架；当前产品测试均NOT RUN，不能作为实际执行报告。
+## 当前迭代：接收器体验 v2
+
+[v2测试规划导航](receiver-ux-v2/README.md)：阶段4.5/4.7已完成，80条单元/工具用例、8组集成、10组验收义务、12份防误跑骨架及39条真实旅程（本地32/现场7）。[运行手册](receiver-ux-v2/e2e-runbook.md)与[交接清单](receiver-ux-v2/handoff.md)供Claude阶段5续接；新产品测试均未运行。
+
+## v1历史规划
+
+以下保留上一版本编码前的Codex阶段4.x计划/骨架与当时NOT RUN状态；v1后续结果见[历史流水线](../dev-pipeline/history/desktop-receiver-v1/pipeline-state.json)和对应运行证据，不能把历史规划口径当作本轮执行报告。
 
 - [TDD测试计划](test-plan.md)：54单元用例、6集成组、26真实操作E2E；工具、红绿循环、隔离与门禁。
 - [用例登记](test-cases.md) / [机读规划清单](planning-cases.json)：全部初始NOT_RUN，执行者null；计划清单不是IF-010运行Evidence。

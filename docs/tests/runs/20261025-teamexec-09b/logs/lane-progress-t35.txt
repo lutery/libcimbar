@@ -1,0 +1,46 @@
+2026-10-25T07:0xZ T35 start: E2E-28 attempt-1 running (new handler)
+2026-10-25T08:26Z E2E-28 attempt-1: run exit 0 but S02 FAIL observed: frozen still produced NO decoded data (rate 62.1 -> 0.0 KiB/s), progress ratio stayed 10%, no_progress/no_new_data notice appeared; record verdict bug (finish ignored assertions) also fixed; added liveness ticker outside the code rect + ratio-based stability; attempt-2 running
+2026-10-25T08:53Z E2E-28 PASS (attempt-3, 65bde8): still >=10s, rate 45-64 KiB/s with the estimate fixed at 9-10%, no_progress notice at 8s, resumed 10%->99%, real save equal; E2E-29 PASS (attempt-1, 5c5f1e): blank 6.4s, rate zero by 3-4s, >=5s no_new_data notice, stale estimate, same session resumed, saved equal. Legacy batch E2E-1..5 starting.
+2026-10-25T16:56:55.1605622+08:00 T35 E2E-1 exit=1
+2026-10-25T16:57:43.6014504+08:00 T35 E2E-2 exit=1
+2026-10-25T16:58:26.8822180+08:00 T35 E2E-3 exit=1
+2026-10-25T16:59:11.2559145+08:00 T35 E2E-4 exit=1
+2026-10-25T17:00:13.5412395+08:00 T35 E2E-5 exit=1
+2026-10-25T09:05Z legacy batch-1 attempts 1 all FAIL: fixture gap on 09b (v1 compressible/incompressible/name-collision/fixtures-media V-GOOD+payloads/fixtures-ext absent). Staged 19 files verbatim from read-only 04/03 roots with provenance fixtures-provenance-t35.json; input-manifest untouched; rerunning batch-1.
+2026-10-25T17:07:03.3614545+08:00 T35 E2E-1 exit=0
+2026-10-25T17:08:26.6583319+08:00 T35 E2E-2 exit=0
+2026-10-25T17:10:10.9401609+08:00 T35 E2E-3 exit=1
+2026-10-25T17:11:35.2054758+08:00 T35 E2E-4 exit=0
+2026-10-25T17:13:12.6279419+08:00 T35 E2E-5 exit=0
+2026-10-25T17:22:05.2791711+08:00 T35 E2E-3 exit=0
+2026-10-25T17:25:01.7544154+08:00 T35 E2E-6 exit=0
+2026-10-25T17:27:02.8441420+08:00 T35 E2E-7 exit=0
+2026-10-25T17:29:15.3804569+08:00 T35 E2E-8 exit=0
+2026-10-25T17:31:46.4923958+08:00 T35 E2E-9 exit=0
+2026-10-25T17:34:26.0170290+08:00 T35 E2E-10 exit=0
+2026-10-25T09:35Z legacy progress: E2E-1..10 all PASS (E2E-3 needed the fresh-page-per-save guard, retry PASS). Batch 11..15 starting.
+2026-10-25T17:40:39.3010652+08:00 T35 E2E-11 exit=0
+2026-10-25T17:42:26.7449516+08:00 T35 E2E-12 exit=0
+2026-10-25T17:44:06.0779045+08:00 T35 E2E-13 exit=0
+2026-10-25T17:45:06.8515585+08:00 T35 E2E-14 exit=1
+2026-10-25T17:45:36.3882412+08:00 T35 E2E-15 exit=1
+2026-10-25T09:47Z E2E-14/15 attempts failed at startup: process-guard helper timed out at 60s (pids.json reached ~31 entries across T35; per-pid Get-CimInstance loop). Tool fix: batched one-query lookup + explicit timeout reason. E2E-14 retry running with the batched guard.
+2026-10-25T18:03:04.0754999+08:00 T35 E2E-15 exit=0
+2026-10-25T18:03:19.8051812+08:00 T35 E2E-16 exit=1
+2026-10-25T18:04:07.2979522+08:00 T35 E2E-17 exit=1
+2026-10-25T18:46:11.2718146+08:00 T35 E2E-18 exit=1
+2026-10-25T18:48:21.8025248+08:00 T35 E2E-19 exit=0
+2026-10-25T18:48:24.9015583+08:00 T35 E2E-20 exit=1
+2026-10-25T18:52:44.7872163+08:00 T35 E2E-16 exit=0
+2026-10-25T18:54:16.0881500+08:00 T35 E2E-17 exit=0
+2026-10-25T18:59:10.6354679+08:00 T35 E2E-20 exit=0
+2026-10-25T11:00Z E2E-16/17/20 rerun all PASS after staging the full same-stream media set into RUN/fixtures-media; only E2E-18 rerun remains (video-n-128kib leg needed V-LAST-with.webm that was absent in attempt-1)
+2026-10-25T11:43Z E2E-18 rerun PASS (b94f81) with the video-n-128kib leg executed - legacy E2E-1..20 all PASS. UX-ALL (E2E-27..38) starting.
+2026-10-25T11:52Z UX-ALL attempt 0db9b3 aborted: E2E-27-S04 stale copy assertion (nextAction now 点击「保存文件…」。), E2E-28 PASS, E2E-29 save-dialog helper failed in group context, E2E-30+ receiver HTTP unreachable (ERR_ADDRESS_INVALID). Fix: E2E-27 nextAction now semantic regex; switching to per-group invocations (E2E-27, E2E-29, UX-MEDIA-SAVE, UX-UI) for process isolation. Failed group attempt artifacts kept.
+2026-10-25T20:23:28.1113958+08:00 T35 E2E-27 exit=0
+2026-10-25T20:24:37.5083093+08:00 T35 E2E-29 exit=1
+2026-10-25T20:29:47.4235038+08:00 T35 UX-MEDIA-SAVE exit=0
+2026-10-25T20:29:50.6998042+08:00 T35 UX-UI exit=1
+2026-10-25T20:39:25.1218049+08:00 T35 E2E-29 exit=0
+2026-10-25T20:42:24.0170308+08:00 T35 UX-UI exit=0
+2026-10-25T13:20Z T35 complete sweep: E2E-27 PASS (89769d, CAL assertions folded into log evidence), E2E-29 PASS (fa39af, blank hold extended to >=8s), UX-MEDIA-SAVE 30..34 PASS (13c955, canonical proofRefs), UX-UI 35/36/38 PASS + 37 NOT_RUN with a real Narrator start attempt (d40b44); final gate = exit 1 with ONLY the E2E-37 pair of real-gap violations; legacy E2E-1..20 all PASS; run-unit 12 suites exit 0; ux-selftest 55/55; verify-selftest 14/14; old-evidence 760 UNCHANGED (t35-oldruns-after.sha); zero residue (orphan conhost stopped, ports free); product dir clean.

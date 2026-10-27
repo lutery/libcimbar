@@ -1,0 +1,51 @@
+{
+  "A": {
+    "browserVersion": "156.0.4314.42",
+    "afterMinimize": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "afterRestore": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "minimizeFlipsHidden": false,
+    "restoreFlipsVisible": true
+  },
+  "B": {
+    "afterMinimize": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "afterRestore": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "minimizeFlipsHidden": false,
+    "restoreFlipsVisible": true
+  },
+  "C": {
+    "before": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "whileHidden": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "heldMs": 7015,
+    "backVisible": {
+      "state": "visible",
+      "hasFocus": true,
+      "log": []
+    },
+    "hiddenHappened": false,
+    "visibleAgain": true
+  }
+}

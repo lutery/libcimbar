@@ -1,0 +1,97 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "counting": {
+    "gate": "okFrameCount",
+    "note": "the 30-frame gate counts resolved (ok) frames only, which is stricter than the frozen method wording \"settled frames\"; settledFrameCount in each round file additionally counts rejected settlements and never gates anything"
+  },
+  "sides": {
+    "A": {
+      "role": "baseline",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        16871,
+        16435,
+        14856,
+        15274,
+        15708
+      ],
+      "readyMsMedian": 15708,
+      "rttP50Values": [
+        62.899999998509884,
+        59,
+        59.400000005960464,
+        59.600000001490116,
+        65.29999999701977
+      ],
+      "rttP50Median": 59.600000001490116,
+      "rttP95Values": [
+        86,
+        82.29999999701977,
+        85.29999999701977,
+        81.60000000149012,
+        86.10000000149012
+      ],
+      "rttP95Median": 85.29999999701977,
+      "frameCounts": [
+        111,
+        111,
+        100,
+        105,
+        102
+      ],
+      "frameCountTotal": 529
+    },
+    "B": {
+      "role": "candidate",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        15060,
+        16039,
+        15051,
+        16898,
+        14761
+      ],
+      "readyMsMedian": 15060,
+      "rttP50Values": [
+        58,
+        60.5,
+        61,
+        60,
+        58.899999998509884
+      ],
+      "rttP50Median": 60,
+      "rttP95Values": [
+        77.09999999403954,
+        84.40000000596046,
+        80.5,
+        81.29999999701977,
+        88.60000000149012
+      ],
+      "rttP95Median": 81.29999999701977,
+      "frameCounts": [
+        104,
+        103,
+        100,
+        111,
+        98
+      ],
+      "frameCountTotal": 516
+    }
+  }
+}

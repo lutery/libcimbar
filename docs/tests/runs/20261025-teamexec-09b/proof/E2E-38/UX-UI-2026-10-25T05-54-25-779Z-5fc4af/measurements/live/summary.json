@@ -1,0 +1,22 @@
+{
+  "kind": "live-legs-summary",
+  "attemptId": "candidate-20261025-04",
+  "pairs": 5,
+  "order": [
+    "AB",
+    "BA",
+    "AB",
+    "BA",
+    "AB"
+  ],
+  "activeWindowSeconds": 30,
+  "liveInputSha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+  "sidesValid": {
+    "A": 5,
+    "B": 5
+  },
+  "verdict": "PASS",
+  "invalidRounds": [],
+  "advisory": "RTT values in the rounds are advisory only; the primary metrics stay on the recorded legs",
+  "generatedAt": "2026-10-25T04:03:05.923Z"
+}

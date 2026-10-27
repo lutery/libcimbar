@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: UT-019 init settles exactly once
+ok 1 - UT-019 init settles exactly once
+  ---
+  duration_ms: 37.2936
+  type: 'test'
+  ...
+# Subtest: UT-020 BigInt fountain results by sign
+ok 2 - UT-020 BigInt fountain results by sign
+  ---
+  duration_ms: 186.1534
+  type: 'test'
+  ...
+# Subtest: UT-021 heap output is copied before free
+ok 3 - UT-021 heap output is copied before free
+  ---
+  duration_ms: 47.1123
+  type: 'test'
+  ...
+# Subtest: UT-022 decompress failure never yields a half artifact
+ok 4 - UT-022 decompress failure never yields a half artifact
+  ---
+  duration_ms: 93.9726
+  type: 'test'
+  ...
+# Subtest: UT-023 artifact budget boundary
+ok 5 - UT-023 artifact budget boundary
+  ---
+  duration_ms: 75.8578
+  type: 'test'
+  ...
+# Subtest: UT-024 asset, digest, export and timeout failures
+ok 6 - UT-024 asset, digest, export and timeout failures
+  ---
+  duration_ms: 185.6686
+  type: 'test'
+  ...
+# Subtest: UX-UT-001 full-length report reads classify empty, single and up to eight streams
+not ok 7 - UX-UT-001 full-length report reads classify empty, single and up to eight streams
+  ---
+  duration_ms: 48.0736
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:265:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    []: the report is classified exactly
+    + actual - expected
+    
+    + undefined
+    - {
+    -   report: {
+    -     diagnosticCode: 0,
+    -     ratios: [],
+    -     state: 'empty'
+    -   },
+    -   version: 1
+    - }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    version: 1
+    report:
+      state: 'empty'
+      ratios:
+      diagnosticCode: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:287:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-002 an absent optional report export does not block init or data
+not ok 8 - UX-UT-002 an absent optional report export does not block init or data
+  ---
+  duration_ms: 45.8001
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:322:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + undefined
+    - {
+    -   report: {
+    -     diagnosticCode: 19001,
+    -     ratios: [],
+    -     state: 'unavailable'
+    -   },
+    -   version: 1
+    - }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    version: 1
+    report:
+      state: 'unavailable'
+      ratios:
+      diagnosticCode: 19001
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:332:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-003 the report length boundary rejects truncation and illegal returns
+not ok 9 - UX-UT-003 the report length boundary rejects truncation and illegal returns
+  ---
+  duration_ms: 47.1222
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:342:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'report')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:347:45)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-004 invalid JSON and UTF-8 reject the whole report without partial trust
+not ok 10 - UX-UT-004 invalid JSON and UTF-8 reject the whole report without partial trust
+  ---
+  duration_ms: 44.875
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:380:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'report')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:407:47)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-005 the report is sampled only after a non-negative fountain result and before the artifact
+not ok 11 - UX-UT-005 the report is sampled only after a non-negative fountain result and before the artifact
+  ---
+  duration_ms: 46.7973
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:422:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    data: scan, fountain, then the report
+    + actual - expected
+    
+      [
+        'scan',
+        'fountain',
+    -   'report'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'scan'
+    1: 'fountain'
+    2: 'report'
+  actual:
+    0: 'scan'
+    1: 'fountain'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:425:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-006 the report reads the current heap with one reused buffer
+not ok 12 - UX-UT-006 the report reads the current heap with one reused buffer
+  ---
+  duration_ms: 47.4157
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:479:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'report')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:512:40)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UX-UT-007 report failures stay local and never mask core decode errors
+not ok 13 - UX-UT-007 report failures stay local and never mask core decode errors
+  ---
+  duration_ms: 45.7807
+  type: 'test'
+  location: 'E:\\Project\\OpenSource\\c++\\libcimbar\\web\\desktop-recv\\tests\\unit\\worker.test.mjs:536:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'report')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/Project/OpenSource/c++/libcimbar/web/desktop-recv/tests/unit/worker.test.mjs:542:45)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 6
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1086.7743

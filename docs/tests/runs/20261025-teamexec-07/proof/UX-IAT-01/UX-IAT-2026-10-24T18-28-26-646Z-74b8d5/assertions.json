@@ -1,0 +1,30 @@
+[
+  {
+    "id": "UX-IAT-01-A1",
+    "expected": "real WASM decodes the captured code frame to a data outcome",
+    "observed": "outcome=data bytes=7500 frame=710x710",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-01-A2",
+    "expected": "the positive case carries a valid optional report observation",
+    "observed": "{\"version\":1,\"report\":{\"state\":\"single\",\"ratios\":[0.0566038],\"diagnosticCode\":0}}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-01-A3",
+    "expected": "a no_data outcome never reads the shared report buffer",
+    "observed": "{\"outcome\":\"no_data\",\"bytes\":0,\"observation\":null}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-01-ABORT",
+    "expected": "group runs to completion",
+    "observed": "group did not complete: page.context(...).workers is not a function",
+    "result": "FAIL",
+    "proofRef": null
+  }
+]

@@ -1,0 +1,763 @@
+[
+  {
+    "id": "UX-UT-081",
+    "title": "缺少运行上下文先拒绝且零副作用",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "argv缺context、JSON缺必填字段或未知phase；write/spawn均有调用计数",
+    "when": "解析并准备执行",
+    "then": "非0/明确错误，未写任何文件也未启动桌面或服务",
+    "assertions": [
+      "缺参、损坏JSON、未知字段/phase分别拒绝",
+      "write/spawn计数为0",
+      "不回退到run-03"
+    ],
+    "fixtures": [
+      "FX-RUN-TEMP"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-082",
+    "title": "中文空格目录完整传播到所有写入者",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "新根名称含中文与空格，隔离sender/receiver/fixtures/plan；旧根字节快照",
+    "when": "通过runner→recorder→proof/result/样本/诊断子调用写入临时实物",
+    "then": "所有输出位于声明根，旧根SHA不变",
+    "assertions": [
+      "逐项核对实际文件路径，不能只比较字符串参数",
+      "recorder收到同一个context摘要",
+      "基线/候选/旧run无交叉覆写"
+    ],
+    "fixtures": [
+      "FX-RUN-TEMP",
+      "FX-OLD-MANIFEST"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-083",
+    "title": "路径逃逸和历史输出根被拒绝",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "../、绝对盘符、URI、解析后越界、历史run输出、指向外部根的可构造链接",
+    "when": "解析输出路径和证明路径",
+    "then": "写入前拒绝，不跟随逃逸至历史/外部路径",
+    "assertions": [
+      "规范化后的绝对路径必须仍在允许根",
+      "不能仅凭startsWith同名前缀放行",
+      "系统无法创建链接时该子样本单列，不宣称实测链接路径"
+    ],
+    "fixtures": [
+      "FX-RUN-TEMP"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-084",
+    "title": "基线候选staging严格分开且原包只读",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T6"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "两个独立staging，旧v1包只读清单；另有相同/相互包含根的负例",
+    "when": "构建/复制和上下文校验",
+    "then": "只命中各自根，相同或重叠根拒绝",
+    "assertions": [
+      "-StagingRoot实际生效",
+      "不因旧固定staging默写共享目录",
+      "原v1包和旧strict-EOF证据SHA保持"
+    ],
+    "fixtures": [
+      "FX-RUN-TEMP",
+      "FX-OLD-MANIFEST"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-085",
+    "title": "续跑只接受同一运行身份且保留旧attempt原件",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "已有context/runId/attempt/manifest与原proof；同身份和变更身份两个分支",
+    "when": "请求恢复或重新执行",
+    "then": "仅一致身份可显式恢复，跨构建拒绝；原attempt原件保留",
+    "assertions": [
+      "缺显式恢复不能悄悄覆写",
+      "同case索引更新不删除先前attempt文件",
+      "phase从slice冒充final拒绝"
+    ],
+    "fixtures": [
+      "FX-RUN-TEMP"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-086",
+    "title": "产品摘要与工具提交分别绑定",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/run-context.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "产品文件清单排序SHA、sourceRevision/harnessRevision；只改工具或实际改一字节产品",
+    "when": "创建/复核manifest",
+    "then": "工具版本变化可另记；产品字节变化必须新manifest/attempt且旧证据不可复用",
+    "assertions": [
+      "重算实际文件而非信任manifest标签",
+      "少文件/额外必需运行依赖/改vendor均拒绝旧绑定",
+      "产品SHA相同的纯工具变动不伪造新产品结果"
+    ],
+    "fixtures": [
+      "FX-PRODUCT-MANIFEST"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-087",
+    "title": "显式测试套件不能漏注册或以空测试绿灯",
+    "level": "unit",
+    "target": "tools/desktop-recv/run-unit.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/run-context.test.mjs",
+    "taskIds": [
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "临时runner副本含12套预期与新UX三套；缺文件/0test/skip/todo/真实失败分支",
+    "when": "执行--all和定向套件",
+    "then": "缺失/未完成/失败非0，完整真实通过才0",
+    "assertions": [
+      "每套确实执行而非glob碰巧发现",
+      "Node退出0但todo/skip>0仍失败",
+      "生产runner不扫描docs规划骨架"
+    ],
+    "fixtures": [
+      "FX-RUNNER-TEMP"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-088",
+    "title": "旧与新必测真实证据齐备的正例",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "临时完整旧local记录+UX全部必测、真实原收小文件与断言证明；phase=final",
+    "when": "实际调用汇总CLI",
+    "then": "旧门禁及新UX都通过，整体local退出0",
+    "assertions": [
+      "CLI真实读盘和重算，不stub最终校验返回值",
+      "完整正例防止一个永远拒绝的坏校验器被误验通过",
+      "真实field记录只在field门禁按user正例通过"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-089",
+    "title": "旧20项绿但漏任一UX必测仍失败",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "旧E2E-1..20均有有效PASS，新UX清单逐个删除一条",
+    "when": "执行local总门禁",
+    "then": "非0且指出缺失具体ID",
+    "assertions": [
+      "逐删每个新必测ID",
+      "不因原verify-evidence只识别1..20而漏验",
+      "不能以空UX required列表规避"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK",
+      "FX-FROZEN-PLAN"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-090",
+    "title": "错构建错输入错运行绑定不可混用",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "完整记录但runId/manifestSha/inputSha/attempt或源清单逐一错配",
+    "when": "执行门禁",
+    "then": "非0，保留失败证据，不自动采用最后一份结果",
+    "assertions": [
+      "错误sourceRevision不能盖过实际产品SHA不一致",
+      "旧run记录引用新proof仍拒绝",
+      "改产品后只更新文本SHA而实际文件未重算仍拒绝"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK",
+      "FX-PRODUCT-MANIFEST"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-091",
+    "title": "元数据相等不替代实存原收文件",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "原/收两文件不同但记录写相同SHA，缺文件、空proof和越根proof反例",
+    "when": "磁盘复算并校验证明引用",
+    "then": "全部拒绝；仅实际相等字节的正例通过",
+    "assertions": [
+      "file_roundtrip首两proofRef保持原/收约定",
+      "截图或日志不能替代文件",
+      "缺文件与摘要不等分别有明确失败原因"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-092",
+    "title": "scope执行者caseType不能升级或改名绕过",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "mock/unit冒充local、executor冒充user、file_roundtrip改lifecycle、NOT_RUN填执行者/时点",
+    "when": "按冻结计划对照记录",
+    "then": "非0；现场未执行状态继续NOT_RUN",
+    "assertions": [
+      "计划caseType优先而非记录自报",
+      "IAT不能升级local_simulated",
+      "新UX门禁语义不修改原v1词汇"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK",
+      "FX-FROZEN-PLAN"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-093",
+    "title": "重复未规划和被覆盖attempt不能冒充完整性",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "同ID重复、额外未规划ID、索引指不存在attempt、旧attempt原件被删",
+    "when": "读取全部记录/索引/证明",
+    "then": "拒绝不一致，不随last-write-wins悄悄绿灯",
+    "assertions": [
+      "索引只指同构建有效attempt",
+      "失败attempt仍可定位",
+      "未知必需场景不能忽略"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-094",
+    "title": "任一反馈断言缺证据或非PASS使该例失败",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-022",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "场景总result=PASS但assertions空、observed空、proof缺失、任一FAIL/NOT_RUN",
+    "when": "重核逐项断言",
+    "then": "非0，不能仅信整体布尔标签",
+    "assertions": [
+      "expected/observed必须有可核对事实",
+      "同一运行时序必须能支持UI状态",
+      "截图存在但不能对应断言仍未证实"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-095",
+    "title": "部分阶段及新UX方法不能替代最终或旧现场性能",
+    "level": "unit",
+    "target": "tools/desktop-recv/verify-ux-evidence.py",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-evidence-selftest.py",
+    "taskIds": [
+      "T1",
+      "T2",
+      "T3",
+      "T36"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "slice/metrics/media结果、frozen UX方法、未确认legacyThresholdFile与旧E2E-26测量",
+    "when": "请求final/field门禁",
+    "then": "部分阶段不能当final；新方法不能自动让旧现场性能通过",
+    "assertions": [
+      "local结果不代field",
+      "UX method.frozen=true不是产品测量结果",
+      "legacy未实测/未确认保持原NOT_RUN/未评定"
+    ],
+    "fixtures": [
+      "FX-GATE-DISK",
+      "FX-PERF-METHOD"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-096",
+    "title": "分位数和Ready差值按独立算例计算",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "已排序1..100ms RTT、有效Ready起止和负/缺/混时钟字段",
+    "when": "计算nearest-rank与各轮中位数",
+    "then": "p50=50、p95=95、5轮[10,20,30,40,50]中位数30；缺失不估算",
+    "assertions": [
+      "每轮分位数再取中位数，不混池",
+      "Ready两时点相减不含初始化/选择器/保存",
+      "RTT不能叫纯WASM CPU时间"
+    ],
+    "fixtures": [
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-097",
+    "title": "三个性能阈值等号通过而越界失败",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "Bready=1000，Brtt50=10，Brtt95=20；固定method",
+    "when": "比较C边界和超边界样本",
+    "then": "ready=1350、p50=12、p95=25通过；分别加0.001ms失败",
+    "assertions": [
+      "ready公式是1.10*B+250，不用max",
+      "RTT p50/p95公式按max相对/绝对容差",
+      "阈值method摘要改变必须新版本/重新测"
+    ],
+    "fixtures": [
+      "FX-PERF-METHOD",
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-098",
+    "title": "五对样本和匹配环境缺一不可判定",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "4对或任一轮<30帧、不同WASM/input/media/browser/viewport/instrumentation，另有完整5对",
+    "when": "配对与比较",
+    "then": "不完整NOT_RUN；完整正例按阈值判定",
+    "assertions": [
+      "预热轮不混入5对",
+      "每轮新页/Worker，原journey标记不串用",
+      "主判据来自同录像，不以实时采样替换"
+    ],
+    "fixtures": [
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-099",
+    "title": "候选真实失败不能作为噪声剔除",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "某有效候选轮未Ready/产物错误/单在途破坏，其他轮更快",
+    "when": "汇总与替换策略",
+    "then": "FAIL并保留失败轮，不能只挑正常快轮比较",
+    "assertions": [
+      "功能失败不是环境无效配对",
+      "单在途>1直接FAIL",
+      "缺原始样本而只有summary PASS拒绝"
+    ],
+    "fixtures": [
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-100",
+    "title": "无效配对最多替换两对且原始数据不删除",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "真正环境不匹配的无效对及0/1/2/3对替换场景",
+    "when": "保存原件、标原因、重测整对",
+    "then": "最多2对且最终仍有5对有效才能比较，超过或不足NOT_RUN",
+    "assertions": [
+      "不只补一侧",
+      "原无效轮ID/原因/样本仍存在",
+      "事后改阈值/挑输入不被接受"
+    ],
+    "fixtures": [
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-101",
+    "title": "只计遥测数字写入且保留原busy丢采样策略",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "数字区高频mutation、合法即时按钮/终态更新、原live busy丢采样",
+    "when": "测量DOM间隔/实际pending与清理",
+    "then": "数字写间隔≥250ms、pending≤1；业务即时事件不误算，原合法drop可记录",
+    "assertions": [
+      "按一次paint提交统计频率，不把同paint多个DOM节点当多次刷新",
+      "同事件+tick不形成双倍频率",
+      "终结UX timer0，原业务回调不被为指标强改"
+    ],
+    "fixtures": [
+      "FX-DOM-CLOCK",
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-102",
+    "title": "实时观测与录像数值主判据分列",
+    "level": "unit",
+    "target": "tools/desktop-recv/e2e/measure-ux.mjs",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/measure-ux.test.mjs",
+    "taskIds": [
+      "T28"
+    ],
+    "acceptanceIds": [
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-11",
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "录像5对完整主数据、实时5对各30秒活动段、某浏览器不支持longtask",
+    "when": "汇总结果",
+    "then": "实时行为独立检查，未支持长任务为NOT_MEASURED有原因，不造0或传输SLA",
+    "assertions": [
+      "实时不能宣称逐帧相同",
+      "同原发送端/输入/窗口声明并实记",
+      "advisory缺失不替代mandatory缺测"
+    ],
+    "fixtures": [
+      "FX-PERF-RAW"
+    ],
+    "redExpectation": "阶段5先补真实行为断言；目标功能缺失或原错误行为使断言失败，骨架守卫/环境缺失不算业务RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  }
+]

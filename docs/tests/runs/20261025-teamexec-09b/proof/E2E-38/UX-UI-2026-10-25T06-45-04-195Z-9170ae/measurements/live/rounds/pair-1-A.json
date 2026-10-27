@@ -1,0 +1,1182 @@
+{
+  "side": "A",
+  "pairIndex": 1,
+  "startedAtIso": "2026-10-25T03:54:17.212Z",
+  "samples": [
+    {
+      "at": 1792900469283,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900471293,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900473302,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900475305,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900477310,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900479324,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900481355,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900483365,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900485368,
+      "state": "Receiving",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 2,
+      "submitted": 1,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900487386,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900489401,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900491415,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900493419,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900495431,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    },
+    {
+      "at": 1792900497446,
+      "state": "Ready",
+      "primary": "",
+      "elapsed": "",
+      "rate": "",
+      "revision": 3,
+      "submitted": 142,
+      "previewVideoWidth": 1604
+    }
+  ],
+  "frames": [
+    {
+      "seq": 1,
+      "t0Ms": 7006.79999999702,
+      "settledAtMs": 7148.5999999940395,
+      "ok": true,
+      "rttMs": 141.79999999701977
+    },
+    {
+      "seq": 2,
+      "t0Ms": 7161.9000000059605,
+      "settledAtMs": 7226.20000000298,
+      "ok": true,
+      "rttMs": 64.29999999701977
+    },
+    {
+      "seq": 3,
+      "t0Ms": 7275.0999999940395,
+      "settledAtMs": 7333.4000000059605,
+      "ok": true,
+      "rttMs": 58.30000001192093
+    },
+    {
+      "seq": 4,
+      "t0Ms": 7377.79999999702,
+      "settledAtMs": 7433.9000000059605,
+      "ok": true,
+      "rttMs": 56.1000000089407
+    },
+    {
+      "seq": 5,
+      "t0Ms": 7496.9000000059605,
+      "settledAtMs": 7574.79999999702,
+      "ok": true,
+      "rttMs": 77.8999999910593
+    },
+    {
+      "seq": 6,
+      "t0Ms": 7625.79999999702,
+      "settledAtMs": 7695.29999999702,
+      "ok": true,
+      "rttMs": 69.5
+    },
+    {
+      "seq": 7,
+      "t0Ms": 7775.79999999702,
+      "settledAtMs": 7840.29999999702,
+      "ok": true,
+      "rttMs": 64.5
+    },
+    {
+      "seq": 8,
+      "t0Ms": 7893.9000000059605,
+      "settledAtMs": 7951.29999999702,
+      "ok": true,
+      "rttMs": 57.3999999910593
+    },
+    {
+      "seq": 9,
+      "t0Ms": 8026,
+      "settledAtMs": 8091.4000000059605,
+      "ok": true,
+      "rttMs": 65.40000000596046
+    },
+    {
+      "seq": 10,
+      "t0Ms": 8142.29999999702,
+      "settledAtMs": 8197.20000000298,
+      "ok": true,
+      "rttMs": 54.900000005960464
+    },
+    {
+      "seq": 11,
+      "t0Ms": 8226.09999999404,
+      "settledAtMs": 8281.40000000596,
+      "ok": true,
+      "rttMs": 55.30000001192093
+    },
+    {
+      "seq": 12,
+      "t0Ms": 8342.29999999702,
+      "settledAtMs": 8403.09999999404,
+      "ok": true,
+      "rttMs": 60.79999999701977
+    },
+    {
+      "seq": 13,
+      "t0Ms": 8426.70000000298,
+      "settledAtMs": 8482.40000000596,
+      "ok": true,
+      "rttMs": 55.70000000298023
+    },
+    {
+      "seq": 14,
+      "t0Ms": 8544.40000000596,
+      "settledAtMs": 8602.59999999404,
+      "ok": true,
+      "rttMs": 58.19999998807907
+    },
+    {
+      "seq": 15,
+      "t0Ms": 8662,
+      "settledAtMs": 8725.29999999702,
+      "ok": true,
+      "rttMs": 63.29999999701977
+    },
+    {
+      "seq": 16,
+      "t0Ms": 8742.70000000298,
+      "settledAtMs": 8804.29999999702,
+      "ok": true,
+      "rttMs": 61.599999994039536
+    },
+    {
+      "seq": 17,
+      "t0Ms": 8876.09999999404,
+      "settledAtMs": 8945.5,
+      "ok": true,
+      "rttMs": 69.40000000596046
+    },
+    {
+      "seq": 18,
+      "t0Ms": 8996.09999999404,
+      "settledAtMs": 9051,
+      "ok": true,
+      "rttMs": 54.900000005960464
+    },
+    {
+      "seq": 19,
+      "t0Ms": 9079,
+      "settledAtMs": 9149.20000000298,
+      "ok": true,
+      "rttMs": 70.20000000298023
+    },
+    {
+      "seq": 20,
+      "t0Ms": 9198.29999999702,
+      "settledAtMs": 9253.90000000596,
+      "ok": true,
+      "rttMs": 55.6000000089407
+    },
+    {
+      "seq": 21,
+      "t0Ms": 9272.40000000596,
+      "settledAtMs": 9332.70000000298,
+      "ok": true,
+      "rttMs": 60.29999999701977
+    },
+    {
+      "seq": 22,
+      "t0Ms": 9364.59999999404,
+      "settledAtMs": 9435.5,
+      "ok": true,
+      "rttMs": 70.90000000596046
+    },
+    {
+      "seq": 23,
+      "t0Ms": 9488.29999999702,
+      "settledAtMs": 9545.29999999702,
+      "ok": true,
+      "rttMs": 57
+    },
+    {
+      "seq": 24,
+      "t0Ms": 9610.5,
+      "settledAtMs": 9679.70000000298,
+      "ok": true,
+      "rttMs": 69.20000000298023
+    },
+    {
+      "seq": 25,
+      "t0Ms": 9747.90000000596,
+      "settledAtMs": 9804.09999999404,
+      "ok": true,
+      "rttMs": 56.19999998807907
+    },
+    {
+      "seq": 26,
+      "t0Ms": 9869.20000000298,
+      "settledAtMs": 9926,
+      "ok": true,
+      "rttMs": 56.79999999701977
+    },
+    {
+      "seq": 27,
+      "t0Ms": 9951.90000000596,
+      "settledAtMs": 10010.79999999702,
+      "ok": true,
+      "rttMs": 58.8999999910593
+    },
+    {
+      "seq": 28,
+      "t0Ms": 10076.79999999702,
+      "settledAtMs": 10134.40000000596,
+      "ok": true,
+      "rttMs": 57.6000000089407
+    },
+    {
+      "seq": 29,
+      "t0Ms": 10196.90000000596,
+      "settledAtMs": 10253.90000000596,
+      "ok": true,
+      "rttMs": 57
+    },
+    {
+      "seq": 30,
+      "t0Ms": 10276.79999999702,
+      "settledAtMs": 10331.59999999404,
+      "ok": true,
+      "rttMs": 54.79999999701977
+    },
+    {
+      "seq": 31,
+      "t0Ms": 10399.29999999702,
+      "settledAtMs": 10458.09999999404,
+      "ok": true,
+      "rttMs": 58.79999999701977
+    },
+    {
+      "seq": 32,
+      "t0Ms": 10483.90000000596,
+      "settledAtMs": 10539.59999999404,
+      "ok": true,
+      "rttMs": 55.69999998807907
+    },
+    {
+      "seq": 33,
+      "t0Ms": 10606.70000000298,
+      "settledAtMs": 10705.09999999404,
+      "ok": true,
+      "rttMs": 98.3999999910593
+    },
+    {
+      "seq": 34,
+      "t0Ms": 10748.09999999404,
+      "settledAtMs": 10813.70000000298,
+      "ok": true,
+      "rttMs": 65.6000000089407
+    },
+    {
+      "seq": 35,
+      "t0Ms": 10882.40000000596,
+      "settledAtMs": 10953.70000000298,
+      "ok": true,
+      "rttMs": 71.29999999701977
+    },
+    {
+      "seq": 36,
+      "t0Ms": 10982.90000000596,
+      "settledAtMs": 11044.70000000298,
+      "ok": true,
+      "rttMs": 61.79999999701977
+    },
+    {
+      "seq": 37,
+      "t0Ms": 11083.5,
+      "settledAtMs": 11138.90000000596,
+      "ok": true,
+      "rttMs": 55.400000005960464
+    },
+    {
+      "seq": 38,
+      "t0Ms": 11152.59999999404,
+      "settledAtMs": 11209.5,
+      "ok": true,
+      "rttMs": 56.900000005960464
+    },
+    {
+      "seq": 39,
+      "t0Ms": 11273.40000000596,
+      "settledAtMs": 11328.79999999702,
+      "ok": true,
+      "rttMs": 55.3999999910593
+    },
+    {
+      "seq": 40,
+      "t0Ms": 11354.90000000596,
+      "settledAtMs": 11416.29999999702,
+      "ok": true,
+      "rttMs": 61.3999999910593
+    },
+    {
+      "seq": 41,
+      "t0Ms": 11477.40000000596,
+      "settledAtMs": 11535.20000000298,
+      "ok": true,
+      "rttMs": 57.79999999701977
+    },
+    {
+      "seq": 42,
+      "t0Ms": 11604.70000000298,
+      "settledAtMs": 11659.5,
+      "ok": true,
+      "rttMs": 54.79999999701977
+    },
+    {
+      "seq": 43,
+      "t0Ms": 11695.90000000596,
+      "settledAtMs": 11752.20000000298,
+      "ok": true,
+      "rttMs": 56.29999999701977
+    },
+    {
+      "seq": 44,
+      "t0Ms": 11819.29999999702,
+      "settledAtMs": 11878.20000000298,
+      "ok": true,
+      "rttMs": 58.900000005960464
+    },
+    {
+      "seq": 45,
+      "t0Ms": 11946.09999999404,
+      "settledAtMs": 12023.5,
+      "ok": true,
+      "rttMs": 77.40000000596046
+    },
+    {
+      "seq": 46,
+      "t0Ms": 12140.5,
+      "settledAtMs": 12200.29999999702,
+      "ok": true,
+      "rttMs": 59.79999999701977
+    },
+    {
+      "seq": 47,
+      "t0Ms": 12228.20000000298,
+      "settledAtMs": 12291.79999999702,
+      "ok": true,
+      "rttMs": 63.599999994039536
+    },
+    {
+      "seq": 48,
+      "t0Ms": 12381.90000000596,
+      "settledAtMs": 12463.90000000596,
+      "ok": true,
+      "rttMs": 82
+    },
+    {
+      "seq": 49,
+      "t0Ms": 12526.09999999404,
+      "settledAtMs": 12592,
+      "ok": true,
+      "rttMs": 65.90000000596046
+    },
+    {
+      "seq": 50,
+      "t0Ms": 12619,
+      "settledAtMs": 12679.40000000596,
+      "ok": true,
+      "rttMs": 60.400000005960464
+    },
+    {
+      "seq": 51,
+      "t0Ms": 12706.90000000596,
+      "settledAtMs": 12771.79999999702,
+      "ok": true,
+      "rttMs": 64.8999999910593
+    },
+    {
+      "seq": 52,
+      "t0Ms": 12876.90000000596,
+      "settledAtMs": 12942,
+      "ok": true,
+      "rttMs": 65.09999999403954
+    },
+    {
+      "seq": 53,
+      "t0Ms": 12988.40000000596,
+      "settledAtMs": 13060.59999999404,
+      "ok": true,
+      "rttMs": 72.19999998807907
+    },
+    {
+      "seq": 54,
+      "t0Ms": 13076.20000000298,
+      "settledAtMs": 13129.79999999702,
+      "ok": true,
+      "rttMs": 53.599999994039536
+    },
+    {
+      "seq": 55,
+      "t0Ms": 13176.09999999404,
+      "settledAtMs": 13242.59999999404,
+      "ok": true,
+      "rttMs": 66.5
+    },
+    {
+      "seq": 56,
+      "t0Ms": 13287,
+      "settledAtMs": 13362.90000000596,
+      "ok": true,
+      "rttMs": 75.90000000596046
+    },
+    {
+      "seq": 57,
+      "t0Ms": 13445.40000000596,
+      "settledAtMs": 13506.09999999404,
+      "ok": true,
+      "rttMs": 60.69999998807907
+    },
+    {
+      "seq": 58,
+      "t0Ms": 13526.29999999702,
+      "settledAtMs": 13580.29999999702,
+      "ok": true,
+      "rttMs": 54
+    },
+    {
+      "seq": 59,
+      "t0Ms": 13610.09999999404,
+      "settledAtMs": 13664.5,
+      "ok": true,
+      "rttMs": 54.400000005960464
+    },
+    {
+      "seq": 60,
+      "t0Ms": 13739.09999999404,
+      "settledAtMs": 13793.5,
+      "ok": true,
+      "rttMs": 54.400000005960464
+    },
+    {
+      "seq": 61,
+      "t0Ms": 13851.40000000596,
+      "settledAtMs": 13907.70000000298,
+      "ok": true,
+      "rttMs": 56.29999999701977
+    },
+    {
+      "seq": 62,
+      "t0Ms": 13952.40000000596,
+      "settledAtMs": 14020.40000000596,
+      "ok": true,
+      "rttMs": 68
+    },
+    {
+      "seq": 63,
+      "t0Ms": 14037.79999999702,
+      "settledAtMs": 14104.5,
+      "ok": true,
+      "rttMs": 66.70000000298023
+    },
+    {
+      "seq": 64,
+      "t0Ms": 14130.40000000596,
+      "settledAtMs": 14185.09999999404,
+      "ok": true,
+      "rttMs": 54.69999998807907
+    },
+    {
+      "seq": 65,
+      "t0Ms": 14211.09999999404,
+      "settledAtMs": 14278.29999999702,
+      "ok": true,
+      "rttMs": 67.20000000298023
+    },
+    {
+      "seq": 66,
+      "t0Ms": 14352.79999999702,
+      "settledAtMs": 14409.20000000298,
+      "ok": true,
+      "rttMs": 56.400000005960464
+    },
+    {
+      "seq": 67,
+      "t0Ms": 14496.40000000596,
+      "settledAtMs": 14594.5,
+      "ok": true,
+      "rttMs": 98.09999999403954
+    },
+    {
+      "seq": 68,
+      "t0Ms": 14617.90000000596,
+      "settledAtMs": 14673.5,
+      "ok": true,
+      "rttMs": 55.599999994039536
+    },
+    {
+      "seq": 69,
+      "t0Ms": 14700.29999999702,
+      "settledAtMs": 14754.59999999404,
+      "ok": true,
+      "rttMs": 54.29999999701977
+    },
+    {
+      "seq": 70,
+      "t0Ms": 14832.90000000596,
+      "settledAtMs": 14888.09999999404,
+      "ok": true,
+      "rttMs": 55.19999998807907
+    },
+    {
+      "seq": 71,
+      "t0Ms": 14969.40000000596,
+      "settledAtMs": 15049.70000000298,
+      "ok": true,
+      "rttMs": 80.29999999701977
+    },
+    {
+      "seq": 72,
+      "t0Ms": 15128.5,
+      "settledAtMs": 15216.70000000298,
+      "ok": true,
+      "rttMs": 88.20000000298023
+    },
+    {
+      "seq": 73,
+      "t0Ms": 15263.90000000596,
+      "settledAtMs": 15319.09999999404,
+      "ok": true,
+      "rttMs": 55.19999998807907
+    },
+    {
+      "seq": 74,
+      "t0Ms": 15344.70000000298,
+      "settledAtMs": 15398.29999999702,
+      "ok": true,
+      "rttMs": 53.599999994039536
+    },
+    {
+      "seq": 75,
+      "t0Ms": 15436.5,
+      "settledAtMs": 15496.90000000596,
+      "ok": true,
+      "rttMs": 60.400000005960464
+    },
+    {
+      "seq": 76,
+      "t0Ms": 15522.70000000298,
+      "settledAtMs": 15577.79999999702,
+      "ok": true,
+      "rttMs": 55.099999994039536
+    },
+    {
+      "seq": 77,
+      "t0Ms": 15620.90000000596,
+      "settledAtMs": 15676.20000000298,
+      "ok": true,
+      "rttMs": 55.29999999701977
+    },
+    {
+      "seq": 78,
+      "t0Ms": 15736.5,
+      "settledAtMs": 15807.5,
+      "ok": true,
+      "rttMs": 71
+    },
+    {
+      "seq": 79,
+      "t0Ms": 15854.79999999702,
+      "settledAtMs": 15914.29999999702,
+      "ok": true,
+      "rttMs": 59.5
+    },
+    {
+      "seq": 80,
+      "t0Ms": 15937.90000000596,
+      "settledAtMs": 16001.20000000298,
+      "ok": true,
+      "rttMs": 63.29999999701977
+    },
+    {
+      "seq": 81,
+      "t0Ms": 16046.40000000596,
+      "settledAtMs": 16114.29999999702,
+      "ok": true,
+      "rttMs": 67.8999999910593
+    },
+    {
+      "seq": 82,
+      "t0Ms": 16144,
+      "settledAtMs": 16197.29999999702,
+      "ok": true,
+      "rttMs": 53.29999999701977
+    },
+    {
+      "seq": 83,
+      "t0Ms": 16237.79999999702,
+      "settledAtMs": 16296.70000000298,
+      "ok": true,
+      "rttMs": 58.900000005960464
+    },
+    {
+      "seq": 84,
+      "t0Ms": 16371,
+      "settledAtMs": 16451.5,
+      "ok": true,
+      "rttMs": 80.5
+    },
+    {
+      "seq": 85,
+      "t0Ms": 16542.90000000596,
+      "settledAtMs": 16606.40000000596,
+      "ok": true,
+      "rttMs": 63.5
+    },
+    {
+      "seq": 86,
+      "t0Ms": 16652.90000000596,
+      "settledAtMs": 16715.79999999702,
+      "ok": true,
+      "rttMs": 62.8999999910593
+    },
+    {
+      "seq": 87,
+      "t0Ms": 16731.70000000298,
+      "settledAtMs": 16792.90000000596,
+      "ok": true,
+      "rttMs": 61.20000000298023
+    },
+    {
+      "seq": 88,
+      "t0Ms": 16823.29999999702,
+      "settledAtMs": 16878.59999999404,
+      "ok": true,
+      "rttMs": 55.29999999701977
+    },
+    {
+      "seq": 89,
+      "t0Ms": 16957.20000000298,
+      "settledAtMs": 17032.40000000596,
+      "ok": true,
+      "rttMs": 75.20000000298023
+    },
+    {
+      "seq": 90,
+      "t0Ms": 17055.79999999702,
+      "settledAtMs": 17111.90000000596,
+      "ok": true,
+      "rttMs": 56.1000000089407
+    },
+    {
+      "seq": 91,
+      "t0Ms": 17229.40000000596,
+      "settledAtMs": 17330.5,
+      "ok": true,
+      "rttMs": 101.09999999403954
+    },
+    {
+      "seq": 92,
+      "t0Ms": 17396,
+      "settledAtMs": 17457.20000000298,
+      "ok": true,
+      "rttMs": 61.20000000298023
+    },
+    {
+      "seq": 93,
+      "t0Ms": 17493.90000000596,
+      "settledAtMs": 17561,
+      "ok": true,
+      "rttMs": 67.09999999403954
+    },
+    {
+      "seq": 94,
+      "t0Ms": 17608.5,
+      "settledAtMs": 17691.20000000298,
+      "ok": true,
+      "rttMs": 82.70000000298023
+    },
+    {
+      "seq": 95,
+      "t0Ms": 17730,
+      "settledAtMs": 17821.40000000596,
+      "ok": true,
+      "rttMs": 91.40000000596046
+    },
+    {
+      "seq": 96,
+      "t0Ms": 17875.29999999702,
+      "settledAtMs": 17943,
+      "ok": true,
+      "rttMs": 67.70000000298023
+    },
+    {
+      "seq": 97,
+      "t0Ms": 18000.29999999702,
+      "settledAtMs": 18103.90000000596,
+      "ok": true,
+      "rttMs": 103.6000000089407
+    },
+    {
+      "seq": 98,
+      "t0Ms": 18197.20000000298,
+      "settledAtMs": 18264.90000000596,
+      "ok": true,
+      "rttMs": 67.70000000298023
+    },
+    {
+      "seq": 99,
+      "t0Ms": 18291.20000000298,
+      "settledAtMs": 18346.20000000298,
+      "ok": true,
+      "rttMs": 55
+    },
+    {
+      "seq": 100,
+      "t0Ms": 18432.09999999404,
+      "settledAtMs": 18488.29999999702,
+      "ok": true,
+      "rttMs": 56.20000000298023
+    },
+    {
+      "seq": 101,
+      "t0Ms": 18556.20000000298,
+      "settledAtMs": 18633.40000000596,
+      "ok": true,
+      "rttMs": 77.20000000298023
+    },
+    {
+      "seq": 102,
+      "t0Ms": 18710.20000000298,
+      "settledAtMs": 18812.20000000298,
+      "ok": true,
+      "rttMs": 102
+    },
+    {
+      "seq": 103,
+      "t0Ms": 18885.40000000596,
+      "settledAtMs": 18988.09999999404,
+      "ok": true,
+      "rttMs": 102.69999998807907
+    },
+    {
+      "seq": 104,
+      "t0Ms": 19050.29999999702,
+      "settledAtMs": 19129.5,
+      "ok": true,
+      "rttMs": 79.20000000298023
+    },
+    {
+      "seq": 105,
+      "t0Ms": 19192.40000000596,
+      "settledAtMs": 19253.40000000596,
+      "ok": true,
+      "rttMs": 61
+    },
+    {
+      "seq": 106,
+      "t0Ms": 19284,
+      "settledAtMs": 19337.79999999702,
+      "ok": true,
+      "rttMs": 53.79999999701977
+    },
+    {
+      "seq": 107,
+      "t0Ms": 19408.09999999404,
+      "settledAtMs": 19479,
+      "ok": true,
+      "rttMs": 70.90000000596046
+    },
+    {
+      "seq": 108,
+      "t0Ms": 19536.5,
+      "settledAtMs": 19615,
+      "ok": true,
+      "rttMs": 78.5
+    },
+    {
+      "seq": 109,
+      "t0Ms": 19743.29999999702,
+      "settledAtMs": 19816.5,
+      "ok": true,
+      "rttMs": 73.20000000298023
+    },
+    {
+      "seq": 110,
+      "t0Ms": 19881.79999999702,
+      "settledAtMs": 19934.90000000596,
+      "ok": true,
+      "rttMs": 53.1000000089407
+    },
+    {
+      "seq": 111,
+      "t0Ms": 19956.70000000298,
+      "settledAtMs": 20012.09999999404,
+      "ok": true,
+      "rttMs": 55.3999999910593
+    },
+    {
+      "seq": 112,
+      "t0Ms": 20065.40000000596,
+      "settledAtMs": 20120.79999999702,
+      "ok": true,
+      "rttMs": 55.3999999910593
+    },
+    {
+      "seq": 113,
+      "t0Ms": 20161,
+      "settledAtMs": 20214.90000000596,
+      "ok": true,
+      "rttMs": 53.900000005960464
+    },
+    {
+      "seq": 114,
+      "t0Ms": 20273.09999999404,
+      "settledAtMs": 20345.5,
+      "ok": true,
+      "rttMs": 72.40000000596046
+    },
+    {
+      "seq": 115,
+      "t0Ms": 20417.09999999404,
+      "settledAtMs": 20490.59999999404,
+      "ok": true,
+      "rttMs": 73.5
+    },
+    {
+      "seq": 116,
+      "t0Ms": 20511.5,
+      "settledAtMs": 20620.20000000298,
+      "ok": true,
+      "rttMs": 108.70000000298023
+    },
+    {
+      "seq": 117,
+      "t0Ms": 20655.20000000298,
+      "settledAtMs": 20733.09999999404,
+      "ok": true,
+      "rttMs": 77.8999999910593
+    },
+    {
+      "seq": 118,
+      "t0Ms": 20799.59999999404,
+      "settledAtMs": 20872.20000000298,
+      "ok": true,
+      "rttMs": 72.6000000089407
+    },
+    {
+      "seq": 119,
+      "t0Ms": 20889.20000000298,
+      "settledAtMs": 20964.29999999702,
+      "ok": true,
+      "rttMs": 75.09999999403954
+    },
+    {
+      "seq": 120,
+      "t0Ms": 20990.40000000596,
+      "settledAtMs": 21060.09999999404,
+      "ok": true,
+      "rttMs": 69.69999998807907
+    },
+    {
+      "seq": 121,
+      "t0Ms": 21169.5,
+      "settledAtMs": 21290.40000000596,
+      "ok": true,
+      "rttMs": 120.90000000596046
+    },
+    {
+      "seq": 122,
+      "t0Ms": 21343.70000000298,
+      "settledAtMs": 21413.90000000596,
+      "ok": true,
+      "rttMs": 70.20000000298023
+    },
+    {
+      "seq": 123,
+      "t0Ms": 21463.79999999702,
+      "settledAtMs": 21527.20000000298,
+      "ok": true,
+      "rttMs": 63.400000005960464
+    },
+    {
+      "seq": 124,
+      "t0Ms": 21555,
+      "settledAtMs": 21619.29999999702,
+      "ok": true,
+      "rttMs": 64.29999999701977
+    },
+    {
+      "seq": 125,
+      "t0Ms": 21664.09999999404,
+      "settledAtMs": 21735,
+      "ok": true,
+      "rttMs": 70.90000000596046
+    },
+    {
+      "seq": 126,
+      "t0Ms": 21808,
+      "settledAtMs": 21872.79999999702,
+      "ok": true,
+      "rttMs": 64.79999999701977
+    },
+    {
+      "seq": 127,
+      "t0Ms": 21933.09999999404,
+      "settledAtMs": 22006.40000000596,
+      "ok": true,
+      "rttMs": 73.30000001192093
+    },
+    {
+      "seq": 128,
+      "t0Ms": 22032.90000000596,
+      "settledAtMs": 22109.79999999702,
+      "ok": true,
+      "rttMs": 76.8999999910593
+    },
+    {
+      "seq": 129,
+      "t0Ms": 22174.90000000596,
+      "settledAtMs": 22229.09999999404,
+      "ok": true,
+      "rttMs": 54.19999998807907
+    },
+    {
+      "seq": 130,
+      "t0Ms": 22281.5,
+      "settledAtMs": 22362.90000000596,
+      "ok": true,
+      "rttMs": 81.40000000596046
+    },
+    {
+      "seq": 131,
+      "t0Ms": 22379.59999999404,
+      "settledAtMs": 22445.5,
+      "ok": true,
+      "rttMs": 65.90000000596046
+    },
+    {
+      "seq": 132,
+      "t0Ms": 22550,
+      "settledAtMs": 22619.5,
+      "ok": true,
+      "rttMs": 69.5
+    },
+    {
+      "seq": 133,
+      "t0Ms": 22660.20000000298,
+      "settledAtMs": 22716.40000000596,
+      "ok": true,
+      "rttMs": 56.20000000298023
+    },
+    {
+      "seq": 134,
+      "t0Ms": 22787.20000000298,
+      "settledAtMs": 22857.59999999404,
+      "ok": true,
+      "rttMs": 70.3999999910593
+    },
+    {
+      "seq": 135,
+      "t0Ms": 22914.90000000596,
+      "settledAtMs": 22984,
+      "ok": true,
+      "rttMs": 69.09999999403954
+    },
+    {
+      "seq": 136,
+      "t0Ms": 23026.09999999404,
+      "settledAtMs": 23081.59999999404,
+      "ok": true,
+      "rttMs": 55.5
+    },
+    {
+      "seq": 137,
+      "t0Ms": 23147.5,
+      "settledAtMs": 23203.79999999702,
+      "ok": true,
+      "rttMs": 56.29999999701977
+    },
+    {
+      "seq": 138,
+      "t0Ms": 23229,
+      "settledAtMs": 23283.40000000596,
+      "ok": true,
+      "rttMs": 54.400000005960464
+    },
+    {
+      "seq": 139,
+      "t0Ms": 23353.09999999404,
+      "settledAtMs": 23414.79999999702,
+      "ok": true,
+      "rttMs": 61.70000000298023
+    },
+    {
+      "seq": 140,
+      "t0Ms": 23432.79999999702,
+      "settledAtMs": 23505.90000000596,
+      "ok": true,
+      "rttMs": 73.1000000089407
+    },
+    {
+      "seq": 141,
+      "t0Ms": 23596.20000000298,
+      "settledAtMs": 23656.5,
+      "ok": true,
+      "rttMs": 60.29999999701977
+    },
+    {
+      "seq": 142,
+      "t0Ms": 23734,
+      "settledAtMs": 23848.70000000298,
+      "ok": true,
+      "rttMs": 114.70000000298023
+    }
+  ],
+  "telemetryWrites": [],
+  "telemetryArmed": false,
+  "observations": {
+    "shareHelperExit": 0,
+    "afterStop": {
+      "frozenA": {
+        "state": "Stopped",
+        "elapsed": "",
+        "primary": ""
+      },
+      "frozenB": {
+        "state": "Stopped",
+        "elapsed": "",
+        "primary": ""
+      }
+    }
+  },
+  "stoppedAtIso": "2026-10-25T03:55:01.123Z",
+  "maxInFlight": 1,
+  "okFrameCount": 142,
+  "revisionGrew": true,
+  "submittedLast": 142,
+  "rttAdvisory": {
+    "p50": 62.8999999910593,
+    "p95": 101.09999999403954,
+    "note": "advisory only; live sampling is never the primary metric"
+  },
+  "violations": [],
+  "valid": true
+}

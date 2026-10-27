@@ -209,3 +209,77 @@ test('UT-080 the un-injected real save path reaches saved', async () => {
     globalThis.clearTimeout = originalClear;
   }
 });
+
+
+// --- T20: the raw event shapes the session binding consumes -------------------
+
+// Given the four failure/busy/pending shapes a real controller emits
+// When the attempt runs and settles
+// Then the event carries exactly {saveStatus, attemptId, lastError} — the
+// exact contract the session binding (T12) and UX-06 consume
+test('T20 the raw event shapes the session binding consumes', async () => {
+  const terminal = (events, saveStatus, lastError) => {
+    const entry = events.find((event) => event.saveStatus === saveStatus
+      && event.lastError === lastError);
+    assert.ok(entry, `the ${saveStatus}(${lastError}) shape exists`);
+    assert.equal(typeof entry.attemptId, 'number', 'the attempt id is real');
+  };
+
+  // shape 1: picker cancel → terminal cancelled+16002
+  const cancelled = [];
+  const cancelController = new SaveController({
+    showSaveFilePicker: () => Promise.reject(Object.assign(new Error('x'), { name: 'AbortError' })),
+    onEvent: (event) => cancelled.push(event),
+  });
+  cancelController.start({ artifact: artifact(), suggestedName: 'f.bin' });
+  await tick();
+  terminal(cancelled, 'cancelled', 16002);
+
+  // shape 2: busy guard while a write is in flight → writing+16008
+  let releaseWrite;
+  const busyEvents = [];
+  const busyWrite = writableStub();
+  busyWrite.write = function (blob) { this.written = blob.size; return new Promise((resolve) => { releaseWrite = () => { this.closed = true; resolve(); }; }); };
+  const busy = new SaveController({
+    showSaveFilePicker: () => Promise.resolve(handleFor(busyWrite)),
+    onEvent: (event) => busyEvents.push(event),
+    pendingMs: 0,
+  });
+  busy.start({ artifact: artifact(), suggestedName: 'f.bin' });
+  await tick();
+  busy.start({ artifact: artifact(), suggestedName: 'f.bin' }); // refused
+  await tick();
+  const busyEvent = busyEvents.find((event) => event.lastError === 16008);
+  assert.ok(busyEvent, 'the busy shape exists');
+  assert.equal(busyEvent.saveStatus, 'writing');
+  assert.equal(typeof busyEvent.attemptId, 'number');
+  releaseWrite();
+  await tick();
+
+  // shape 3: the pending notice event {saveStatus:'pending', lastError:null}
+  const pendingEvents = [];
+  const pendingWrite = writableStub();
+  pendingWrite.write = () => new Promise(() => {}); // never settles in this window
+  const pending = new SaveController({
+    showSaveFilePicker: () => Promise.resolve(handleFor(pendingWrite)),
+    onEvent: (event) => pendingEvents.push(event),
+    pendingMs: 5,
+  });
+  pending.start({ artifact: artifact(), suggestedName: 'f.bin' });
+  await tick(40);
+  const pendingEvent = pendingEvents.find((event) => event.saveStatus === 'pending');
+  assert.ok(pendingEvent, 'the pending shape exists');
+  assert.equal(pendingEvent.lastError, null);
+  assert.equal(typeof pendingEvent.attemptId, 'number');
+
+  // shape 4: a close failure → failed+16006
+  const closeEvents = [];
+  const closeWrite = writableStub({ close() { return Promise.reject(new Error('boom')); } });
+  const closer = new SaveController({
+    showSaveFilePicker: () => Promise.resolve(handleFor(closeWrite)),
+    onEvent: (event) => closeEvents.push(event),
+  });
+  closer.start({ artifact: artifact(), suggestedName: 'f.bin' });
+  await tick();
+  terminal(closeEvents, 'failed', 16006);
+});

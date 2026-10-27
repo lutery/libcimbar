@@ -1,0 +1,5 @@
+OLD GATE (HEAD) results:
+  original!=received with correct per-file SHAs        exit=0 violations=0
+  all frozen steps deleted, one unknown id             exit=0 violations=0
+  measurement with no raw data, only proof text        exit=0 violations=0
+RED CONFIRMED (old gate accepts every negative)

@@ -1,0 +1,16 @@
+2026-10-26T05:13:23.809Z process guard: reclaimed 0/42 recorded process(es)
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-compressible-3\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-incompressible-1\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-incompressible-2\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-14\round-incompressible-3\received.bin
+2026-10-26T05:16:49.062Z CASE E2E-14 PASS (attempt E2E-14-2026-10-26T05-13-23-810Z-bfeb38)
+EXIT=0 (retry after first=1)

@@ -1,0 +1,15 @@
+ok   verified file roundtrip: exit=0 expected=0
+ok   field lifecycle PASS: exit=0 expected=0
+ok   FAIL does not pass: exit=1 expected=1
+ok   NOT_RUN does not pass: exit=1 expected=1
+ok   mocked scope cannot stand in: exit=1 expected=1
+ok   missing proof file: exit=1 expected=1
+ok   unequal hashes claimed PASS: exit=1 expected=1
+ok   equal metadata but unequal bytes: exit=1 expected=1
+ok   measurement without threshold: exit=1 expected=1
+ok   measurement with frozen threshold: exit=0 expected=0
+ok   field gate over NOT_RUN: exit=1 expected=1
+ok   duplicate case id: exit=1 expected=1
+ok   relabelled caseType cannot pass: exit=1 expected=1
+ok   plan without a caseType is refused: exit=1 expected=1
+SELFTEST PASS (14 cases)

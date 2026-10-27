@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-09b",
+  "phase": "final",
+  "lockedAt": "2026-10-25T03:27:05.931Z",
+  "note": "T31c rebuilt-candidate inputs: the same T6-frozen primary/V-LAST pair plus the 1MiB live input (identical SHA on both sides) and the >=80-char Chinese-named 1MiB copy.",
+  "primaryInput": {
+    "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/primary-input-128k.bin",
+    "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+    "bytes": 131072,
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/primary-input-128k.bin"
+  },
+  "media": {
+    "withSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+    "withoutSha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+    "manifestPath": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/manifest.json",
+    "prefixCheckPath": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/prefix-check.json",
+    "sourceRun": "docs/tests/runs/20261024-teamexec-04"
+  },
+  "liveInput": {
+    "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/ext-random-1mib.bin",
+    "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+    "bytes": 1048576,
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-1mib.bin"
+  },
+  "files": [
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/ext-random-1mib.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/V-LAST-with.webm",
+      "sha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+      "bytes": 14330428,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/V-LAST-without.webm",
+      "sha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+      "bytes": 9807013,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/manifest.json",
+      "sha256": "873598ef1ca7a0e4da7180d218252ac6a924716ede28688dbe5d8170c84f56ed",
+      "bytes": 5076,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/fixtures-media/prefix-check.json",
+      "sha256": "d43dfa8b445bbf72405ed69bff28957c0b0af67f50c509bb983dd18244e094e0",
+      "bytes": 2283,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/long-name/provenance.json",
+      "sha256": "1576bee339964bc1009696eedf8cba84b15054006e9298aa0130d6e4d8e81826",
+      "bytes": 835,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/long-name/本轮接收器中文长文件名验证样本 含空格 与数字 20261025 以及足够多字符用于检查换行与滚动行为 最终接收文件名称测试 甲乙丙丁戊己庚辛壬癸 子丑寅卯辰巳午未申酉戌亥 一二三四五六七八九十.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-09b/fixtures/primary-input-128k.bin",
+      "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "bytes": 131072,
+      "role": "fixture-copy"
+    }
+  ]
+}

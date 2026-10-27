@@ -1,0 +1,148 @@
+{
+  "run": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261021-teamexec-03",
+  "generatedAt": "2026-10-22T05:55:49.192Z",
+  "commandLine": "E:\\Program Files\\nodejs\\node.exe E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\record-sender.mjs --only last",
+  "construction": "ONE getDisplayMedia stream; two MediaRecorders started in the same task at startEpochMs; without stops at the declared cut; with stops at its declared duration; never byte-truncated; shared head/tail verified by video-prefix-check.py",
+  "pair": {
+    "construction": "same-stream-two-recorders",
+    "startEpochMs": 1792648533511,
+    "declaredCutMs": 6500,
+    "withMs": 9500,
+    "mimeType": "video/webm;codecs=vp9",
+    "videoBitsPerSecond": 16000000,
+    "startedInSameTask": true,
+    "withFile": "V-LAST-with.webm",
+    "withoutFile": "V-LAST-without.webm",
+    "withStopAtMs": 1792648543016,
+    "withoutStopAtMs": 1792648540026
+  },
+  "prefixCheck": {
+    "checker": "video-prefix-check",
+    "version": 1,
+    "with": {
+      "path": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261021-teamexec-03\\fixtures-media\\V-LAST-with.webm",
+      "frames": 126,
+      "fps": null,
+      "effectiveFps": 13.433637829124127,
+      "ptsUsable": true,
+      "shape": [
+        98,
+        94,
+        3
+      ]
+    },
+    "without": {
+      "path": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\tests\\runs\\20261021-teamexec-03\\fixtures-media\\V-LAST-without.webm",
+      "frames": 81,
+      "fps": null,
+      "effectiveFps": 12.60239445494644,
+      "ptsUsable": true,
+      "shape": [
+        98,
+        94,
+        3
+      ]
+    },
+    "region": {
+      "rows": "160:940:8",
+      "cols": "430:1180:8"
+    },
+    "head": {
+      "framesUsed": 30,
+      "bestOffset": 0,
+      "bestMeanAbsDiff": 0,
+      "firstFrameDiff": 0,
+      "offsets": {
+        "0": 0,
+        "1": 69.35761402696372,
+        "2": 72.07765016655127,
+        "3": 74.48865254720052,
+        "4": 73.39442723592123,
+        "5": 74.76874821980795,
+        "6": 74.6371358235677,
+        "-6": 75.91811981201172,
+        "-5": 75.89243113199869,
+        "-4": 74.80553461710612,
+        "-3": 75.55002772013346,
+        "-2": 72.84834896822771,
+        "-1": 69.6944283987085
+      },
+      "consecutiveFloor": 0.1343175619840622,
+      "consecutiveFloorWith": 0.1343175619840622,
+      "consecutiveFloorWithout": 0.1343175619840622,
+      "threshold": 10,
+      "thresholdFormula": "max(10.0, 2.0 x intra-clip consecutive floor)",
+      "pass": true
+    },
+    "tail": {
+      "pass": true,
+      "mapping": "cut-time-pts",
+      "cutMs": 6500,
+      "windowFrames": 30,
+      "withFrames": 126,
+      "withoutFrames": 81,
+      "frames": [
+        {
+          "withoutIndex": 78,
+          "expectedWithIndex": 80,
+          "matchedWithIndex": 78,
+          "meanAbsDiff": 0,
+          "found": true
+        },
+        {
+          "withoutIndex": 79,
+          "expectedWithIndex": 81,
+          "matchedWithIndex": 79,
+          "meanAbsDiff": 0,
+          "found": true
+        },
+        {
+          "withoutIndex": 80,
+          "expectedWithIndex": 82,
+          "matchedWithIndex": 80,
+          "meanAbsDiff": 0,
+          "found": true
+        }
+      ]
+    },
+    "verdict": "PASS"
+  },
+  "durations": "requestedMs/declaredCutMs/startEpochMs/wallStopAt are rig-side declarations; the true media duration and the completion media time T* are measured at import time by the receiver (E2E-16 reads the video element ended event and __videoTimeline.lastUs)",
+  "payload": {
+    "file": "payload-128k-random.bin",
+    "bytes": 131072,
+    "sha256": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c"
+  },
+  "clips": [
+    {
+      "file": "V-LAST-with.webm",
+      "role": "with",
+      "payload": "payload-128k-random.bin",
+      "requestedMs": 9500,
+      "declaredCutMs": 6500,
+      "startEpochMs": 1792648533511,
+      "wallStopAt": "2026-10-22T05:55:43.016Z",
+      "wallStopAtMs": 1792648543016,
+      "wallMs": 19604,
+      "startedAt": "2026-10-22T05:55:25.859Z",
+      "stoppedAt": "2026-10-22T05:55:45.463Z",
+      "sha256": "ee93071c67430ebf5e6cef1bdf59e568ddac3a87457e78801a014d6172fd520d",
+      "bytes": 13594823
+    },
+    {
+      "file": "V-LAST-without.webm",
+      "role": "without",
+      "payload": "payload-128k-random.bin",
+      "requestedMs": 6500,
+      "declaredCutMs": 6500,
+      "startEpochMs": 1792648533511,
+      "wallStopAt": "2026-10-22T05:55:40.026Z",
+      "wallStopAtMs": 1792648540026,
+      "wallMs": 19604,
+      "startedAt": "2026-10-22T05:55:25.859Z",
+      "stoppedAt": "2026-10-22T05:55:45.463Z",
+      "sha256": "8c13c8213b1819bc729b2d3cd77616c7c903ae35e187035f1b73f9d46b362eef",
+      "bytes": 8705772
+    }
+  ]
+}

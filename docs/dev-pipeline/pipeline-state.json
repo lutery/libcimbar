@@ -1,38 +1,40 @@
 {
-  "project_name": "libcimbar 云桌面画面接收文件",
-  "requirement_source": "docs/cloud-desktop-screen-capture-feasibility.md",
-  "current_phase": "release-packaging",
+  "project_name": "libcimbar 接收器体验迭代 v2",
+  "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
+  "current_phase": "finishing-a-development-branch",
   "tdd_mode": true,
-  "created_at": "2026-10-18T09:28:10.1666056+08:00",
-  "updated_at": "2026-10-22T22:58:00+08:00",
+  "created_at": "2026-10-23T21:48:09+08:00",
+  "updated_at": "2026-10-27T05:32:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
       "display": "需求分析",
       "status": "completed",
-      "output_dir": "docs/requirements/",
+      "output_dir": "docs/requirements/receiver-ux-v2/",
       "output_files": [
+        "README.md",
+        "user-feedback.md",
         "requirements-spec.md",
+        "feasibility.md",
         "open-questions.md",
         "decision-log.md",
-        "todo.md"
+        "todo.md",
+        "probes/report-capability.cjs",
+        "probes/report-capability-result.json",
+        "probes/q001-user-answer.txt"
       ],
       "open_questions_resolved": true,
-      "started_at": "2026-10-18T09:28:10.1666056+08:00",
-      "completed_at": "2026-10-18T10:01:57.9134844+08:00",
-      "notes": "需求归并完成，用户确认无待答阻塞问题则进入下一阶段；已进入system-design。产品运行验证仍NOT RUN。",
+      "started_at": "2026-10-23T21:48:09+08:00",
+      "completed_at": "2026-10-23T22:45:53+08:00",
+      "notes": "Q-001用户填写“按照推荐执行”；后续确认其余无问题且授权进入系统设计。双输入按钮保留，AC-015～024冻结。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T09:28:10.1666056+08:00",
-          "summary": "阅读原始需求（docs），按 dev-pipeline 开展需求分析。"
+          "timestamp": "2026-10-23T21:48:09+08:00",
+          "summary": "用户现场已成功从云桌面传输到宿主机；希望结合现有代码改善是否在接收、速度、进度等体验，在确认且可行前提下迭代。中文/状态/识别速率/重建估计为Q-001待确认范围；不代填旧现场矩阵。"
         },
         {
-          "timestamp": "2026-10-18T09:51:40.5502574+08:00",
-          "summary": "Q-001文件答复全部都要；用户指出项目已提供发送端和接收端，据此使用自带cimbar工具作为需求基线。"
-        },
-        {
-          "timestamp": "2026-10-18T10:01:57.9134844+08:00",
-          "summary": "用户已填写全部问题：新增宿主机接收端，其余尽量不改；双输入；先本地同机全功能模拟再用户现场验收；外部SHA-256及可压缩/难压缩数据测量；环境、规模与性能先测后确认；按建议执行单文件会话和停止/重启、保存重试。"
+          "timestamp": "2026-10-23T22:45:53+08:00",
+          "summary": "用户已决策Q-001按照推荐执行，其余无问题；无遗留则进入下一阶段。保留实时抓屏和录像导入两个按钮。"
         }
       ]
     },
@@ -40,33 +42,35 @@
       "name": "system-design",
       "display": "系统设计",
       "status": "completed",
-      "output_dir": "docs/design-catalog/",
+      "output_dir": "docs/design-catalog/receiver-ux-v2/",
       "output_files": [
         "architecture.md",
         "big-picture.mmd",
         "data/erd.mmd",
-        "data/state-artifact.mmd",
-        "data/state-session.mmd",
-        "flows/sequence-live.mmd",
-        "flows/sequence-save.mmd",
-        "flows/sequence-video.mmd",
-        "processes/process-acceptance.mmd",
-        "processes/process-live.mmd",
+        "data/state-completion.mmd",
+        "data/state-observation.mmd",
+        "flows/sequence-feedback.mmd",
+        "flows/sequence-isolation.mmd",
+        "processes/process-receive.mmd",
         "processes/process-save.mmd",
         "processes/process-video.mmd",
+        "prototype/index.html",
+        "prototype/prototype.css",
+        "prototype/prototype.js",
         "qa.md",
         "README.md",
         "requirements.md",
         "sources.md",
-        "todo.md"
+        "todo.md",
+        "ui-spec.md"
       ],
-      "started_at": "2026-10-18T10:07:16.3185875+08:00",
-      "completed_at": "2026-10-18T10:14:04.0444908+08:00",
-      "notes": "系统设计完成：独立本地浏览器宿主机接收应用，复用现有WASM与发送端/协议，双输入、单会话新实例、EOF排空、保存重试；4关键流程、2状态机、3序列图、全局图和ERD共11图，14AC全覆盖。Mermaid12.2.0语法、README全文嵌入、链接及追踪检查PASS；产品构建、WASM装配、本地E2E、现场验收和性能均NOT RUN。等待用户选择进入2.5模块契约或skip到任务规划。 用户已确认进入模块契约设计。",
+      "started_at": "2026-10-23T22:45:53+08:00",
+      "completed_at": "2026-10-23T23:01:55+08:00",
+      "notes": "系统设计完成：9张Mermaid图、增量架构与10AC追踪、18状态中文HTML/CSS/JS原型。9图parse/全文嵌入、67链接、离线DOM交互通过；真实浏览器不可用，未做像素验收。产品未改，建议阶段2.5细化内部遥测契约与退化矩阵，等待用户确认。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T10:07:16.3185875+08:00",
-          "summary": "用户授权：没有待确认问题则进入下一阶段；沿用双输入宿主机接收端、其余尽量不改、本地模拟先于用户现场测试等已确认约束。"
+          "timestamp": "2026-10-23T22:45:53+08:00",
+          "summary": "用户已授权从需求分析进入系统设计；两个接收入口保留，重视可理解且有依据的状态/速度/进度。"
         }
       ]
     },
@@ -74,25 +78,27 @@
       "name": "design-module-contract-error-matrix",
       "display": "模块契约与错误矩阵",
       "status": "completed",
-      "output_dir": "docs/design-catalog/",
+      "output_dir": "docs/design-catalog/receiver-ux-v2/",
       "output_files": [
         "module-contract-error-matrix.md",
         "contracts-todo.md",
         "contracts-qa.md",
-        "contracts/README.md",
-        "contracts/receiver-v1.schema.json",
+        "contracts/check-contracts.py",
         "contracts/examples.json",
-        "contracts/error-codes.json",
-        "contracts/profile-initial.json"
+        "contracts/README.md",
+        "contracts/ux-diagnostics.json",
+        "contracts/ux-display-config.json",
+        "contracts/ux-telemetry.schema.json",
+        "contracts/validation-vectors.json"
       ],
-      "started_at": "2026-10-18T10:22:54.6484433+08:00",
-      "completed_at": "2026-10-18T10:35:36.8074363+08:00",
+      "started_at": "2026-10-23T23:11:43+08:00",
+      "completed_at": "2026-10-23T23:32:03+08:00",
       "skippable": true,
-      "notes": "阶段2.5完成：8模块、10接口（8请求响应+2事件）、53项独立号段、Draft2020-12元数据schema、73合成样例、33结构负向校验、14AC与12运行时规则。schema/样例/错误引用/链接/阶段范围检查PASS。初始安全预算与超时为待测配置；严格解压EOF装配门槛可能需要最小修正现有解压适配并重建，不改协议或发送端。产品实现、WASM装配、本地E2E与现场验收均NOT RUN。等待确认进入planning-roadmap。 用户已确认进入任务规划。",
+      "notes": "阶段2.5完成：6内部接口、20 schema定义、15非致命诊断、精确时间桶/所有权与保存归一。27样例+44形状向量及v1隔离检查通过；12类实现验证NOT_RUN，产品未改。等待用户确认进入阶段3任务规划。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T10:22:54.6484433+08:00",
-          "summary": "用户明确回复进入，授权阶段2.5；沿用双输入、最小变更、本地模拟后用户现场、单文件会话及保存重试要求。"
+          "timestamp": "2026-10-23T23:11:43+08:00",
+          "summary": "用户明确确认进入阶段2.5；沿用已确认范围与系统设计，保留双入口。"
         }
       ]
     },
@@ -100,27 +106,21 @@
       "name": "planning-roadmap",
       "display": "任务规划",
       "status": "completed",
-      "output_dir": "docs/plans/",
+      "output_dir": "docs/plans/receiver-ux-v2/",
       "output_files": [
-        "roadmap.md",
         "README.md",
+        "roadmap.md",
         "todo.md",
         "planning-qa.md",
-        "claude-handoff.md",
-        "test-acceptance-plan.md",
-        "acceptance-todo.md"
+        "check-roadmap.py"
       ],
-      "started_at": "2026-10-18T10:44:23.7980421+08:00",
-      "completed_at": "2026-10-18T10:50:42.760829+08:00",
-      "notes": "阶段3路线图及验收基线完成：5Epic、10Story、24Task，20基础实施+4跨节点/现场/条件任务，14AC/10接口/12运行时规则/4后测项/15验证组。原先按旧技能准备阶段4续接；本轮用户要求采用新版，Codex已继续完成4.x，当前交接改为阶段5。历史user_instructions保留，产品实现和运行验证均NOT RUN。",
+      "started_at": "2026-10-24T08:36:41+08:00",
+      "completed_at": "2026-10-24T08:44:06+08:00",
+      "notes": "阶段3交付4 Epic/8 Story/23 Task、3个相对迭代；20项阶段5与3项后续任务分层，10AC/12运行验证追踪，执行目录隔离为前置。产品未改，待确认阶段4。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T10:44:23.7980421+08:00",
-          "summary": "用户回复进入，授权任务规划。沿用新增双输入宿主机接收端、其余尽量不改、本地全功能模拟后用户现场验收、SHA-256及后测策略。"
-        },
-        {
-          "timestamp": "2026-10-18T11:19:31.9409381+08:00",
-          "summary": "用户要求测试验收贴合真实操作，避免测试通过但用户操作有问题；若规划完整，用户让Claude从阶段4开始。补充逐步操作验收方案作为阶段4必读输入，准备通道A标准续接，不提前推进Claude节点。"
+          "timestamp": "2026-10-24T08:36:41+08:00",
+          "summary": "用户确认可以进入下一个阶段（阶段3任务规划）；沿用已确认体验范围，保持真实操作验收与旧证据分层。"
         }
       ]
     },
@@ -128,22 +128,21 @@
       "name": "writing-plans",
       "display": "编写实施计划",
       "status": "completed",
-      "output_dir": "docs/plans/",
+      "output_dir": "docs/plans/receiver-ux-v2/",
       "output_files": [
-        "2026-10-18-desktop-receiver-implementation.md",
-        "implementation-todo.md"
+        "2026-10-24-receiver-ux-implementation.md",
+        "performance-method.json",
+        "implementation-todo.md",
+        "implementation-qa.md",
+        "check-implementation.py"
       ],
-      "started_at": "2026-10-18T11:50:52.2603142+08:00",
-      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
-      "notes": "按更新版完成阶段4：24Task逐项确切文件/4个行动检查点/代码要点/验证命令与预期/AC，10命令契约，20基础实施与4跨节点/现场任务分开。新增工具尚待阶段5实现；严格EOF/真实抓屏/录像/系统保存及外部落盘SHA-256门槛不减。条件工时粗估90-150人时待执行方盘点校准。文档QA通过；产品构建和测试均NOT RUN。",
+      "started_at": "2026-10-24T09:13:16+08:00",
+      "completed_at": "2026-10-24T09:29:00+08:00",
+      "notes": "阶段4完成36项五类任务、35个依赖/资源批次，20项本地路线图责任全映射、3项后续阶段分列；冻结A/B方法及真实UI检查基准，新增UX/旧v1证据分流汇总。产品未改，等待4.5 TDD选择。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T11:50:52.2603142+08:00",
-          "summary": "用户明确要求按更新版dev-pipeline继续阶段4。"
-        },
-        {
-          "timestamp": "2026-10-18T11:50:52.2603142+08:00",
-          "summary": "用户选择采用TDD：补测试方案与单元测试骨架；保留此前已要求的真实操作验收，4.x均由Codex完成后交Claude从阶段5执行。"
+          "timestamp": "2026-10-24T09:13:16+08:00",
+          "summary": "用户“确认进去x下一阶段”授权从任务规划进入阶段4；不提前执行产品实施。"
         }
       ]
     },
@@ -151,34 +150,46 @@
       "name": "tdd-test-planning",
       "display": "TDD测试规划",
       "status": "completed",
-      "output_dir": "docs/tests/",
+      "output_dir": "docs/tests/receiver-ux-v2/",
       "output_files": [
         "README.md",
-        "test-plan.md",
-        "test-cases.md",
         "acceptance-tests.md",
-        "planning-cases.json",
+        "cases/acceptance.json",
+        "cases/core.json",
+        "cases/experience.json",
+        "cases/integration.json",
+        "cases/tooling.json",
+        "catalog.py",
+        "check-tdd.py",
+        "coverage-map.json",
+        "fixtures.md",
+        "tdd-qa.md",
+        "test-cases.md",
+        "test-index.json",
+        "test-plan.md",
+        "todo.md",
         "unit-test-skeletons/README.md",
-        "unit-test-skeletons/contracts.test.mjs",
-        "unit-test-skeletons/session.test.mjs",
-        "unit-test-skeletons/scheduler.test.mjs",
-        "unit-test-skeletons/worker.test.mjs",
+        "unit-test-skeletons/client.test.mjs",
+        "unit-test-skeletons/measure-ux.test.mjs",
+        "unit-test-skeletons/run-context.test.mjs",
         "unit-test-skeletons/save.test.mjs",
-        "unit-test-skeletons/video.test.mjs",
+        "unit-test-skeletons/session.test.mjs",
         "unit-test-skeletons/ui.test.mjs",
-        "unit-test-skeletons/evidence.test.mjs",
-        "unit-test-skeletons/strict-eof.cpp.txt",
-        "planning-qa.md",
-        "planning-check.py"
+        "unit-test-skeletons/ux-display.test.mjs",
+        "unit-test-skeletons/ux-evidence-selftest.py",
+        "unit-test-skeletons/ux-telemetry.test.mjs",
+        "unit-test-skeletons/ux-view.test.mjs",
+        "unit-test-skeletons/video.test.mjs",
+        "unit-test-skeletons/worker.test.mjs"
       ],
-      "started_at": "2026-10-18T12:02:55.0996906+08:00",
-      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
+      "started_at": "2026-10-24T09:44:33+08:00",
+      "completed_at": "2026-10-24T09:57:57+08:00",
       "skippable": true,
-      "notes": "用户已选择TDD。完成54个单元用例（48JS+6C++）、6集成组定义及8份JS TODO骨架/1份防误编译C++文本模板。8JS仅node --check语法检查；没有运行产品单测。模板和NOT_RUN计划记录不是测试通过。始末时间为统一QA后节点登记时间。",
+      "notes": "阶段4.5完成：80条单元/工具用例、8组集成、10组验收定义、12份带防误跑守卫的骨架；10AC/12运行要求/15诊断追踪。仅规划，产品未改，等待4.7真实E2E方案确认。",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T12:02:55.0996906+08:00",
-          "summary": "用户通过异步问题明确选择采用TDD：补测试方案与单元测试骨架。阶段4.5由更新版Codex负责。"
+          "timestamp": "2026-10-24T09:44:33+08:00",
+          "summary": "用户“确认进入”接受阶段4.5 TDD方案与单元骨架；真实E2E后续4.7细化，Claude阶段5实施不变。"
         }
       ]
     },
@@ -186,18 +197,36 @@
       "name": "e2e-planning",
       "display": "E2E用户操作测试计划",
       "status": "completed",
-      "output_dir": "docs/tests/",
+      "output_dir": "docs/tests/receiver-ux-v2/",
       "output_files": [
-        "e2e-user-journey-plan.md"
+        "e2e-user-journey-plan.md",
+        "e2e-runbook.md",
+        "planning-cases.json",
+        "coverage-map-e2e.json",
+        "cases/e2e-legacy.json",
+        "cases/e2e-receive.json",
+        "cases/e2e-experience.json",
+        "cases/e2e18-matrix.json",
+        "e2e-skeletons/real-journeys.mjs",
+        "e2e-catalog.py",
+        "check-e2e-plan.py",
+        "e2e-qa.md",
+        "e2e-todo.md",
+        "handoff.md",
+        "handoff-qa.md"
       ],
       "skippable": true,
-      "started_at": "2026-10-18T12:02:55.0996906+08:00",
-      "completed_at": "2026-10-18T12:02:55.0996906+08:00",
-      "notes": "依据用户此前明确要求贴合真实操作的测试验收，完成26真实用户旅程（20实施方本地+6用户云桌面现场），映射14AC；32组基线中的6组故障注入独立为IAT，不冒充真实E2E。每场景有前置/步骤/反馈/AC/任务/执行方式/证据；全为NOT_RUN。始末时间为统一QA后节点登记时间。",
+      "started_at": "2026-10-24T10:12:39+08:00",
+      "completed_at": "2026-10-24T10:26:05+08:00",
+      "notes": "Phase 4.7 planning: 39 real journeys (32 local / 7 user field), 24 AC mappings, 10 capacity legs (9 PASS required, sole D-19 exception), real source-scene fixture and native dialogs, separate legacy/UX evidence and stage-8 package rechecks. Product acceptance NOT_RUN; user confirmed standard channel A; Claude resumes at phase 5 team-exec.",
       "user_instructions": [
         {
-          "timestamp": "2026-10-18T12:02:55.0996906+08:00",
-          "summary": "沿用用户已确认：实施方先本地同机原发送端与新接收端全功能真实操作模拟；用户后真实云桌面；验收须贴合真实操作，避免测试通过但用户操作有问题。本轮授权继续新版阶段4（包括4.x）后补正式E2E计划。"
+          "timestamp": "2026-10-24T10:12:39+08:00",
+          "summary": "用户“确认进入”授权4.7真实E2E用户操作计划；保持原发送端/真实系统操作、双输入和本地/现场分层。"
+        },
+        {
+          "timestamp": "2026-10-24T14:05:20+08:00",
+          "summary": "用户明确“按照你的推荐选a”，确认通道A标准续接，交Claude dev-pipeline从阶段5team-exec实施；保留TDD和真实E2E验收要求，不生成通道B契约。"
         }
       ]
     },
@@ -205,150 +234,129 @@
       "name": "team-exec",
       "display": "团队实施与验证",
       "status": "completed",
-      "output_dir": null,
+      "output_dir": "docs/dev-pipeline/receiver-ux-v2/",
       "output_files": [],
-      "team_mode": "omc",
-      "omc_slug": "desktop-receiver",
+      "team_mode": "native",
+      "omc_slug": "",
       "contract_files": [],
-      "review_rounds": 10,
+      "review_rounds": 6,
       "max_rounds": 10,
       "test_status": "passed",
-      "started_at": "2026-10-18T13:20:01+08:00",
-      "completed_at": "2026-10-22T19:45:51+08:00",
-      "notes": "Stage 5 COMPLETE after external round 1 FAIL (7 independent themes) and internal round 7 FAIL (3 Blockings), both rectified; internal round 8 PASS with 0 Blocking (delta 80c92dd..ce4051c). Final gates (2026-10-21, HEAD ce4051c): unit 9 suites / 90 tests green; evidence local gate PASS (20 required cases); field gate FAIL by design (E2E-21..26 NOT_RUN, user-side); verify-assets PASS (staging bound to revision a515922, declared); native ctest 9/9 per the external round-1 re-run (no C++ source changed since; WASM not rebuilt). Round-1 themes closed: A-01 -> real local journeys E2E-1..20 + batches L/M docs; A-02/A-03/C-02 -> 558dee9; B-S04 -> b16004a + eb80706 (TD-15 frame-by-frame import); A-04/B-S01 -> 95c54b6 + ce4051c (planned caseType declared for all 26 scenarios, both gates cross-check with fail-closed plan, artifact checks keyed on the planned type, selftest 14 cases, UT-083/084); C-01 -> aa31eed + E2E-1 final state (247b68c; the pwsh CJK+space attribution was retracted and re-verified, TD-17 Node fs.cpSync GBK-mojibake twin). Internal round 7 (2026-10-21) found B-1 planned caseType unvalidated, B-2 E2E-16 negative leg outside the PASS predicate, B-3 E2E-5 pre-window snapshot and E2E-19 reload-only; ce4051c rectified all three and re-executed E2E-5/E2E-16/E2E-19 (PASS, external Get-FileHash equality), with harness fixes (stack.close targets the current receiver server; hard-exit after results flush; honest-FAIL catches for 5/19). Round 8 PASS 0 Blocking. Field journeys E2E-21..26 remain NOT_RUN; TD-12 closed by local executor roundtrips, the field phase remains for the user. | ROUND-3 VERDICT (consumed round-2 package, file round-3-verdict.md): FAIL, 3 themes - T1 resource lifecycle (init-failed no terminate; cancel-during-init restart), T2 scale/budget/measurement (E2E-18 one 1MiB live sample only), T3 video acceptance false-green (stale-log pass; DataTransfer entry bypass; V-LAST pair causality). Stage 6.5 rectification started; user decisions: new run 20261021-teamexec-03 full local re-run; 20MiB compressible over-budget probe; bounded 1MiB incompressible video probe before any scope revision. | ROUND-3 RECTIFICATION CYCLE CLOSED (2026-10-22): the three verdict themes are closed on run 20261021-teamexec-03 - T1 resource lifecycle (f70d324 fixes, UT-085..092, round-9 independent probes), T3 video acceptance (leg-verdict delta-based per-leg verdicts, real open-dialog entry, paired E2E-16 timeline; triage decisions 5/6 for the authorized code-union and artifact-settling criteria), and T2 scale/budget/measurement (E2E-18 ten-leg matrix: live 1/4 MiB both classes, recorded compressible 4 MiB, recorded incompressible 128 KiB, bounded 1 MiB probe, recorded incompressible 4 MiB at 861,505,434 B / 600 s rebuilt hash-clean - superseding the TD-15 128 KiB ceiling via the per-frame rVFC import path - plus the compressible 20 MiB real 15008 artifact-budget rejection with hash-clean recovery). Internal round 9 FAIL caught one Blocking: the E2E-18 journey-level PASS had been produced by a session-only manual upsert, not reproducible by the committed harness. Closed via triage decision 7 / D-19 AUTHORIZED_NOT_RUN semantics (AUTHORIZED_NOT_RUN=['live-n-20mib-over-budget'], sanctioned by the user-approved plan leg matrix) implemented in run-e2e.mjs and re-proven by a full-matrix re-run (attempt E2E-18-2026-10-21T19-58-28-508Z-fc3f88, CASE E2E-18 PASS, commit 31b9d30). Internal round 10: PASS, 0 Blocking. Final gates on run-03: local PASS (20 required cases); field exit 1 by design (E2E-21..26 user-side). Remaining NOT_RUN: live-n-20mib-over-budget per the user-approved plan basis; E2E-21..26 field journeys; performance NOT_EVALUATED (thresholds not frozen). | ROUND-5 VERDICT (consumed round-4 package, file round-5-verdict.md): FAIL, 3 residual gaps - A-01 E2E-15 per-exception recovery missing; A-02 E2E-16 last-keyframe controlled contrast unproven (tStar dimension bug; early completion); A-03/B-S1 video save timings from pre-save snapshots (null saveRequestAt/writeCloseAt). Closed this round: T1 lifecycle, stale-log false-green, real entry, 4MiB recorded roundtrip, 20MiB budget. Verdict-limited re-run scope: E2E-15, E2E-16, E2E-18 measurements only. | ROUND-5 RECTIFICATION CYCLE CLOSED: internal round 11 (new-cycle round 1) FAIL 3 presentation-level items -> fixed ba6df6d; round 12 PASS 0 Blocking; R12 S-1 attribution-stamp defect fixed 1167a2b with UT-111. Evidence: E2E-15 8/8 per-exception recoveries (a78e7f), E2E-16 same-stream pair PASS (9bdbbd; prefix head 0.000, T*=8.869s>=7.30s), E2E-18 matrix (d21d32 merge; 8 legs carried from 3e34f2) with 14 save-bearing legs decomposed and 7 save-less explicit. Gates: unit 9/116, prefix selftest 3/3, selftest 14/14, local PASS(20), field exit1 by design, assets PASS. review_rounds counter stays 10 (new-cycle rounds recorded as round 11/12 documents, orchestrator-owned counter not incremented). | ROUND-7 VERDICT (consumed round-6 package, file round-7-verdict.md): FAIL, 1 blocking only - B-R1: stampLegAttempts reattributes legacy carried legs (missing executedInAttempt) as freshly executed on the next --legs partial rerun; prior 3 blockings CONFIRMED CLOSED by the reviewer. Fix scope: tool semantics + regression, no desktop rerun. | ROUND-7 RECTIFICATION CLOSED: internal round 13 (new-cycle round 2) PASS 0 Blocking - tagCarriedLegs tags every leg excluded from the --legs re-execution set (carriedInAttempt origin known-or-unknown), stampLegAttempts fail-closed (UT-112 reproduces the reviewer counter-example: 9 legacy carried + 1 fresh -> only fresh stamped; UT-113 tagger incl. second-merge origin; UT-111 kept); S-1 four-mark save assertion adopted (all 14 save legs satisfy); docs claims synced (commits 4deaba8 + 99aaf05). Gates: unit 9/118, selftest 14/14, prefix 3/3, local PASS(20), field exit1 by design, assets PASS. review_rounds counter stays 10 (new-cycle rounds documented as 11-13). | ROUND-9 VERDICT (consumed round-8 package, file round-9-verdict.md): FAIL, 1 blocking - B-R1 exception path: writeAttemptMarker carries the prior measurement untagged, so an early scenario failure stamps all 10 historical legs as the failed attempt (three-way in-memory repro), polluting later merge origins; normal merge path remains fixed. Fix scope: marker-carried legs tagged carried, exception-path regressions UT-114/115, docs claims synced; no desktop rerun. | ROUND-9 CYCLE CLOSED: internal round 14 (new-cycle round 3) PASS 0 Blocking - marker-carried legs isolated via markMarkerLegsCarried + writeAttemptMarker (d609ab2); reviewer counter-example replay reattributedOldLegs=0; UT-114/115 permanent regressions; gates unit 9/120, selftest 14/14, prefix 3/3, local PASS(20), field exit1; review_rounds counter stays 10 (new-cycle rounds documented as 11-14)",
+      "started_at": "2026-10-24T14:37:17+08:00",
+      "completed_at": "2026-10-27T04:30:00+08:00",
+      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。 整改轮收口（2026-10-26 18:45）：round-12 的 5 阻断主题全部以证据关闭（台账 r12-remediation.md 全 CLOSED）。最终候选=root11（docs/tests/runs/20261026-teamexec-11，product manifest 34a9de30…，attempt candidate-20261026-01，sourceRevision 00c5d57，harnessRevision 5381d35）。测试总账：run-unit 12 套 216 例、tools 67 例、自测 65/14/3、契约 PASS；UX-IAT 01-07+A5 GREEN、08 如实 NOT_RUN；legacy E2E-1..20 全 20 PASS（5 次瞬态首败重试过、原件保留）；UX 12 条=10 PASS+35/37 如实 NOT_RUN（35=用户 2026-10-26 授权；37=环境）；录制 A/B 5/5 对 PASS（B 侧 min gap 250.2-250.3ms）；实时 10/10 VALID（窗口 30127-30181ms，4MiB 6181826a…）。双门禁（lead 独立复跑）：legacy local PASS(20) exit0；UX local exit1 恰 4 条（35×2+37×2 授权缺口）；field exit1 设计内。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA 不变；E2E-36 Ready 截图实证收敛。中间失败件：root10（74ca75f8…，A/B -01/-02 失败原件）与实时中止轮 raw（live-failed-run-1/）只读保留。round-13 送审包与模板已就绪（9baefc3/51e0726），等待阶段 5 整改出口确认门。 整改轮 2（2026-10-27 起，round-13 复审整改）：3 阻断——产品 A13-02（观察新增 lastReportState、视图去时间戳推断）+ 工具 A13-01（CLI 传 expected、context 实读身份）与 B-R1（外层要求重算 verdict PASS；judgeRound RTT 从原始起止重算并严格核对）；S1/S2 随包修正。新构建预期新根 20261027-teamexec-12 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r13-remediation.md。",
       "_managed_by": "claude-dev-pipeline",
-      "user_instructions": []
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-24T14:37:17+08:00",
+          "summary": "/goal：加载dev-pipeline从阶段5 team-exec实施receiver-ux-v2，严格按已有实施、TDD及真实E2E计划执行。用户确认全自动连续推进（里程碑汇报即可）：T1-T6完成、切片实测后、最终全量验证后。现场7项(E2E-21~26/39)保持NOT_RUN待用户本人执行。"
+        },
+        {
+          "timestamp": "2026-10-26T09:05:00+08:00",
+          "summary": "用户转达外审 round-12 裁决（不通过，5 阻断主题）并指示：阶段 6 读取该裁决、返回阶段 5 整改后再送审。整改按裁决 DoD 执行（产品模型/视图/显示补 UT 与组合 IAT 后新构建复验真实双输入、等待/进度/停止/保存及相关 UI；工具反例先失败再修复通过；新 manifest/attempt、保留失败原件、重算双门禁、更新总结与 runtime 映射）。"
+        },
+        {
+          "timestamp": "2026-10-26T10:10:00+08:00",
+          "summary": "用户裁定（E2E-35 S02 处置）：\"真实云桌面远程会话不需要你测试\"——真实后台/远程会话行为由用户侧真实环境验证，不要求代理在本机（云桌面远程会话）模拟。据此：E2E-35 在本地运行根按真实覆盖如实 NOT_RUN（S02 真实 visibility 变化经三种装置探针证实不可构造，证据 docs/dev-pipeline/receiver-ux-v2/red-logs/r12-tools/probe2-*.txt）；不修订冻结用例、不做局部冒充执行；round-13 送审包如实披露该缺口与本次授权（与 E2E-37 同模式）。"
+        },
+        {
+          "timestamp": "2026-10-27T00:40:00+08:00",
+          "summary": "阶段 5 整改出口确认门：用户选择「进入阶段 6（推荐）」——接受整改轮摘要（round-12 的 5 阻断主题全部以 root11 证据关闭；双门禁 legacy PASS(20)/UX 恰 4 条授权缺口；冻结件零改动），同意把 round-13 送审包转外部独立审查并进入等待态。现场 7 项（E2E-21..26/39）、E2E-37 语音与 E2E-35 真实后台行为仍由用户侧真实验证。"
+        },
+        {
+          "timestamp": "2026-10-27T00:05:00+08:00",
+          "summary": "用户指令：阶段 6 读取 round-13-verdict 并按裁决返回阶段 5 整改。范围仅 3 项阻断（A13-01/A13-02/B-R1）+ 两条建议；E2E-35/E2E-37/现场 7 项继续按既有用户决定如实 NOT_RUN；不代用户测试真实云桌面；不改写失败 summary 为 PASS。"
+        },
+        {
+          "timestamp": "2026-10-27T04:30:00+08:00",
+          "summary": "阶段 5 整改出口确认前状态记录（round-13 整改轮 2 完成）：3 阻断全关（A13-01/A13-02/B-R1，root12 证据），S1/S2 落实；等待用户出口确认。"
+        }
+      ]
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
       "status": "passed",
       "output_dir": "docs/dev-pipeline/ext-review/",
-      "output_files": [
-        "round-1-package.md",
-        "round-1-template.md",
-        "round-1-verdict.md",
-        "round-2-package.md",
-        "round-2-template.md",
-        "round-4-package.md",
-        "round-4-template.md",
-        "docs/dev-pipeline/ext-review/round-6-package.md",
-        "docs/dev-pipeline/ext-review/round-6-template.md",
-        "docs/dev-pipeline/review-round-11.md",
-        "docs/dev-pipeline/review-round-12.md",
-        "docs/dev-pipeline/remediation/round-5-triage.md",
-        "docs/dev-pipeline/remediation/round-5-tasks.md",
-        "docs/dev-pipeline/ext-review/round-7-verdict.md",
-        "docs/dev-pipeline/remediation/round-7-triage.md",
-        "docs/dev-pipeline/remediation/round-7-tasks.md",
-        "docs/dev-pipeline/review-round-13.md",
-        "docs/dev-pipeline/ext-review/round-8-package.md",
-        "docs/dev-pipeline/ext-review/round-8-template.md",
-        "docs/dev-pipeline/remediation/round-9-triage.md",
-        "docs/dev-pipeline/remediation/round-9-tasks.md",
-        "docs/dev-pipeline/review-round-14.md",
-        "docs/dev-pipeline/ext-review/round-10-package.md",
-        "docs/dev-pipeline/ext-review/round-10-template.md"
-      ],
-      "ext_rounds": 11,
+      "output_files": [],
+      "ext_rounds": 14,
       "verdict_files": [
-        "docs/dev-pipeline/ext-review/round-1-verdict.md",
-        "docs/dev-pipeline/ext-review/round-3-verdict.md",
-        "docs/dev-pipeline/ext-review/round-5-verdict.md",
-        "docs/dev-pipeline/ext-review/round-7-verdict.md",
-        "docs/dev-pipeline/ext-review/round-9-verdict.md",
-        "docs/dev-pipeline/ext-review/round-11-verdict.md"
+        "docs/dev-pipeline/ext-review/round-12-verdict.md",
+        "docs/dev-pipeline/ext-review/round-13-verdict.md",
+        "docs/dev-pipeline/ext-review/round-14-verdict.md"
       ],
       "materials": [
-        "docs/dev-pipeline/ext-review/round-1-package.md",
-        "docs/requirements/requirements-spec.md",
-        "docs/requirements/decision-log.md",
-        "docs/design-catalog/contracts/receiver-v1.schema.json",
-        "docs/design-catalog/contracts/error-codes.json",
-        "docs/design-catalog/module-contract-error-matrix.md",
-        "docs/plans/2026-10-18-desktop-receiver-implementation.md",
-        "docs/tests/test-plan.md",
-        "docs/tests/e2e-user-journey-plan.md",
-        "docs/dev-pipeline/review-round-1.md",
-        "docs/dev-pipeline/review-round-2.md",
-        "docs/dev-pipeline/review-round-3.md",
-        "docs/dev-pipeline/review-round-4.md",
-        "docs/dev-pipeline/review-round-5.md",
-        "docs/dev-pipeline/review-round-6.md",
-        "docs/dev-pipeline/tech-debt.md",
-        "docs/tests/runs/20261018-teamexec-01/results.json",
-        "docs/tests/runs/20261018-teamexec-01/iat-results.json",
-        "docs/tests/runs/20261018-teamexec-01/iat-results-batch-d.json",
-        "docs/tests/runs/20261018-teamexec-01/measurements.json",
-        "docs/tests/runs/20261018-teamexec-01/support-matrix.md",
-        "docs/tests/runs/20261018-teamexec-01/red-evidence.md",
-        "docs/tests/field-guide.md",
-        "docs/tests/field-receipt.json",
-        "git diff master..HEAD",
-        "docs/dev-pipeline/ext-review/round-2-package.md",
-        "docs/dev-pipeline/ext-review/round-2-template.md",
-        "docs/dev-pipeline/review-round-7.md",
-        "docs/dev-pipeline/review-round-8.md",
-        "docs/dev-pipeline/stage5-dev-summary.md",
-        "docs/dev-pipeline/autonomous-decisions.md",
-        "docs/tests/runs/20261019-teamexec-02/results.json",
-        "docs/tests/runs/20261019-teamexec-02/batch-l-status.md",
-        "docs/tests/runs/20261019-teamexec-02/proof/",
-        "docs/dev-pipeline/review-round-9.md",
-        "docs/dev-pipeline/review-round-10.md",
-        "docs/dev-pipeline/ext-review/round-3-verdict.md",
-        "docs/dev-pipeline/remediation/round-3-triage.md",
-        "docs/dev-pipeline/remediation/round-3-tasks.md",
-        "docs/tests/runs/20261021-teamexec-03/results.json",
-        "docs/tests/runs/20261021-teamexec-03/reproduction.md",
-        "docs/tests/runs/20261021-teamexec-03/measurements.json",
-        "docs/tests/runs/20261021-teamexec-03/measurement-report.md",
-        "docs/tests/runs/20261021-teamexec-03/environment.json",
-        "docs/tests/runs/20261021-teamexec-03/proof/",
-        "docs/dev-pipeline/ext-review/round-4-package.md",
-        "docs/dev-pipeline/ext-review/round-4-template.md"
+        "docs/dev-pipeline/ext-review/round-14-package.md",
+        "docs/dev-pipeline/ext-review/round-14-template.md",
+        "docs/dev-pipeline/ext-review/round-13-verdict.md",
+        "docs/dev-pipeline/receiver-ux-v2/r13-remediation.md",
+        "docs/dev-pipeline/receiver-ux-v2/r13-prod-report.md",
+        "docs/dev-pipeline/receiver-ux-v2/r13-tools-report.md",
+        "docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md",
+        "docs/dev-pipeline/receiver-ux-v2/runtime-case-map.json",
+        "docs/tests/runs/20261027-teamexec-12/release-candidate-manifest.json",
+        "docs/tests/runs/20261027-teamexec-12/reproduction.md"
       ],
-      "started_at": "2026-10-19T11:01:00+08:00",
-      "completed_at": "2026-10-22T21:30:00+08:00",
-      "notes": "Round 1 FAIL (2026-10-19, reviewer codex-gpt-6; 7 independent blocking themes) returned the pipeline to team-exec. Rectification is complete through ce4051c with internal round 8 PASS (0 Blocking, delta 80c92dd..ce4051c). Round-2 resubmission package prepared: ext-review/round-2-package.md (fixed range master..HEAD at the resubmission commit; rectification index and honesty notes) and round-2-template.md (verbatim round-1 section structure). Materials list refreshed: adds review-round-7.md, review-round-8.md, stage5-dev-summary.md, autonomous-decisions.md, and the run-20261019-teamexec-02 evidence directory (results.json, batch-l-status.md, proof/) alongside the round-1 set. Status waiting_external until the independent reviewer returns round-2-verdict.md; field journeys E2E-21..26 remain NOT_RUN (field gate FAIL by design). | Round-3 verdict consumed (numbering: round-3-verdict.md corresponds to the round-2 package; ext_rounds=3). Pipeline returned to stage 5; round-4 package to follow rectification. | ROUND-4 PACKAGE PREPARED (2026-10-22): fixed baseline 31b9d30 (master..31b9d30 = 64 commits, 735 files, +39,303/-9); rectification index for the round-3 themes (T1/T2/T3) with run-03 evidence; honest notes: field gate exit 1 by design, live-n-20mib-over-budget NOT_RUN per the user-approved plan basis with the AUTHORIZED_NOT_RUN chain (triage 7 + D-19) and round-10 S-1 quoted verbatim (a one-line user confirmation can be appended if the external reviewer requires it); performance NOT_EVALUATED. Status waiting_external until round-4-verdict.md returns; ext_rounds=4. | Round-5 verdict consumed (round-4 package; ext_rounds=5; next verdict file round-6-verdict.md per N=ext_rounds+1). Pipeline returned to stage 5. | Round-5 verdict rectified; round-6 package prepared (ext_rounds=6; next verdict file round-7-verdict.md per N=ext_rounds+1). | Round-7 verdict consumed (round-6 package; ext_rounds=7; next verdict round-8). Pipeline returned to stage 5 for the B-R1 tool fix. | Round-7 B-R1 rectified; round-8 package prepared (ext_rounds=8; next verdict round-9 per N=ext_rounds+1). | Round-9 verdict consumed (round-8 package; ext_rounds=9; next verdict round-10). Pipeline returned to stage 5 for the marker-attribution fix. | Round-9 B-R1 rectified; round-10 package prepared (ext_rounds=10; next verdict round-11 per N=ext_rounds+1). | Round-11 VERDICT: PASS, 0 Blocking, 0 new suggestions (fixed HEAD 7f705be; two commits 12 files reviewed; B-R1 exception exits closed with red-green ablation: removing the marker guard restored 10 wrong attributions, current = 0). Prior themes retained closed. Stage 7 may proceed; field E2E-21..26 remain NOT_RUN (user-side), performance NOT_EVALUATED, stage-8 final packaging binds the environment.",
+      "started_at": "2026-10-25T22:20:00+08:00",
+      "completed_at": "2026-10-27T05:32:00+08:00",
+      "notes": "round-14 复审结论：通过（2026-10-27，codex-gpt-6；双轴均 PASS、0 Blocking）。round-13 的 3 阻断 A13-01/A13-02/B-R1 全部 CLOSED（主审独立复跑 222/69/77/14/3、双门禁、带 context 复算及全部负例）。2 条非阻断建议已落实：A-S1 收敛写落点措辞精确化（两探针仅证明写落在其间、确切延迟未精确测定；另一次直接实测 +139ms；88532b 的 root 标注修正为 root12）与 B-S1（reproduction §7.5 改为「无 context 仅统计/一致性复算、不证明身份」）。E2E-35/37/现场 7 项与阶段 8 最终包验收仍分别独立。",
       "_managed_by": "claude-dev-pipeline",
-      "user_instructions": []
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-25T22:35:00+08:00",
+          "summary": "用户于阶段5出口确认门选择「进入阶段6」：接受阶段5摘要（6轮审查0 Blocking、测试与双重门禁如上），同意把 round-12 送审包转外部独立审查并进入等待态；现场 7 项（E2E-21..26/39）与 E2E-37 语音腿仍由用户侧执行，不在本次外审前阻塞。"
+        },
+        {
+          "timestamp": "2026-10-27T04:50:00+08:00",
+          "summary": "阶段 5 整改轮 2 出口确认门：用户选择「进入阶段 6（推荐）」——接受 round-13 复审整改摘要（3 阻断全关、root12 全部证据、双门禁恰 4 条授权缺口、冻结件零改动），同意把 round-14 送审包转外部独立审查并进入等待态。"
+        },
+        {
+          "timestamp": "2026-10-27T05:32:00+08:00",
+          "summary": "用户转达 round-14 裁决（通过，0 新增阻断，2 条非阻断建议）并指令：Claude 可在阶段 6 读取该裁决，推进阶段 7。"
+        }
+      ]
     },
     {
       "name": "finishing-a-development-branch",
       "display": "分支合并交付",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": null,
       "output_files": [],
-      "started_at": "2026-10-22T21:40:00+08:00",
-      "completed_at": "2026-10-22T21:55:00+08:00",
-      "notes": "Final battery green at merge (unit 9 suites, local gate PASS(20), field exit1 by design, assets PASS). Local master merge a4f9a0d (--no-ff from screen-capture-recv; origin is upstream sz3/libcimbar - nothing pushed, upstream 14 commits ahead of local master by design). Feature branch retained as the review-history anchor. User-approved direct local merge.",
+      "started_at": "2026-10-27T05:32:00+08:00",
+      "completed_at": null,
+      "notes": "",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     },
     {
       "name": "release-packaging",
       "display": "打包构建交付",
-      "status": "completed",
+      "status": "pending",
       "output_dir": "product/",
       "output_files": [],
-      "delivery_name": "libcimbar-desktop-receiver-1.0.0-20261022-2252",
-      "product_dir": "product/libcimbar-desktop-receiver-1.0.0-20261022-2252",
-      "artifacts": [
-        "product/libcimbar-desktop-receiver-1.0.0-20261022-2252",
-        "product/libcimbar-desktop-receiver-1.0.0-20261022-2252.zip"
-      ],
-      "release_notes": "RELEASE-NOTES.md + CHANGELOG.md inside the package; 27-file delivery manifest; WASM d1080cdc...; candidate-mode build (stage.ps1 -Mode candidate), assets PASS, local gate PASS(20); zip validated by extraction (45 files incl. tests tree).",
-      "started_at": "2026-10-22T21:55:00+08:00",
-      "completed_at": "2026-10-22T22:58:00+08:00",
-      "notes": "Stage 8 complete. Package = candidate-mode staged receiver v1.0.0. Known boundaries: field E2E-21..26 user-side (NOT_RUN); performance NOT_EVALUATED; environment.json refreshed? (historical snapshot retained per verdict; final package manifest binds its own hashes). Root-cause of the strict-EOF digest failure fixed: core.autocrlf rewrote run-01 evidence logs on checkout; docs/tests/runs/20261018-teamexec-01/** pinned -text.",
+      "delivery_name": "",
+      "product_dir": "",
+      "artifacts": [],
+      "release_notes": "",
+      "started_at": null,
+      "completed_at": null,
+      "notes": "",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     }
   ],
   "team_mode": "auto",
   "_orchestrator": "codex",
-  "_handoff": "节点5前全部完成后交Claude dev-pipeline从阶段5（team-exec）续接执行",
-  "pipeline_state": "completed",
-  "_handoff_mode": "standard"
+  "_handoff": "已确认通道A；Claude dev-pipeline从阶段5（team-exec）续接执行",
+  "iteration_id": "receiver-ux-v2",
+  "baseline_commit": "9e4fbc46965de42b9b0097ad80c607d71c7303f0",
+  "previous_pipeline_state": "docs/dev-pipeline/history/desktop-receiver-v1/pipeline-state.json",
+  "pipeline_state": "in_progress",
+  "active_requirements": "docs/requirements/receiver-ux-v2/requirements-spec.md",
+  "_handoff_mode": "standard",
+  "active_design": "docs/design-catalog/receiver-ux-v2/README.md",
+  "active_plan": "docs/plans/receiver-ux-v2/roadmap.md",
+  "active_implementation_plan": "docs/plans/receiver-ux-v2/2026-10-24-receiver-ux-implementation.md",
+  "active_test_plan": "docs/tests/receiver-ux-v2/test-plan.md",
+  "active_e2e_plan": "docs/tests/receiver-ux-v2/e2e-user-journey-plan.md"
 }

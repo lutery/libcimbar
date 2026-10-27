@@ -1,0 +1,32 @@
+2026-10-26T05:16:55.172Z process guard: reclaimed 0/44 recorded process(es)
+[helper] dismissed the Edge sync bubble
+[helper] open-cancel via Cancel id 2
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\fixtures-media\V-GOOD-C.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-15\recovery-cancel\received.bin
+E2E FAILED: Error: click video entry (recovery-empty) (#btn-video) failed: page.click: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator('#btn-video')
+    - locator resolved to <button disabled type="button" id="btn-video">录像导入</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+      - waiting 100ms
+    29 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms
+ | state={"status":"Save failed — you can retry","saveDisabled":false,"stopDisabled":false}
+    at clickButton (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:1396:11)
+    at async recoveryLeg (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:2603:7)
+    at async E2E-15 (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:2755:7)
+    at async main (file:///E:/Project/OpenSource/c++/libcimbar/tools/desktop-recv/e2e/run-e2e.mjs:4510:16)
+EXIT=1

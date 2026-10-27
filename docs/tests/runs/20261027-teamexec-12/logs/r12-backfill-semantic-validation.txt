@@ -1,0 +1,5 @@
+docs/tests/receiver-ux-v2/planning-cases.json: IDENTICAL after stripping mutable fields
+docs/tests/receiver-ux-v2/cases/e2e-legacy.json: IDENTICAL after stripping mutable fields
+docs/tests/receiver-ux-v2/cases/e2e-receive.json: IDENTICAL after stripping mutable fields
+docs/tests/receiver-ux-v2/cases/e2e-experience.json: IDENTICAL after stripping mutable fields
+SEMANTIC VALIDATION PASS (4 files)

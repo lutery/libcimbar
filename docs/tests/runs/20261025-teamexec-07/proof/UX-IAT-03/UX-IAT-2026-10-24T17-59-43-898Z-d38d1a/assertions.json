@@ -1,0 +1,30 @@
+[
+  {
+    "id": "UX-IAT-03-A1",
+    "expected": "elapsed is measured from receivingAt (3250 - 0 = 3250ms)",
+    "observed": "{\"elapsedMs\":3250}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-03-A2",
+    "expected": "bucket eviction + span math: rate = 140B/2750ms = 50.909 B/s (<0.1 KiB/s)",
+    "observed": "{\"rate\":{\"phase\":\"active\",\"bytesPerSecond\":32.72727272727273,\"windowMs\":2750,\"includesRedundancy\":true},\"rateText\":\"<0.1 KiB/s（含冗余）\",\"buckets\":[{\"generation\":12,\"bytes\":50},{\"generation\":1,\"bytes\":30},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":11,\"bytes\":40}]}",
+    "result": "FAIL",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-03-A3",
+    "expected": "time advances without new data: same revision, stable announcement key, no fake Ready",
+    "observed": "{\"revision\":9,\"key\":\"receiving:none:none\",\"state\":\"Receiving\"}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-03-A4",
+    "expected": ">=5s without data surfaces the no-new-data notice while the elapsed clock keeps running",
+    "observed": "{\"statusKey\":\"no_new_data\",\"primary\":\"最近没有识别到新数据\",\"next\":\"\"}",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

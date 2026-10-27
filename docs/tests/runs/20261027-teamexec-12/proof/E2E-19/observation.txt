@@ -1,0 +1,4 @@
+E2E-19 observation (2026-10-26T19:23:37.168Z)
+the app reported a failed save: capture stopped; the file is ready to save
+[error] save failed (16004); you can try again
+ | raw: {"saveError":null,"pickerResolved":{"name":"received.bin","kind":"file","at":1793042606647},"writableCreated":true,"writeSucceeded":true,"createWritableAccessed":true,"saveClicks":1,"lastCaughtError":{"name":"InvalidStateError","message":"An operation that depends on state cached in an interface object was made but the state had changed since it was read from disk.","stack":"","at":1793042606658}}

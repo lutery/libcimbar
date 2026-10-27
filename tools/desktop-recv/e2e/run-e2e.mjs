@@ -12,16 +12,25 @@
 //   node run-e2e.mjs --case E2E-3  --source window
 //   node run-e2e.mjs --case E2E-14
 import { chromium } from 'playwright-core';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   copyArtifact, markMarkerLegsCarried, readResults, sha256File, stampLegAttempts, tagCarriedLegs,
-  upsertResult, roundtripRecord, writeProof, writeResults,
+  upsertResult, upsertUxResult, roundtripRecord, writeProof, writeResults,
 } from './evidence.mjs';
+import {
+  loadRunContext, describeContext, verifyProductManifest, initializeRunRoot, ensureAttemptDir,
+  stageVerifiedSender, RunContextError,
+} from './run-context.mjs';
+import { SourceScene, sha256FileBytes } from './source-scene.mjs';
+import { runIatSuite } from './iat-suite.mjs';
+import { createMediaJourneys } from './media-journeys.mjs';
+import { createUiJourneys } from './ui-journeys.mjs';
+import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
   evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
@@ -32,12 +41,14 @@ import { evaluatePairConstruction } from './pair-evidence.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..');
-const STAGING = join(REPO, 'build-desktop-recv', 'staging');
-// Round-3 rectification: the user decided on a new run directory and a full
-// re-run; run-02 is preserved untouched and no PASS is copied forward.
-const RUN = join(REPO, 'docs', 'tests', 'runs', '20261021-teamexec-03');
-const FIXTURES = join(REPO, 'docs', 'tests', 'runs', '20261018-teamexec-01', 'fixtures');
-const PLANNING = join(REPO, 'docs', 'tests', 'planning-cases.json');
+// Stage-5: no hardcoded default roots. RUN/STAGING/FIXTURES/PLANNING are
+// assigned from the validated run context in applyContextRoots() before any
+// scenario or side effect; without --context the runner refuses to start.
+let RUN = null;
+let STAGING = null;
+let FIXTURES = null;
+let PLANNING = null;
+let CONTEXT = null;
 const SENDER_PORT = 8811;
 const RECEIVER_PORT = 8771;
 const DEBUG_PORT = 9445;
@@ -47,13 +58,87 @@ const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
 const NATIVE_HELPER = join(HERE, 'native-dialog.ps1');
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
+const HELP = `usage: node tools/desktop-recv/e2e/run-e2e.mjs --context <run-context.json> --case <id|group> [options]
+
+  --context <json>   REQUIRED. Validated run context that owns every output
+                     root; there is no fallback to the historical run-03 root.
+  --case <id|group>  one scenario id, or one of the UX entry points
+                     (UX-SLICE/UX-IAT/UX-MEDIA-SAVE/UX-UI/UX-ALL), which
+                     expand to concrete scenario ids.
+  --source window|screen        capture source for live journeys (default window)
+  --video <file> --stopms <ms>  E2E-19 options
+  --legs <a,b>                  E2E-18 leg selection
+  --validate-only    parse + validate the context and print its identity JSON;
+                     no file is written, no browser or server is started.
+  --repo-root <dir>  resolve repo-relative context paths against <dir>
+                     (development/fixture use; default: this checkout).
+  --resume           explicitly resume the named run identity; runId, phase,
+                     product manifest and attempt must all match.
+
+  Exit: 0 PASS, 1 FAIL, 2 bad/missing arguments, 3 invalid context or refused
+        build, 4 registered-but-not-implemented UX case, 5 run-root guard.
+  Historical diagnostics (SMOKE, probe-*, smoke-live) predate receiver-ux-v2
+  and are never v2 acceptance entry points.`;
+
+const VALUE_FLAGS = new Set(['case', 'source', 'video', 'stopms', 'legs', 'context', 'repo-root']);
+const BARE_FLAGS = new Set(['validate-only', 'resume', 'help']);
+
+function parseArguments(argv) {
+  const parsed = { args: new Map(), flags: new Set() };
+  let index = 0;
+  while (index < argv.length) {
+    const arg = argv[index];
+    if (!arg.startsWith('--')) return { error: `unexpected argument: ${arg}` };
+    const name = arg.slice(2);
+    if (BARE_FLAGS.has(name)) { parsed.flags.add(name); index += 1; continue; }
+    if (VALUE_FLAGS.has(name)) {
+      const value = argv[index + 1];
+      if (value === undefined || value.startsWith('--')) return { error: `--${name} needs a value` };
+      parsed.args.set(name, value);
+      index += 2;
+      continue;
+    }
+    return { error: `unknown argument: ${arg}` };
+  }
+  return parsed;
+}
+
 const args = new Map();
-for (let i = 2; i < process.argv.length; i += 2) {
-  args.set(process.argv[i].replace(/^--/, ''), process.argv[i + 1]);
+const flags = new Set();
+{
+  const parsed = parseArguments(process.argv.slice(2));
+  if (parsed.error) {
+    console.error(parsed.error);
+    console.error(HELP);
+    process.exit(2);
+  }
+  for (const [name, value] of parsed.args) args.set(name, value);
+  for (const flag of parsed.flags) flags.add(flag);
+}
+if (flags.has('help')) { console.log(HELP); process.exit(0); }
+
+if (!args.get('context')) {
+  console.error('missing required --context <run-context.json>; this runner never falls back to a historical root');
+  console.error(HELP);
+  process.exit(2);
+}
+try {
+  CONTEXT = loadRunContext(args.get('context'), { repoRoot: args.get('repo-root') });
+} catch (error) {
+  console.error(error && error.message ? error.message : String(error));
+  process.exit(3);
+}
+if (flags.has('validate-only')) {
+  console.log(JSON.stringify(describeContext(CONTEXT)));
+  process.exit(0);
 }
 const CASE = args.get('case');
 const SOURCE = args.get('source') || 'window';
-if (!CASE) { console.error('usage: node run-e2e.mjs --case <CASE> [--source window|screen]'); process.exit(2); }
+if (!CASE) {
+  console.error('--case <id|group> is required');
+  console.error(HELP);
+  process.exit(2);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...parts) => console.log(new Date().toISOString(), ...parts);
@@ -213,6 +298,25 @@ async function settleVideoLeg(page, { timeoutMs = 45000 } = {}) {
 // that leg alone. Diagnostics-only field: product behavior is untouched.
 async function resetJourneyMarks(page) {
   await page.evaluate(() => { window.__journey = {}; }).catch(() => {});
+}
+
+// Reload the receiver page so the NEXT save leg starts with fresh page-level
+// diagnostics hooks (__journey firsts, __createWritableAccessedAt, __writableAt).
+// The page-lifetime hooks never reset on their own, so a second save on the
+// same page would produce stale picker/writable times ordered BEFORE the new
+// request (the v1 matrix reloads between legs for exactly this reason).
+async function reloadReceiverPage(stack) {
+  const page = stack.receiver.page;
+  await page.goto(`http://127.0.0.1:${RECEIVER_PORT}/`);
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    const ready = await page.evaluate(() => typeof window.__state === 'string').catch(() => false);
+    if (ready) {
+      await sleep(400);
+      return page;
+    }
+    await sleep(250);
+  }
+  throw new Error('receiver page did not re-initialize after reload');
 }
 
 // The receiver's renderer can die mid-matrix (observed twice right after the
@@ -471,7 +575,36 @@ async function launchReceiver(port = RECEIVER_PORT) {
   return { child, profile, pid, browser: connected, page };
 }
 
+// Record every process THIS run started, so a later run can reclaim exactly
+// these (command line re-checked) instead of killing by port or browser flag.
+function recordStackPids({ senderServer, receiverServer, senderBrowser, receiver }) {
+  const entries = [];
+  if (senderServer && Number.isSafeInteger(senderServer.pid)) {
+    entries.push({ pid: senderServer.pid, kind: 'sender-http' });
+  }
+  if (receiverServer && Number.isSafeInteger(receiverServer.pid)) {
+    entries.push({ pid: receiverServer.pid, kind: 'receiver-server' });
+  }
+  if (receiver && Number.isSafeInteger(receiver.pid)) {
+    entries.push({ pid: receiver.pid, kind: 'receiver-edge' });
+  }
+  const handle = senderBrowser && typeof senderBrowser.process === 'function'
+    ? senderBrowser.process() : null;
+  if (handle && Number.isSafeInteger(handle.pid)) {
+    entries.push({ pid: handle.pid, kind: 'playwright-edge' });
+  }
+  if (entries.length === 0) return null;
+  try {
+    return recordProcesses(RUN, entries);
+  } catch (error) {
+    log(`process guard: could not record pids: ${error.message}`);
+    return null;
+  }
+}
+
 async function launchStack({ withSender = true } = {}) {
+  await assertPortsFree(withSender ? [SENDER_PORT, RECEIVER_PORT] : [RECEIVER_PORT]);
+  if (withSender) stageVerifiedSender(CONTEXT);
   const senderServer = withSender
     ? startServer('python', ['-m', 'http.server', String(SENDER_PORT), '--bind', '127.0.0.1',
       '--directory', join(STAGING, 'sender')], 'sender-http')
@@ -494,6 +627,7 @@ async function launchStack({ withSender = true } = {}) {
   }
 
   const receiver = await launchReceiver();
+  recordStackPids({ senderServer, receiverServer, senderBrowser, receiver });
 
   return {
     senderServer, receiverServer, senderBrowser, senderPage, receiver,
@@ -522,6 +656,8 @@ async function closeReceiver(receiver) {
 // A sender-only environment for journeys that launch their own receiver
 // (E2E-1/2: the packaged launcher's server).
 async function startSenderOnly() {
+  await assertPortsFree([SENDER_PORT]);
+  stageVerifiedSender(CONTEXT);
   const senderServer = startServer('python', ['-m', 'http.server', String(SENDER_PORT),
     '--bind', '127.0.0.1', '--directory', join(STAGING, 'sender')], 'sender-http');
   await waitHttp(`http://127.0.0.1:${SENDER_PORT}/`);
@@ -533,6 +669,7 @@ async function startSenderOnly() {
   });
   const senderPage = await senderBrowser.newPage();
   await senderPage.goto(`http://127.0.0.1:${SENDER_PORT}/`);
+  recordStackPids({ senderServer, senderBrowser });
   return {
     senderServer, senderBrowser, senderPage,
     async close() {
@@ -635,7 +772,7 @@ foreach($t in $tops){ if ($t.Current.ProcessId -eq ${pid}) {
   await sleep(400);
 }
 
-async function attachCapture(page, source, pid = 0, { retries = 2, readyTimeoutMs = 180000 } = {}) {
+async function attachCapture(page, source, pid = 0, { retries = 2, readyTimeoutMs = 180000, waitForReady = true } = {}) {
   const helperArgs = ['-Action', 'share', '-Tab', source === 'screen' ? 'screen' : 'window',
     '-TimeoutSec', '30'];
   if (source === 'window') helperArgs.push('-SourceTitle', SENDER_TITLE);
@@ -661,6 +798,13 @@ async function attachCapture(page, source, pid = 0, { retries = 2, readyTimeoutM
       throw new Error(`capture helper failed: ${helper.out}`);
     }
 
+    // Journeys that must observe the WAITING phase first (E2E-27 starts with
+    // a blank source) attach WITHOUT the built-in wait-until-Ready; they
+    // assert their own intermediate states.
+    if (!waitForReady) {
+      const state = await pageState(page).catch(() => null);
+      return state;
+    }
     const deadline = Date.now() + readyTimeoutMs;
     let last = null;
     let gdmError = null;
@@ -878,10 +1022,75 @@ async function completeLegSave({ page, caseId, legDir, originalPath, pid = 0 }) 
   };
 }
 
+// --- receiver-ux-v2 view probes (T13 slice) --------------------------------
+// Reads the product's Chinese feedback DOM plus the read-only diagnostics
+// hooks. A missing node stays null; nothing here writes into the page.
+async function uxProbe(page) {
+  return page.evaluate(() => {
+    const text = (id) => {
+      const node = document.getElementById(id);
+      return node ? node.textContent : null;
+    };
+    const snapshot = window.__contractSnapshot || null;
+    return {
+      at: Date.now(),
+      state: window.__state || null,
+      status: text('status'),
+      primary: text('ux-primary'),
+      secondary: text('ux-secondary'),
+      nextAction: text('ux-next'),
+      saveText: text('ux-save'),
+      elapsed: text('ux-elapsed'),
+      rate: text('ux-rate'),
+      progress: text('ux-progress'),
+      media: text('ux-media'),
+      announcement: text('ux-announcement'),
+      journey: window.__journey || null,
+      revision: snapshot ? snapshot.revision : null,
+      stats: snapshot ? snapshot.stats : null,
+      artifact: snapshot ? snapshot.artifact : null,
+      saveStatus: snapshot ? snapshot.saveStatus : null,
+    };
+  });
+}
+
+async function uxShot(page, caseId, attemptId, name) {
+  const target = join(RUN, 'proof', caseId, attemptId, 'screens', name);
+  mkdirSync(dirname(target), { recursive: true });
+  await page.screenshot({ path: target });
+  return `proof/${caseId}/${attemptId}/screens/${name}`;
+}
+
+// External SHA-256 OUTSIDE the app. certutil is present on every supported
+// Windows host (Get-FileHash proved unavailable in the spawned environment -
+// observed in attempt 3); its first output line is the uppercase digest.
+function externalSha256(path) {
+  const result = spawnSync('certutil', ['-hashfile', path, 'SHA256'], { encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`certutil -hashfile failed: ${(result.stderr || result.stdout || '').trim()}`);
+  const line = (result.stdout || '').split(/\r?\n/).map((value) => value.trim())
+    .find((value) => /^[0-9a-fA-F]{64}$/.test(value));
+  if (!line) throw new Error(`certutil printed no digest: ${(result.stdout || '').slice(0, 200)}`);
+  return line.toLowerCase();
+}
+
+function numericElapsed(text) {
+  const value = Number.parseFloat(String(text || '').replace('s', ''));
+  return Number.isFinite(value) ? value : null;
+}
+
 async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = false, readyTimeoutMs = 180000 }) {
   const fixture = isAbsolute(file) ? file : join(FIXTURES, file);
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
   mkdirSync(dirname(received), { recursive: true });
+
+  // Page-lifetime save hooks never reset on their own (see
+  // reloadReceiverPage): a leg that would be the NEXT save on an already-used
+  // page must start from a fresh page, exactly like the v1 matrix reloading
+  // between legs. First leg of a fresh page is untouched.
+  const reusedPage = await stack.receiver.page.evaluate(
+    () => Number.isFinite(window.__createWritableAccessedAt) || Number.isFinite(window.__writableAt),
+  ).catch(() => false);
+  if (reusedPage) await reloadReceiverPage(stack);
 
   await loadSenderFile(stack.senderPage, fixture);
   await stack.senderPage.bringToFront();
@@ -919,6 +1128,13 @@ async function liveRoundtrip(stack, { caseId, file, round, source, resetMarks = 
 async function videoRoundtrip(stack, { caseId, videoPath, originalPath, round, readyTimeoutMs = 240000 }) {
   const received = join(RUN, 'proof', caseId, `round-${round}`, 'received.bin');
   mkdirSync(dirname(received), { recursive: true });
+
+  // Same page-lifetime hook rule as liveRoundtrip: never run the 2nd+ save
+  // of a page without a fresh page.
+  const reusedPage = await stack.receiver.page.evaluate(
+    () => Number.isFinite(window.__createWritableAccessedAt) || Number.isFinite(window.__writableAt),
+  ).catch(() => false);
+  if (reusedPage) await reloadReceiverPage(stack);
 
   await importVideo(stack.receiver.page, videoPath);
   const deadline = Date.now() + readyTimeoutMs;
@@ -1052,13 +1268,24 @@ if ($p -eq ${pid}) { 'FOREGROUND' } else { "OTHER:$p" }`],
 async function recordSenderClip(stack, { seconds, clipPath }) {
   await stack.senderPage.bringToFront();
   await sleep(300);
+  await assertPortsFree([RECORDER_PORT]);
   // recorder.html lives in this tool's directory; serve it for the duration
   // of the recording only (record-sender.mjs does the same on this port).
   const recorderServer = startServer('python', ['-m', 'http.server', String(RECORDER_PORT),
     '--bind', '127.0.0.1', '--directory', HERE], 'recorder-http');
   try {
+    recordProcesses(RUN, [{ pid: recorderServer.pid, kind: 'recorder-http' }]);
+  } catch (error) {
+    log(`process guard: could not record pids: ${error.message}`);
+  }
+  try {
     await waitHttp(`http://127.0.0.1:${RECORDER_PORT}/recorder.html`);
     const recorder = await launchRecorderPage();
+    try {
+      recordProcesses(RUN, [{ pid: recorder.pid, kind: 'recorder-edge' }]);
+    } catch (error) {
+      log(`process guard: could not record recorder pid: ${error.message}`);
+    }
     // Crash diagnostics: a recorder Edge that dies mid-recording must leave
     // its exit code / disconnect behind, not a bare evaluate error.
     let crashInfo = null;
@@ -1146,7 +1373,8 @@ async function ensureExtendedFixtures() {
 // The artifact budget actually configured for the staged receiver (never an
 // assumed number): the profile the worker loads mirrors contracts.js.
 function actualArtifactBudget() {
-  const source = 'build-desktop-recv/staging/receiver/config/profile.json';
+  const profilePath = join(STAGING, 'receiver', 'config', 'profile.json');
+  const source = relative(REPO, profilePath).replaceAll(sep, '/');
   try {
     const profile = JSON.parse(readFileSync(join(STAGING, 'receiver', 'config', 'profile.json'), 'utf8'));
     if (Number.isSafeInteger(profile.maxArtifactBytes)) {
@@ -1637,6 +1865,300 @@ const SCENARIOS = {
       // here prevents the run-02-style day-long port leak.
       await stopPackagedServer(cleanServerPid, STAGING).catch(() => {});
     }
+  },
+  // UX-IAT: all eight receiver-ux-v2 browser integration groups. Group 01-07
+  // execute in the real receiver page (real modules + real vendor WASM; every
+  // injection is an explicit IAT adapter); UX-IAT-08 stays NOT_RUN until the
+  // T28 observer tool exists. Results land in iat-results.json.
+  'UX-IAT': async (stack) => {
+    const attemptId = ACTIVE_ATTEMPT_ID;
+    const proofDir = ensureAttemptDir(CONTEXT, 'UX-IAT', attemptId);
+    const deps = {
+      codeFrameBase64: readFileSync(join(FIXTURES, 'src01-code-frame.png')).toString('base64'),
+      mediaWithPath: join(REPO, 'docs', 'tests', 'runs', '20261024-teamexec-04', 'fixtures', 'fixtures-media', 'V-LAST-with.webm'),
+      mediaWithoutPath: join(REPO, 'docs', 'tests', 'runs', '20261024-teamexec-04', 'fixtures', 'fixtures-media', 'V-LAST-without.webm'),
+      importVideo,
+      python: 'python',
+      selftestPath: join(REPO, 'tools', 'desktop-recv', 'tests', 'ux-evidence-selftest.py'),
+      proofDir,
+    };
+    const ok = await runIatSuite({ stack, context: CONTEXT, attemptId, deps, log });
+    return ok;
+  },
+  // E2E-27: receiver-ux-v2 slice journey (wait -> data -> Ready -> real save).
+  // SRC-01 changes only the source window pixels; UX evidence is written to
+  // ux-results.json, never to the v1 results.json.
+  'E2E-27': async (stack, source) => {
+    const caseId = 'E2E-27';
+    const attemptId = ACTIVE_ATTEMPT_ID;
+    const planned = loadPlanningCase(caseId) || {};
+    const acceptanceIds = Array.isArray(planned.acceptanceIds) ? planned.acceptanceIds : [];
+    const attemptDir = ensureAttemptDir(CONTEXT, caseId, attemptId);
+    const proofRel = (name) => `proof/${caseId}/${attemptId}/${name}`;
+    const assertions = [];
+    // Plan-step assertions only: the SRC-01 calibration is rig steps, not
+    // plan steps of E2E-27 - it stays as logged evidence but never as record
+    // assertions (a gate assertion needs canonical on-disk proof).
+    const calBasis = (id, observed) => {
+      log(`${id}: ${observed}`);
+    };
+    const add = (id, expected, observed, ok, proof) => {
+      assertions.push({ id, expected, observed, result: ok ? 'PASS' : 'FAIL', proofRef: proof || null });
+      return ok;
+    };
+    const inputPath = join(FIXTURES, 'primary-input-128k.bin');
+    copyFileSync(inputPath, join(attemptDir, 'original.bin'));
+    const originalSha = sha256File(join(attemptDir, 'original.bin'));
+    const scene = new SourceScene(stack.senderPage, { proofDir: attemptDir });
+    const startedAt = new Date().toISOString();
+    let result = 'FAIL';
+    let receivedSha = null;
+    let notes = '';
+    let save = null;
+
+    try {
+      // --- SRC-01 calibration: source-window pixels only -------------------
+      await scene.loadInput(inputPath);
+      await stack.senderPage.bringToFront();
+      await sleep(600);
+      const anim = await scene.waitAnimating(20000);
+      calBasis('E2E-27-CAL01', `animation changed=${anim.changed} digest=${String(anim.digest).slice(0, 12)}`);
+      if (!anim.changed) throw new Error('sender canvas is not animating');
+      const frame = await scene.captureCodeFrame('src01-code-frame.png');
+      calBasis('E2E-27-CAL02', `sha256=${frame.sha256.slice(0, 16)}... file=${frame.file} rect=${frame.rect.width}x${frame.rect.height}`);
+      const stillState = await scene.showStill(frame.path);
+      calBasis('E2E-27-CAL03', `mode=${stillState.mode} rect=${JSON.stringify(stillState.rect)}`);
+      if (stillState.mode !== 'still') throw new Error('the still layer did not engage');
+      const stillHashes = [];
+      const stillStart = Date.now();
+      for (const wait of [0, 5000, 5000]) {
+        if (wait) await sleep(wait);
+        const clipRect = await scene.canvasRect();
+        stillHashes.push(sha256FileBytes(await stack.senderPage.screenshot({
+          clip: { x: clipRect.left, y: clipRect.top, width: clipRect.width, height: clipRect.height },
+        })));
+      }
+      const stillHeldMs = Date.now() - stillStart;
+      const stillStable = stillHashes[0] === stillHashes[1] && stillHashes[1] === stillHashes[2];
+      const stillStableCheck = stillHeldMs >= 10000 && stillStable;
+      calBasis('E2E-27-CAL04', `heldMs=${stillHeldMs} stable=${stillStable} hashes=${stillHashes.map((h) => h.slice(0, 8)).join(',')}`);
+      if (!stillStableCheck) throw new Error('the still layer did not hold >=10s with stable pixels');
+      const blankState = await scene.showBlank();
+      calBasis('E2E-27-CAL05', `mode=${blankState.mode} full-viewport`);
+      if (blankState.mode !== 'blank') throw new Error('the blank layer did not engage');
+
+      // --- S01 entry point and real share picker ---------------------------
+      const pre = await pageState(stack.receiver.page);
+      await uxShot(stack.receiver.page, caseId, attemptId, 's01-before-share.png');
+      add('E2E-27-S01', 'both receive buttons exist and save cannot be clicked early',
+        `videoDisabled=${pre.videoDisabled} saveDisabled=${pre.saveDisabled} status=${pre.status}`,
+        pre.saveDisabled === true, proofRel('screens/s01-before-share.png'));
+      const attached = await attachCapture(stack.receiver.page, source, stack.receiver.pid, { waitForReady: false });
+      await uxShot(stack.receiver.page, caseId, attemptId, 's01-attached.png');
+      const attachedProbe = await uxProbe(stack.receiver.page);
+      add('E2E-27-S01-B', 'real source window chosen in the system picker; session enters waiting',
+        `state=${attachedProbe.state} primary=${attachedProbe.primary} status=${attached.status}`,
+        /等待有效数据|正在接收|准备/.test(String(attachedProbe.primary || '')),
+        proofRel('screens/s01-attached.png'));
+
+      // --- S02 blank source (no valid code) for >= 6s ----------------------
+      const waitDeadline = Date.now() + 20000;
+      while (Date.now() < waitDeadline) {
+        const probe = await uxProbe(stack.receiver.page);
+        if (probe.primary === '正在等待有效数据') break;
+        await sleep(250);
+      }
+      const probes = [];
+      const s02Start = Date.now();
+      const sample = async (label) => {
+        const probe = await uxProbe(stack.receiver.page);
+        probes.push({ label, atMs: Date.now() - s02Start, ...probe });
+      };
+      await sleep(500);
+      await sample('0.5s');
+      await uxShot(stack.receiver.page, caseId, attemptId, 's02-wait-05s.png');
+      await sleep(4500);
+      await sample('5s');
+      await uxShot(stack.receiver.page, caseId, attemptId, 's02-wait-5s.png');
+      await sleep(1000);
+      await sample('6s');
+      await uxShot(stack.receiver.page, caseId, attemptId, 's02-wait-6s.png');
+      const waitingText = probes.every((p) => p.primary === '正在等待有效数据');
+      const noticeAt5s = /请检查发送画面/.test(String(probes[1].nextAction || ''))
+        || /请检查发送画面/.test(String(probes[2].nextAction || ''));
+      const elapsedGrew = numericElapsed(probes[2].elapsed) !== null
+        && numericElapsed(probes[0].elapsed) !== null
+        && numericElapsed(probes[2].elapsed) > numericElapsed(probes[0].elapsed);
+      const revisionStable = probes.every((p) => p.revision === probes[0].revision);
+      const zeroFrames = probes.every((p) => (p.stats ? p.stats.processedFrames : 0) === 0);
+      add('E2E-27-S02', 'no valid code >=6s: waiting text, >=5s notice, elapsed grows, no fake file progress',
+        JSON.stringify(probes.map((p) => ({
+          label: p.label, atMs: p.atMs, primary: p.primary, next: p.nextAction,
+          elapsed: p.elapsed, revision: p.revision, processed: p.stats && p.stats.processedFrames,
+        }))),
+        waitingText && noticeAt5s && elapsedGrew && revisionStable && zeroFrames,
+        proofRel('screens/s02-wait-6s.png'));
+
+      // --- restore the real code, first real data ---------------------------
+      // A data frame does NOT bump contractSnapshot.revision: session.js only
+      // emits on state / save-phase changes, so "revision grew" can only ever
+      // observe the Ready transition. The old revision trigger also used to
+      // pass on the stale "xx KiB/s" the pre-round-12 display left behind at
+      // Ready - the very A-R2/B-01 defect it should have caught. Sample the
+      // real Receiving activity instead (rate text or processedFrames growth)
+      // at ~400ms from the moment the overlay is removed; the frozen criterion
+      // (first real data + a redundancy-inclusive KiB/s while Receiving) is
+      // unchanged, and a Ready that arrives before any such sample is FAIL.
+      const restoreState = await scene.restore();
+      const processedBase = probes[probes.length - 1].stats
+        ? (probes[probes.length - 1].stats.processedFrames || 0) : 0;
+      const s03Start = Date.now();
+      const trail = [];
+      const sampleS03 = async (label) => {
+        const probe = await uxProbe(stack.receiver.page);
+        trail.push({
+          label, atMs: Date.now() - s03Start, state: probe.state,
+          rate: probe.rate, processed: probe.stats ? probe.stats.processedFrames : null,
+          elapsed: probe.elapsed, revision: probe.revision,
+        });
+        return probe;
+      };
+      let firstData = null;
+      let firstDataRow = null;
+      let activeProbe = null;
+      const dataDeadline = Date.now() + 90000;
+      while (Date.now() < dataDeadline) {
+        const probe = await sampleS03('data');
+        const processed = probe.stats ? (probe.stats.processedFrames || 0) : 0;
+        const rateSeen = /KiB\/s/.test(String(probe.rate || ''));
+        if (probe.state === 'Receiving' && (rateSeen || processed > processedBase)) {
+          firstData = probe;
+          firstDataRow = trail[trail.length - 1];
+          activeProbe = probe;
+          break;
+        }
+        if (!['Receiving', 'Preparing'].includes(probe.state)) break; // Ready first
+        await sleep(400);
+      }
+      const rateDeadline = Date.now() + 30000;
+      while (firstData && activeProbe && Date.now() < rateDeadline) {
+        if (/KiB\/s/.test(String(activeProbe.rate || ''))) break;
+        if (activeProbe.state !== 'Receiving') break; // left Receiving without a rate
+        await sleep(400);
+        activeProbe = await sampleS03('rate');
+      }
+      await uxShot(stack.senderPage, caseId, attemptId, 's03-source-live.png');
+      await uxShot(stack.receiver.page, caseId, attemptId, 's03-first-data.png');
+      add('E2E-27-S03', 'after removing the blank layer the first real data appears; receiving activity and a redundancy-inclusive KiB/s are shown',
+        `restore=${restoreState.mode} firstData=${JSON.stringify(firstDataRow)}`
+          + ` lastProbe=${JSON.stringify(trail[trail.length - 1])}`
+          + ` trailLength=${trail.length} trail=${JSON.stringify(trail.slice(0, 60))}`,
+        Boolean(firstData) && activeProbe !== null && /KiB\/s/.test(String(activeProbe.rate || '')),
+        proofRel('screens/s03-first-data.png'));
+
+      // --- S04 Ready + stop the sending input -------------------------------
+      await stack.receiver.page.waitForFunction(() => {
+        const saveButton = document.getElementById('btn-save');
+        return saveButton && !saveButton.disabled;
+      }, null, { timeout: 240000 });
+      const readyProbe = await uxProbe(stack.receiver.page);
+      const pause = await scene.pauseSending();
+      // The terminal projection converges ON the shared 250ms boundary
+      // (round-12 Option B), and the convergence write was observed landing
+      // >=1.2s after Ready on this rig (r12-final E2E-27 stop report), so
+      // sampling the instant pause returns races the convergence write. Wait
+      // (bounded) until two consecutive probes agree, then sample the frozen
+      // pair (same shape as E2E-32-S02-B); the criterion is unchanged.
+      let freezeA = await uxProbe(stack.receiver.page);
+      const settleDeadline = Date.now() + 5000;
+      while (Date.now() < settleDeadline) {
+        await sleep(400);
+        const settled = await uxProbe(stack.receiver.page);
+        if (settled.elapsed === freezeA.elapsed && settled.rate === freezeA.rate) {
+          freezeA = settled;
+          break;
+        }
+        freezeA = settled;
+      }
+      await sleep(1500);
+      const freezeB = await uxProbe(stack.receiver.page);
+      const elapsedFrozen = numericElapsed(freezeA.elapsed) !== null
+        && numericElapsed(freezeA.elapsed) === numericElapsed(freezeB.elapsed);
+      const readyOk = readyProbe.primary === '文件已接收完成，请保存'
+        && /^点击.*保存/.test(String(readyProbe.nextAction || ''));
+      const artifactOk = Boolean(readyProbe.artifact) && readyProbe.artifact.byteCount === statSync(inputPath).size;
+      await uxShot(stack.receiver.page, caseId, attemptId, 's04-ready.png');
+      add('E2E-27-S04', 'Ready tells the user to save with the real artifact info; elapsed freezes; sending input stopped',
+        `primary=${readyProbe.primary} next=${readyProbe.nextAction} artifact=${readyProbe.artifact && readyProbe.artifact.byteCount} elapsed=${freezeA.elapsed}->${freezeB.elapsed} pause=${JSON.stringify(pause)}`,
+        readyOk && artifactOk && elapsedFrozen && pause.paused === true,
+        proofRel('screens/s04-ready.png'));
+
+      // --- S05 real system save ---------------------------------------------
+      save = await completeLegSave({
+        page: stack.receiver.page, caseId, legDir: attemptDir,
+        originalPath: inputPath, pid: stack.receiver.pid,
+      });
+      receivedSha = save.hashes.received;
+      const savedProbe = await uxProbe(stack.receiver.page);
+      await uxShot(stack.receiver.page, caseId, attemptId, 's05-saved.png');
+      add('E2E-27-S05', 'real system save: selecting/writing/close then Saved; external hashes equal',
+        `saveTimingsComplete=${save.saveTimingsComplete} equal=${save.hashes.equal} primary=${savedProbe.primary} saveStatus=${savedProbe.saveStatus} timings=${JSON.stringify(save.timings)}`,
+        save.ok && savedProbe.primary === '文件已保存', proofRel('screens/s05-saved.png'));
+
+      // --- S06 external Get-FileHash + manifest/attempt audit ---------------
+      const externalOriginal = externalSha256(join(attemptDir, 'original.bin'));
+      const externalReceived = externalSha256(join(attemptDir, 'received.bin'));
+      const audit = [
+        `attemptId=${attemptId}`,
+        `runId=${CONTEXT.runId}`,
+        `productManifestSha256=${CONTEXT.productManifestSha256}`,
+        `inputManifestSha256=${CONTEXT.inputManifestSha256}`,
+        `sourceRevision=${CONTEXT.sourceRevision}`,
+        `originalSha256=${externalOriginal}`,
+        `receivedSha256=${externalReceived}`,
+        `equal=${externalOriginal === externalReceived}`,
+        `bytes=${save.bytes}`,
+      ].join('\n') + '\n';
+      writeFileSync(join(attemptDir, 's06-external-sha.txt'), audit);
+      add('E2E-27-S06', 'external Get-FileHash of original/received is identical and sizes match',
+        `original=${externalOriginal} received=${externalReceived} bytes=${save.bytes}`,
+        externalOriginal === externalReceived && save.bytes === statSync(inputPath).size,
+        proofRel('s06-external-sha.txt'));
+
+      result = assertions.every((entry) => entry.result === 'PASS') ? 'PASS' : 'FAIL';
+      notes = 'slice journey E2E-27: SRC-01 calibration, wait/data/Ready/save/external-SHA all measured; phase=slice PARTIAL evidence (never a final gate)';
+    } catch (error) {
+      notes = `slice journey did not complete: ${String((error && error.message) || error).slice(0, 300)}`;
+      add('E2E-27-ABORT', 'journey runs to completion', notes, false, null);
+      result = 'FAIL';
+      log(`E2E-27 aborted: ${notes}`);
+    }
+
+    const finishedAt = new Date().toISOString();
+    const proofRefs = [proofRel('original.bin')];
+    if (receivedSha) proofRefs.push(proofRel('received.bin'));
+    upsertUxResult(RUN, {
+      runId: CONTEXT.runId,
+      productManifestSha256: CONTEXT.productManifestSha256,
+      record: {
+        caseId,
+        attemptId,
+        scope: 'local_simulated',
+        caseType: 'file_roundtrip',
+        result,
+        executedBy: 'executor',
+        acceptanceIds,
+        productManifestSha256: CONTEXT.productManifestSha256,
+        startedAt,
+        finishedAt,
+        proofRefs,
+        assertions,
+        referenceSha256: originalSha,
+        receivedSha256: receivedSha,
+        notes,
+      },
+    });
+    return result === 'PASS';
   },
   // E2E-3: live roundtrip, both data classes x 3 rounds.
   'E2E-3': async (stack, source) => {
@@ -3752,6 +4274,32 @@ const SCENARIOS = {
   },
 };
 
+// receiver-ux-v2 media/save journeys (T25): E2E-30..34 as real desktop
+// journeys writing recipe-A ux-results records on the media run root. The
+// context/fixture roots are read lazily - they are assigned by
+// applyContextRoots() at run time, after this module-level assignment.
+Object.assign(SCENARIOS, createMediaJourneys({
+  sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
+  importVideo, completeLegSave, saveArtifact, runHelper, captureDesktop,
+  clickButton, ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
+  externalSha256, sha256File,
+  CONTEXT: () => CONTEXT,
+  FIXTURES: () => FIXTURES,
+  attemptId: () => ACTIVE_ATTEMPT_ID,
+}));
+
+// receiver-ux-v2 UI/AT/measurement suite (T31): E2E-35/36 real journeys plus
+// the E2E-37/38 evidence records. Reads roots lazily like the media journeys.
+Object.assign(SCENARIOS, createUiJourneys({
+  sleep, log, pageState, uxProbe, uxShot, attachCapture, loadSenderFile,
+  importVideo, completeLegSave, saveArtifact, runHelper, captureDesktop, clickButton,
+  ensureAttemptDir, upsertUxResult, loadPlanningCase, reloadReceiverPage,
+  externalSha256, sha256File, SourceScene,
+  CONTEXT: () => CONTEXT,
+  FIXTURES: () => FIXTURES,
+  attemptId: () => ACTIVE_ATTEMPT_ID,
+}));
+
 // --- Round-3 S-1: one attempt identity per invocation ----------------------
 //
 // A journey that throws must never leave an OLDER PASS standing in
@@ -3848,29 +4396,132 @@ function stampAttemptId(caseId, attemptId) {
   writeResults(RUN, records);
 }
 
+// The receiver-ux-v2 UX entry points, frozen by the v2 machine plan. Group
+// names expand to concrete scenario ids; every id is registered so a request
+// fails with an explicit "not implemented" exit instead of an empty handler
+// fabricating a PASS. Later stage-5 tasks attach the real journeys.
+const UX_ENTRY_GROUPS = {
+  'UX-SLICE': ['E2E-27'],
+  'UX-IAT': ['UX-IAT-01', 'UX-IAT-02', 'UX-IAT-03', 'UX-IAT-04', 'UX-IAT-05', 'UX-IAT-06', 'UX-IAT-07', 'UX-IAT-08'],
+  'UX-MEDIA-SAVE': ['E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34'],
+  'UX-UI': ['E2E-35', 'E2E-36', 'E2E-37', 'E2E-38'],
+  'UX-ALL': ['E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34', 'E2E-35', 'E2E-36', 'E2E-37', 'E2E-38'],
+};
+const UX_PLACEHOLDER_CASES = new Set([
+  'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-31', 'E2E-32', 'E2E-33', 'E2E-34',
+  'E2E-35', 'E2E-36', 'E2E-37', 'E2E-38', 'E2E-39',
+  ...Object.keys(UX_ENTRY_GROUPS),
+  ...Object.values(UX_ENTRY_GROUPS).flat(),
+]);
+
+// receiver-ux-v2 scenario ids (E2E-27..39): UX evidence lives in
+// ux-results.json; the v1 attempt marker/matrix never covers them.
+function isUxCase(id) {
+  return /^E2E-(2[7-9]|3\d)$/.test(id) || UX_ENTRY_GROUPS[id] !== undefined;
+}
+
+// All output roots come from the validated context; there is no default.
+function applyContextRoots(context) {
+  RUN = context.abs.runRoot;
+  STAGING = context.abs.stagingRoot;
+  FIXTURES = context.abs.fixtureRoot;
+  PLANNING = context.abs.planningFile;
+}
+
 async function main() {
+  // Everything that can refuse the run happens BEFORE the first write or
+  // process: the product manifest is re-hashed from disk, the scenario and
+  // UX placeholder registry is checked, and the run-root guard runs. An
+  // invalid build or an unknown case never starts a browser or a server.
+  try {
+    verifyProductManifest(CONTEXT);
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(3);
+  }
+  // Scenario-first lookup: a group id with its own full-suite scenario
+  // (UX-SLICE, UX-IAT) runs directly; other group ids expand to scenario ids.
+  // A group whose members are not all implemented still refuses (exit 4); it
+  // never becomes a hollow PASS. Single-id groups (UX-SLICE -> E2E-27) run
+  // the real handler.
+  let scenarioId = SCENARIOS[CASE] ? CASE : null;
+  if (!scenarioId && UX_ENTRY_GROUPS[CASE]) {
+    const ids = UX_ENTRY_GROUPS[CASE];
+    const unimplemented = ids.filter((id) => !SCENARIOS[id]);
+    if (unimplemented.length > 0) {
+      console.error(
+        `group ${CASE} expands to scenario ids that are not implemented yet: ${unimplemented.join(', ')}; ` +
+        'refusing to fabricate a PASS',
+      );
+      process.exit(4);
+    }
+    if (ids.length === 1) {
+      scenarioId = ids[0];
+    } else {
+      // A fully implemented multi-id group runs its members serially under
+      // one invocation identity; the group result is the AND of its cases.
+      scenarioId = CASE;
+      SCENARIOS[CASE] = async (groupStack, groupSource) => {
+        let allOk = true;
+        for (const memberId of ids) {
+          log(`group ${CASE}: running ${memberId}`);
+          const ok = await SCENARIOS[memberId](groupStack, groupSource);
+          log(`group ${CASE}: ${memberId} ${ok ? 'PASS' : 'FAIL'}`);
+          allOk = allOk && ok;
+          if (memberId !== ids[ids.length - 1]) {
+            // Fresh page-level save diagnostics per case: the page-lifetime
+            // hooks never reset on their own (v1 matrix reloads between legs
+            // for exactly this reason).
+            await reloadReceiverPage(groupStack);
+          }
+        }
+        return allOk;
+      };
+    }
+  }
+  const scenario = SCENARIOS[scenarioId];
+  if (!scenario && !UX_PLACEHOLDER_CASES.has(CASE)) {
+    console.error(`scenario ${CASE} is not implemented in this runner yet`);
+    process.exit(2);
+  }
+  if (!scenario) {
+    console.error(
+      `case ${CASE} is registered for receiver-ux-v2 but its real handler is not implemented yet; ` +
+      'refusing to fabricate a PASS',
+    );
+    process.exit(4);
+  }
+  try {
+    initializeRunRoot(CONTEXT, { resume: flags.has('resume') });
+  } catch (error) {
+    console.error(error && error.message ? error.message : String(error));
+    process.exit(5);
+  }
+  applyContextRoots(CONTEXT);
   mkdirSync(RUN, { recursive: true });
-  // A crashed earlier run can leave Edge instances (some holding an active
-  // share) or a listener on the receiver/recorder ports; both poison the
-  // capture picker. Clean them before starting our own stack.
-  await new Promise((resolveCleanup) => {
-    const ps = spawn('powershell', ['-NoProfile', '-Command',
-      `Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*cimbar-e2e-*') -or ($_.Name -eq 'msedge.exe' -and $_.CommandLine -like '*--disable-backgrounding-occluded-windows*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*server.py --port 8771*') -or ($_.Name -eq 'python.exe' -and $_.CommandLine -like '*http.server 8790*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
-    { stdio: 'ignore' });
-    ps.on('exit', resolveCleanup);
-  });
-  const scenario = SCENARIOS[CASE];
-  if (!scenario) throw new Error(`scenario ${CASE} is not implemented in this runner yet`);
+  // Reclaim ONLY processes a previous run of THIS run root recorded in
+  // pids.json, after a command-line re-check. Never kill by port, browser
+  // flag or process name.
+  const reclaimed = await cleanupRecordedProcesses(RUN);
+  if (reclaimed.recorded > 0) {
+    log(`process guard: reclaimed ${reclaimed.killed.length}/${reclaimed.recorded} recorded process(es)`);
+  }
   const ATTEMPT_ID = `${CASE}-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
   ACTIVE_ATTEMPT_ID = ATTEMPT_ID;
-  // Planned gate cases get the S-1 attempt marker; diagnostics do not.
-  const plannedCase = loadPlanningCase(CASE);
-  if (plannedCase) writeAttemptMarker(CASE, ATTEMPT_ID);
-  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20']);
+  // Planned v1 gate cases get the S-1 attempt marker; diagnostics and the
+  // receiver-ux-v2 cases (E2E-27+) do not - UX evidence lives in
+  // ux-results.json, never in the v1 results.json.
+  const plannedCase = isUxCase(scenarioId) ? null : loadPlanningCase(scenarioId);
+  if (plannedCase) writeAttemptMarker(scenarioId, ATTEMPT_ID);
+  const needsSender = new Set(['SMOKE', 'E2E-3', 'E2E-4', 'E2E-5', 'E2E-6', 'E2E-7', 'E2E-8', 'E2E-9', 'E2E-10', 'E2E-11', 'E2E-12', 'E2E-13', 'E2E-17', 'E2E-18', 'E2E-19', 'E2E-20', 'E2E-27', 'E2E-28', 'E2E-29', 'E2E-30', 'E2E-36']);
   // E2E-1/2 launch their own packaged receiver via launch.ps1; a standard
   // stack receiver would clash on the shared CDP debug port (9445).
   const selfManaged = new Set(['E2E-1', 'E2E-2']);
-  const stack = selfManaged.has(CASE) ? null : await launchStack({ withSender: needsSender.has(CASE) });
+  const groupIds = UX_ENTRY_GROUPS[CASE] || null;
+  const withSender = groupIds
+    ? groupIds.some((id) => needsSender.has(id))
+    : needsSender.has(scenarioId);
+  const stack = selfManaged.has(scenarioId) ? null : await launchStack({ withSender });
   try {
     const ok = await scenario(stack, SOURCE);
     log(`CASE ${CASE} ${ok ? 'PASS' : 'FAIL'} (attempt ${ATTEMPT_ID})`);
@@ -3878,12 +4529,12 @@ async function main() {
   } catch (error) {
     // The attempt marker's FAIL record stands for this attempt; annotate it
     // with the error so results.json alone explains the failure.
-    if (plannedCase) annotateAttemptFailure(CASE, ATTEMPT_ID, error);
+    if (plannedCase) annotateAttemptFailure(scenarioId, ATTEMPT_ID, error);
     throw error;
   } finally {
     // Stamp the identity onto whatever record this attempt produced (the
     // scenario's own record, or the retained FAIL marker).
-    if (plannedCase) stampAttemptId(CASE, ATTEMPT_ID);
+    if (plannedCase) stampAttemptId(scenarioId, ATTEMPT_ID);
     if (stack) await stack.close();
   }
   // Guards against a leaked handle (a child process, a CDP socket) keeping

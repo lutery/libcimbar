@@ -3,7 +3,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { inspectCapabilities } from '../../src/capabilities.js';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+import * as uiNamespace from '../../src/ui.js';
 import {
   deriveControls,
   noDataHint,
@@ -163,4 +169,127 @@ test('UT-042 suggested names are safe basenames', () => {
 
   const out = safeSuggestedName('../../x/y.bin', 'a1');
   assert.ok(!out.includes('/') && !out.includes('\\') && !out.includes('..'));
+});
+
+
+// --- T26: Chinese main interface and accessible feedback (RED; T27 lands) ----
+//
+// These pins read the real page sources: the DOM is exercised in the browser
+// suites and real keyboard/AT acceptance stays with T31 (per plan T26 Step 2).
+
+function pageSource(rel) {
+  return readFileSync(join(HERE, '..', '..', '..', '..', rel), 'utf8');
+}
+
+// Given the receiver page markup
+// When the two entry buttons are inspected
+// Then both keep their original ids and speak Chinese (T27 implements)
+test('T26 the two entries keep their ids and speak Chinese', () => {
+  const html = pageSource('web/desktop-recv/index.html');
+  const live = html.match(/<button id="btn-live"[^>]*>([^<]*)</);
+  assert.ok(live, 'btn-live keeps its original id');
+  assert.match(live[1], /[\u4e00-\u9fff]/, `btn-live copy is Chinese, got "${live[1]}"`);
+  const video = html.match(/<button id="btn-video"[^>]*>([^<]*)</);
+  assert.ok(video, 'btn-video keeps its original id');
+  assert.match(video[1], /[\u4e00-\u9fff]/, `btn-video copy is Chinese, got "${video[1]}"`);
+});
+
+// Given the app wiring
+// When the dynamic text surfaces are inspected
+// Then everything user-facing is written through textContent and the original
+// English business status surface stays exactly where it was
+test('T26 the dynamic text surface stays textContent-only with the old status intact', () => {
+  const app = pageSource('web/desktop-recv/src/app.js');
+  assert.ok(!app.includes('innerHTML'), 'app.js never uses innerHTML');
+  assert.ok(app.includes('el.status.textContent = controls.statusText'),
+    'the original business status surface is preserved unchanged');
+  const html = pageSource('web/desktop-recv/index.html');
+  for (const match of html.matchAll(/<script\b[^>]*>/g)) {
+    assert.match(match[0], /\bsrc\s*=/, 'every script tag is an external module, never inline code');
+  }
+});
+
+// Given keyboard users
+// When the focusable surface is inspected
+// Then every control is a native element, the tab order is the DOM order
+// (no positive tabindex), and the live region is not a tab stop
+test('T26 focus targets are native and the tab order is the DOM order', () => {
+  const html = pageSource('web/desktop-recv/index.html');
+  assert.ok(!/tabindex\s*=\s*["']?[1-9]/.test(html),
+    'no positive tabindex anywhere: the tab order is the DOM order');
+  for (const match of html.matchAll(/<button\b[^>]*>/g)) {
+    assert.match(match[0], /type="button"/, 'every button is type=button');
+  }
+  assert.match(html, /<input id="file-input" type="file"/,
+    'the file entry keeps its native input');
+  assert.ok(!/id="ux-announcement"[^>]*tabindex/.test(html),
+    'the live region is not a tab stop');
+});
+
+// Given long file names and multi-language copy
+// When the layout styles are inspected
+// Then the ux and artifact regions wrap instead of overflowing, and the
+// diagnostic log is collapsible while the preview lives outside that
+// disclosure (folding diagnostics can never hide the active preview)
+test('T26 long copy wraps and diagnostics fold without hiding the preview', () => {
+  const html = pageSource('web/desktop-recv/index.html');
+  const css = pageSource('web/desktop-recv/styles.css');
+
+  assert.match(css, /overflow-wrap|word-break|min-width:\s*0/,
+    'the text regions wrap long names instead of overflowing');
+
+  assert.match(html, /<details[\s\S]*?id="log"|<details[\s\S]*?id="ux-diagnostics"/,
+    'the diagnostic log is a collapsible disclosure');
+  const openTag = html.indexOf('<details');
+  const closeTag = html.indexOf('</details>');
+  const previewPos = html.indexOf('id="preview"');
+  assert.ok(openTag === -1 || previewPos < openTag || previewPos > closeTag,
+    'the preview element sits outside the diagnostics disclosure');
+  assert.ok(!/display\s*:\s*none/.test(css), 'no display:none anywhere in the stylesheet');
+});
+
+// --- T30: the probe surface is hidden from AT and recovery copy surfaces -----
+
+// Given the page and app wiring
+// When assistive tech reads the page and a capability/recovery failure shows
+// Then the legacy English probe is aria-hidden, the capability banner speaks
+// Chinese, the artifact size uses Chinese units, and the recovery summary is
+// written into the visible secondary line while the folded log keeps details
+test('T30 the legacy probe hides from AT and recovery copy reaches the surface', () => {
+  const html = pageSource('web/desktop-recv/index.html');
+  assert.match(html, /id="status"[^>]*aria-hidden="true"/,
+    'the legacy probe element is aria-hidden and never announced');
+
+  const app = pageSource('web/desktop-recv/src/app.js');
+  assert.ok(app.includes('recoveryTextZh(code)'),
+    'the recovery summary comes from the Chinese mapping');
+  assert.ok(app.includes('el.uxSecondary.textContent'),
+    'the recovery summary is written into the visible secondary line');
+  assert.match(app, /部分功能不可用/,
+    'the capability banner speaks Chinese');
+  assert.ok(app.includes('字节'),
+    'the artifact size uses Chinese units');
+});
+
+// --- T31b: focus returns to an executable action after save settles ----------
+
+// Given a save that just settled
+// When the focus target is derived
+// Then a cancel/failure returns focus to the save button when it is enabled
+// (otherwise the start entry), and a success returns to the new-session entry
+test('T31b focus returns to an executable action after the save settles', () => {
+  const uiModule = uiNamespace;
+  assert.equal(typeof uiModule.focusTargetAfterSave, 'function',
+    'the focus target helper exists');
+  assert.equal(uiModule.focusTargetAfterSave('cancelled', { canSave: true }), 'save');
+  assert.equal(uiModule.focusTargetAfterSave('failed', { canSave: true }), 'save');
+  assert.equal(uiModule.focusTargetAfterSave('cancelled', { canSave: false }), 'start');
+  assert.equal(uiModule.focusTargetAfterSave('saved', { canSave: false }), 'start');
+  assert.equal(uiModule.focusTargetAfterSave('writing', { canSave: true }), null);
+  assert.equal(uiModule.focusTargetAfterSave('selecting', { canSave: true }), null);
+  assert.equal(uiModule.focusTargetAfterSave('pending', { canSave: true }), null);
+
+  const app = pageSource('web/desktop-recv/src/app.js');
+  assert.ok(app.includes('focusTargetAfterSave'), 'the app wires the derived target');
+  assert.ok(app.includes('.focus()'), 'the app moves the focus');
 });

@@ -1,0 +1,49 @@
+erDiagram
+  RECEIVE_SESSION ||--|| RECEIVE_OBSERVATION : owns
+  RECEIVE_OBSERVATION ||--o{ RATE_BUCKET : bounds
+  RECEIVE_SESSION ||--o| MEDIA_POSITION : observes
+  RECEIVE_SESSION ||--o| ARTIFACT : produces
+  ARTIFACT ||--o{ SAVE_ATTEMPT : saves
+  RECEIVE_SESSION ||--o| VIEW_PROJECTION : projects
+  RECEIVE_SESSION {
+    string sessionId
+    int sessionSeq
+    string inputKind
+    string businessState
+  }
+  RECEIVE_OBSERVATION {
+    int sessionSeq
+    int observationRevision
+    number receivingAt
+    number lastDataAt
+    number lastAdvanceAt
+    number lastRatio
+    string progressQuality
+    boolean ambiguityLatched
+    number endedAt
+  }
+  RATE_BUCKET {
+    number timeInterval
+    number recognizedBytes
+  }
+  MEDIA_POSITION {
+    number positionSeconds
+    number durationSeconds
+  }
+  ARTIFACT {
+    string artifactId
+    string suggestedName
+    number byteCount
+  }
+  SAVE_ATTEMPT {
+    string attemptId
+    string saveStatus
+    number lastError
+  }
+  VIEW_PROJECTION {
+    string primaryText
+    string secondaryText
+    string progressPresentation
+    string formattedRate
+    string elapsedText
+  }

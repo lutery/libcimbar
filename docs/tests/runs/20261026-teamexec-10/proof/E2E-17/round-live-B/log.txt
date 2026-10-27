@@ -1,0 +1,10 @@
+status=Saved
+artifact=sample-random-2.bin 65536 字节
+saveTimings={"initStartAt":1792984659811,"initReadyAt":1792984659921,"validInputStartAt":1792984652547,"reconstructionDoneAt":1792984665035,"saveRequestAt":1792984668484,"createWritableAccessedAt":1792984673558,"writableAt":1792984673564,"writeCloseAt":1792984673694,"lastSaveClickAt":1792984668484,"decoderInitMs":110,"sourceWaitMs":-7374,"initMs":-7264,"reconstructMs":12488,"totalToReadyMs":5224,"pickerWaitMs":5074,"writableOpenMs":6,"saveWaitMs":5080,"saveWriteMs":130,"saveMs":5210}
+saveTimingsComplete=true
+sha256 original=e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712 received=e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712 equal=true
+log=recording: 1604x1002, 9.3s
+[error] 15010: 解码中断。请重新开始接收。
+capture stopped; the file is ready to save
+saved (1)
+

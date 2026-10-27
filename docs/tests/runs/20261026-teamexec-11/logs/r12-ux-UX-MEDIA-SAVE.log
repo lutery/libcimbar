@@ -1,0 +1,55 @@
+2026-10-26T08:53:59.493Z process guard: reclaimed 0/87 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:04] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 16:54:05] "GET /pwa.json HTTP/1.1" 200 -
+2026-10-26T08:54:10.474Z group UX-MEDIA-SAVE: running E2E-30
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=74404
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-30\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\d1\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=74404
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-30\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\d2\received.bin
+2026-10-26T08:55:38.642Z group UX-MEDIA-SAVE: E2E-30 PASS
+2026-10-26T08:55:39.170Z group UX-MEDIA-SAVE: running E2E-31
+[helper] open tier 1: no win32 edit 1001 in this dialog
+[helper] open tier 2: no UIA edit named 文件名/File name
+[helper] open tier 3: text probe verified 'E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\fixtures\fixtures-media\V-LAST-with.webm'
+[helper] open dialog closed after Enter (closure observed; the app-side change event decides)
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-31\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\save\received.bin
+2026-10-26T08:56:19.626Z group UX-MEDIA-SAVE: E2E-31 PASS
+2026-10-26T08:56:20.153Z group UX-MEDIA-SAVE: running E2E-32
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-32\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\save\received.bin
+2026-10-26T08:57:19.208Z group UX-MEDIA-SAVE: E2E-32 FAIL
+2026-10-26T08:57:19.726Z group UX-MEDIA-SAVE: running E2E-33
+[helper] save-cancel via Cancel id 2
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-33\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\retry-received.bin
+2026-10-26T08:58:07.054Z group UX-MEDIA-SAVE: E2E-33 PASS
+2026-10-26T08:58:07.573Z group UX-MEDIA-SAVE: running E2E-34
+[helper] False
+[helper] overwrite confirmed
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-34\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\locked-received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-34\UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e\recovered-received.bin
+2026-10-26T08:59:05.582Z group UX-MEDIA-SAVE: E2E-34 PASS
+2026-10-26T08:59:05.583Z CASE UX-MEDIA-SAVE FAIL (attempt UX-MEDIA-SAVE-2026-10-26T08-53-59-494Z-f08d2e)
+EXIT=1

@@ -1,0 +1,228 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "validPairs": 0,
+  "pairs": [
+    {
+      "pair": 1,
+      "valid": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "a": {
+        "readyMs": 16734,
+        "p50Ms": 58.399999998509884,
+        "p95Ms": 78.30000000074506,
+        "okFrameCount": 110,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 14974,
+        "p50Ms": 57.80000000074506,
+        "p95Ms": 85.29999999701977,
+        "okFrameCount": 102,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 169.5,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_INTERVAL"
+      }
+    },
+    {
+      "pair": 2,
+      "valid": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "a": {
+        "readyMs": 15223,
+        "p50Ms": 59.70000000298023,
+        "p95Ms": 86.39999999850988,
+        "okFrameCount": 102,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 14923,
+        "p50Ms": 58,
+        "p95Ms": 85.5,
+        "okFrameCount": 100,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 119.5,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_INTERVAL"
+      }
+    },
+    {
+      "pair": 3,
+      "valid": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "a": {
+        "readyMs": 16451,
+        "p50Ms": 58.399999998509884,
+        "p95Ms": 88.59999999776483,
+        "okFrameCount": 112,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 17370,
+        "p50Ms": 60.099999997764826,
+        "p95Ms": 84.90000000223517,
+        "okFrameCount": 116,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 206.19999999925494,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_INTERVAL"
+      }
+    },
+    {
+      "pair": 4,
+      "valid": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "a": {
+        "readyMs": 17164,
+        "p50Ms": 59.69999999925494,
+        "p95Ms": 81.39999999850988,
+        "okFrameCount": 116,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 16370,
+        "p50Ms": 59.69999999925494,
+        "p95Ms": 87.19999999925494,
+        "okFrameCount": 107,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 216.69999999925494,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_INTERVAL"
+      }
+    },
+    {
+      "pair": 5,
+      "valid": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "a": {
+        "readyMs": 14867,
+        "p50Ms": 60,
+        "p95Ms": 86.30000000074506,
+        "okFrameCount": 97,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 14637,
+        "p50Ms": 60.30000000074506,
+        "p95Ms": 78.80000000074506,
+        "okFrameCount": 97,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 70.60000000149012,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": "E_TELEMETRY_INTERVAL"
+      }
+    }
+  ],
+  "metrics": {
+    "readyMs": {
+      "metric": "readyMs",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 250,
+      "formula": "candidateMedian <= baselineMedian * 1.10 + 250",
+      "limit": 250,
+      "marginMs": 250,
+      "pass": true
+    },
+    "frameRttP50Ms": {
+      "metric": "frameRttP50Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 2,
+      "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)",
+      "limit": 2,
+      "marginMs": 2,
+      "pass": true
+    },
+    "frameRttP95Ms": {
+      "metric": "frameRttP95Ms",
+      "baselineMedian": null,
+      "candidateMedian": null,
+      "baselineRounds": 0,
+      "candidateRounds": 0,
+      "relativeFactor": 1.15,
+      "absoluteAllowanceMs": 5,
+      "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)",
+      "limit": 5,
+      "marginMs": 5,
+      "pass": true
+    }
+  },
+  "verdict": "FAIL",
+  "reasons": [
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 1,
+      "detail": "telemetry numeric area was written every 169.5ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 2,
+      "detail": "telemetry numeric area was written every 119.5ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 3,
+      "detail": "telemetry numeric area was written every 206.19999999925494ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 4,
+      "detail": "telemetry numeric area was written every 216.69999999925494ms (< 250ms)"
+    },
+    {
+      "code": "E_TELEMETRY_INTERVAL",
+      "side": "B",
+      "pairIndex": 5,
+      "detail": "telemetry numeric area was written every 70.60000000149012ms (< 250ms)"
+    }
+  ],
+  "formulaSource": "docs/plans/receiver-ux-v2/performance-method.json"
+}

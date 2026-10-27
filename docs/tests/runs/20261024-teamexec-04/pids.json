@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 46464,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 55864,
+      "kind": "recorder-http"
+    },
+    {
+      "pid": 51036,
+      "kind": "recorder-edge",
+      "markers": [
+        "cimbar-recorder-"
+      ]
+    },
+    {
+      "pid": 46012,
+      "kind": "receiver-edge"
+    },
+    {
+      "pid": 55640,
+      "kind": "receiver-server"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+== consistent FAIL: real validate_ux_record violations ==
+  - E2E-38: recomputed measurement[0] verdict is 'FAIL'; the gate requires the recomputed measurement verdict PASS
+== product tamper: real CLI exit=1 ==
+  - E_BUILD_BINDING : run.json candidate product manifest does not match the current run context
+== settled<t0: real CLI exit=1 ==
+  stats.roundViolations codes: {'E_RTT': 1}
+  stats.verdict: NOT_RUN
+  stats.validPairs: 4

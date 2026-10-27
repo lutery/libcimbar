@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-07",
+  "phase": "metrics",
+  "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+  "productManifestSha256": "48aa2be817f11f3a114c7d178aec2fd4cf0d54cfd6b21bfa4b29ec118d4547e2",
+  "scope": "unit_integration",
+  "records": [
+    {
+      "caseId": "UX-IAT-01",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-023"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:08.921Z",
+      "finishedAt": "2026-10-24T18:38:10.291Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-01-A1",
+          "expected": "real WASM decodes the captured code frame to a data outcome",
+          "observed": "outcome=data bytes=7500 frame=710x710",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-01-A2",
+          "expected": "the positive case carries a valid optional report observation",
+          "observed": "{\"version\":1,\"report\":{\"state\":\"single\",\"ratios\":[0.0566038],\"diagnosticCode\":0}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-01-A3",
+          "expected": "a no_data outcome never reads the shared report buffer",
+          "observed": "{\"outcome\":\"no_data\",\"bytes\":0,\"observation\":null}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-01-A4",
+          "expected": "each report fault adapter degrades ONLY the report; the frame outcome stays identical",
+          "observed": "[{\"adapter\":\"missing-export-19001\",\"outcome\":\"data\",\"bytes\":7500,\"code\":19001},{\"adapter\":\"negative-length-19002\",\"outcome\":\"data\",\"bytes\":7500,\"code\":19002},{\"adapter\":\"truncated-1024-19003\",\"outcome\":\"data\",\"bytes\":7500,\"code\":19003},{\"adapter\":\"bad-text-19004\",\"outcome\":\"data\",\"bytes\":7500,\"code\":19004}]",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-01-A5",
+          "expected": "removing the adapter restores the real report export",
+          "observed": "state=single outcome=data",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-01-A6",
+          "expected": "client close clears the pending submission metadata",
+          "observed": "null",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-01/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-01 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-02",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-018",
+        "AC-021",
+        "AC-023"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:10.291Z",
+      "finishedAt": "2026-10-24T18:38:10.296Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-02-A1",
+          "expected": "pending metadata is stamped just before the post with the owner identity and manual clock",
+          "observed": "{\"stamped\":{\"sessionId\":\"iat02\",\"sessionSeq\":7,\"frameId\":1,\"submittedAtMs\":2500},\"postedFrameId\":1,\"clockAtPost\":2500}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-02/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-02-A2",
+          "expected": "a duplicate frame result counts exactly once in the observation model",
+          "observed": "{\"acceptOne\":{\"ok\":true,\"code\":0,\"data\":{\"sessionSeq\":7,\"applied\":true,\"observationRevision\":2}},\"acceptDup\":{\"ok\":false,\"code\":19007,\"data\":null}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-02/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-02-A3",
+          "expected": "a stale-seq feed after a newer begin is refused (old results never raise the new session)",
+          "observed": "{\"ok\":false,\"code\":19007,\"data\":null}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-02/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-02-A4",
+          "expected": "finish closes the observation window; later feeds are refused",
+          "observed": "{\"finish\":{\"ok\":true,\"code\":0,\"data\":{\"sessionSeq\":8,\"applied\":true,\"observationRevision\":2}},\"postFinish\":{\"ok\":false,\"code\":19007,\"data\":null}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-02/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-02-A5",
+          "expected": "client close clears the pending submission metadata",
+          "observed": "null",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-02/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-02 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-03",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:10.296Z",
+      "finishedAt": "2026-10-24T18:38:10.304Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-03-A1",
+          "expected": "elapsed is measured from receivingAt (3250 - 0 = 3250ms)",
+          "observed": "{\"elapsedMs\":3250}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-03/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-03-A2",
+          "expected": "bucket eviction + span math: window gens [2..13] = 90B over 2750ms = 32.727 B/s (<0.1 KiB/s)",
+          "observed": "{\"rate\":{\"phase\":\"active\",\"bytesPerSecond\":32.72727272727273,\"windowMs\":2750,\"includesRedundancy\":true},\"rateText\":\"<0.1 KiB/s（含冗余）\",\"buckets\":[{\"generation\":12,\"bytes\":50},{\"generation\":1,\"bytes\":30},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":-1,\"bytes\":0},{\"generation\":11,\"bytes\":40}]}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-03/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-03-A3",
+          "expected": "time advances without new data: same revision, stable announcement key, no fake Ready",
+          "observed": "{\"revision\":9,\"key\":\"receiving:none:none\",\"state\":\"Receiving\"}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-03/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-03-A4",
+          "expected": ">=5s without data surfaces the no-new-data notice while the elapsed clock keeps running",
+          "observed": "{\"statusKey\":\"no_new_data\",\"primary\":\"最近没有识别到新数据\",\"next\":\"\"}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-03/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-03 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-04",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-018",
+        "AC-021",
+        "AC-022",
+        "AC-023"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:10.305Z",
+      "finishedAt": "2026-10-24T18:38:12.192Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-04-A1",
+          "expected": "business changes paint immediately (not throttled by the display clock)",
+          "observed": "{\"immediatePaints\":6,\"paints\":11}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-04/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-04-A2",
+          "expected": "telemetry numeric refresh stays <=4Hz under a 25Hz snapshot stream (250ms clock)",
+          "observed": "{\"telemetryPaints\":5,\"elapsedMs\":1165}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-04/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-04-A3",
+          "expected": "dispose() stops every display timer (no paint after dispose)",
+          "observed": "{\"before\":5,\"after\":5}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-04/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-04-A4",
+          "expected": "a throwing paint degrades inside the UX layer and never escapes to the app",
+          "observed": "null",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-04/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-04 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-05",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-019",
+        "AC-021",
+        "AC-024"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:12.193Z",
+      "finishedAt": "2026-10-24T18:38:53.545Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-05-A1",
+          "expected": "the complete recording reaches Ready through the real chain",
+          "observed": "{\"state\":\"Ready\",\"media\":\"录像位置 7.3s / 78%\",\"previewHidden\":false,\"videoW\":0,\"artifact\":{\"artifactId\":\"1862271598\",\"fountainFileId\":\"6f00026e\",\"suggestedName\":\"primary-input-128k.bin\",\"byteCount\":131072,\"compressedBytes\":131183,\"mime\":\"application/octet-stream\"},\"revision\":3}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-05/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-05-A2",
+          "expected": "the media position is displayed and the preview presents during playback",
+          "observed": "{\"sawMediaText\":true}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-05/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-05-A3",
+          "expected": "the truncated recording ends Incomplete at its real EOF (strict barrier holds)",
+          "observed": "{\"state\":\"Incomplete\",\"media\":\"录像位置 6.3s / 99%\",\"previewHidden\":false,\"videoW\":0,\"artifact\":null,\"revision\":5}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-05/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-05-A4",
+          "expected": "stop between imports cleared the previous stream",
+          "observed": "{\"state\":\"Stopped\",\"srcObject\":null,\"revision\":5}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-05/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-05 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-06",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-020",
+        "AC-021",
+        "AC-022"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:53.546Z",
+      "finishedAt": "2026-10-24T18:38:53.913Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-06-A1",
+          "expected": "picker cancel maps to 16002 (cancelled, not failed) and stays retryable",
+          "observed": "{\"events\":[{\"saveStatus\":\"selecting\",\"attemptId\":1,\"lastError\":null},{\"saveStatus\":\"cancelled\",\"attemptId\":1,\"lastError\":16002}],\"snapshot\":{\"saveStatus\":\"cancelled\",\"attemptId\":1,\"lastError\":16002}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-06/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-06-A2",
+          "expected": "write failure and close failure both end failed/retryable (16003)",
+          "observed": "{\"failWrite\":\"selecting/null|writing/null|failed/16005\",\"failClose\":\"selecting/null|writing/null|failed/16006\"}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-06/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-06-A3",
+          "expected": "a slow write surfaces the pending phase and ONLY write+close success reaches saved",
+          "observed": "{\"pendingSeen\":true,\"slowSaved\":{\"saveStatus\":\"saved\",\"attemptId\":1,\"lastError\":null}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-06/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-06-A4",
+          "expected": "a second start during an in-flight attempt is refused busy (16008)",
+          "observed": "{\"secondStart\":false,\"snapshot\":{\"saveStatus\":\"selecting\",\"attemptId\":1,\"lastError\":16008}}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-06/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-06-A5",
+          "expected": "after failures the same artifact saves cleanly on a new attempt",
+          "observed": "{\"saveStatus\":\"saved\",\"attemptId\":1,\"lastError\":null}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-06/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-06 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-07",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": "executor",
+      "acceptanceIds": [
+        "AC-020",
+        "AC-021",
+        "AC-023",
+        "AC-024"
+      ],
+      "result": "PASS",
+      "startedAt": "2026-10-24T18:38:53.913Z",
+      "finishedAt": "2026-10-24T18:40:06.174Z",
+      "assertions": [
+        {
+          "id": "UX-IAT-07-A1",
+          "expected": "the real verify gate CLI chain (positives + all specified negatives) passes on temp disk fixtures",
+          "observed": "exit=0 last=\"SELFTEST PASS (55 cases)\"",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-07/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        },
+        {
+          "id": "UX-IAT-07-A2",
+          "expected": "the negative matrix covers missing-UX/missing/wrong-binding/fake-hash/escape/no-assertion/phase refusals",
+          "observed": "{\"hasMissingId\":true,\"hasWrongBinding\":true,\"hasFakeHash\":true,\"hasEscape\":true,\"hasAssertion\":true,\"hasPhase\":true}",
+          "result": "PASS",
+          "proofRef": "proof/UX-IAT-07/UX-IAT-2026-10-24T18-38-00-909Z-184ff0/assertions.json"
+        }
+      ],
+      "notes": "browser IAT group UX-IAT-07 executed in the real receiver page (scope=unit_integration)"
+    },
+    {
+      "caseId": "UX-IAT-08",
+      "attemptId": "UX-IAT-2026-10-24T18-38-00-909Z-184ff0",
+      "scope": "unit_integration",
+      "executedBy": null,
+      "acceptanceIds": [
+        "AC-023",
+        "AC-024"
+      ],
+      "result": "NOT_RUN",
+      "startedAt": null,
+      "finishedAt": null,
+      "assertions": [],
+      "notes": "NOT_RUN: T28 measure-ux 观测器工具未交付；按计划不伪造测量链路结果"
+    }
+  ],
+  "generatedAt": "2026-10-24T18:40:06.174Z"
+}

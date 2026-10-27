@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261024-teamexec-04",
+  "phase": "baseline",
+  "attemptId": "preflight-001",
+  "caseId": "baseline-preflight",
+  "observedAt": "2026-10-24T09:24:48.404Z",
+  "video": {
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/fixtures-media/V-LAST-with.webm",
+    "proofRef": "proof/baseline-preflight/preflight-001/imported.webm",
+    "sha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+    "bytes": 14330428
+  },
+  "productManifestSha256": "b8c78a1851e05e8558a3a7b7582c5f67f5df82f3b5429cff3749e472367e6e0d",
+  "state": "Ready",
+  "timing": {
+    "initStartAt": 1792833869270,
+    "initReadyAt": 1792833869388,
+    "receivingAt": 1792833869629,
+    "readyAt": 1792833884641,
+    "initMs": 118,
+    "readyMs": 15012,
+    "wallMs": 25194
+  },
+  "processedFrames": 101,
+  "artifact": {
+    "byteCount": 131072,
+    "suggestedName": "primary-input-128k.bin",
+    "mime": "application/octet-stream"
+  },
+  "result": "READY_OBSERVED",
+  "note": "T6 baseline preflight only: proves the baseline is measurable; it is NOT a candidate performance PASS and carries no threshold verdict."
+}

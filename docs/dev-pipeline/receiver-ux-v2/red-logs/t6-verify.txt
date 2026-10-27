@@ -1,0 +1,19 @@
+== verify-assets baseline ==
+ASSET VERIFICATION PASS
+  assetSetId : desktop-recv-v1
+  revision   : a515922d2106af0cab5f350e0af469b6f4d93ca4
+  jsSha256   : 1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff
+  wasmSha256 : d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b
+  evidence   : docs/tests/runs/20261018-teamexec-01/strict-eof-evidence.json
+exit=0
+== create-fixtures idempotent rerun ==
+2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2    1048576  compressible/ext-text-1mib.bin
+aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752    4194304  compressible/ext-text-4mib.bin
+3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9    1048576  incompressible/ext-random-1mib.bin
+6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c    4194304  incompressible/ext-random-4mib.bin
+e828774cbe25606a10b5adb48e4996f0e809b9df7d06b5ecc91df05b04c914a4   20971520  over-budget/ext-text-20mib.bin
+manifest: docs/tests/runs/20261024-teamexec-04\fixtures-ext\manifest.json
+exit=0
+== affected rerun ==
+node --test run-context.test.mjs exit 0 (10/10, includes T6 frozen-manifest shape)
+python ux-evidence-selftest.py exit 0 (SELFTEST PASS (55 cases))

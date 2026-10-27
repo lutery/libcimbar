@@ -1,0 +1,17 @@
+{
+  "result": {
+    "first": {
+      "at": 34.9158,
+      "progressText": "重建估计约 40%"
+    },
+    "writesAtTerminalMoment": 2,
+    "totalWrites": 2,
+    "last": {
+      "at": 68.0205,
+      "progressText": "重建完成"
+    },
+    "writesAfterIdle": 2,
+    "gapMs": 33.1047
+  },
+  "assertionPass": false
+}

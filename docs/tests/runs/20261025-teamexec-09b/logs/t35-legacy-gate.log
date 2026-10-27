@@ -1,0 +1,3 @@
+usage: verify-evidence.py [-h] --run RUN [--gate {local,field}]
+                          [--planning PLANNING] [--thresholds THRESHOLDS]
+verify-evidence.py: error: the following arguments are required: --run

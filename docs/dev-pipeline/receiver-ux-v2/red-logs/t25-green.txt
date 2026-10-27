@@ -1,0 +1,9 @@
+== UX-MEDIA-SAVE attempt-2 (exit 0) ==
+command: node tools/desktop-recv/e2e/run-e2e.mjs --context docs/tests/runs/20261025-teamexec-08/run-context.json --case UX-MEDIA-SAVE
+attempt UX-MEDIA-SAVE-2026-10-24T22-03-26-546Z-0cfecd: E2E-30 PASS(6) E2E-31 PASS(4) E2E-32 PASS(4) E2E-33 PASS(4) E2E-34 PASS(3); CASE UX-MEDIA-SAVE PASS
+
+ux-display: 6 tests, 0 failed, 0 todo, 0 skipped
+UNIT SUITES PASS (12 suite(s))
+exit=0
+SELFTEST PASS (55 cases)
+SELFTEST PASS (14 cases)

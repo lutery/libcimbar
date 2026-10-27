@@ -1,0 +1,15 @@
+{
+  "matchedEnvironment": [
+    "wasmSha256",
+    "inputSha256",
+    "mediaSha256",
+    "browserVersion",
+    "mode",
+    "viewport",
+    "deviceScaleFactor",
+    "screenResolution",
+    "powerMode",
+    "instrumentationSha256"
+  ],
+  "sides": {}
+}

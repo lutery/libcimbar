@@ -1,0 +1,3 @@
+FAIL preflight: missing E:\Project\OpenSource\c++\libcimbar\tools\desktop-recv\verify-ux-evidence.py (module missing)
+FAIL preflight: missing E:\Project\OpenSource\c++\libcimbar\tools\desktop-recv\e2e\run-context.mjs (module missing)
+SELFTEST FAIL (module missing)

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "UX-IAT-04-A1",
+    "expected": "business changes paint immediately (not throttled by the display clock)",
+    "observed": "{\"immediatePaints\":2,\"paints\":7}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A2",
+    "expected": "telemetry numeric refresh stays <=4Hz under a 25Hz snapshot stream (250ms clock)",
+    "observed": "{\"telemetryPaints\":5,\"elapsedMs\":1163}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A3",
+    "expected": "dispose() stops every display timer (no paint after dispose)",
+    "observed": "{\"before\":5,\"after\":5}",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A4",
+    "expected": "a throwing paint degrades inside the UX layer and never escapes to the app",
+    "observed": "null",
+    "result": "PASS",
+    "proofRef": null
+  },
+  {
+    "id": "UX-IAT-04-A5",
+    "expected": "a terminal state inside the closed 250ms gate converges ON the boundary (>=250ms after the previous write), paints the final projection, and releases the timer",
+    "observed": "{\"first\":{\"at\":5849.89999999851,\"progressText\":\"上次重建估计约 40%\"},\"writesAtTerminalMoment\":1,\"totalWrites\":2,\"last\":{\"at\":6105.800000000745,\"progressText\":\"重建完成\"},\"writesAfterIdle\":2,\"gapMs\":255.90000000223517}",
+    "result": "PASS",
+    "proofRef": null
+  }
+]

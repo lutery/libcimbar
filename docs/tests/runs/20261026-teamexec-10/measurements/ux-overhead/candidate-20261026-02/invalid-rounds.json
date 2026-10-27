@@ -1,0 +1,101 @@
+{
+  "count": 12,
+  "rounds": [
+    {
+      "file": "rounds/warmup-A.json",
+      "side": "A",
+      "pairIndex": 0,
+      "warmup": true,
+      "reason": "E_WARMUP",
+      "detail": "warmup rounds are excluded from the measurement"
+    },
+    {
+      "file": "rounds/warmup-B.json",
+      "side": "B",
+      "pairIndex": 0,
+      "warmup": true,
+      "reason": "E_WARMUP",
+      "detail": "warmup rounds are excluded from the measurement"
+    },
+    {
+      "file": "rounds/pair-1-A.json",
+      "side": "A",
+      "pairIndex": 1,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 1 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-1-B.json",
+      "side": "B",
+      "pairIndex": 1,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 1 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-2-A.json",
+      "side": "A",
+      "pairIndex": 2,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 2 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-2-B.json",
+      "side": "B",
+      "pairIndex": 2,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 2 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-3-A.json",
+      "side": "A",
+      "pairIndex": 3,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 3 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-3-B.json",
+      "side": "B",
+      "pairIndex": 3,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 3 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-4-A.json",
+      "side": "A",
+      "pairIndex": 4,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 4 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-4-B.json",
+      "side": "B",
+      "pairIndex": 4,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 4 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-5-A.json",
+      "side": "A",
+      "pairIndex": 5,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 5 side B was excluded: E_TELEMETRY_INTERVAL"
+    },
+    {
+      "file": "rounds/pair-5-B.json",
+      "side": "B",
+      "pairIndex": 5,
+      "warmup": false,
+      "reason": "E_TELEMETRY_INTERVAL",
+      "detail": "pair 5 side B was excluded: E_TELEMETRY_INTERVAL"
+    }
+  ]
+}

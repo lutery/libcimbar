@@ -1,0 +1,37 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "counting": {
+    "gate": "okFrameCount",
+    "note": "the 30-frame gate counts resolved (ok) frames only, which is stricter than the frozen method wording \"settled frames\"; settledFrameCount in each round file additionally counts rejected settlements and never gates anything"
+  },
+  "sides": {
+    "A": {
+      "role": "baseline",
+      "rounds": 0,
+      "pairIndexes": [],
+      "readyMsValues": [],
+      "readyMsMedian": null,
+      "rttP50Values": [],
+      "rttP50Median": null,
+      "rttP95Values": [],
+      "rttP95Median": null,
+      "frameCounts": [],
+      "frameCountTotal": 0
+    },
+    "B": {
+      "role": "candidate",
+      "rounds": 0,
+      "pairIndexes": [],
+      "readyMsValues": [],
+      "readyMsMedian": null,
+      "rttP50Values": [],
+      "rttP50Median": null,
+      "rttP95Values": [],
+      "rttP95Median": null,
+      "frameCounts": [],
+      "frameCountTotal": 0
+    }
+  }
+}

@@ -1,0 +1,4 @@
+leg1: video A (V-LAST-with, never completes) stopped mid-way -> live B (sample-random-2) equal=true
+leg1 received sha256=e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712
+leg2: live A (sample-random-2) stopped mid-capture -> video B (V-GOOD-C) equal=true
+leg2 received sha256=2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e; expected 2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e

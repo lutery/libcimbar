@@ -1,0 +1,9 @@
+{
+  "note": "OLD judge (git HEAD live-legs.mjs) on the 09b-shaped record",
+  "oldJudgeValid": true,
+  "oldJudgeViolations": [],
+  "revisionGrew": true,
+  "windowObservedMs": 16080,
+  "readySampleCount": 6,
+  "recordSha256": "43f6d1647a7dbae5"
+}

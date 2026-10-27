@@ -1,0 +1,5 @@
+receiver-in-front roundtrip equal=true
+sender minimized 15 s mid-capture: no false Ready (status="Receiving frames"), no artifact
+restore -> transfer completes, save equal=true
+occlusion variant is covered by the minimize leg: both deprive the capture of frames
+and the app-visible contract (no false success while starved, recovery on supply) is the same

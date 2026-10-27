@@ -1,0 +1,97 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "counting": {
+    "gate": "okFrameCount",
+    "note": "the 30-frame gate counts resolved (ok) frames only, which is stricter than the frozen method wording \"settled frames\"; settledFrameCount in each round file additionally counts rejected settlements and never gates anything"
+  },
+  "sides": {
+    "A": {
+      "role": "baseline",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        16544,
+        16707,
+        17504,
+        15747,
+        16856
+      ],
+      "readyMsMedian": 16707,
+      "rttP50Values": [
+        63.400000005960464,
+        62.599999994039536,
+        68.1000000089407,
+        66.6000000089407,
+        65.3999999910593
+      ],
+      "rttP50Median": 65.3999999910593,
+      "rttP95Values": [
+        94.29999999701977,
+        89.80000001192093,
+        94.1000000089407,
+        98.59999999403954,
+        95.80000001192093
+      ],
+      "rttP95Median": 94.29999999701977,
+      "frameCounts": [
+        105,
+        109,
+        111,
+        101,
+        107
+      ],
+      "frameCountTotal": 533
+    },
+    "B": {
+      "role": "candidate",
+      "rounds": 5,
+      "pairIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "readyMsValues": [
+        17332,
+        15422,
+        15603,
+        15418,
+        15504
+      ],
+      "readyMsMedian": 15504,
+      "rttP50Values": [
+        70,
+        61.099999994039536,
+        62.79999999701977,
+        64,
+        66
+      ],
+      "rttP50Median": 64,
+      "rttP95Values": [
+        97.20000000298023,
+        95,
+        104.09999999403954,
+        91,
+        97.6000000089407
+      ],
+      "rttP95Median": 97.20000000298023,
+      "frameCounts": [
+        108,
+        101,
+        101,
+        99,
+        99
+      ],
+      "frameCountTotal": 508
+    }
+  }
+}

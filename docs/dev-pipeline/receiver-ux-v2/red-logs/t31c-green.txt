@@ -1,0 +1,10 @@
+== T31c GREEN (attempt-04) ==
+live-legs -04: verdict=PASS 10/10 sides VALID
+measure-ux -04: verdict=PASS 5/5 pairs
+run-e2e UX-UI -04 (attempt UX-UI-2026-10-25T04-49-02-745Z-85909a): E2E-35 PASS(5) E2E-36 PASS(8, incl S03-B focusAfter=btn-save) E2E-37 NOT_RUN E2E-38 PASS(3: R1/R2/L1 all PASS); CASE UX-UI PASS
+
+ux-display: 7 tests, 0 failed, 0 todo, 0 skipped
+UNIT SUITES PASS (12 suite(s))
+exit=0
+SELFTEST PASS (55 cases)
+SELFTEST PASS (14 cases)

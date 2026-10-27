@@ -1,0 +1,22 @@
+stateDiagram-v2
+  [*] --> Receiving
+  Receiving --> Draining: 输入EOF
+  Receiving --> Ready: 完整artifact
+  Draining --> Ready: 完整artifact
+  Draining --> Incomplete: 原屏障结束仍无artifact
+  Ready --> Saving: 用户点击保存
+  Saving --> Saved: write及close成功
+  Saving --> Retryable: 取消或失败
+  Retryable --> Saving: 用户再次点击保存
+  Receiving --> Stopping: 用户停止或原错误收敛
+  Draining --> Stopping: 用户停止
+  Ready --> Stopping: 用户停止
+  Stopping --> Stopped: 原清理完成
+  Saved --> [*]
+  Incomplete --> [*]
+  Stopped --> [*]
+  note right of Receiving
+    展示原状态机的相关投影
+    省略Preparing等无变更路径
+    估计比例不会触发Ready
+  end note

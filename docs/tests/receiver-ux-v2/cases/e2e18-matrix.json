@@ -1,0 +1,258 @@
+[
+  {
+    "id": "live-c-1mib",
+    "inputKind": "live",
+    "compressibility": "compressible",
+    "sizeBytes": 1048576,
+    "tier": "1MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": null,
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "实际payload字节/外部SHA-256、原发送B窗口、真实捕获选择器。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "live-c-4mib",
+    "inputKind": "live",
+    "compressibility": "compressible",
+    "sizeBytes": 4194304,
+    "tier": "4MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": null,
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "实际payload字节/外部SHA-256、原发送B窗口、真实捕获选择器。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "live-n-1mib",
+    "inputKind": "live",
+    "compressibility": "incompressible",
+    "sizeBytes": 1048576,
+    "tier": "1MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": null,
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "实际payload字节/外部SHA-256、原发送B窗口、真实捕获选择器。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "live-n-4mib",
+    "inputKind": "live",
+    "compressibility": "incompressible",
+    "sizeBytes": 4194304,
+    "tier": "4MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": null,
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "实际payload字节/外部SHA-256、原发送B窗口、真实捕获选择器。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "video-c-4mib",
+    "inputKind": "video",
+    "compressibility": "compressible",
+    "sizeBytes": 4194304,
+    "tier": "4MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": {
+      "recordSeconds": 60,
+      "maxRecordBytes": 268435456,
+      "importWaitMs": 300000
+    },
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "当前真实录像manifest+媒体SHA-256+同源payloadSHA-256；读取时间线/末端状态，禁止后台实时输入。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "video-n-128kib",
+    "inputKind": "video",
+    "compressibility": "incompressible",
+    "sizeBytes": 131072,
+    "tier": "128KiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": {
+      "importWaitMs": 480000
+    },
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "当前真实录像manifest+媒体SHA-256+同源payloadSHA-256；读取时间线/末端状态，禁止后台实时输入。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "video-n-1mib-probe",
+    "inputKind": "video",
+    "compressibility": "incompressible",
+    "sizeBytes": 1048576,
+    "tier": "1MiB bounded probe",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": {
+      "recordSeconds": 150,
+      "maxRecordBytes": 268435456,
+      "importWaitMs": 600000
+    },
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "当前真实录像manifest+媒体SHA-256+同源payloadSHA-256；读取时间线/末端状态，禁止后台实时输入。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "video-n-4mib",
+    "inputKind": "video",
+    "compressibility": "incompressible",
+    "sizeBytes": 4194304,
+    "tier": "4MiB",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": {
+      "recordSeconds": 600,
+      "maxRecordBytes": 1073741824,
+      "importWaitMs": 900000
+    },
+    "requiredOutcome": "本轮真实入口接收/导入、系统保存、原收外部SHA-256相等、保存后四时点齐全。",
+    "inputEvidence": "当前真实录像manifest+媒体SHA-256+同源payloadSHA-256；读取时间线/末端状态，禁止后台实时输入。",
+    "notes": "TD-15旧装置上限已关闭，本腿已被历史实物证明可行；本轮仍需新候选执行。1MiB探针失败不自动授权本腿NOT_RUN放行。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "live-c-20mib-over-budget",
+    "inputKind": "live",
+    "compressibility": "compressible",
+    "sizeBytes": 20971520,
+    "tier": "20MiB-over-budget",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "PASS_REQUIRED",
+    "exceptionBasis": null,
+    "declaredObservationBounds": {
+      "rejectWaitMs": 900000
+    },
+    "requiredOutcome": "真实15008拒绝、无artifact/无可保存产物、仍可停止→独立正常文件真实恢复保存、外部哈希相等，恢复保存后时点齐全。",
+    "inputEvidence": "实际payload字节/外部SHA-256、原发送B窗口、真实捕获选择器。",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  },
+  {
+    "id": "live-n-20mib-over-budget",
+    "inputKind": "live",
+    "compressibility": "incompressible",
+    "sizeBytes": 20971520,
+    "tier": "20MiB-over-budget",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "required": true,
+    "statusRequirement": "NOT_RUN_WITH_CURRENT_CODE_BASIS_ALLOWED",
+    "exceptionBasis": "D-19只允许此额外探测腿保留NOT_RUN并附当前代码依据：无早期产物尺寸检查，build_artifact仅在fountain完整后执行，难压缩20MiB需全流传输后拒绝；真实可压缩20MiB腿验证15008产物预算，UT/IAT补精确边界。不得扩展到其他腿；必须核对当前代码仍成立。",
+    "declaredObservationBounds": null,
+    "requiredOutcome": "不生成样本/不执行也必须逐腿保留NOT_RUN及依据，不冒充容量验证。",
+    "inputEvidence": "NOT_RUN under D-19: current source revision, code paths, budget constants and applicability analysis only; no fabricated payload/media/save proof. If actually executed, record real input and full attempt evidence.",
+    "notes": "边界执行前声明，不能看到结果后回填；不得将历史PASS复制成当前候选结果。",
+    "sources": [
+      "tools/desktop-recv/e2e/run-e2e.mjs",
+      "tools/desktop-recv/e2e/leg-verdict.mjs",
+      "docs/dev-pipeline/autonomous-decisions.md",
+      "docs/dev-pipeline/stage5-dev-summary.md",
+      "docs/tests/runs/20261021-teamexec-03/results.json",
+      "docs/tests/runs/20261021-teamexec-03/reproduction.md"
+    ]
+  }
+]

@@ -1,0 +1,23 @@
+UX GATE field: FAIL (22 violation(s))
+  - phase 'final' cannot prove the field gate (requires phase 'field')
+  - missing UX record for required case E2E-39
+  - unplanned UX record 'E2E-27' in ux-results.json
+  - unplanned UX record 'E2E-28' in ux-results.json
+  - unplanned UX record 'E2E-29' in ux-results.json
+  - unplanned UX record 'E2E-30' in ux-results.json
+  - unplanned UX record 'E2E-31' in ux-results.json
+  - unplanned UX record 'E2E-32' in ux-results.json
+  - unplanned UX record 'E2E-33' in ux-results.json
+  - unplanned UX record 'E2E-34' in ux-results.json
+  - unplanned UX record 'E2E-35' in ux-results.json
+  - unplanned UX record 'E2E-36' in ux-results.json
+  - unplanned UX record 'E2E-37' in ux-results.json
+  - unplanned UX record 'E2E-38' in ux-results.json
+  - legacy gate failed (exit 1); results.json is still governed by verify-evidence.py
+  - legacy: GATE field: FAIL (6 violation(s))
+  - legacy:   - missing record for E2E-21
+  - legacy:   - missing record for E2E-22
+  - legacy:   - missing record for E2E-23
+  - legacy:   - missing record for E2E-24
+  - legacy:   - missing record for E2E-25
+  - legacy:   - missing record for E2E-26

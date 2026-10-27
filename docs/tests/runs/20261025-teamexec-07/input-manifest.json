@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "iterationId": "receiver-ux-v2",
+  "runId": "20261025-teamexec-07",
+  "phase": "metrics",
+  "lockedAt": "2026-10-24T17:31:33.947Z",
+  "note": "T19 metrics inputs: the locked primary 128KiB input and the T13 SRC-01 code frame copied read-only; the T6 V-LAST recordings are referenced read-only from the baseline run by SHA (never rewritten).",
+  "primaryInput": {
+    "path": "docs/tests/runs/20261025-teamexec-07/fixtures/primary-input-128k.bin",
+    "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+    "bytes": 131072,
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/primary-input-128k.bin"
+  },
+  "codeFrame": {
+    "path": "docs/tests/runs/20261025-teamexec-07/fixtures/src01-code-frame.png",
+    "sha256": "ad74f522d0307317f5ccbdf81e94c811374fe578b1a95dae8911cea905056c1b",
+    "sourceRun": "docs/tests/runs/20261024-teamexec-04"
+  },
+  "media": {
+    "referenceOnly": true,
+    "withSha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+    "withoutSha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+    "sourceRun": "docs/tests/runs/20261024-teamexec-04",
+    "sourcePath": "docs/tests/runs/20261024-teamexec-04/fixtures/fixtures-media/V-LAST-with.webm"
+  },
+  "files": [
+    {
+      "path": "docs/tests/runs/20261025-teamexec-07/fixtures/primary-input-128k.bin",
+      "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "bytes": 131072,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261025-teamexec-07/fixtures/src01-code-frame.png",
+      "sha256": "ad74f522d0307317f5ccbdf81e94c811374fe578b1a95dae8911cea905056c1b",
+      "bytes": 579946,
+      "role": "fixture-copy"
+    }
+  ]
+}

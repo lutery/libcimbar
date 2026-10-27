@@ -1,0 +1,3 @@
+attempt E2E-8-2026-10-25T09-27-50-697Z-c46a38 started 2026-10-25T09:27:50.704Z
+This marker keeps the case from retaining an older PASS while this attempt is in flight (round-3 S-1).
+If the journey throws, the FAIL record bound to this attempt stays; a later success replaces it.

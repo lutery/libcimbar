@@ -1,0 +1,88 @@
+2026-10-26T05:58:58.423Z process guard: reclaimed 0/60 recorded process(es)
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:03] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [26/Oct/2026 13:59:04] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share[helper] 
+2026-10-26T05:59:19.924Z round live-c-1mib: File ready to save artifact=ext-text-1mib.bin 1048576 字节
+[helper] dismissed the Edge sync bubble
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-c-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T05:59:50.751Z round live-c-4mib: File ready to save artifact=ext-text-4mib.bin 4194304 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-c-4mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T06:00:40.180Z round live-n-1mib: File ready to save artifact=ext-random-1mib.bin 1048576 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-n-1mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T06:02:18.963Z round live-n-4mib: File ready to save artifact=ext-random-4mib.bin 4194304 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-live-n-4mib\received.bin
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:02:43] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:02:44] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:02:44] code 404, message File not found
+127.0.0.1 - - [26/Oct/2026 14:02:44] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=51236
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-video-c-4mib\received.bin
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-video-n-128kib\received.bin
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:05:46] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:05:47] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:05:47] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:05:47] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=32156
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-video-n-1mib-probe\received.bin
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:12:54] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:12:55] "GET /recorder.html HTTP/1.1" 200 -
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:12:56] code 404, message File not found
+[recorder-http] 127.0.0.1 - - [26/Oct/2026 14:12:56] "GET /favicon.ico HTTP/1.1" 404 -
+[helper] dialog: Choose what to share with http://127.0.0.1:8790 pid=50112
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: Share
+[helper] dialog confirmed: share
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-video-n-4mib\received.bin
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+[helper] dialog: 选择要与 http://127.0.0.1:8771 共享的内容 pid=69372
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-26T06:40:19.656Z round budget-recovery: File ready to save artifact=sample-text-2.bin 65536 字节
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261026-teamexec-11\proof\E2E-18\round-budget-recovery\received.bin
+2026-10-26T06:40:38.154Z CASE E2E-18 PASS (attempt E2E-18-2026-10-26T05-58-58-424Z-b4d680)
+EXIT=0 (retry after first=1)

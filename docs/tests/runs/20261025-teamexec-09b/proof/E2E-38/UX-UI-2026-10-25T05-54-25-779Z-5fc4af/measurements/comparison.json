@@ -1,0 +1,197 @@
+{
+  "outputVersion": 1,
+  "methodSha256": "1b281cbf67e968c287d11d27db1d61259c569925bf798b970f99a1f69c910a29",
+  "instrumentationSha256": "42f8a949b2ac426d1ad5323be8612595178701d84b295c51c6c6046f9404ea4f",
+  "validPairs": 5,
+  "pairs": [
+    {
+      "pair": 1,
+      "valid": true,
+      "reason": null,
+      "a": {
+        "readyMs": 16544,
+        "p50Ms": 63.400000005960464,
+        "p95Ms": 94.29999999701977,
+        "okFrameCount": 105,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 17332,
+        "p50Ms": 70,
+        "p95Ms": 97.20000000298023,
+        "okFrameCount": 108,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 250.20000000298023,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": null
+      }
+    },
+    {
+      "pair": 2,
+      "valid": true,
+      "reason": null,
+      "a": {
+        "readyMs": 16707,
+        "p50Ms": 62.599999994039536,
+        "p95Ms": 89.80000001192093,
+        "okFrameCount": 109,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15422,
+        "p50Ms": 61.099999994039536,
+        "p95Ms": 95,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 250.29999999701977,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": null
+      }
+    },
+    {
+      "pair": 3,
+      "valid": true,
+      "reason": null,
+      "a": {
+        "readyMs": 17504,
+        "p50Ms": 68.1000000089407,
+        "p95Ms": 94.1000000089407,
+        "okFrameCount": 111,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15603,
+        "p50Ms": 62.79999999701977,
+        "p95Ms": 104.09999999403954,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 250.09999999403954,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": null
+      }
+    },
+    {
+      "pair": 4,
+      "valid": true,
+      "reason": null,
+      "a": {
+        "readyMs": 15747,
+        "p50Ms": 66.6000000089407,
+        "p95Ms": 98.59999999403954,
+        "okFrameCount": 101,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15418,
+        "p50Ms": 64,
+        "p95Ms": 91,
+        "okFrameCount": 99,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 250.20000000298023,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": null
+      }
+    },
+    {
+      "pair": 5,
+      "valid": true,
+      "reason": null,
+      "a": {
+        "readyMs": 16856,
+        "p50Ms": 65.3999999910593,
+        "p95Ms": 95.80000001192093,
+        "okFrameCount": 107,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": null,
+        "telemetryArmed": false,
+        "collectionError": null,
+        "exclusionReason": null
+      },
+      "b": {
+        "readyMs": 15504,
+        "p50Ms": 66,
+        "p95Ms": 97.6000000089407,
+        "okFrameCount": 99,
+        "rejectedFrameCount": 0,
+        "maxInFlight": 1,
+        "minTelemetryGapMs": 250.29999999701977,
+        "telemetryArmed": true,
+        "collectionError": null,
+        "exclusionReason": null
+      }
+    }
+  ],
+  "metrics": {
+    "readyMs": {
+      "metric": "readyMs",
+      "baselineMedian": 16707,
+      "candidateMedian": 15504,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 250,
+      "formula": "candidateMedian <= baselineMedian * 1.10 + 250",
+      "limit": 18627.7,
+      "marginMs": 3123.7000000000007,
+      "pass": true
+    },
+    "frameRttP50Ms": {
+      "metric": "frameRttP50Ms",
+      "baselineMedian": 65.3999999910593,
+      "candidateMedian": 64,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.1,
+      "absoluteAllowanceMs": 2,
+      "formula": "candidateMedian <= max(baselineMedian * 1.10, baselineMedian + 2)",
+      "limit": 71.93999999016523,
+      "marginMs": 7.939999990165234,
+      "pass": true
+    },
+    "frameRttP95Ms": {
+      "metric": "frameRttP95Ms",
+      "baselineMedian": 94.29999999701977,
+      "candidateMedian": 97.20000000298023,
+      "baselineRounds": 5,
+      "candidateRounds": 5,
+      "relativeFactor": 1.15,
+      "absoluteAllowanceMs": 5,
+      "formula": "candidateMedian <= max(baselineMedian * 1.15, baselineMedian + 5)",
+      "limit": 108.44499999657272,
+      "marginMs": 11.244999993592486,
+      "pass": true
+    }
+  },
+  "verdict": "PASS",
+  "reasons": [],
+  "formulaSource": "docs/plans/receiver-ux-v2/performance-method.json"
+}

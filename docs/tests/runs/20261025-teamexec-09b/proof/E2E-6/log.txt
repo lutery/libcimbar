@@ -1,0 +1,9 @@
+A=E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\fixtures-media\e2e6-a\e2e6-payload.bin sha256=5b6c891584b6a4ebbc90aa6967e291304acc923a186e4ced825b2f80d78e250e
+B=E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261025-teamexec-09b\fixtures-media\e2e6-b\e2e6-payload.bin sha256=7ebefbbcdd4535e82050f9a1d631f275ae7eb1177e587a53dd1abf78e0ed04f5
+Edge sharing chip is not exposed to UIA during an active getDisplayMedia
+window share (helper dump: the receiver tree shows only the omnibox
+"Share a window or screen" button), so the external end is exercised
+via tab close and window close - the app-visible event is identical
+(capture track end). stop-share helper attempts: 20 s timeout, dump in run logs.
+round1 tab-close: settle=Not enough data to rebuild the file noArtifact=true B-save equal=true notA=true
+round2 window-close: settle=Not enough data to rebuild the file noArtifact=true B-save equal=true notA=true

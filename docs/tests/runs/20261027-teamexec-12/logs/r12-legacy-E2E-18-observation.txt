@@ -1,0 +1,33 @@
+E2E-18 attempt-3 pre-run observation (recorded 2026-10-27, agent r13-tools, no code changed)
+================================================================================
+
+Scope: the lead asked WHY the attempt-2 over-budget recovery save raced, observed from
+logs/data only (no code changes; observation, not a fix).
+
+Facts from attempt-2 (E2E-18-2026-10-26T17-02-19-694Z-fc3cc2):
+
+1. Save count: the failed recovery save was the 9th save action of the case session
+   (8 prior saves across legs: live-c-1mib, live-c-4mib, live-n-1mib, live-n-4mib,
+   video-c-4mib, video-n-128kib, video-n-1mib-probe, video-n-4mib).
+
+2. Stale page evidence: the recovery save's error `raw` carries
+   createWritableAccessedAt 15.5s OLDER than the recovery session's own initStartAt
+   (and ~21s older than its own pickerResolved.at) -> the recovery save ran on a page
+   that still carried the previous leg's save hooks. The runner's page-lifetime reload
+   guard inside liveRoundtrip (tools/desktop-recv/e2e/run-e2e.mjs:1090-1093,
+   reusedPage -> reloadReceiverPage) did NOT reload before the recovery save.
+   Candidate mechanism (not verifiable from the logs - the guard has no logging):
+   the guard's page.evaluate may have rejected and the inline
+   `.catch(() => false)` treats an evaluate failure as "fresh page", skipping the
+   reload. resetJourneyMarks clears only window.__journey, so it does not explain it.
+   Not fixed per instruction; left as recorded observation.
+
+3. Physical save state: the helper DID confirm a save dialog and a 0-byte
+   round-budget-recovery/received.bin exists on disk (picker created the file; the
+   app's save() then caught InvalidStateError and surfaced 16004).
+
+4. The over-budget REJECTION itself was clean in attempt-2 (code 15008,
+   internal=Receiving, artifactPresent=false, stopAvailable=true, failures=[]).
+
+Pre-run environment check for attempt-3: ports 8771-8776/8790/8811/9445 free,
+no leftover CIMBAR Edge windows (re-verified at attempt-3 start).

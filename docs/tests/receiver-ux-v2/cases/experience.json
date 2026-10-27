@@ -1,0 +1,958 @@
+[
+  {
+    "id": "UX-UT-041",
+    "title": "只读投影保持事实、controls与观测版本不变",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "使用契约合法的Receiving观测、完整Context与原deriveControls结果；冻结输入对象并记录模型快照、业务revision及副作用计数。",
+    "when": "对同一输入与nowMs重复readView，再增加nowMs读取；包括Idle无begin与Receiving已经begin的子样本。",
+    "then": "同一输入确定性返回；只按时间变化显示用时与窗口，不修改观测或业务事实，也不创造源操作。",
+    "assertions": [
+      "深比较/冻结观测与Context，保证readView未改输入、observationRevision、businessRevision。",
+      "返回controls四布尔逐字段等于原合法controls，不能由比例、媒体位置或提示启用保存/输入。",
+      "Idle未begin时elapsedMs=null；读取不调用_emit、captureFrame、offerFrame、VideoSource.run、releaseInputs、finishStream或保存。",
+      "重复相同nowMs结果相等；时间推进允许显示变化而非伪造revision。"
+    ],
+    "fixtures": [
+      "合法ViewRequest/Observation样例及原controls能力矩阵；纯对象deepFreeze/副作用计数夹具",
+      "可手动推进的主线程单调fakeClock"
+    ],
+    "redExpectation": "移入真实套件并实现断言后，先确认缺少readView/有副作用的旧投影产生业务断言失败；规划守卫失败不计RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-042",
+    "title": "拒绝旧owner和无效Context而不补造完成",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T7",
+      "T9",
+      "T16",
+      "T20"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-020",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-06",
+      "R-08"
+    ],
+    "diagnosticCodes": [
+      19007,
+      19008,
+      19009,
+      19013,
+      19014
+    ],
+    "given": "合法当前owner与控件基线，另备旧seq、version非1、无效/矛盾state与controls、倒退/非有限now、Ready/Saving/Saved/Retryable缺真实artifact或owner的请求。",
+    "when": "逐一调用readView，保留同一原业务状态与副作用计数作为对照。",
+    "then": "只拒绝或降级UX投影，给出约定190xx；保留原业务按钮/文字，不从比例猜artifact或改业务状态。",
+    "assertions": [
+      "旧seq=19007；结构/Context矛盾=19008；倒退或非有限有效时钟检查=19009；不支持version=19013；需产物状态缺owner/artifact=19014。",
+      "每个负例仅改变一个因素，先通过形状校验后再执行身份/时序负例，避免错误原因混淆。",
+      "返回拒绝时不出现complete、伪造artifactId、Saved或新增可用控件；业务副作用计数仍为零。",
+      "真正原业务错误继续存在，不能被UX降级提示掩盖。"
+    ],
+    "fixtures": [
+      "当前owner合法Context及单因素负例表",
+      "原状态/controls冻结快照与业务副作用spy"
+    ],
+    "redExpectation": "移植后断言旧owner/缺产物Context确实被拒绝；旧实现缺接口或错误接受会形成真实RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-043",
+    "title": "慢帧提示在真实提交满1500ms才出现",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-07"
+    ],
+    "diagnosticCodes": [],
+    "given": "当前Receiving且已有近期data，原pending提供inFlightSinceMs=1000；主线程提交时点真实取自原postMessage入口。",
+    "when": "在2499.9、2500、2500.1ms读取；另测inFlight=false、普通短帧及未提交/无合法提交时点的Context。",
+    "then": "小于1500ms不覆盖接收提示；达到1500ms才processing；普通单在途不会每帧闪烁。",
+    "assertions": [
+      "2499.9ms保持原receiving细分；2500和2500.1ms可显示processing；不依赖Worker绝对时钟或观测回调到达时点。",
+      "仅已确认的当前pending身份和合法submittedAt能支撑processing；无pending不能借旧时点显示忙帧。",
+      "processing优先于同一时刻无data/无进展提示，但不延长或重置原frame看门狗。",
+      "只验证投影/原pending接线，不宣称此mock证明浏览器实际慢帧体验。"
+    ],
+    "fixtures": [
+      "当前pending元数据及1499.9/1500/1500.1ms参数表",
+      "fakeClock与真实主线程submit入口spy"
+    ],
+    "redExpectation": "补断言后，用把每个inFlight都显示processing或使用接收回调时点的实现检验应失败，再修复。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-044",
+    "title": "首次有效数据等待建议精确跨越5000ms",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T7",
+      "T14",
+      "T15"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-018",
+      "AC-022"
+    ],
+    "runtimeIds": [
+      "R-10"
+    ],
+    "diagnosticCodes": [],
+    "given": "Receiving起点1000ms，只有图像帧/no_data而从未有效data，业务revision和观测revision均保持。",
+    "when": "不派发新snapshot，在5999.9、6000、6000.1ms独立读取。",
+    "then": "始终诚实waiting_data；满5000ms才出现检查发送画面/Mode等建议，不声称成功或错误。",
+    "assertions": [
+      "5999.9ms无到阈值检查建议；6000/6000.1ms有行动建议且状态仍waiting_data。",
+      "elapsedMs向下取整分别为4999/5000/5000，图片存在不增加数据识别速率分子。",
+      "等待不是新故障码，不会自动停止、重新打开屏幕选择器或重启。",
+      "无snapshot仍更新，建议含义由纯文本判断，不靠解析诊断英文日志。"
+    ],
+    "fixtures": [
+      "接收起点1000ms且无有效data的合法观测",
+      "fakeClock与前后边界请求"
+    ],
+    "redExpectation": "移植后先证明无snapshot的旧UI不会产生所需到时建议，再由独立投影实现通过业务断言。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-045",
+    "title": "上次有效data满5000ms转为无新数据且估计标陈旧",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-05",
+      "R-10"
+    ],
+    "diagnosticCodes": [],
+    "given": "Receiving曾在2000ms识别有效data和可信单流比例，之后只有no_data；无长inFlight。",
+    "when": "读取6999.9、7000、7000.1ms，并在新有效data到来后再次读取。",
+    "then": "满5000ms转no_new_data并标上次估计已陈旧；无数据后的速率按窗口归零；新的有效data解除陈旧。",
+    "assertions": [
+      "6999.9ms不进入no_new_data；7000ms开始no_new_data，progress.stale=true且仍标上次可信样本asOfMs。",
+      "窗口已清空时数值为0而非保留旧高值；不能把no_data图像字节算入速率。",
+      "新data后lastData更新、陈旧解除；比例无推进不会虚构增长。",
+      "未回复的长忙帧优先processing，不能仅从未回复推断无输入。"
+    ],
+    "fixtures": [
+      "lastData=2000ms、可信比例与no_data序列",
+      "fakeClock及新data恢复序列"
+    ],
+    "redExpectation": "补真实断言后，保留旧速度或在4999.9ms过早显示无新数据的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-046",
+    "title": "无重建推进提示在8000ms边界且需要可信单流依据",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-017",
+      "AC-018"
+    ],
+    "runtimeIds": [
+      "R-03",
+      "R-10"
+    ],
+    "diagnosticCodes": [],
+    "given": "lastAdvance=1000ms；一直有近期有效data但可信单流比例重复，最后data=8750ms；另备report unavailable/ambiguous/enough_data样本。",
+    "when": "读取8999.9、9000、9000.1ms，随后输入一个更大可信单流比例；分别读取其余报告质量状态。",
+    "then": "仅可信单流比例满8000ms未推进时给no_progress；重复数据可有速率；推进后恢复receiving。",
+    "assertions": [
+      "8999.9ms仍receiving；9000/9000.1ms为no_progress，且speed可大于0而非强制归零。",
+      "同一比例不移动lastAdvance、不虚增比例；严格增大才解除无进展提示。",
+      "unavailable/empty显示progress_unavailable，ambiguous显示progress_unknown，>=1显示collecting_more，均不谎称无新块。",
+      "无进展提示不触发重启、停止或重新打开任何选择器。"
+    ],
+    "fixtures": [
+      "高频有效data但比例固定的观测序列",
+      "可信进展/无报告/多流/理论足量参数矩阵"
+    ],
+    "redExpectation": "补断言后，用tick累增比例或无依据一律显示no_progress的实现应产生RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-047",
+    "title": "业务终态与收尾优先于接收细分且完成只认真实artifact",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-view.test.mjs",
+    "taskIds": [
+      "T9",
+      "T15",
+      "T20",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-019",
+      "AC-020"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-07"
+    ],
+    "diagnosticCodes": [],
+    "given": "同一份包含旧接收比例/速率的观测，构造合法Preparing、Draining、Reconstructing、Stopping、Incomplete、Ready、Saving、Saved、Retryable和Stopped Context。",
+    "when": "依次投影，包括真实Ready artifact与比例>=1但Receiving无artifact两种对照。",
+    "then": "原业务阶段优先；Ready/Saved含义分开；只有真实产物可complete且controls仍由原策略决定。",
+    "assertions": [
+      "Preparing/收尾/Stopping/终态/保存态不被processing、waiting_data或no_progress覆盖。",
+      "比例>=1但无artifact为enough_data且ratio=null，不显示文件100%或硬停99%，保存维持禁用。",
+      "真实artifact的Ready才complete=1且可保存；Saved只能来自原真实保存完成状态。",
+      "Incomplete清楚说明未完成并允许原重试入口，不从媒体100%或旧比例冒称成功。"
+    ],
+    "fixtures": [
+      "合法状态/owner/artifact/controls联合矩阵",
+      "有artifact和无artifact的同报告比例对照"
+    ],
+    "redExpectation": "移植后先断言只依比例判完成或用接收细分覆盖终态的实现失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-048",
+    "title": "同revision独立时钟更新用时但不重复语义播报",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-display.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "taskIds": [
+      "T7",
+      "T9",
+      "T10",
+      "T20"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-022",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "原业务/观测revision保持不变，Receiving始于1000ms；显示器已绘制一次；paint与live区写入均有独立计数。",
+    "when": "不触发snapshot，让独立时钟由2000走到3000；随后由真实artifact在3500ms结束，再进入选择路径和保存。",
+    "then": "接收用时随时钟更新；announcementKey不含数字且不重复播报；真实结束后用时固定不含选择/保存耗时。",
+    "assertions": [
+      "2000到3000时elapsedMs增加1000，businessRevision与observationRevision不变。",
+      "速率窗口可随now自然过期；同announcementKey不重写polite live区。",
+      "比例/速度/elapsed数值改变不改变announcementKey；真实状态/产物/保存attempt变化才形成语义身份。",
+      "artifact结束后elapsed=2500且后续Saving/Saved保持；Preparing从未begin时elapsed=null。"
+    ],
+    "fixtures": [
+      "fakeClock与可统计文本/语义区域写入的DOM适配器",
+      "原业务事件驱动的artifact终结/保存序列"
+    ],
+    "redExpectation": "补断言后，依赖shouldApplySnapshot相同revision拒刷或每tick重播的旧逻辑应失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-049",
+    "title": "snapshot事件与tick共享250ms节流而业务按钮即时更新",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-display.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "taskIds": [
+      "T10",
+      "T26",
+      "T27"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "建立两个互不共享计数器/timer/owner的独立子轨迹。A在0ms已写入遥测且全程保持Receiving，合法数值持续变化，100Hz snapshot通知与250ms时钟并存。B重置全部fixture后在0ms开始Receiving，业务按钮路径有独立spy。",
+    "when": "A在[0,1000]ms交错触发通知/定时器且不进入任何终结态，统计整个半开区间[0,1000)。B重置后在125ms用真实artifact进入Ready，再由显式保存进入Saving，单独观察即时业务更新和接收timer释放。",
+    "then": "A的事件与tick共用遥测边界不超4Hz；B的原真实业务状态/按钮立即变更并释放终结接收timer。两条轨迹独立判定，tick均不驱动原app.render。",
+    "assertions": [
+      "A中相邻遥测写入差>=250ms；半开区间[0,1000)最多4次，1000ms边界可有下一次。输入需确有后续可显示数值变化并观察到后续写入，避免全相同文本造成空测。",
+      "A全程Receiving到1000ms，不混入Ready/Saving；事件与tick不会各写一次绕过同一lastTelemetryWriteAt，相同文本无重复DOM写入。",
+      "B在125ms真实业务变化即时更新合法controls与Ready主文案，不等下个tick；随后的真实Saving同样即时。Ready终结释放接收timer，Saving不重建接收timer。",
+      "B终结后的迟到tick不新增遥测写入；B不参与A的整秒频率计数，不能以提前终结后无timer证明A的4Hz限制。",
+      "tick路径调用runFrameLoop、VideoSource.run、releaseInputs、finishStream、原render、抓帧/保存均为0；帧single-flight上限保持1。"
+    ],
+    "fixtures": [
+      "A/B每次完全重置的精确fakeClock、独立owner、fakeTimers与计数器",
+      "A持续Receiving且合法可显示数值变化的观测流；B真实artifact/保存业务事件序列",
+      "分离统计业务即时写与遥测写的paint/DOM spy"
+    ],
+    "redExpectation": "补真实断言后，双通道各自4Hz或tick调用原整页render的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-050",
+    "title": "每seq唯一显示刷新器并拒绝释放后的迟到tick",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-display.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "taskIds": [
+      "T9",
+      "T10",
+      "T20",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-10"
+    ],
+    "diagnosticCodes": [
+      19007
+    ],
+    "given": "当前seq1已拥有刷新器，捕获一个待执行回调；随后原业务清理后切换seq2，另备同seq旧viewAt和真实终结事件。",
+    "when": "重复syncBusiness；切换owner；手工投递已取消的旧回调；再终结、dispose两次并投递迟到回调。",
+    "then": "每时刻至多一个当前owner刷新器；旧seq/旧viewAt不绘制；重复释放幂等；终结不留接收计时器。",
+    "assertions": [
+      "重复syncBusiness不创建第二timer；owner替换先clear旧timer，旧回调触发也不写seq2内容。",
+      "比lastViewAt早的视图不回滚；owner顺序与时点同时检查。",
+      "Ready/Incomplete/Stopped/原fatal停止接收timer；Preparing/Saving仅事件驱动，不保留接收tick。",
+      "dispose幂等，迟到回调不重建刷新器、不抓帧、不变更业务revision。"
+    ],
+    "fixtures": [
+      "保存callback引用并可手动投递的fakeTimer队列",
+      "seq1/seq2与终结状态矩阵、paint计数"
+    ],
+    "redExpectation": "移植后用未清理timer或仅clear但不核对owner的实现确认迟到回调断言能失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-051",
+    "title": "页面后台返回按真实单调时间重算而非补tick",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-display.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "taskIds": [
+      "T10",
+      "T14",
+      "T16"
+    ],
+    "acceptanceIds": [
+      "AC-017",
+      "AC-018",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-08",
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [
+      19009
+    ],
+    "given": "Receiving页面在2000ms隐藏，当前数据窗口有效；fakeClock在无任何业务snapshot/tick时前进至20000ms；另有非法倒退/NaN时钟子样本。",
+    "when": "模拟visibility隐藏/恢复与pagehide，随后读取当前视图，最后尝试投递隐藏前回调。",
+    "then": "恢复按20000ms重新投影，用时包含经过时间、旧速率归零，且不补发18秒的tick；非法时钟只降级UX。",
+    "assertions": [
+      "hidden期间允许暂停timer且不得主动提交帧；visible立即一次当前时间投影并至多恢复一个刷新器。",
+      "恢复elapsed按now-start计算，rate窗口过期归零、不显示旧高值；不按tick计数累加时间。",
+      "取消的隐藏前回调不重复绘制/播报；pagehide销毁后不恢复。",
+      "非法时钟按19009拒绝或降级当前UX，不改变原业务错误、看门狗或接收状态；这是假visibility事件测试而非真浏览器后台验收。"
+    ],
+    "fixtures": [
+      "fakeVisibilityEventTarget、fakeClock与可手工驱动timer",
+      "窗口有数据后长时间无回调的观测"
+    ],
+    "redExpectation": "补断言后，用累计tick计时或后台返回保留旧速度的实现应失败；真实后台行为另留浏览器验收。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-052",
+    "title": "遥测绘制异常只退化显示不重启或丢业务控件",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-display.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ux-display.test.mjs",
+    "taskIds": [
+      "T10",
+      "T26",
+      "T27"
+    ],
+    "acceptanceIds": [
+      "AC-021",
+      "AC-022",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-11"
+    ],
+    "diagnosticCodes": [
+      19012
+    ],
+    "given": "专用paint在一次遥测写入抛异常；原业务按钮/主状态文字存在；原接收任务与single-flight等待中。",
+    "when": "触发tick及随后一个真实业务状态事件。",
+    "then": "记录19012并回退可读文字，原按钮/业务状态仍及时可用，不导致传输重启或原异常吞并。",
+    "assertions": [
+      "异常被UX边界捕获，不传播为原Worker frame_error或v1 Error.code。",
+      "保留原controls和状态文字；下一业务事件仍可更新，诊断不作为用户恢复指令。",
+      "没有新增capture/picker/save/restart/stop动作，也不并发额外帧。",
+      "记录/提示去重有界，不每tick无限堆积；正常修复后的显示不要求重接收。"
+    ],
+    "fixtures": [
+      "首paint抛错后可恢复的DOM适配器",
+      "业务按钮存在性/disabled与原解码调用计数spy"
+    ],
+    "redExpectation": "移植后，将paint异常透传或触发重新接收的实现必须被真实断言拦下。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-053",
+    "title": "中文主操作保留双入口且动态文本不按HTML解释",
+    "level": "unit",
+    "target": "web/desktop-recv/index.html",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ui.test.mjs",
+    "taskIds": [
+      "T26",
+      "T27"
+    ],
+    "acceptanceIds": [
+      "AC-015",
+      "AC-016",
+      "AC-017",
+      "AC-018",
+      "AC-019",
+      "AC-020",
+      "AC-022"
+    ],
+    "runtimeIds": [],
+    "diagnosticCodes": [],
+    "given": "加载真实候选HTML与DOM适配器；动态源名、文件名和错误文本含中文空格及<img onerror=...>、<script>等文本。",
+    "when": "驱动合法视图和现有ui恢复/安全文件名路径，分别显示接收、媒体、可保存、取消和失败状态。",
+    "then": "两个入口保留原id和操作能力；主流程中文可理解；动态内容只作为文本，正常操作不依赖英文诊断日志。",
+    "assertions": [
+      "btn-live/btn-video/btn-stop/btn-save/file-input/preview/artifact原id唯一保留；入口标签为实时抓屏/录像导入且互锁语义不变。",
+      "真实显示区ux-primary/secondary/next/elapsed/rate/progress/media/announcement存在；近期速率说明始终含协议与冗余含义。",
+      "源名/文件名/错误文字使用textContent等安全文本通道，不新增可执行元素、不设置事件属性；原safeSuggestedName继续去路径/控制符。",
+      "不要把190xx当普通用户的操作步骤；检查中文语义与可行动提示，不通过逐字快照强绑定所有文案。",
+      "此Node DOM测试不能证明实际字体、窄窗口无溢出或系统对话框行为，真实T31/T35仍待执行。"
+    ],
+    "fixtures": [
+      "真实候选index.html与受控DOM适配器",
+      "中文+空格/HTML样式动态文本和原ui合法controls矩阵"
+    ],
+    "redExpectation": "移植后，旧英文界面、去掉任一输入按钮或innerHTML解释动态文本均须产生明确业务/结构断言失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-054",
+    "title": "录像位置合法化与未知时长只影响媒体显示",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-view.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/video.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-019",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-06"
+    ],
+    "diagnosticCodes": [
+      19011
+    ],
+    "given": "录像Context取实际VideoSource.snapshot位置；参数表含position=0/正数/大于duration、未知/0/负/非有限duration、负/NaN/Infinity position，以及live输入。",
+    "when": "逐一合法化并readView，不主动seek或更改源速度。",
+    "then": "有效位置独立显示；未知总时长可显示已处理秒数但无fraction；坏位置只隐藏媒体栏；live不出现媒体位置。",
+    "assertions": [
+      "有限非负position保留；有效正duration时fraction=min(1,position/duration)，duration未知/非正/非有限归null且fraction=null。",
+      "负数/NaN/Infinity position使整个mediaPosition=null并19011，不影响数据速率、文件估计和原解码结果。",
+      "live的mediaPosition=null；不把容器字节大小当原文件进度。",
+      "投影不能调用seek、playbackRate或增加提交；fakeVideo仅证明接线，真实呈现另验。"
+    ],
+    "fixtures": [
+      "实际snapshot形状的录像位置参数矩阵",
+      "video-source的可统计seek/playbackRate/submit假元件"
+    ],
+    "redExpectation": "补断言后，未知duration除零、媒体坏值导致整个传输失败或将position当文件比例的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-055",
+    "title": "录像到末尾和比例足量不等于文件就绪",
+    "level": "unit",
+    "target": "web/desktop-recv/src/app.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/video.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-016",
+      "AC-019",
+      "AC-020",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06"
+    ],
+    "diagnosticCodes": [],
+    "given": "录像位置达到duration，最终在途帧尚未结算；分别提供最后no_data和最终真实artifact两种结算；观测报告可>=1。",
+    "when": "触发原ended/EOF回调，保留原最后采样与drain屏障，读媒体/文件显示及保存控件。",
+    "then": "录像处理位置可100%，文件未完成仍不Ready；原最终样本得到artifact才Ready，否则沿原Incomplete收尾。",
+    "assertions": [
+      "EOF通知不直接finish(reason=artifact)、不直接Saved或启用保存；最终在途结果必须先结算。",
+      "原takeFinalSample仍来自真实capture入口的接线，次数和EOF顺序保持，不能为进度删尾采样。",
+      "无artifact时progress不是complete，Incomplete说明录像读完但文件未完成；>=1显示collecting_more而非硬停99%。",
+      "有真实artifact才显示文件完成并冻结接收用时；本用例fake帧/假元件不替代真实录像与外部SHA验收。"
+    ],
+    "fixtures": [
+      "原video EOF/最后一帧/最后采样可手工释放的Promise夹具",
+      "no_data尾帧与真实形状artifact尾帧对照"
+    ],
+    "redExpectation": "移植后，用media fraction=1或比例>=1直接完成的实现应产生RED，旧EOF屏障回归仍须保留。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-056",
+    "title": "活动录像预览不被新布局或ticker隐藏",
+    "level": "unit",
+    "target": "web/desktop-recv/src/app.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/video.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22",
+      "T26"
+    ],
+    "acceptanceIds": [
+      "AC-019",
+      "AC-022",
+      "AC-023",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-11",
+      "R-12"
+    ],
+    "diagnosticCodes": [],
+    "given": "真实候选HTML/CSS与App接线的DOM适配器；活动video处于Receiving、Draining、Reconstructing，诊断区域可折叠。",
+    "when": "触发业务render、专用tick及诊断折叠，记录preview.hidden、祖先折叠/隐藏属性与CSS规则。",
+    "then": "活动预览保持可呈现的结构，不因新层级或tick折叠；原结束清理仍执行。",
+    "assertions": [
+      "活动三态preview.hidden=false，不加display:none、visibility:hidden或会隐藏video的details折叠祖先。",
+      "只允许诊断日志折叠，不以减少视觉噪声为由把真实video移入隐藏容器。",
+      "tick不调用VideoSource.run、pause或改变背压；原终态释放/隐藏次数保持。",
+      "DOM/CSS结构检查不能证明真实rVFC持续触发，必须保留T25/T31/T35真浏览器录像验收，不将mock PASS当rVFC证据。"
+    ],
+    "fixtures": [
+      "真实候选HTML/CSS文本与可记录属性变化的DOM适配器",
+      "活动三态及诊断折叠事件序列"
+    ],
+    "redExpectation": "补断言后，用隐藏preview或隐藏祖先重做布局的实现应失败；真实浏览器持续呈现仍单列NOT_RUN。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-057",
+    "title": "同步和异步16002取消都保留产物供真实点击重试",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-09"
+    ],
+    "diagnosticCodes": [],
+    "given": "真实SaveController与UX桥接；picker第一次同步抛AbortError或异步拒绝AbortError，已有真实owner/artifact/Blob。",
+    "when": "显式点击start，观察raw failed+16002/cancelled+16002；再由第二次显式点击使用同一Blob保存。",
+    "then": "两种原事件均显示cancelled，可重试且不重接收；只有第二次用户点击再开picker。",
+    "assertions": [
+      "同步failed+16002与异步cancelled+16002均归一save.phase=cancelled，原controller事件/错误码保持原语义。",
+      "产物Blob身份/字节/owner不变，canSave按原Retryable恢复；不能自动发起新picker或解码。",
+      "后续真实新attemptId来自新start，使用同一产物且成功后才Saved。",
+      "注入picker验证逻辑，不宣称证明系统取消对话框/焦点/落盘；真实OS与哈希留E2E。"
+    ],
+    "fixtures": [
+      "现有SaveController注入picker同步/异步AbortError夹具",
+      "不可变artifact Blob与可记录事件的UX桥接"
+    ],
+    "redExpectation": "移植后，把同步failed+16002误显示写入失败或取消后丢Blob的实现须RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-058",
+    "title": "SAVE_BUSY仍在写入且pending始终未结算",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-09"
+    ],
+    "diagnosticCodes": [],
+    "given": "真实SaveController的write Promise保持待定，同一真实owner/attempt已进入writing；注入pendingTimer可手动到期。",
+    "when": "写入期间再次点击start产生writing+16008，再触发pending并读取视图，最后释放真实write/close。",
+    "then": "busy不等同保存失败或新attempt；pending明确尚未结算，直到write和close都成功。",
+    "assertions": [
+      "writing+16008保持phase=writing与原attemptId，不重新绑定owner、不发第二个picker或write。",
+      "pending保持禁用重复保存、没有Saved/完成勾选、不自动取消或重试。",
+      "重复完全相同事件不提升observationRevision，业务Controller原事件仍正常传递。",
+      "最终成功事件才归saved；UI用词不从超时推断失败。"
+    ],
+    "fixtures": [
+      "可手动释放write/close的真实Controller夹具",
+      "fakeTimer触发pending和记录picker/write调用数的spies"
+    ],
+    "redExpectation": "补断言后，将16008映射failed、pending映射saved或双击重发picker的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-059",
+    "title": "write和close均成功后才显示Saved",
+    "level": "unit",
+    "target": "web/desktop-recv/src/save-controller.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-06",
+      "R-09"
+    ],
+    "diagnosticCodes": [],
+    "given": "真实SaveController、UX bridge和会话状态；picker返回注入writable，write与close分别为可控Promise。",
+    "when": "先释放write但保持close未决，记录状态；再释放close并等待原终结事件。",
+    "then": "write成功只是仍在保存，close成功后原saved事件才驱动Saved；接收用时不包含保存耗时。",
+    "assertions": [
+      "close未成功前UI不Saved、不显示文件已保存，即使write已成功或artifact progress=complete。",
+      "close成功且原saved error=null后才save.phase=saved；保留真实owner与attempt身份。",
+      "whenSettled仅真正终结后解除原停止清理阻塞；不为UX改变IO/停止规则。",
+      "该注入writable证明结算次序，真实文件存在和外部SHA必须由真实E2E单独证明。"
+    ],
+    "fixtures": [
+      "真实Controller与可控write/close双Promise、事件记录器",
+      "已真实Ready并冻结接收用时的合法Context"
+    ],
+    "redExpectation": "移植后，write resolve即Saved或用pending时间到期冒充close成功的实现应RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-060",
+    "title": "写入和关闭失败保持可重试且不再次接收",
+    "level": "unit",
+    "target": "web/desktop-recv/src/save-controller.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-024"
+    ],
+    "runtimeIds": [
+      "R-09"
+    ],
+    "diagnosticCodes": [],
+    "given": "已有不可变artifact；注入write reject、close reject、权限/锁失败子样本，UX保存owner已正确绑定。",
+    "when": "逐一执行真实Controller start并结算，随后用户再次点击用健康writable保存。",
+    "then": "各原失败码保留，UX显示failed可重试；原Blob和接收用时保持，无自动重接收。",
+    "assertions": [
+      "普通write失败原码16005，普通close失败16006；权限/锁按原16003/16004，UX不改旧Error枚举。",
+      "失败均不显示Saved，产物仍可用、原controls恢复重试；close失败即使write成功也失败。",
+      "重试只由真实新点击建立新attempt，同一artifact写入；不重新读源、不清原Blob或重算接收用时。",
+      "真实磁盘权限/文件占用场景另留E2E/IAT边界，不把注入异常当实际磁盘验收。"
+    ],
+    "fixtures": [
+      "write/close/权限/锁拒绝参数表和原Controller夹具",
+      "相同Blob身份与重试调用计数spies"
+    ],
+    "redExpectation": "补断言后，将close失败显示成功、失败销毁产物或自动重启接收的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-061",
+    "title": "保存点击时捕获owner并同步绑定真实attempt",
+    "level": "unit",
+    "target": "web/desktop-recv/src/app.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-09"
+    ],
+    "diagnosticCodes": [],
+    "given": "当前sessionId/seq/artifact构成真实owner；SaveController.start在返回前同步发selecting；提供第二次busy事件与可变当前snapshot。",
+    "when": "调用真实点击处理，不在picker前await；记录点击owner，selecting时读取真实attemptId并绑定；然后使当前snapshot换owner再投递旧回调。",
+    "then": "同步selecting不会因尚未返回而漏绑定；每个实际attempt永远属于点击时owner，busy不重新绑定。",
+    "assertions": [
+      "picker调用发生在同一显式点击调用栈中，前置无await；单元只证明调用顺序，真实transient activation仍留系统浏览器验收。",
+      "绑定attemptId取真实事件非空字符串，不用预测计数器、requestId或事后snapshot拼造身份。",
+      "owner对象在start前捕获并固定；回调只查既有attempt绑定，当前snapshot变更不会改归属。",
+      "busy writing+16008沿原绑定；settled后清理绑定，单在途Map不无限增长。"
+    ],
+    "fixtures": [
+      "真实Controller同步selecting事件与可变snapshot的App接线夹具",
+      "注入picker的同调用栈/attempt owner Map记录器"
+    ],
+    "redExpectation": "移植后，start返回后才绑定、回调读取当前owner或预测attemptId的实现应产生RED。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-062",
+    "title": "旧保存owner与attempt迟到回调不污染当前会话",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021"
+    ],
+    "runtimeIds": [
+      "R-01",
+      "R-02",
+      "R-09"
+    ],
+    "diagnosticCodes": [
+      19007
+    ],
+    "given": "seq1/旧artifact的保存已终结或被停止；seq2已建立自己的owner和真实新attempt；保存事件记录原业务独立通道。",
+    "when": "投递seq1 saved/failed/aborted+11005、旧attempt writing，以及当前终结attempt后的倒退writing和完全重复终结事件。",
+    "then": "旧身份拒绝19007，不把旧成功/失败写入新页面；终结attempt不倒退，重复完全相同事件幂等。",
+    "assertions": [
+      "seq2的save/progress/elapsed/announcementKey、当前controls及observationRevision不被旧事件改变。",
+      "同owner也必须匹配当前真实attempt；旧attempt或冻结/终结后倒退事件不重新进入writing。",
+      "相同终结事件不提升revision或重复播报；aborted/11005不污染新会话。",
+      "仅拒UX观测；原SaveController结算与原业务saveEvent仍按既有规则执行，不吞原IO回调。"
+    ],
+    "fixtures": [
+      "双seq/双artifact/多个真实attempt的事件序列",
+      "终结后重复/倒退/旧回调记录器与原业务通道spy"
+    ],
+    "redExpectation": "补断言后，只校验sessionId不校验seq/artifact/attempt或用当前owner冒认旧回调的实现必须失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-063",
+    "title": "非法保存旁路事件只拒UX且不篡改原IO结算",
+    "level": "unit",
+    "target": "web/desktop-recv/src/ux-telemetry.js",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/save.test.mjs",
+    "taskIds": [
+      "T20",
+      "T21",
+      "T22"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-021",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-09"
+    ],
+    "diagnosticCodes": [
+      19008,
+      19013,
+      19014
+    ],
+    "given": "原真实保存流程正在运行；另备version非1、空attemptId、无artifact/owner、未知rawStatus、saved但errorCode非null等非法旁路事件。",
+    "when": "逐个投递UX观测，同时让原Controller的write/close按原计划完成。",
+    "then": "非法事件被拒绝/降级，原保存照常结算；不接受伪造成功，不为UX故障重试磁盘。",
+    "assertions": [
+      "非法字段/状态=19008，version不支持=19013；业务Context缺必须归属事实=19014而非补造。",
+      "saved且errorCode非null不能显示成功，空attempt不得冒用当前attempt或旧attempt。",
+      "原IO调用次数、write/close完成与原业务结算顺序与无UX负例对照一致。",
+      "诊断仅内部190xx且去重有界；不写旧error-codes.json、不作为v1 Error.code。"
+    ],
+    "fixtures": [
+      "单因素非法SaveRequest和缺owner Context参数表",
+      "健康Controller真实结算对照及副作用spy"
+    ],
+    "redExpectation": "移植后，saved不校验error或UX异常阻断原close/业务结算的实现应失败。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  },
+  {
+    "id": "UX-UT-064",
+    "title": "语义区与焦点恢复结构支持键盘而不逐数播报",
+    "level": "unit",
+    "target": "web/desktop-recv/index.html",
+    "skeleton": "docs/tests/receiver-ux-v2/unit-test-skeletons/ui.test.mjs",
+    "taskIds": [
+      "T26",
+      "T27"
+    ],
+    "acceptanceIds": [
+      "AC-020",
+      "AC-022",
+      "AC-023"
+    ],
+    "runtimeIds": [
+      "R-10",
+      "R-11"
+    ],
+    "diagnosticCodes": [],
+    "given": "真实候选DOM含中文lang、保留操作按钮和专用语义区；DOM适配器可记录focus目标，原controls明确合法可执行操作。",
+    "when": "更新数值多次、切换语义状态、模拟保存取消/失败/成功后焦点恢复及禁用控件变化。",
+    "then": "只有稳定主语义区polite播报，数字/log不live；恢复焦点指向当前可执行操作，保留键盘原生按钮结构。",
+    "assertions": [
+      "lang=zh-CN；ux-announcement稳定aria-live=polite；elapsed/rate/progress/media和log不设会逐数重复播报的live。",
+      "announcementKey相同不写live区；语义状态、artifact或真实attempt变更才允许一次更新。",
+      "保存取消/失败返回可执行保存/重试目标，成功后返回原规则允许的新接收操作；禁用/隐藏节点不作为focus目标。",
+      "原生button/label、可见焦点样式和最小44px规则具备结构依据；Node DOM不证明屏幕阅读器实际发声、窄窗可用性或系统弹窗焦点，必须保留T31/T35真实检查。"
+    ],
+    "fixtures": [
+      "真实候选HTML/CSS与focus记录DOM适配器",
+      "取消/失败/成功合法controls及announcementKey序列"
+    ],
+    "redExpectation": "移植后，数字区逐次live、对同key重复写入或焦点落到禁用节点的实现必须被断言拦住；真实辅助技术仍NOT_RUN。",
+    "status": "NOT_RUN",
+    "executedBy": null,
+    "scope": "unit_integration"
+  }
+]

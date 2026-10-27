@@ -1,3 +1,14 @@
+# receiver-ux-v2 迭代索引（2026-10-27 round-13 整改后；下方为 v1 历史原文，一字未改）
+
+- 本迭代阶段 5 总结：docs/dev-pipeline/receiver-ux-v2/stage5-dev-summary.md（实施范围 / 6 次审查与整改轮 / 测试总账 / 双门禁实跑输出 / **第 7 节 round-12 整改轮** / **第 8 节 round-13 整改轮**）
+- 最终候选证据根：docs/tests/runs/20261027-teamexec-12（product manifest 829d7dec…，attempt candidate-20261027-01；含 reproduction.md、release-candidate-manifest.json、results.json、ux-results.json、measurements）。前候选 09b/root10/root11 只读保留（round-14 披露）。
+- 双门禁状态（lead 复跑）：legacy `GATE local: PASS (20 required cases)`；UX `UX GATE local: FAIL (4)` = E2E-35×2（用户裁定由用户侧真实验证）+ E2E-37×2（环境缺口），field exit1 设计内。
+- v1 历史入口：docs/dev-pipeline/history/desktop-receiver-v1/README.md
+
+---
+
+> 以下为 v1 迭代（screen-capture-recv）阶段 5 总结原文，完整保留不动。
+
 # 阶段5（team-exec）开发总结 — 桌面接收端
 
 记录日期：2026-10-21；round-3 整改刷新：2026-10-22；round-5 整改刷新：2026-10-22。基线：分支 `screen-capture-recv`，round-5 车道 HEAD `9a08f9aae4f69c50d6f2aace356d3d889704964d`（`9a08f9a`，2026-10-22）——本文的 round-5 完成主张钉死到该提交（run-03 证据基线随车道刷新）；round-3 基线 `cb43f85` 的主张保留为历史并逐处标注 attempt；历史文档提交 `75d5004` 保留。

@@ -22,7 +22,7 @@ function codedError(code, message) {
 }
 
 export class DecoderClient {
-  constructor(worker, baseLimits = {}) {
+  constructor(worker, baseLimits = {}, options = {}) {
     this.worker = worker;
     this.baseLimits = baseLimits;
     this.pending = new Map();
@@ -30,6 +30,14 @@ export class DecoderClient {
     this.initPromise = null;
     this.closed = false;
     this.onFailure = null; // owner hook: called once when the channel dies after ready
+    // Optional UX ownership: the session factory passes the captured owner
+    // and the monotonic main-thread clock. Legacy factories keep working.
+    this._uxOwner = null;
+    this._uxNowMs = () => performance.now();
+    if (options && typeof options === 'object') {
+      if (options.owner && typeof options.owner === 'object') this._uxOwner = options.owner;
+      if (typeof options.nowMs === 'function') this._uxNowMs = options.nowMs;
+    }
     this._onInitReady = null;
     this._onInitFailed = null;
     this._initTimer = null;
@@ -42,6 +50,23 @@ export class DecoderClient {
       codedError(15010, `worker error: ${event.message || 'unknown'}`));
     worker.onmessageerror = () => this._channelFailed(
       codedError(15010, 'worker message could not be deserialized'));
+  }
+
+  // Read-only view of the current pending entry's ux submission metadata:
+  // the owner identity plus the real main-thread time stamped just before
+  // worker.postMessage. Never creates state; the units are the ux clock.
+  pendingSubmission() {
+    for (const entry of this.pending.values()) {
+      const submission = entry.submission;
+      if (!submission) return null;
+      return {
+        sessionId: submission.sessionId,
+        sessionSeq: submission.sessionSeq,
+        frameId: submission.frameId,
+        submittedAtMs: submission.submittedAtMs,
+      };
+    }
+    return null;
   }
 
   init({ mode, assets, limits }) {
@@ -83,7 +108,15 @@ export class DecoderClient {
           this._channelFailed(error);
         }
       }, this._frameTimeoutMs);
-      this.pending.set(frameId, { resolve, reject, timer });
+      // The ux metadata is stamped on the main thread just before the post:
+      // inside worker.postMessage the getter already reflects it (UX-UT-008).
+      const submission = {
+        sessionId: this._uxOwner ? this._uxOwner.sessionId : null,
+        sessionSeq: this._uxOwner ? this._uxOwner.sessionSeq : null,
+        frameId,
+        submittedAtMs: this._uxNowMs(),
+      };
+      this.pending.set(frameId, { resolve, reject, timer, submission });
       try {
         this.worker.postMessage(
           { type: 'frame', frameId, width, height, byteLength: pixels.byteLength, pixels },
