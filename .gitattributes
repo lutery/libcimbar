@@ -9,4 +9,11 @@ docs/**/*.py text eol=lf
 
 # E2E run evidence: byte-exact checkouts. core.autocrlf=true would rewrite
 # the gate logs to CRLF and break the recorded SHA-256 (same trap as docs/src).
-docs/tests/runs/20261018-teamexec-01/** -text
+# Round-12/13 surfaced the same defect on the newer run roots: pin ALL runs.
+docs/tests/runs/** -text
+
+# Frozen plans and test-plan files are hash-bound by gates (performance-method
+# methodSha256, planning/cases/contracts bytes): pin them byte-exact too.
+docs/plans/** -text
+docs/tests/receiver-ux-v2/** -text
+docs/design-catalog/receiver-ux-v2/** -text
