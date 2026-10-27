@@ -33,7 +33,7 @@
 |---|---|
 | 裁决与台账 | `round-13-verdict.md`、`r13-remediation.md`（逐项 CLOSED；r12 台账 A-R1/B-02 注记 PARTIAL→由本轮关闭） |
 | 整改提交链 | `a292900`（裁决归档/分流）→ `c106d46`（A13-02 产品）→ `00e0462`（A13-01+B-R1 工具）→ `3a76095`（E2E-27-S04 有界等待）→ root12 取证增强 → `c82cbfe`（root12 证据+回填+总结§8）→ `79a5011`（状态收口） |
-| 整改报告 | `r13-prod-report.md`、`r13-tools-report.md`（§1-§9，含收敛写 ≥1.2s 观察、保存竞态族观察、E2E-36 窗口披露） |
+| 整改报告 | `r13-prod-report.md`、`r13-tools-report.md`（§1-§9，含收敛写落点观察、保存竞态族观察、E2E-36 窗口披露） |
 | RED/GREEN | `red-logs/r13-a13-02/`（等时戳 6 例）、`red-logs/r13-tools/`（RED 9/77 + 7 份 GREEN） |
 | 最终候选证据根 | `docs/tests/runs/20261027-teamexec-12/`：`reproduction.md`、`release-candidate-manifest.json`、`results.json`（legacy 20/20）、`ux-results.json`（10 PASS + 35/37 NOT_RUN）、`iat-results.json`（01-07+A5）、`proof/`、`measurements/ux-overhead/candidate-20261027-01/`（A/B 5/5 + live 10/10）、`logs/` |
 | 中间/历史根 | root10（74ca75f8…）、root11（34a9de30…）、09b（9e2595e6…）只读保留；E2E-18/19 失败 attempt 与观察文件、E2E-36 窗口披露对（88532b vs 474c28） |
@@ -80,7 +80,7 @@ git diff 0ed2e5b..HEAD -- docs/plans/receiver-ux-v2/performance-method.json   # 
 1. 现场 7 项 NOT_RUN（用户侧）。
 2. E2E-35 如实 NOT_RUN（用户 2026-10-26 裁定：真实远程会话行为由用户侧验证；三装置探针证据在案）。
 3. E2E-37 语音 NOT_RUN（环境）。
-4. 终态收敛写实测可晚到 ≥1.2s（>设计 ≤250ms，推迟定时器路径）；冻结硬不变式不受影响；取证已统一 settle。
+4. 终态收敛写设计 ≤250ms；实测落点未精确测定（E2E-27 两探针仅证明写落在其间，疑似调度推迟；另一次直接实测 +139ms）；冻结硬不变式不受影响；取证已统一 settle。
 5. 保存自动化竞态族（InvalidStateError→16004）与残留窗口坑 #4：观察文件与裁定记录在案（E2E-18/19），失败原件保留。
-6. root11 ready 截图摄于收敛窗口（88532b，+139ms 收敛证明对）——设计权衡非缺陷。
+6. root12 的 E2E-36 旧 attempt（88532b）ready 截图摄于收敛窗口，+139ms 后即收敛（证明对）——设计权衡非缺陷。
 7. E2E-18/19 的"第三次重跑"与"清残留后重跑"均经 lead 裁定且观察先行、失败原件保留（非规则外硬试）。

@@ -83,5 +83,5 @@ python tools/desktop-recv/verify-evidence.py --run docs/tests/runs/20261027-team
 2. **保存自动化竞态族**（InvalidStateError→16004）：同一页面会话多次保存后，页上残留上一腿的页级保存钩子可致 recovery 保存偶发失败（E2E-18/19 实测）；runner 的页级重载守卫可能不触发（观察见 root12 E2E-18 observation.txt）——重跑即过；若连续两败停报做装置加固决策。
 3. **残留接收端窗口占 9445**：上一案崩溃/中止可留 Edge 窗口占 CDP 端口（坑 #4）——按本 run profile 精准清理（如 pid 60400 先例），绝不通杀进程名。
 4. **补跑纪律**：停车道后继续时先核对 results.json 是否有缺案（本轮 gate 抓到 19/20 缺口）。
-5. **测量 CLI 必须带 --context**：缺省时 expected 为空 → 绑定校验被拒（A13-01 后的新语义：无 context 不给复算背书）。
+5. **测量 CLI 的 --context 语义（round-14 B-S1 措辞修正）**：直接 CLI **不带** `--context` 时仍会 exit0/ok:true——那只是**统计/一致性复算**（ok 表示计算成功），**不证明当前构建与输入身份**；身份背书必须带 `--context`（UX 门禁调用始终携带；错绑定/缺身份负例均在该路径被拒）。
 6. live 观测抖动 1ms 容差、4MiB 样本、write-once、CJK 路径、process-guard 规模等沿用 root11 指南坑列表。
