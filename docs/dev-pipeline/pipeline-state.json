@@ -4,7 +4,7 @@
   "current_phase": "release-packaging",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-27T05:55:00+08:00",
+  "updated_at": "2026-10-27T10:00:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -331,16 +331,19 @@
     {
       "name": "release-packaging",
       "display": "打包构建交付",
-      "status": "in_progress",
+      "status": "completed",
       "output_dir": "product/",
       "output_files": [],
-      "delivery_name": "",
-      "product_dir": "",
-      "artifacts": [],
+      "delivery_name": "libcimbar-desktop-receiver-1.1.0",
+      "product_dir": "product/libcimbar-desktop-receiver-1.1.0-20261027-0942",
+      "artifacts": [
+        "product/libcimbar-desktop-receiver-1.1.0-20261027-0942",
+        "product/libcimbar-desktop-receiver-1.1.0-20261027-0942.zip"
+      ],
       "release_notes": "",
       "started_at": "2026-10-27T05:55:00+08:00",
-      "completed_at": null,
-      "notes": "",
+      "completed_at": "2026-10-27T10:00:00+08:00",
+      "notes": "阶段 8 完成（2026-10-27）：从 root12 终态 staging 组装 1.1.0 包（27 产品文件逐一与 product manifest 829d7dec… 字节一致）+ tests/ + CHANGELOG/RELEASE-NOTES/DELIVERY-MANIFEST（51 文件）+ zip（0.93MB）。冒烟：CJK+空格路径解压 52 文件、launch 表面与四控件齐、静态服务 index/wasm HTTP 200 且字节与清单一致。运行时表面（双输入/保存重试/中文长名）由 root12 E2E 在同字节上覆盖；现场 7 项与 35/37 缺口仍用户侧。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": []
     }
@@ -351,7 +354,7 @@
   "iteration_id": "receiver-ux-v2",
   "baseline_commit": "9e4fbc46965de42b9b0097ad80c607d71c7303f0",
   "previous_pipeline_state": "docs/dev-pipeline/history/desktop-receiver-v1/pipeline-state.json",
-  "pipeline_state": "in_progress",
+  "pipeline_state": "completed",
   "active_requirements": "docs/requirements/receiver-ux-v2/requirements-spec.md",
   "_handoff_mode": "standard",
   "active_design": "docs/design-catalog/receiver-ux-v2/README.md",
