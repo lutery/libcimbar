@@ -1,0 +1,9 @@
+{
+  "assetSetId": "desktop-recv-v1",
+  "sourceRevision": "00e04628b4447a3888019a285b478709384595a9",
+  "jsPath": "vendor/cimbar_js.js",
+  "wasmPath": "vendor/cimbar_js.wasm",
+  "jsSha256": "1f36bd07872ea51d5e60ae94fdf545c9bf970534f3d8cd022c8de5582ec5d7ff",
+  "wasmSha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+  "strictEofEvidenceRef": "docs/tests/runs/20261027-teamexec-12/strict-eof-evidence.json"
+}
