@@ -17,3 +17,7 @@ docs/tests/runs/** -text
 docs/plans/** -text
 docs/tests/receiver-ux-v2/** -text
 docs/design-catalog/receiver-ux-v2/** -text
+
+# Delivery copies under product/ are hash-bound by DELIVERY-MANIFEST.txt and
+# the release notes; keep fresh checkouts byte-identical to the zip contents.
+product/** -text
