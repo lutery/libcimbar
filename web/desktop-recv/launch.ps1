@@ -1,4 +1,4 @@
-#Requires -Version 7
+#Requires -Version 5.1
 <#
 .SYNOPSIS
   Start the Cimbar desktop receiver on the loopback interface.
@@ -6,10 +6,12 @@
 .DESCRIPTION
   Resolves everything relative to this script (PSScriptRoot), checks that the
   port is free, then starts server.py bound to 127.0.0.1 only. The page does
-  not register a Service Worker.
+  not register a Service Worker. Runs on pwsh 7 (preferred) and on Windows
+  PowerShell 5.1.
 
 .EXAMPLE
   pwsh -NoProfile -File launch.ps1 -Port 8766
+  powershell -NoProfile -ExecutionPolicy Bypass -File launch.ps1 -Port 8766
 #>
 [CmdletBinding()]
 param(
@@ -18,12 +20,21 @@ param(
   [switch]$Help
 )
 
+# Windows PowerShell 5.1 opens the console in the legacy code page; pin the
+# streams to UTF-8 so a package path that mixes CJK characters and spaces
+# prints correctly. Under pwsh 7 this is a harmless no-op.
+try {
+  [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+  $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+} catch { }
+
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 if ($Help) {
   Write-Output @'
 usage: pwsh -NoProfile -File launch.ps1 [-Port 8766] [-NoBrowser]
+   or: powershell -NoProfile -ExecutionPolicy Bypass -File launch.ps1 [-Port 8766] [-NoBrowser]
 
   Serves this directory on http://127.0.0.1:<Port> and opens a browser.
   Exit codes: 0 started, 2 bad arguments/runtime, 3 port busy, 4 missing files,
