@@ -220,3 +220,13 @@
 - 复验：5.1 受控 exit(23) → 5 + unknown + marker/日志；pwsh 7 → 5 + code 23；5.1 正常启动 → 0 + HTTP 200。
 - 产物：新预览件 `product/libcimbar-desktop-receiver-1.1.0-ps51-preview-20261028-2149`（+zip）；旧预览件 20261028-1447 为 round-15 所审对象，原样保留。分支 ps51-preview；master 不动。
 - 边界：本裁决不把预览件升级为正式版本；转正仍按 1.2.0 流程（含 5.1 下 E2E-1/2 回归）。
+## R16-1 — 1.2.0 转正受影响面复验（r16-run 执行，lead 验收，2026-10-28）
+
+- 计划：release-1.2.0-plan.md（受影响面=启动链；运行时字节按身份复用 root12 证据）。
+- root13（`docs/tests/runs/20261028-teamexec-13`，product manifest `7a5e5f1a…`，attempt candidate-20261028-01，source/harness=7e34289）。
+- 启动矩阵 ps51-launch-check.mjs **8/8 PASS**（5.1 直启/CMD pwsh 分支/CMD 5.1 回退（进程级 PATH 去 pwsh）/端口占用 3/缺文件 4/无 python 2/快退 23→5.1 unknown+5、7 code23+5；HTTP 字节对齐 staging）。
+- E2E-1 PASS（`…-4eb514`：CJK+空格 launch.cmd 链+live equal）；E2E-2 PASS（`…-f75684`：端口占用 exit3+恢复+live equal）。results.json 仅此两案（不冒充 20 案门禁）。
+- 非桌面全绿：222/69/77/14/3/契约。
+- lead 验收：root13 manifest/context 重验；**亲核差异表 root13 vs root12=23 同/4 变**（恰为计划变更面；lead 初查误用 09b 基线得 7 变，已纠正——教训：对照基线必须用相邻候选根）；root12 双门禁复跑一致；units/ux-selftest 复跑全绿。
+- 异常披露（round-16 包全文引用）：① root12 input-manifest 对 6 个运行期生成 fixtures-media 文件的陈旧 SHA（先天不成立，root13 按磁盘真值记录 drift）；② sender 包 autocrlf 漂移（7b91057 同型第四处，lead 已修 `6360cab` 并复验 SENDER-RESTAGE-OK）；③ staging 行尾组装方法（按 round-15 预览件公式保持字节身份：23 运行时文件取 1.1.0 包字节+launch 文件取工作树+package.json 取 HEAD blob+asset-set 重写）。
+- 计划口径修正：release-1.2.0-plan.md 写"22 个运行时文件"，实测 27−4=**23**；以实测差异表为准。
