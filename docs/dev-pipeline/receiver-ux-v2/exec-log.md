@@ -212,3 +212,11 @@
 - **B-R13-3 root12 全量复验**（product 829d7dec…，attempt candidate-20261027-01）：绿扫 222/69/77/14/3 → IAT 01-07+A5 → legacy 20/20（18/19 各两败后经裁定重跑 PASS；19/20 漏跑由 gate 抓到补跑）→ UX 27/28/29（27 经 S04 有界等待修复后 PASS，`3a76095`）→ 30..34 → A/B 5/5（gap≥250ms）→ live 10/10（窗口 30359-32246ms）→ UX-UI 35/37 NOT_RUN、36/38 PASS → 双门禁 legacy PASS(20)/UX 恰 4 条授权缺口/field 设计内。取证增强：E2E-36 终态截图先有界等待一致（新 attempt 474c28 显示「重建完成/21.8s」；旧 attempt 88532b 保留为窗口时序披露对）。
 - **验收**（lead 独立复跑）：双门禁、recompute CLI（ok=true/PASS/5/10、context 三重绑定生效）、语义校验 4 文件全等、E2E-36 新截图目验、冻结方法 diff 空、v1 契约 SHA 不变。
 - **收口**：回填/runtime-map 重绑（root12）、总结第 8 节、r13 台账全 CLOSED（r12 台账 A-R1/B-02 注记 PARTIAL→由本轮关闭）、round-14 包与模板、阶段 5 整改出口确认门。
+## R15 — PS5.1 预览补丁的补充外审（round-15）与 S15-01 修正（2026-10-28）
+
+- 输入：用户转达 round-15 裁决（预览补丁通过，0 阻断，S15-01 非阻断建议），归档 `docs/dev-pipeline/ext-review/round-15-verdict.md`。
+- S15-01 根因（实测确证）：Windows PowerShell 5.1 的 Start-Process + 文件重定向返回的进程对象在退出后句柄不可用（Handle/ExitCode/StartTime 全空；WaitForExit/Refresh 不可恢复；无重定向时正常，pwsh 7 全程正常）。
+- 修正：launch.ps1 失败诊断先尝试取准确退出码，不可取时明确输出 "server process exited with an unknown code"（仍 exit 5，stderr 原文与日志路径保留）。
+- 复验：5.1 受控 exit(23) → 5 + unknown + marker/日志；pwsh 7 → 5 + code 23；5.1 正常启动 → 0 + HTTP 200。
+- 产物：新预览件 `product/libcimbar-desktop-receiver-1.1.0-ps51-preview-20261028-2149`（+zip）；旧预览件 20261028-1447 为 round-15 所审对象，原样保留。分支 ps51-preview；master 不动。
+- 边界：本裁决不把预览件升级为正式版本；转正仍按 1.2.0 流程（含 5.1 下 E2E-1/2 回归）。

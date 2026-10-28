@@ -129,7 +129,22 @@ if (-not $listening) {
   if (Test-Path $errLog) { $detail = (Get-Content -Path $errLog -Tail 20) -join [Environment]::NewLine }
   [Console]::Error.WriteLine("the server did not listen on 127.0.0.1:$Port")
   if ($process.HasExited) {
-    [Console]::Error.WriteLine("server process exited with code $($process.ExitCode)")
+    # Measured on Windows PowerShell 5.1.22621: Start-Process with file
+    # redirects returns a Process object whose handle is unavailable once the
+    # child exits (Handle, ExitCode and StartTime are all empty, and neither
+    # WaitForExit nor Refresh recovers them). pwsh 7 keeps the handle and
+    # reports the code. Print the accurate code when available and say
+    # "unknown" otherwise (round-15 suggestion S15-01).
+    $childCode = $null
+    try {
+      [void]$process.WaitForExit()
+      $childCode = $process.ExitCode
+    } catch { }
+    if ($null -ne $childCode -and "$childCode" -ne '') {
+      [Console]::Error.WriteLine("server process exited with code $childCode")
+    } else {
+      [Console]::Error.WriteLine('server process exited with an unknown code')
+    }
   }
   if ($detail) { [Console]::Error.WriteLine($detail) }
   [Console]::Error.WriteLine("diagnostic logs: $outLog ; $errLog")
