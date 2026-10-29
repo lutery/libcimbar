@@ -230,3 +230,11 @@
 - lead 验收：root13 manifest/context 重验；**亲核差异表 root13 vs root12=23 同/4 变**（恰为计划变更面；lead 初查误用 09b 基线得 7 变，已纠正——教训：对照基线必须用相邻候选根）；root12 双门禁复跑一致；units/ux-selftest 复跑全绿。
 - 异常披露（round-16 包全文引用）：① root12 input-manifest 对 6 个运行期生成 fixtures-media 文件的陈旧 SHA（先天不成立，root13 按磁盘真值记录 drift）；② sender 包 autocrlf 漂移（7b91057 同型第四处，lead 已修 `6360cab` 并复验 SENDER-RESTAGE-OK）；③ staging 行尾组装方法（按 round-15 预览件公式保持字节身份：23 运行时文件取 1.1.0 包字节+launch 文件取工作树+package.json 取 HEAD blob+asset-set 重写）。
 - 计划口径修正：release-1.2.0-plan.md 写"22 个运行时文件"，实测 27−4=**23**；以实测差异表为准。
+## R16-2 — round-16 外审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-16 裁决（不通过；A16-01 PS5.1 完整 E2E-1/2 缺失；A16-02/B-R16-1 启动矩阵可能误停无关服务；S16-01/02/03 建议）；裁决归档 `round-16-verdict.md`（`ece38ff`）。
+- RED（真实进程）：da40f55 旧清理函数对 launcher 从未创建的独占 .NET 监听器执行 netstat 兜底 Stop-Process，监听器真实死亡（exit -1）且函数报告端口空闲；全矩阵跑批未触发该分支的两类尝试与函数级诊断均如实入档 `red-logs/r16/`。
+- 修复：`7489ac4` 矩阵身份核验清理（精确 server.py/--directory、python 可执行、创建时刻；删除按端口清理；端口预占用中止并保留外部监听器；h1-h4 守卫案；toolSha256）；`ae6f1ae` run-e2e `--launcher-engine ps51`（去 pwsh PATH、PS5.1 版本与 where 探针、launcher 进程观察器、默认开页验证、外置 certutil SHA、E2E-2 双段走 launch.cmd 回退、stopPackagedServer 精确参数核验）；`11b449b` native-dialog share 选择器收紧（首跑失败真因：裸 `share` 匹配误驱动用户 Chrome "a-share-mcp" 窗）；`58dd622` 开页证据绑定本次启动（20ms 进程快扫 + 前后窗口差集）。
+- root14（`docs/tests/runs/20261029-teamexec-14`，attempt `candidate-20261029-01`，harness `58dd622`，product manifest 仍 `7a5e5f1a…`）：staging/fixtures 按字节复制并逐项重哈希；矩阵 **12/12 PASS**；E2E-1 ps51 PASS（`…363db1`）、E2E-2 ps51 PASS（`…5d7e6e`）；绿扫 222/69/77/14/3/契约；首败 attempt 原件保留（`proof/E2E-1/fail-attempt-766581/`）。
+- 建议落实：S16-01 状态索引（本行 + §8.4 + pipeline-state）；S16-02 `logs/tools-identity.json` + 矩阵 toolSha256；S16-03 round-17 复跑命令使用真实参数（`--run-id` 独立根）。
+- 台账：`docs/dev-pipeline/receiver-ux-v2/r16-remediation.md`；出口确认门后送 round-17。
