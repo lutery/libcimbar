@@ -2174,8 +2174,13 @@ const SCENARIOS = {
           `${pageOpenVerdict.reasons.join('; ')}`);
       }
 
+      // The receive legs must target the SAME server the launcher started:
+      // the ps51 default-open port is run-time chosen, so the harness page and
+      // the share/save dialogs all bind to it (a fixed PORT1 would hit
+      // CONNECTION_REFUSED when 8767 is taken by a stale tab's port).
+      const RECV_PORT = defaultOpen ? OPEN_PORT : PORT1;
       sender = await startSenderOnly();
-      receiver = await launchReceiver(PORT1);
+      receiver = await launchReceiver(RECV_PORT);
       await loadSenderFile(sender.senderPage, fixture);
       await sender.senderPage.bringToFront();
       await sleep(300);
