@@ -43,7 +43,12 @@ param(
   [string]$ProcessName = 'msedge',
   [int]$ProcessId = 0,
   [int]$TimeoutSec = 30,
-  [string]$SelftestFile
+  [string]$SelftestFile,
+  # Round-18 follow-up: the journey's browser instance identity. The receiver
+  # Edge is launched with a unique --user-data-dir; a dialog process whose
+  # command line carries that exact profile belongs to this journey even when
+  # its parent chain no longer reaches the (short-lived) launched pid.
+  [string]$ProfileDir
 )
 
 Set-StrictMode -Version 3.0
@@ -348,7 +353,7 @@ function Get-OwnerChain([int]$ChildPid, [int]$MaxDepth = 8) {
     $seen[$current] = 1
     $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$current" -ErrorAction SilentlyContinue
     if (-not $proc) { break }
-    $chain += [pscustomobject]@{ pid = [int]$proc.ProcessId; name = $proc.Name; parent = [int]$proc.ParentProcessId }
+    $chain += [pscustomobject]@{ pid = [int]$proc.ProcessId; name = $proc.Name; parent = [int]$proc.ParentProcessId; cmd = $proc.CommandLine }
     $current = [int]$proc.ParentProcessId
     if ($current -le 4) { break }
   }
@@ -356,16 +361,22 @@ function Get-OwnerChain([int]$ChildPid, [int]$MaxDepth = 8) {
 }
 
 # The pure ownership decision, over already-collected chain records:
-#   chain = [{pid,name,parent}, ...] from the dialog process upward.
-# Kept separate from the CIM lookup so the selftest can drive the REAL rule
-# with synthetic chains (round-17 B17-01).
-function Test-OwnershipFacts($Chain, [int[]]$TargetPids, [int]$DialogPid) {
+#   chain = [{pid,name,parent,cmd}, ...] from the dialog process upward.
+# Round-18 follow-up: accepted when the image is msedge.exe AND either the pid
+# or an ancestor is a target pid, OR the dialog process's command line carries
+# this journey's unique profile directory (the receiver Edge is launched with
+# a per-journey --user-data-dir; its parent pid is short-lived, so the chain is
+# not always available). Kept separate from the CIM lookup so the selftest can
+# drive the REAL rule with synthetic chains.
+function Test-OwnershipFacts($Chain, [int[]]$TargetPids, [int]$DialogPid, [string]$ProfileDir) {
   $facts = [pscustomobject]@{
     dialogPid = $DialogPid
     targets = @($TargetPids)
     chain = @($Chain | ForEach-Object { "$($_.pid):$($_.name)" })
     image = if ($Chain.Count -gt 0) { $Chain[0].name } else { $null }
     ownedBy = $null
+    matchedBy = $null
+    profileMatch = $false
     reason = $null
     ok = $false
   }
@@ -379,15 +390,22 @@ function Test-OwnershipFacts($Chain, [int[]]$TargetPids, [int]$DialogPid) {
     if ($TargetPids -contains $link.pid) { $targetHit = $link.pid; break }
   }
   $facts.ownedBy = $targetHit
+  if ($ProfileDir) {
+    $cmd = [string]$Chain[0].cmd
+    if ($cmd -and ($cmd.IndexOf($ProfileDir, [StringComparison]::OrdinalIgnoreCase) -ge 0)) {
+      $facts.profileMatch = $true
+    }
+  }
   if (-not $isBrowser) { $facts.reason = "process image is $($facts.image), not msedge.exe" }
-  elseif ($null -eq $targetHit) { $facts.reason = 'owner chain never reaches a target pid' }
-  $facts.ok = ($null -ne $targetHit -and $isBrowser)
+  elseif ($null -ne $targetHit) { $facts.matchedBy = 'pid-chain'; $facts.ok = $true }
+  elseif ($facts.profileMatch) { $facts.matchedBy = 'profile'; $facts.ok = $true }
+  else { $facts.reason = 'owner chain never reaches a target pid and the process does not carry this journey''s profile' }
   return $facts
 }
 
 function Test-OwnedByTarget([int]$DialogPid, [int[]]$TargetPids) {
   $chain = @(Get-OwnerChain -ChildPid $DialogPid)
-  return Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid $DialogPid
+  return Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid $DialogPid -ProfileDir $ProfileDir
 }
 
 # Round-17 B17-01: one pure selection rule shared by the live finder and the
@@ -396,7 +414,7 @@ function Test-OwnedByTarget([int]$DialogPid, [int[]]$TargetPids) {
 # pass 2 accepts a name/class row ONLY when the chain resolver proves the
 # process belongs to a target (image msedge.exe and a target pid in its owner
 # chain). A foreign nested dialog can never be returned.
-function Select-DialogRecords($Records, [int[]]$TargetPids, [string]$ForAction, [scriptblock]$ChainResolver) {
+function Select-DialogRecords($Records, [int[]]$TargetPids, [string]$ForAction, [scriptblock]$ChainResolver, [string]$ProfileDir = '') {
   foreach ($record in $Records) {
     if (-not ($TargetPids -and ($TargetPids -contains $record.pid))) { continue }
     if ((Test-DialogNameForAction $ForAction $record.name) -or
@@ -411,7 +429,7 @@ function Select-DialogRecords($Records, [int[]]$TargetPids, [string]$ForAction, 
     $classMatch = ($ForAction -eq 'save' -and $record.class -eq '#32770')
     if (-not ($nameMatch -or $classMatch)) { continue }
     $chain = @(& $ChainResolver $record.pid)
-    $facts = Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid ([int]$record.pid)
+    $facts = Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid ([int]$record.pid) -ProfileDir $ProfileDir
     if ($facts.ok) { return [pscustomobject]@{ record = $record; via = 'pass2'; facts = $facts; refused = @() } }
     $refused += ("pid " + $facts.dialogPid + " '" + $record.name + "': " + $facts.reason)
   }
@@ -435,7 +453,7 @@ function Find-Dialog([string[]]$Pids) {
       $elements += $candidate
     }
   }
-  $selection = Select-DialogRecords -Records $records -TargetPids @($Pids) -ForAction $(if ($script:ActionOverride) { $script:ActionOverride } else { $Action }) -ChainResolver { param($dialogPid) Get-OwnerChain -ChildPid $dialogPid }
+  $selection = Select-DialogRecords -Records $records -TargetPids @($Pids) -ForAction $(if ($script:ActionOverride) { $script:ActionOverride } else { $Action }) -ChainResolver { param($dialogPid) Get-OwnerChain -ChildPid $dialogPid } -ProfileDir $ProfileDir
   if ($null -eq $selection.record) {
     if ($selection.refused.Count -gt 0) {
       [Console]::Error.WriteLine("refused candidate dialog(s) without ownership proof: " + ($selection.refused -join ' | '))
@@ -449,7 +467,8 @@ function Find-Dialog([string[]]$Pids) {
     # caller receive [String, AutomationElement] and broke FindAll downstream.
     [Console]::Out.WriteLine("ownership: dialog pid=" + $facts.dialogPid + " name='" + $selection.record.name +
       "' image=" + $facts.image + " chain=" + ($facts.chain -join ' > ') +
-      " ownedBy=" + $(if ($null -eq $facts.ownedBy) { 'none' } else { $facts.ownedBy }) + " ok=" + $facts.ok)
+      " ownedBy=" + $(if ($null -eq $facts.ownedBy) { 'none' } else { $facts.ownedBy }) +
+      " matchedBy=" + $facts.matchedBy + " profileMatch=" + $facts.profileMatch + " ok=" + $facts.ok)
   }
   return $elements[$selection.record.index]
 }
@@ -470,7 +489,7 @@ function New-RecordResolver($Processes) {
       $seen[$cur] = 1
       if (-not $table.ContainsKey($cur)) { break }
       $entry = $table[$cur]
-      $chain += [pscustomobject]@{ pid = [int]$entry.pid; name = $entry.name; parent = [int]$entry.parent }
+      $chain += [pscustomobject]@{ pid = [int]$entry.pid; name = $entry.name; parent = [int]$entry.parent; cmd = [string]$entry.cmd }
       $cur = [int]$entry.parent
     }
     return $chain
@@ -558,7 +577,8 @@ function Invoke-DialogSelftest([string]$File) {
         }
       }
       $resolver = New-RecordResolver $case.processes
-      $selection = Select-DialogRecords -Records $records -TargetPids @($case.targets) -ForAction "$($case.action)" -ChainResolver $resolver
+      $profileDir = if ($case.PSObject.Properties.Name -contains 'profileDir') { "$($case.profileDir)" } else { '' }
+      $selection = Select-DialogRecords -Records $records -TargetPids @($case.targets) -ForAction "$($case.action)" -ChainResolver $resolver -ProfileDir $profileDir
       $got = if ($null -eq $selection.record) { $null } else { $selection.record.pid }
       $ok = ("$got" -eq "$($case.expect)")
       $factsText = ''

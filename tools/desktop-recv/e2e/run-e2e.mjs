@@ -58,6 +58,10 @@ const RECORDER_PORT = 8790;        // serves the recording rig page (record-send
 const RECORDER_DEBUG_PORT = 9453;  // separate from the receiver's CDP port
 const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
 const NATIVE_HELPER = join(HERE, 'native-dialog.ps1');
+// pid -> the journey-unique --user-data-dir of the browser this run launched.
+// The dialog helper uses it as the ownership identity (the launched pid is
+// short-lived, so a parent chain is not always available).
+const BROWSER_PROFILES = new Map();
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 // Round-16 A16-01: Windows PowerShell 5.1 launch-engine mode.
 const WINPS = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -210,6 +214,7 @@ async function pickFreePort(startPort, attempts = 20, excludePorts = []) {
 function runHelper(helperArgs, pid = 0) {
   return new Promise((resolvePromise) => {
     const extra = pid > 0 ? ['-ProcessId', String(pid)] : [];
+    if (pid > 0 && BROWSER_PROFILES.has(pid)) extra.push('-ProfileDir', BROWSER_PROFILES.get(pid));
     const helper = spawn('pwsh', ['-NoProfile', '-File', NATIVE_HELPER, ...helperArgs, ...extra],
       { stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
@@ -614,6 +619,7 @@ async function launchReceiver(port = RECEIVER_PORT) {
   }
   const pid = await findEdgePid(profile);
   if (!pid) throw new Error('could not resolve the normal Edge pid for this profile');
+  BROWSER_PROFILES.set(pid, profile);
   return { child, profile, pid, browser: connected, page };
 }
 
@@ -1273,6 +1279,7 @@ async function launchRecorderPage() {
   await page.waitForSelector('#rec', { timeout: 30000 });
   const pid = await findEdgePid(profile);
   if (!pid) throw new Error('could not resolve the recorder Edge pid for this profile');
+  BROWSER_PROFILES.set(pid, profile);
   return { child, profile, pid, browser: connected, page };
 }
 

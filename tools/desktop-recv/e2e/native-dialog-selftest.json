@@ -139,6 +139,38 @@
         }
       ],
       "expectCount": 0
+    },
+    {
+      "id": "p4-profile-owned",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        {
+          "pid": 333, "name": "msedge.exe", "parent": 54608,
+          "cmd": "msedge.exe --user-data-dir=C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-abc123 --remote-debugging-port=9445"
+        }
+      ],
+      "windows": [
+        { "pid": 333, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1" }
+      ],
+      "profileDir": "C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-abc123",
+      "expect": 333
+    },
+    {
+      "id": "n6-profile-mismatch-refused",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        {
+          "pid": 333, "name": "msedge.exe", "parent": 54608,
+          "cmd": "msedge.exe --user-data-dir=C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-other999"
+        }
+      ],
+      "windows": [
+        { "pid": 333, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1" }
+      ],
+      "profileDir": "C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-abc123",
+      "expect": null
     }
   ]
 }
