@@ -255,3 +255,12 @@
 - 修复：`f5874d1` parseSnapshotLines 入模块（SNAP/SNAPW/SNAPT 正确列语义）+ URL-only 判定 + run-e2e 新页签激活（窗口页签差集+SelectionItemPattern）+ native-dialog 诊断改 [Console]::Out 与 wrapper 自测；`a56e74c` 之后的 `08adf50` 接收腿绑定运行期端口；`82d2fac` StrictMode 钩子初始化；`2791cf7` 归属规则增 **profile 身份**（本轮 mkdtemp --user-data-dir）并实测真实 picker 父链断裂场景；`cd53a20` CDP 9445 的 **profile 标记验证回收**（实跑回收 pid 79176）。
 - root16（`docs/tests/runs/20261029-teamexec-16`，attempt `candidate-20261029-03`，harness `cd53a20`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS `…2f9999`（地址栏精确 URL 127.0.0.1:8768、启动前仅 8767、TCP 仅辅助）、E2E-2 PASS `…5cc6c5`（权限对话框 pid-chain+profile 双证）；tools 69/69、page-open selftest 8/8（原始行经真实解析器）、dialog selftest 10/10（含完整 wrapper 正例）；4 个失败 attempt 原件+控制台日志保留。
 - 台账：`r18-remediation.md`；出口确认门后送 round-19。
+
+## R19 — round-19 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-19 裁决（不通过；唯一新增主题 A19-01=B19-01：CDP 回收仅凭命令行含 `cimbar-e2e-` 子串即 Stop-Process，普通 Python 进程可命中）；裁决归档 `round-19-verdict.md`（`2d9b1e5`）。A18-01/B18-01/B17-01 及更早关闭项保持关闭。
+- RED：`red-logs/r19/`——逐字复刻旧回收函数，对我方 python 监听器真实执行 Stop-Process（python 真实退出），并记录旧文案 "profile marker verified"。
+- 修复（裁决允许的最小修复，`18b7c22`）：删除 `reclaimStaleAutomationBrowser`；新 `assertCdpPortFree` 只读探测，占用即报错并保留占用者；函数内无 Stop-Process、无 `cimbar-e2e-` 子串测试。其余 Stop-Process 调用点未变（closeReceiver 按本轮精确随机 profile；stopPackagedServer 按已验证 server 身份）。
+- root17（`docs/tests/runs/20261029-teamexec-17`，attempt `candidate-20261029-04`，harness `18b7c22`，product manifest 仍 `7a5e5f1a…`）：拒绝例 A（自有 python 占 9445，`…9235f6`，占用者存活）、拒绝例 B（外部真实 Edge 普通参数占 9445，`…9458d9`，占用者存活）、正常腿 E2E-1 PASS（`…7d9540`，地址栏精确 8768）；tools 69/69、selftests 8/8 与 10/10。
+- 文案更正：旧 "profile marker verified" 随函数删除，台账/总结/复现说明明确更正为"占用即拒绝、不动占用者"。
+- 台账：`r19-remediation.md`；出口确认门后送 round-20。

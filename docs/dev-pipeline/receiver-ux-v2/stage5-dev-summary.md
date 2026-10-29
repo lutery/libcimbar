@@ -169,3 +169,10 @@ UX 门禁 4 条 = E2E-35（用户授权缺口：本机不可构造真实 visibil
 - root16（`20261029-teamexec-16`，attempt `candidate-20261029-03`，harness `cd53a20`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS（地址栏精确 URL 8768；8767 因旧页签显示被运行期排除）、E2E-2 PASS（权限对话框 pid-chain+profile 双证）；selftest 8/8（原始协议行经真实解析器）与 10/10（含 Find-Dialog→Find-ByName 完整 wrapper 正例）；4 个失败 attempt 原件保留；遗留自动化 Edge 按 profile 标记回收（pid 79176，日志在案）。
 - 新教训：①**协议列数错误是最危险的一类缺陷**——解析器假设错了字段数，所有下游"证据为空"都会被编造解释（前台锁）；自测必须让**原始协议行**流经真实解析器。②PowerShell 值返回函数中任何 Write-Output 都会污染返回值（诊断一律 [Console]::Out/Error）。③浏览器实例身份用 profile（mkdtemp 唯一路径）比父链可靠——launcher pid 会退出。④遗留自动化浏览器必须按 profile 标记回收，固定 CDP 端口先验证归属再动。
 - E2E-35/37、现场 7 项维持既有 NOT_RUN。
+
+## 8.7 Round-19 整改（2026-10-29）
+
+- round-19 不通过（唯一新增主题：CDP 回收子串授权）；采用裁决明示的最小修复——**删除自动终止**，`assertCdpPortFree` 只读探测，端口占用即报错并保留占用者；"profile marker verified" 文案随旧函数删除并书面更正（旧文案只描述子串匹配，不是归属证明）。
+- root17（`20261029-teamexec-17`，attempt `candidate-20261029-04`，harness `18b7c22`）：拒绝例 A（自有 python 占 CDP 9445，占用者存活）、拒绝例 B（外部真实 Edge 普通参数占 CDP 9445，占用者存活）、正常腿 E2E-1 PASS（地址栏 URL 8768/启动前 8767）；tools 69/69、page-open 8/8、dialog 10/10。
+- 新教训：①"命令行含某标记"永远不是归属证明——去掉自动终止比继续发明归属判据更安全（裁决允许的最小修复反而消除整类风险）；②测试编排脚本自身也会骗人（Start-Process 拆坏内联 python 程序导致"占用者"未占用端口），编排脚本必须验证占用事实（netstat LISTENING + owner pid）后再断言。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。
