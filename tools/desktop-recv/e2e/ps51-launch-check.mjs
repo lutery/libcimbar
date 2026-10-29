@@ -6,6 +6,16 @@
 // HTTP-served bytes (index.html + vendor/cimbar_js.wasm must equal the staging
 // files byte for byte), and the launcher's failure exits 2/3/4/5.
 //
+// Round-16 A16-02 / B-R16-1: cleanup only ever stops a process that is PROVEN
+// to be this launch's server — its command line must carry the staging
+// server.py path and --directory root (normalized exact match), its executable
+// must be the python resolved on PATH, and it must have been created by this
+// launch. A failed launch (no "server pid N") never triggers any cleanup, a
+// pre-occupied port aborts the case and leaves the foreign listener alive, and
+// a busy port is never used as a reason to stop the port's owner. Guard cases
+// h1-h3 prove the refusal branches with real OS processes; h4 proves the
+// positive verified cleanup.
+//
 // Usage:
 //   node tools/desktop-recv/e2e/ps51-launch-check.mjs --staging <receiver-dir> \
 //        [--run-id 20261028-teamexec-13] [--repo-root <dir>]
@@ -42,6 +52,7 @@ const HELP = `usage: node tools/desktop-recv/e2e/ps51-launch-check.mjs --staging
   --repo-root <dir>  resolve repo-relative paths against <dir> (default: this
                      checkout).
 
+  Cases a-g are the launch matrix; h1-h4 are the round-16 cleanup guard cases.
   Exit: 0 all cases pass, 1 at least one FAIL, 2 bad arguments, 3 incomplete staging.`;
 
 const WINPS = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -144,6 +155,17 @@ function occupyPort(port) {
   });
 }
 
+function portConnectable(port, timeoutMs = 2000) {
+  return new Promise((resolveProbe) => {
+    const socket = net.connect({ port, host: '127.0.0.1' });
+    const done = (value) => { socket.destroy(); resolveProbe(value); };
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => done(true));
+    socket.once('error', () => done(false));
+    socket.once('timeout', () => done(false));
+  });
+}
+
 async function waitPortFree(port, timeoutMs = 10000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -153,27 +175,116 @@ async function waitPortFree(port, timeoutMs = 10000) {
   return false;
 }
 
-// The python server outlives the launcher; stop it by the exact pid printed
-// on stdout ("server pid N"), falling back to the port owner from netstat.
-async function stopServerByPid(pid, port, log) {
-  if (Number.isSafeInteger(pid) && pid > 0) {
-    await run(WINPS, ['-NoProfile', '-Command',
-      `Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue`]);
-    log(`stop: Stop-Process -Id ${pid} sent`);
+// --- process identity (round-16 A16-02) -------------------------------------
+
+// Key=value probe of one pid through CIM. Never writes, never kills.
+async function probeProcess(pid) {
+  const script = [
+    `$p = Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue`,
+    "if (-not $p) { 'found=0'; exit 0 }",
+    "'found=1'",
+    "'name=' + $p.Name",
+    "'exe=' + $p.ExecutablePath",
+    "'cmd=' + $p.CommandLine",
+    "'created=' + $p.CreationDate.ToString('o')",
+    "'parent=' + $p.ParentProcessId",
+  ].join('; ');
+  const probe = await run(WINPS, ['-NoProfile', '-Command', script]);
+  const out = { found: false, name: null, exe: null, cmd: null, created: null, parent: null };
+  for (const line of text(probe.stdout).split(/\r?\n/)) {
+    const index = line.indexOf('=');
+    if (index <= 0) continue;
+    const key = line.slice(0, index);
+    const value = line.slice(index + 1);
+    if (key === 'found') out.found = value === '1';
+    else if (key in out) out[key] = value;
   }
-  if (!(await waitPortFree(port, 4000))) {
-    const netstat = await run('C:\\Windows\\System32\\netstat.exe', ['-ano', '-p', 'tcp']);
-    for (const line of text(netstat.stdout).split(/\r?\n/)) {
-      const match = new RegExp(`^\\s*TCP\\s+127\\.0\\.0\\.1:${port}\\s.*LISTENING\\s+(\\d+)`).exec(line);
-      if (match) {
-        await run(WINPS, ['-NoProfile', '-Command',
-          `Stop-Process -Id ${match[1]} -Force -ErrorAction SilentlyContinue`]);
-        log(`stop: netstat fallback Stop-Process -Id ${match[1]}`);
-      }
+  return out;
+}
+
+// Windows command-line tokenizer: split on whitespace outside double quotes,
+// with \" as an escaped literal quote (the launcher's Quote-Argument shape).
+function splitCommandLine(line) {
+  const tokens = [];
+  let current = '';
+  let inQuotes = false;
+  let started = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '\\' && line[i + 1] === '"') { current += '"'; i += 1; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else if (ch === '"') {
+      inQuotes = true;
+      started = true;
+    } else if (/\s/.test(ch)) {
+      if (started || current.length > 0) { tokens.push(current); current = ''; started = false; }
+    } else {
+      current += ch;
     }
   }
+  if (started || current.length > 0) tokens.push(current);
+  return tokens;
+}
+
+const normalizePath = (value) => resolve(String(value)).replace(/[\\/]+/g, '\\').toLowerCase();
+
+// Verify the recorded pid really is THIS launch's server before any stop.
+// Facts checked: exact staging server.py argument, exact --directory root,
+// executable equals the python resolved on PATH, creation after the launch.
+function verifyServerIdentity(proc, expectations) {
+  const reasons = [];
+  if (!proc.found) {
+    reasons.push('process not found (already exited or pid recycled)');
+    return { ok: false, reasons };
+  }
+  const tokens = splitCommandLine(proc.cmd || '');
+  const serverIdx = tokens.findIndex((t) => normalizePath(t) === normalizePath(expectations.serverPath));
+  if (serverIdx < 0) reasons.push(`command line has no exact staging server.py argument (${expectations.serverPath})`);
+  const dirIdx = tokens.indexOf('--directory');
+  if (dirIdx < 0 || dirIdx + 1 >= tokens.length) reasons.push('command line has no --directory argument');
+  else if (normalizePath(tokens[dirIdx + 1]) !== normalizePath(expectations.directory)) {
+    reasons.push(`--directory ${tokens[dirIdx + 1]} is not the staging root ${expectations.directory}`);
+  }
+  if (normalizePath(proc.exe || '') !== normalizePath(expectations.pythonExe)) {
+    reasons.push(`executable ${proc.exe} is not the resolved python ${expectations.pythonExe}`);
+  }
+  const created = Date.parse(proc.created || '');
+  if (!Number.isFinite(created)) reasons.push('creation time unreadable');
+  else if (created < expectations.launchStartedAtMs - 3000) reasons.push('process predates this launch');
+  return { ok: reasons.length === 0, reasons };
+}
+
+// Stop the server of THIS launch only. Refusals are recorded, never retried
+// through the port owner: a busy port is a symptom, not an entitlement.
+async function stopVerifiedServer(serverPid, expectations, port, note) {
+  if (!Number.isSafeInteger(serverPid) || serverPid <= 0) {
+    note(`cleanup refused: no server pid was reported (pid=${serverPid}); no process is touched`);
+    return { attempted: false, cleaned: false, facts: null, refused: 'no-server-pid' };
+  }
+  const proc = await probeProcess(serverPid);
+  const verdict = verifyServerIdentity(proc, expectations);
+  const facts = {
+    pid: serverPid,
+    found: proc.found,
+    verified: verdict.ok,
+    reasons: verdict.reasons,
+    cmdLine: proc.cmd || null,
+    exe: proc.exe || null,
+    created: proc.created || null,
+  };
+  if (!verdict.ok) {
+    note(`cleanup refused (pid ${serverPid}): ${verdict.reasons.join('; ')}`);
+    return { attempted: true, cleaned: false, facts, refused: 'identity-mismatch' };
+  }
+  await run(WINPS, ['-NoProfile', '-Command', `Stop-Process -Id ${serverPid} -Force -ErrorAction SilentlyContinue`]);
+  note(`stop: verified Stop-Process -Id ${serverPid}`);
   const free = await waitPortFree(port, 6000);
-  return free;
+  if (!free) {
+    note(`port ${port} is still busy after the verified stop; diagnostics only, no further process is touched`);
+  }
+  return { attempted: true, cleaned: free, facts, refused: null };
 }
 
 async function fetchOk(url, timeoutMs = 15000) {
@@ -195,9 +306,10 @@ async function fetchOk(url, timeoutMs = 15000) {
 const cases = [];
 
 function newCase(id, title) {
-  const entry = { id, title, checks: [], pass: true };
+  const entry = { id, title, checks: [], pass: true, cleanup: null };
   cases.push(entry);
   return {
+    entry,
     check(name, ok, detail) {
       entry.checks.push({ name, ok: ok === true, detail: detail === undefined ? null : String(detail).slice(0, 400) });
       if (ok !== true) entry.pass = false;
@@ -207,6 +319,7 @@ function newCase(id, title) {
     note(line) {
       entry.checks.push({ name: `note: ${line}`, ok: null, detail: null });
     },
+    setCleanup(value) { entry.cleanup = value; },
   };
 }
 
@@ -268,6 +381,14 @@ const stagingWasmBytes = statSync(join(STAGING, 'vendor', 'cimbar_js.wasm')).siz
 async function positiveLaunch({ engine, engineArgs, env, envLabel, port, caseId, title, prechecks = [], verbatim = false }) {
   const c = newCase(caseId, title);
   for (const pre of prechecks) c.check(pre.name, pre.ok, pre.detail);
+  const portFree = await listenOnce(port);
+  c.check('precondition: port free before launch', portFree, `port=${port}`);
+  if (!portFree) {
+    c.note('port pre-occupied: this case aborts without touching the port owner (round-16 A16-02)');
+    c.setCleanup({ attempted: false, cleaned: null, refused: 'port-preoccupied' });
+    return c;
+  }
+  const launchStartedAtMs = Date.now();
   const launchOut = [];
   const launchErr = [];
   const child = spawn(engine, engineArgs, { cwd: tmpdir(), env, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: verbatim });
@@ -294,9 +415,21 @@ async function positiveLaunch({ engine, engineArgs, env, envLabel, port, caseId,
   if (wasm.ok) c.check('cimbar_js.wasm bytes equal staging (sha256)', sha256(wasm.body) === stagingWasmSha,
     `${sha256(wasm.body).slice(0, 12)} vs ${stagingWasmSha.slice(0, 12)} (${wasm.body.length}/${stagingWasmBytes} bytes)`);
 
-  if (serverPid > 0 || port) {
-    const free = await stopServerByPid(serverPid, port, (line) => c.note(line));
-    c.check('port free after Stop-Process', free, `port=${port}`);
+  const expectations = {
+    serverPath: join(STAGING, 'server.py'),
+    directory: STAGING,
+    pythonExe,
+    launchStartedAtMs,
+  };
+  if (serverPid > 0) {
+    const cleanup = await stopVerifiedServer(serverPid, expectations, port, (line) => c.note(line));
+    c.setCleanup(cleanup);
+    c.check('server identity verified for cleanup', cleanup.facts !== null && cleanup.facts.verified === true,
+      cleanup.facts ? JSON.stringify(cleanup.facts.reasons) : 'no facts');
+    c.check('port free after verified Stop-Process', cleanup.cleaned === true, `port=${port}`);
+  } else {
+    c.note('cleanup skipped: no "server pid N" was reported; no process is touched');
+    c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
   }
   return c;
 }
@@ -307,8 +440,8 @@ const LAUNCH_PS1 = join(STAGING, 'launch.ps1');
 const LAUNCH_CMD = join(STAGING, 'launch.cmd');
 const PORT_A = 18771;
 const PORT_B = 18772;
-const PORT_C = 18773;
-const PORT_D = 18774;
+const PORT_D = 18773;
+const PORT_C = 18774;
 
 // a. Windows PowerShell 5.1 direct launch.
 console.log('[a] 5.1 direct launch (powershell.exe -ExecutionPolicy Bypass)');
@@ -340,33 +473,37 @@ await positiveLaunch({
 
 // c. launch.cmd fallback branch (no pwsh anywhere on PATH).
 console.log('[c] launch.cmd fallback branch (pwsh stripped from PATH)');
-const cmdLineC = `""${LAUNCH_CMD}" -Port ${PORT_D} -NoBrowser"`;
+const cmdLineC = `""${LAUNCH_CMD}" -Port ${PORT_C} -NoBrowser"`;
 const wherePwshC = await run(WHERE, ['pwsh'], { env: childEnv(noPwshPath) });
 await positiveLaunch({
   engine: 'cmd.exe',
   engineArgs: ['/d', '/s', '/c', cmdLineC],
   env: childEnv(noPwshPath),
   envLabel: 'noPwshPath',
-  port: PORT_D,
+  port: PORT_C,
   caseId: 'c',
   title: 'launch.cmd 5.1 fallback serves index.html and wasm byte-identically',
   verbatim: true,
   prechecks: [{ name: 'precondition: where pwsh exit!=0 under noPwshPath (branch takes 5.1)', ok: wherePwshC.code !== 0, detail: `exit=${wherePwshC.code}; PATH=${noPwshPath}` }],
 });
 
-// d. Port already in use -> exit 3 with a readable reason.
+// d. Port already in use -> exit 3 with a readable reason. The occupier is our
+// own in-process listener; the launcher must never learn or touch its pid, and
+// this case asserts the listener is still alive after the failed launch.
 console.log('[d] port occupied -> exit 3');
 {
   const c = newCase('d', '5.1 launch on an occupied port exits 3 with "already in use"');
-  const occupier = await occupyPort(PORT_C);
-  c.check('precondition: node listener holds the port', occupier !== null, `port=${PORT_C}`);
+  const occupier = await occupyPort(PORT_D);
+  c.check('precondition: our own node listener holds the port', occupier !== null, `port=${PORT_D}`);
   const busy = await run(WINPS, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', LAUNCH_PS1,
-    '-Port', String(PORT_C), '-NoBrowser'], { env: childEnv(winpsPath), cwd: tmpdir() });
+    '-Port', String(PORT_D), '-NoBrowser'], { env: childEnv(winpsPath), cwd: tmpdir() });
   c.note(`stdout=${JSON.stringify(text(busy.stdout).trim().slice(0, 200))}`);
   c.check('exit code 3', busy.code === 3, `exit=${busy.code}`);
   c.check('stderr contains "already in use"', /already in use/.test(text(busy.stderr)), text(busy.stderr).trim().slice(0, 200));
+  c.check('our listener still holds the port after the failed launch', await portConnectable(PORT_D), `port=${PORT_D}`);
+  c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid', listenerKept: true });
   if (occupier) await new Promise((r) => occupier.close(r));
-  c.check('port free after occupier close', await waitPortFree(PORT_C), `port=${PORT_C}`);
+  c.check('port free after our own occupier close', await waitPortFree(PORT_D), `port=${PORT_D}`);
 }
 
 // e. Missing files: only launch.ps1 present -> exit 4.
@@ -381,6 +518,7 @@ console.log('[e] missing server.py -> exit 4');
   c.check('exit code 4', probe.code === 4, `exit=${probe.code}`);
   c.check('stderr contains "server.py not found"', /server\.py not found/.test(text(probe.stderr)),
     text(probe.stderr).trim().slice(0, 200));
+  c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
 }
 
 // f. No python on PATH -> exit 2.
@@ -393,6 +531,7 @@ console.log('[f] python absent -> exit 2');
   c.check('exit code 2', probe.code === 2, `exit=${probe.code}`);
   c.check('stderr contains "python is not available"', /python is not available/.test(text(probe.stderr)),
     text(probe.stderr).trim().slice(0, 200));
+  c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
 }
 
 // g. The server process dies immediately: exit 5 with the real cause. 5.1
@@ -424,6 +563,7 @@ const pwshExe = text(wherePwshB.stdout).split(/\r?\n/).map((l) => l.trim()).filt
   c.check('stderr contains the fake-server marker', /PS51-QUICK-EXIT-MARKER/.test(errText), 'the child stderr must be surfaced');
   c.check('stderr contains "diagnostic logs:"', /diagnostic logs:/.test(errText), 'diagnostic log paths must be printed');
   c.check('port free (fake server exited by itself)', await waitPortFree(18777, 3000), 'port=18777');
+  c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
 }
 {
   const c = newCase('g7', 'pwsh7 launcher reports exit 5 + the real server code 23');
@@ -439,6 +579,100 @@ const pwshExe = text(wherePwshB.stdout).split(/\r?\n/).map((l) => l.trim()).filt
   c.check('exit code 5', probe.code === 5, `exit=${probe.code}`);
   c.check('stderr contains "code 23"', /code 23/.test(errText), 'pwsh 7 keeps the child handle and must report the real code');
   c.check('port free (fake server exited by itself)', await waitPortFree(18778, 3000), 'port=18778');
+  c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
+}
+
+// --- round-16 cleanup guard cases (A16-02 / B-R16-1) ------------------------
+
+const guardExpectationsFor = (launchStartedAtMs) => ({
+  serverPath: join(STAGING, 'server.py'),
+  directory: STAGING,
+  pythonExe,
+  launchStartedAtMs,
+});
+
+// h1. Our own unrelated listener occupies the port: the failed launch reports
+// no pid, and the cleanup decision must refuse without touching the listener.
+console.log('[h1] own unrelated listener -> cleanup refused, listener kept');
+{
+  const c = newCase('h1', 'cleanup refuses when no pid was reported and keeps the unrelated listener');
+  const port = 18781;
+  const occupier = await occupyPort(port);
+  c.check('precondition: our own node listener holds the port', occupier !== null, `port=${port}`);
+  const launchedAt = Date.now();
+  const busy = await run(WINPS, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', LAUNCH_PS1,
+    '-Port', String(port), '-NoBrowser'], { env: childEnv(winpsPath), cwd: tmpdir() });
+  c.check('launcher exit code 3', busy.code === 3, `exit=${busy.code}`);
+  const decision = await stopVerifiedServer(0, guardExpectationsFor(launchedAt), port, (line) => c.note(line));
+  c.check('cleanup refused with no-server-pid', decision.refused === 'no-server-pid' && decision.attempted === false,
+    JSON.stringify(decision));
+  c.check('unrelated listener still holds the port (not killed)', await portConnectable(port), `port=${port}`);
+  c.setCleanup(decision);
+  if (occupier) await new Promise((r) => occupier.close(r));
+  c.check('port free after our own occupier close', await waitPortFree(port), `port=${port}`);
+}
+
+// h2. No pid obtained and the port is free: "port free" is not an entitlement
+// to act, so the cleanup must still do nothing.
+console.log('[h2] launch failed with no pid (port free) -> cleanup refused');
+{
+  const c = newCase('h2', 'cleanup refuses when the launch failed without a pid (port free is not entitlement)');
+  const lone = tempDir('ps51-h2-');
+  cpSync(LAUNCH_PS1, join(lone, 'launch.ps1'));
+  const port = 18782;
+  const launchedAt = Date.now();
+  const probe = await run(WINPS, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+    join(lone, 'launch.ps1'), '-Port', String(port), '-NoBrowser'], { env: childEnv(winpsPath), cwd: tmpdir() });
+  c.check('launcher exit code 4', probe.code === 4, `exit=${probe.code}`);
+  c.check('port is free before the cleanup decision', await listenOnce(port), `port=${port}`);
+  const decision = await stopVerifiedServer(0, guardExpectationsFor(launchedAt), port, (line) => c.note(line));
+  c.check('cleanup refused with no-server-pid', decision.refused === 'no-server-pid' && decision.attempted === false,
+    JSON.stringify(decision));
+  c.setCleanup(decision);
+}
+
+// h3. A pid exists but its identity does not match this launch (decoy python
+// process): the verified cleanup must refuse and the decoy must survive.
+console.log('[h3] foreign/decoy pid -> identity mismatch -> cleanup refused');
+{
+  const c = newCase('h3', 'cleanup refuses a pid whose identity is not this launch\'s server');
+  const decoy = spawn(pythonExe, ['-c', 'import time; time.sleep(30)'], { stdio: 'ignore' });
+  const decoyPid = decoy.pid;
+  const launchedAt = Date.now();
+  await sleep(800);
+  const before = await probeProcess(decoyPid);
+  c.check('precondition: decoy process exists', before.found === true, `pid=${decoyPid} name=${before.name}`);
+  const decision = await stopVerifiedServer(decoyPid, guardExpectationsFor(launchedAt), 18784, (line) => c.note(line));
+  c.check('cleanup refused with identity-mismatch', decision.refused === 'identity-mismatch', JSON.stringify(decision.facts && decision.facts.reasons));
+  const after = await probeProcess(decoyPid);
+  c.check('decoy still alive after the refused cleanup', after.found === true, `pid=${decoyPid}`);
+  c.setCleanup(decision);
+  decoy.kill();
+  await sleep(500);
+}
+
+// h4. Positive guard: a real launch's own server is stopped by the verified
+// cleanup, with the identity facts recorded.
+console.log('[h4] real server -> verified cleanup positive');
+{
+  const c = newCase('h4', 'verified cleanup stops this launch\'s real server (positive)');
+  const port = 18783;
+  const launchedAt = Date.now();
+  const launch = await run(WINPS, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', LAUNCH_PS1,
+    '-Port', String(port), '-NoBrowser'], { env: childEnv(winpsPath), cwd: tmpdir() });
+  const pidMatch = /server pid (\d+)/.exec(text(launch.stdout));
+  const serverPid = pidMatch ? Number(pidMatch[1]) : 0;
+  c.check('launcher exit code 0', launch.code === 0, `exit=${launch.code}`);
+  c.check('stdout reports "server pid N"', serverPid > 0, pidMatch ? `pid=${serverPid}` : 'no match');
+  if (serverPid > 0) {
+    const decision = await stopVerifiedServer(serverPid, guardExpectationsFor(launchedAt), port, (line) => c.note(line));
+    c.check('identity verified', decision.facts !== null && decision.facts.verified === true,
+      decision.facts ? JSON.stringify(decision.facts.reasons) : 'no facts');
+    c.check('cleanup stopped the server and the port is free', decision.cleaned === true, `port=${port}`);
+    c.setCleanup(decision);
+  } else {
+    c.setCleanup({ attempted: false, cleaned: null, refused: 'no-server-pid' });
+  }
 }
 
 // --- summary + artifacts ----------------------------------------------------
@@ -456,15 +690,19 @@ console.log(`PS51-LAUNCH-CHECK ${verdict}`);
 mkdirSync(LOG_DIR, { recursive: true });
 const report = {
   tool: 'ps51-launch-check',
-  version: 1,
+  version: 2,
+  toolPath: fileURLToPath(import.meta.url),
+  toolSha256: sha256File(fileURLToPath(import.meta.url)),
   runId: RUN_ID,
   stagingRoot: STAGING,
+  stagingServerPath: join(STAGING, 'server.py'),
   repoRoot: REPO_ROOT,
   startedAt: STARTED_AT.toISOString(),
   finishedAt: new Date().toISOString(),
   environment: {
     fullPath,
     pythonDir,
+    pythonExe,
     winpsPath,
     noPwshPath,
     noPythonPath,
@@ -479,6 +717,7 @@ const report = {
     id: entry.id,
     title: entry.title,
     pass: entry.pass,
+    cleanup: entry.cleanup,
     checks: entry.checks,
   })),
   summary: { total: cases.length, passed: cases.length - failed.length, failed: failed.length },

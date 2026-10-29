@@ -1,0 +1,37 @@
+# Round-16 A16-02 RED (function-level, real processes)
+
+Source functions: docs/dev-pipeline/receiver-ux-v2/red-logs/r16/ps51-launch-check-old-da40f55.mjs (sha256 048c4f29...), verbatim listenOnce/waitPortFree/stopServerByPid.
+Occupier: exclusive .NET TcpListener (powershell.exe, ExclusiveAddressUse=true) - an unrelated process the launcher never created.
+Launcher: staging launch.ps1 on the occupied port (real exit 3). Then the old cleanup path with serverPid=0.
+Expected defect: netstat fallback Stop-Process kills the occupier pid and returns "port free".
+
+--- transcript ---
+
+occupier port: connect-error ECONNREFUSED
+occupier READY pid 64924
+launcher exit 3 "port 18771 is already in use; stop the other process or pass -Port <other>"
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+listenOnce 18771: error EADDRINUSE
+waitPortFree(4000) -> busy; entering netstat fallback
+netstat exit=0 bytes=49676
+netstat lines for 18771: ["  TCP    127.0.0.1:18771        0.0.0.0:0              LISTENING       64924"]
+occupier exit 4294967295 after 12463 ms
+LOG: stop: netstat fallback Stop-Process -Id 64924
+listenOnce 18771: bound-and-closed (reported FREE)
+stopServerByPid returned free= true
+occupier alive after cleanup= false
+

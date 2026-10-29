@@ -21,3 +21,7 @@ docs/design-catalog/receiver-ux-v2/** -text
 # Delivery copies under product/ are hash-bound by DELIVERY-MANIFEST.txt and
 # the release notes; keep fresh checkouts byte-identical to the zip contents.
 product/** -text
+
+# Round-16 red-logs carry byte-bound evidence (the pre-fix tool copy and its
+# recorded SHA-256); pin them byte-exact like the run roots.
+docs/dev-pipeline/receiver-ux-v2/red-logs/** -text

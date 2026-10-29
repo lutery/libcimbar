@@ -1,0 +1,50 @@
+A16-02 RED attempt 2 (2026-10-29T06:48:12.122Z -> 2026-10-29T06:53:53.498Z)
+old tool E:\Project\OpenSource\c++\libcimbar\docs\dev-pipeline\receiver-ux-v2\red-logs\r16\ps51-launch-check-old-da40f55.mjs sha256=048c4f29897e5b15f9ea7cff9d9447b9666faa1050aad2182040d912c38fb4b7
+occupier powershell pid=80276 port=18771 ready=true
+occupier exited=true {"code":4294967295,"signal":null,"at":"2026-10-29T06:53:31.967Z"}
+tool exit=1
+netstat kill lines: []
+stop lines: []
+killedByToolOnPort=false
+
+tool stdout tail:
+  ok   GET / -> 200 :: status=200
+  ok   index.html bytes equal staging (sha256) :: 09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)
+  ok   GET /vendor/cimbar_js.wasm -> 200 :: status=200
+  ok   cimbar_js.wasm bytes equal staging (sha256) :: d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)
+  ok   port free after Stop-Process :: port=18774
+[d] port occupied -> exit 3
+  ok   precondition: node listener holds the port :: port=18773
+  ok   exit code 3 :: exit=3
+  ok   stderr contains "already in use" :: port 18773 is already in use; stop the other process or pass -Port <other>
+  ok   port free after occupier close :: port=18773
+[e] missing server.py -> exit 4
+  ok   exit code 4 :: exit=4
+  ok   stderr contains "server.py not found" :: server.py not found next to launch.ps1 (C:\Users\admin\AppData\Local\Temp\ps51-e-bk9bZy)
+[f] python absent -> exit 2
+  ok   exit code 2 :: exit=2
+  ok   stderr contains "python is not available" :: python is not available on PATH; install Python 3 or start server.py manually
+[g] server exits immediately (fake server.py sys.exit(23))
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "unknown code" :: expected the 5.1 "exited with an unknown code" branch
+  ok   stderr contains the fake-server marker :: the child stderr must be surfaced
+  ok   stderr contains "diagnostic logs:" :: diagnostic log paths must be printed
+  ok   port free (fake server exited by itself) :: port=18777
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "code 23" :: pwsh 7 keeps the child handle and must report the real code
+  ok   port free (fake server exited by itself) :: port=18778
+
+per-case verdicts:
+  FAIL  [a] 5.1 direct launch serves index.html and wasm byte-identically
+  PASS  [b] launch.cmd pwsh7 branch serves index.html and wasm byte-identically
+  PASS  [c] launch.cmd 5.1 fallback serves index.html and wasm byte-identically
+  PASS  [d] 5.1 launch on an occupied port exits 3 with "already in use"
+  PASS  [e] launcher in a directory without server.py exits 4
+  PASS  [f] launcher without python on PATH exits 2
+  PASS  [g51] 5.1 launcher reports exit 5 + unknown code + marker + diagnostic logs
+  PASS  [g7] pwsh7 launcher reports exit 5 + the real server code 23
+
+PS51-LAUNCH-CHECK FAIL
+wrote C:\Users\admin\AppData\Local\Temp\r16-a16-02-red2\docs\tests\runs\red-r16-a16-02\logs\ps51-launch-check.json
+wrote C:\Users\admin\AppData\Local\Temp\r16-a16-02-red2\docs\tests\runs\red-r16-a16-02\logs\ps51-launch-check.log
+
