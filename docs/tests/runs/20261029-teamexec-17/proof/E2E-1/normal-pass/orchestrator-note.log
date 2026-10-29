@@ -1,0 +1,14 @@
+occupier python pid=77960 marker=E:\Project\OpenSource\c++\libcimbar\docs\dev-pipeline\receiver-ux-v2\red-logs\r19\cimbar-e2e-demo\unrelated-server.py
+preflight: 
+node exit=0
+occupier alive after the refusal: False
+refusal text present: False
+occupant pid named: False
+InvalidOperation: C:\Users\admin\AppData\Local\Temp\r19-refusal-python.ps1:49
+Line |
+  49 |    $errText.Trim()
+     |    ~~~~~~~~~~~~~~~
+     | 不能对值为 Null 的表达式调用方法。
+9445 listening after cleanup: False
+
+[exited with code 0]

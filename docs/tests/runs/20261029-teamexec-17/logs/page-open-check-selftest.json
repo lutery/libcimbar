@@ -1,0 +1,123 @@
+{
+  "tool": "page-open-check",
+  "version": 2,
+  "targetUrl": "http://127.0.0.1:8767/",
+  "results": [
+    {
+      "id": "p1-raw-snap-lines",
+      "title": "normal SNAPW+SNAP raw lines parse and pass with the exact target URL",
+      "expect": true,
+      "pass": true,
+      "ok": true,
+      "reasons": [],
+      "parsedPostUrls": [
+        [
+          "http://127.0.0.1:8767/"
+        ]
+      ]
+    },
+    {
+      "id": "p2-title-with-pipe",
+      "title": "a title containing \"|\" still leaves the last field as the URL",
+      "expect": true,
+      "pass": true,
+      "ok": true,
+      "reasons": [],
+      "parsedPostUrls": [
+        [
+          "http://127.0.0.1:8767/"
+        ]
+      ]
+    },
+    {
+      "id": "n1-same-port-different-path",
+      "title": "the same port with a different path/query is a different page",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the exact target URL was not observed in any address bar after the launch (TCP connection records are auxiliary and cannot pass)"
+      ],
+      "parsedPostUrls": [
+        [
+          "http://127.0.0.1:8767/this-page-was-never-observed?review=not-opened"
+        ]
+      ]
+    },
+    {
+      "id": "n2-connection-only-syn-sent",
+      "title": "a TCP connection (even SYN_SENT) without an address-bar URL cannot pass",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the exact target URL was not observed in any address bar after the launch (TCP connection records are auxiliary and cannot pass)"
+      ],
+      "parsedPostUrls": [
+        []
+      ]
+    },
+    {
+      "id": "n3-pre-existing-target",
+      "title": "the target URL already open before the launch has no launch association",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was already open before the launch (no launch association)"
+      ],
+      "parsedPostUrls": [
+        [
+          "http://127.0.0.1:8767/"
+        ]
+      ]
+    },
+    {
+      "id": "n4-title-only",
+      "title": "a title page-count change alone never passes",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the exact target URL was not observed in any address bar after the launch (TCP connection records are auxiliary and cannot pass)"
+      ],
+      "parsedPostUrls": [
+        []
+      ]
+    },
+    {
+      "id": "n5-unrelated-url",
+      "title": "an unrelated URL never passes",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the exact target URL was not observed in any address bar after the launch (TCP connection records are auxiliary and cannot pass)"
+      ],
+      "parsedPostUrls": [
+        [
+          "http://127.0.0.1:9999/"
+        ]
+      ]
+    },
+    {
+      "id": "n6-no-url-evidence",
+      "title": "windows with titles only and no readable address bar never pass",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the exact target URL was not observed in any address bar after the launch (TCP connection records are auxiliary and cannot pass)"
+      ],
+      "parsedPostUrls": [
+        []
+      ]
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "verdict": "PASS"
+}

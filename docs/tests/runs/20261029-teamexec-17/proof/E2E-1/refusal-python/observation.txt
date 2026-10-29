@@ -1,0 +1,2 @@
+E2E-1 observation (2026-10-29T14:42:30.857Z)
+receiver: CDP port 9445 is occupied by pid 63048 (python.exe|"D:\ProgramData\anaconda3\python.exe" C:\Users\admin\AppData\Local\Temp\cimbar-e2e-demo\unrelated-server.py --port 9445); refusing to start and leaving the occupant untouched - verify and stop a stale harness browser yourself

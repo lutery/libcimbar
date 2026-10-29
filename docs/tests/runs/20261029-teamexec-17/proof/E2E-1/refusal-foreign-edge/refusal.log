@@ -1,0 +1,9 @@
+Round-19 refusal case B (foreign real Edge with ordinary cimbar-e2e- profile args on CDP 9445)
+spawned wrapper pid=90912; listener pid=95728; profile=C:\Users\admin\AppData\Local\Temp\cimbar-e2e-foreign-8e8ed5f765564b8987ed1b1e9102b7f4
+owner image=msedge.exe
+node exit=1
+foreign edge alive after refusal: True
+refusal text present: False
+stderr tail:
+
+Note: the runner records the refusal in results.json notes (quoted above); console streams are empty by design. The refused foreign Edge was stopped afterwards only after its exact unique profile path was verified (owner handle), never by name or port.

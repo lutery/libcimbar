@@ -1,0 +1,14 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "proofRefs": [
+      "proof/E2E-1/observation.txt"
+    ],
+    "notes": "packaged-launch re-verification did not complete: receiver: CDP port 9445 is occupied by pid 63048 (python.exe|\"D:\\ProgramData\\anaconda3\\python.exe\" C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-demo\\unrelated-s",
+    "attemptId": "E2E-1-2026-10-29T14-41-53-692Z-9235f6"
+  }
+]
