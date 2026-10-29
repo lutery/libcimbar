@@ -246,3 +246,12 @@
 - 修复：`8951620` 新模块 `page-open-check.mjs`（URL 精确匹配 + 启动前不存在；标题不参与判定）+ run-e2e 运行期空闲端口/UIA 地址栏快照/判定证据；`native-dialog.ps1` 归属证明（owner chain 达 target 且映像 msedge.exe）+ 统一选择规则 + `-Action dialog-selftest`；`a56e74c` 修新模块 CLI 未加主模块守卫（工具测试 UX-UT-081/082 抓出）；`a38230e` 增连接证据通道（前台锁使 launcher 页签后台打开，地址栏不显示；msedge socket 连运行期新端口为 URL 承载证据）。
 - root15（`docs/tests/runs/20261029-teamexec-15`，attempt `candidate-20261029-02`，harness `a38230e`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS（`…8589dc`，连接通道证明目标 URL；实时/录像/外置 SHA 相等）、E2E-2 PASS（`…5f9ecd`，两原生对话框均 target-owned pass1）；tools 69/69、page-open selftest 8/8、native-dialog selftest 6/6；首败 `…d28bb1` 原件保留。
 - 台账：`r17-remediation.md`；出口确认门后送 round-18。
+
+## R18 — round-18 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-18 裁决（不通过；A18-01 SNAP 采集 5/6 列错位 + TCP 通道被当精确页面证明；B18-01 Pass2 诊断 Write-Output 污染返回流致 Find-ByName 失败）；裁决归档 `round-18-verdict.md`（`afbf16a`）。
+- **表述更正**：r17 台账/总结 §8.5 的"连接承载精确 URL""空 URL 由前台锁造成"不成立——真实原因是 SNAP 5 列（标题可含 `|`）被按 6 列解析、地址栏记录整体丢失；TCP 不能承载精确页面身份。判定自本轮起为 URL-only，TCP 仅辅助。
+- RED：`red-logs/r18/`（解析器原始行→urlValues=[]；同端口未观察 path/SYN_SENT→PASS；真 Find-Dialog 返回 String+节点致 Find-ByName 失败）。
+- 修复：`f5874d1` parseSnapshotLines 入模块（SNAP/SNAPW/SNAPT 正确列语义）+ URL-only 判定 + run-e2e 新页签激活（窗口页签差集+SelectionItemPattern）+ native-dialog 诊断改 [Console]::Out 与 wrapper 自测；`a56e74c` 之后的 `08adf50` 接收腿绑定运行期端口；`82d2fac` StrictMode 钩子初始化；`2791cf7` 归属规则增 **profile 身份**（本轮 mkdtemp --user-data-dir）并实测真实 picker 父链断裂场景；`cd53a20` CDP 9445 的 **profile 标记验证回收**（实跑回收 pid 79176）。
+- root16（`docs/tests/runs/20261029-teamexec-16`，attempt `candidate-20261029-03`，harness `cd53a20`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS `…2f9999`（地址栏精确 URL 127.0.0.1:8768、启动前仅 8767、TCP 仅辅助）、E2E-2 PASS `…5cc6c5`（权限对话框 pid-chain+profile 双证）；tools 69/69、page-open selftest 8/8（原始行经真实解析器）、dialog selftest 10/10（含完整 wrapper 正例）；4 个失败 attempt 原件+控制台日志保留。
+- 台账：`r18-remediation.md`；出口确认门后送 round-19。
