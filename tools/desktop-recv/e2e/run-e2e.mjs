@@ -198,8 +198,10 @@ function bindProbe(port) {
   });
 }
 
-async function pickFreePort(startPort, attempts = 20) {
+async function pickFreePort(startPort, attempts = 20, excludePorts = []) {
+  const excluded = new Set(excludePorts);
   for (let port = startPort; port < startPort + attempts; port += 1) {
+    if (excluded.has(port)) continue;
     if (await bindProbe(port)) return port;
   }
   throw new Error(`no free port in ${startPort}..${startPort + attempts - 1} for the default-open leg`);
@@ -1654,6 +1656,59 @@ function startBrowserWatcher(port, durationSeconds = 25) {
   return { stop };
 }
 
+// Round-17 A17-01: the background-tab channel. Windows' foreground lock can
+// make Edge open the launcher's tab in the background, where no address bar
+// shows it; an msedge socket dialing the run-time-free port is then the
+// URL-bearing proof (only this launch's page could dial a port that was free
+// and undisplayed before the launch). Polls netstat until stopped and resolves
+// each owner's image once at the end.
+function startConnectionWatcher(port, durationMs = 30000) {
+  const seen = new Map();
+  let stopped = false;
+  const deadline = Date.now() + durationMs;
+  const poll = async () => {
+    const pattern = new RegExp(`^\\s*TCP\\s+\\S+\\s+127\\.0\\.0\\.1:${port}\\s+(\\S+)\\s+(\\d+)`);
+    while (!stopped && Date.now() < deadline) {
+      try {
+        const out = spawnSync('netstat', ['-ano', '-p', 'tcp'], { encoding: 'utf8' });
+        for (const line of String(out.stdout || '').split(/\r?\n/)) {
+          const match = pattern.exec(line);
+          if (match) {
+            const key = line.trim();
+            if (!seen.has(key)) seen.set(key, { ownerPid: Number(match[2]), state: match[1], line: key });
+          }
+        }
+      } catch (error) { /* netstat hiccup; keep polling */ }
+      await sleep(150);
+    }
+  };
+  const done = poll();
+  return {
+    stop: async () => {
+      stopped = true;
+      await done;
+      const rows = [...seen.values()];
+      const pids = [...new Set(rows.map((row) => row.ownerPid).filter((pid) => pid > 0))];
+      if (pids.length > 0) {
+        try {
+          const script = pids.map((pid) => `$p=Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue; '${pid}|' + $(if($p){$p.Name}else{'?'})`).join('; ');
+          const probe = spawn(WINPS, ['-NoProfile', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'] });
+          let out = '';
+          probe.stdout.on('data', (chunk) => { out += chunk.toString('utf8'); });
+          await new Promise((resolveProbe) => probe.on('exit', resolveProbe));
+          const names = {};
+          for (const line of out.split(/\r?\n/)) {
+            const index = line.indexOf('|');
+            if (index > 0) names[line.slice(0, index)] = line.slice(index + 1).trim();
+          }
+          for (const row of rows) row.ownerImage = names[String(row.ownerPid)] || null;
+        } catch (error) { /* owner resolution is best-effort; judge needs the image */ }
+      }
+      return rows;
+    },
+  };
+}
+
 // One-shot window probe: an msedge window whose title carries the product name.
 async function probeBrowserWindows() {  const script = [
     "$wins = Get-Process msedge -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and ($_.MainWindowTitle -like '*Cimbar*' -or $_.MainWindowTitle -like '*桌面接收器*') }",
@@ -1941,21 +1996,30 @@ const SCENARIOS = {
       // Round-16 A16-01: the ps51 first launch uses the user's default form
       // (no -NoBrowser), so the launcher itself must open the page.
       // Round-17 A17-01: the page-open verdict needs the exact target URL and
-      // a launch association, so the first launch takes a port that was
-      // verified FREE at run time - a URL nobody displayed before this launch.
+      // a launch association. The pre-launch snapshot is taken FIRST, then the
+      // port is chosen: TCP-free AND not displayed in any address bar, so the
+      // URL provably belongs to this launch alone.
       const defaultOpen = engine !== null;
-      const OPEN_PORT = defaultOpen ? await pickFreePort(PORT1) : PORT1;
+      const preWindows = engine ? await probeBrowserWindows() : [];
+      const preSnapshot = engine ? await snapshotBrowserWindows() : [];
+      const displayedPorts = new Set();
+      for (const window of preSnapshot) {
+        for (const value of window.urlValues || []) {
+          const match = /(?:^|\/\/)(?:127\.0\.0\.1|localhost):(\d+)/.exec(value);
+          if (match) displayedPorts.add(Number(match[1]));
+        }
+      }
+      const OPEN_PORT = defaultOpen ? await pickFreePort(PORT1, 20, [...displayedPorts]) : PORT1;
       const targetUrl = `http://127.0.0.1:${OPEN_PORT}/`;
       const commandLine = defaultOpen
         ? `""${cmdPath}" -Port ${OPEN_PORT}"`
         : `""${cmdPath}" -Port ${PORT1} -NoBrowser"`;
       audit.push(`boundary 4 (documented form) cmd.exe /d /s /c ${commandLine} cwd=${launchDir}`);
-      if (defaultOpen) audit.push(`ps51 page-open target URL ${targetUrl} (port ${OPEN_PORT} verified free at run time)`);
+      if (defaultOpen) audit.push(`ps51 page-open target URL ${targetUrl} (port ${OPEN_PORT} verified free at run time and absent from ${displayedPorts.size} displayed loopback port(s))`);
       audit.push(describeBoundary('boundary 4 launch.cmd', cmdPath));
       const launcherWatcher = engine ? startLauncherWatcher(25) : null;
       const browserWatcher = engine ? startBrowserWatcher(OPEN_PORT, 25) : null;
-      const preWindows = engine ? await probeBrowserWindows() : [];
-      const preSnapshot = engine ? await snapshotBrowserWindows() : [];
+      const connectionWatcher = engine ? startConnectionWatcher(OPEN_PORT, 40000) : null;
       if (engine) {
         audit.push(`ps51 pre-launch browser windows: ${JSON.stringify(preWindows)}`);
         audit.push(`ps51 pre-launch address-bar snapshot: ${JSON.stringify(preSnapshot)}`);
@@ -2007,6 +2071,7 @@ const SCENARIOS = {
       let pageOpenVerdict = null;
       let browserWindows = [];
       let postSnapshot = [];
+      let connectionRows = [];
       if (engine) {
         const deadline = Date.now() + 30000;
         for (;;) {
@@ -2016,13 +2081,18 @@ const SCENARIOS = {
           if (Date.now() >= deadline) break;
           await sleep(1000);
         }
+        connectionRows = connectionWatcher ? await connectionWatcher.stop() : [];
+        if (!pageOpenVerdict.pass) {
+          pageOpenVerdict = judgeDefaultPageOpen({
+            targetUrl, pre: preSnapshot, post: postSnapshot, connections: connectionRows,
+          });
+        }
         browserWindows = await probeBrowserWindows();
         audit.push(`ps51 page-open verdict: ${JSON.stringify(pageOpenVerdict)}`);
+        audit.push(`ps51 page-open connections: ${JSON.stringify(connectionRows)}`);
         audit.push(`ps51 page-open windows (diagnostic titles only): ${JSON.stringify(browserWindows)}`);
-        if (!pageOpenVerdict.pass) {
-          throw new Error(`the default launch did not open the target page ${targetUrl}: ` +
-            `${pageOpenVerdict.reasons.join('; ')}`);
-        }
+      } else if (connectionWatcher) {
+        await connectionWatcher.stop();
       }
       writeProof(RUN, 'E2E-1', 'engine-env.txt', engineEvidenceLines(engine, [
         `launch command: cmd.exe /d /s /c ${commandLine}`,
@@ -2031,13 +2101,19 @@ const SCENARIOS = {
         `pre-launch browser windows: ${JSON.stringify(preWindows)}`,
         `pre-launch address-bar snapshot: ${JSON.stringify(preSnapshot)}`,
         `post-launch address-bar snapshot: ${JSON.stringify(postSnapshot)}`,
+        `browser connections to ${targetUrl} (owner-resolved netstat): ${JSON.stringify(connectionRows)}`,
         `page-open verdict: ${JSON.stringify(pageOpenVerdict)}`,
         `browser process evidence (supporting only): ${JSON.stringify(browserProcLines)}`,
         `browser window titles (diagnostic only): ${JSON.stringify(browserWindows)}`,
       ]).join('\n'));
       writeProof(RUN, 'E2E-1', 'page-open.json', `${JSON.stringify({
-        targetUrl, openPort: OPEN_PORT, pre: preSnapshot, post: postSnapshot, verdict: pageOpenVerdict,
+        targetUrl, openPort: OPEN_PORT, pre: preSnapshot, post: postSnapshot,
+        connections: connectionRows, verdict: pageOpenVerdict,
       }, null, 2)}\n`);
+      if (engine && !pageOpenVerdict.pass) {
+        throw new Error(`the default launch did not open the target page ${targetUrl}: ` +
+          `${pageOpenVerdict.reasons.join('; ')}`);
+      }
 
       sender = await startSenderOnly();
       receiver = await launchReceiver(PORT1);

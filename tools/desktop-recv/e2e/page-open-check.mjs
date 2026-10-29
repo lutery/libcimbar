@@ -37,11 +37,16 @@ export function normalizeUrl(value) {
   return `${url.protocol}//${url.host}${pathname}${url.search}${url.hash}`;
 }
 
-// Judge one launch. The association rule is: the target URL must be visible in
-// the post snapshot and NOT visible in the pre snapshot, so a window that was
-// already showing the page before the launch (or a stale product window) can
-// never vouch for it.
-export function judgeDefaultPageOpen({ targetUrl, pre = [], post = [] }) {
+// Judge one launch. Two URL-bearing channels, either of which proves the
+// page opened by THIS launch; both rely on the run-time-free port for the
+// association (nothing could show or dial the URL before the launch):
+//   1. address bar: the target URL is visible after the launch and was not
+//      visible before it;
+//   2. browser connection: an msedge-owned socket actually connected to
+//      127.0.0.1:<port> after the launch (Windows' foreground lock can open
+//      the launcher's tab in the background, where no address bar shows it).
+// Titles and page counts are recorded for the log but never decide.
+export function judgeDefaultPageOpen({ targetUrl, pre = [], post = [], connections = [] }) {
   const target = normalizeUrl(targetUrl);
   const collect = (snapshot) => {
     const rows = [];
@@ -58,10 +63,16 @@ export function judgeDefaultPageOpen({ targetUrl, pre = [], post = [] }) {
   const postRows = collect(post);
   const preHadTarget = preRows.some((row) => row.normalized === target);
   const postHits = postRows.filter((row) => row.normalized === target);
+  const port = (new URL(target)).port;
+  const connectionHits = (Array.isArray(connections) ? connections : [])
+    .filter((row) => String(row.ownerImage || '').toLowerCase() === 'msedge.exe'
+      && String(row.line || '').includes(`127.0.0.1:${port}`));
   const reasons = [];
   if (!target) reasons.push('target URL is empty or not http(s)');
   if (preHadTarget) reasons.push('the target URL was already open before the launch (no launch association)');
-  if (postHits.length === 0) reasons.push('the target URL was not found in any address bar after the launch');
+  if (postHits.length === 0 && connectionHits.length === 0) {
+    reasons.push('the target URL was found in no address bar and no msedge connection dialed it after the launch');
+  }
   const pass = reasons.length === 0;
   return {
     pass,
@@ -70,6 +81,7 @@ export function judgeDefaultPageOpen({ targetUrl, pre = [], post = [] }) {
     preUrls: preRows.map((row) => `${row.pid}|${row.raw}`),
     postUrls: postRows.map((row) => `${row.pid}|${row.raw}`),
     hits: postHits,
+    connectionHits,
     // Titles are diagnostics only; they never enter the verdict.
     titles: {
       pre: (Array.isArray(pre) ? pre : []).map((w) => `${w && w.pid}|${w && w.title}`),
@@ -114,6 +126,32 @@ const CASES = [
       targetUrl: TARGET,
       pre: [],
       post: [{ pid: 28652, handle: 1002, title: 'Cimbar 桌面接收器', urlValues: ['127.0.0.1:8767'] }],
+    },
+  },
+  {
+    id: 'p3-connection-evidence',
+    title: 'background tab: no address bar shows it, but an msedge socket dialed the target port',
+    expect: true,
+    input: {
+      targetUrl: TARGET,
+      pre: [{ pid: 28652, handle: 1001, title: 'Cimbar 桌面接收器 和另外 8 个页面', urlValues: [] }],
+      post: [{ pid: 28652, handle: 1001, title: 'Cimbar 桌面接收器 和另外 9 个页面', urlValues: ['edge://newtab/'] }],
+      connections: [
+        { ownerPid: 28652, ownerImage: 'msedge.exe', state: 'ESTABLISHED', line: 'TCP    127.0.0.1:52341   127.0.0.1:8767   ESTABLISHED   28652' },
+      ],
+    },
+  },
+  {
+    id: 'n5-connection-non-browser-refused',
+    title: 'a connection from a non-browser process never proves a page opened',
+    expect: false,
+    input: {
+      targetUrl: TARGET,
+      pre: [],
+      post: [],
+      connections: [
+        { ownerPid: 4242, ownerImage: 'python.exe', state: 'ESTABLISHED', line: 'TCP    127.0.0.1:52342   127.0.0.1:8767   ESTABLISHED   4242' },
+      ],
     },
   },
   {
