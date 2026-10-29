@@ -57,6 +57,14 @@ const RECORDER_DEBUG_PORT = 9453;  // separate from the receiver's CDP port
 const SENDER_TITLE = 'CIMBAR-SENDER-WINDOW';
 const NATIVE_HELPER = join(HERE, 'native-dialog.ps1');
 const EDGE = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+// Round-16 A16-01: Windows PowerShell 5.1 launch-engine mode.
+const WINPS = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+const WHERE_EXE = 'C:\\Windows\\System32\\where.exe';
+const SYSTEM_PATH = [
+  'C:\\WINDOWS\\system32',
+  'C:\\WINDOWS',
+  'C:\\Windows\\System32\\WindowsPowerShell\\v1.0',
+];
 
 const HELP = `usage: node tools/desktop-recv/e2e/run-e2e.mjs --context <run-context.json> --case <id|group> [options]
 
@@ -74,13 +82,18 @@ const HELP = `usage: node tools/desktop-recv/e2e/run-e2e.mjs --context <run-cont
                      (development/fixture use; default: this checkout).
   --resume           explicitly resume the named run identity; runId, phase,
                      product manifest and attempt must all match.
+  --launcher-engine pwsh|ps51
+                     launch-engine mode for E2E-1/E2E-2 (default pwsh, the
+                     historical behavior). ps51 hides pwsh from the child
+                     PATH, records the real Windows PowerShell 5.1 engine, and
+                     uses the README launch.cmd default form (browser opens).
 
   Exit: 0 PASS, 1 FAIL, 2 bad/missing arguments, 3 invalid context or refused
         build, 4 registered-but-not-implemented UX case, 5 run-root guard.
   Historical diagnostics (SMOKE, probe-*, smoke-live) predate receiver-ux-v2
   and are never v2 acceptance entry points.`;
 
-const VALUE_FLAGS = new Set(['case', 'source', 'video', 'stopms', 'legs', 'context', 'repo-root']);
+const VALUE_FLAGS = new Set(['case', 'source', 'video', 'stopms', 'legs', 'context', 'repo-root', 'launcher-engine']);
 const BARE_FLAGS = new Set(['validate-only', 'resume', 'help']);
 
 function parseArguments(argv) {
@@ -116,6 +129,13 @@ const flags = new Set();
   for (const flag of parsed.flags) flags.add(flag);
 }
 if (flags.has('help')) { console.log(HELP); process.exit(0); }
+
+// Round-16 A16-01: launch-engine mode for the packaged-launch journeys.
+const LAUNCHER_ENGINE = args.get('launcher-engine') || 'pwsh';
+if (LAUNCHER_ENGINE !== 'pwsh' && LAUNCHER_ENGINE !== 'ps51') {
+  console.error(`unsupported --launcher-engine: ${LAUNCHER_ENGINE} (expected pwsh or ps51)`);
+  process.exit(2);
+}
 
 if (!args.get('context')) {
   console.error('missing required --context <run-context.json>; this runner never falls back to a historical root');
@@ -1493,6 +1513,132 @@ function decodeBoth(buffer) {
   return { utf8, gbk };
 }
 
+// --- round-16 A16-01: Windows PowerShell 5.1 launch-engine mode --------------
+//
+// ps51 mode hides pwsh from the subprocess PATH (where pwsh must fail), proves
+// the powershell.exe on that PATH is 5.1, and records the engine facts plus a
+// live CIM capture of the launcher process. Nothing here changes the default
+// pwsh mode.
+
+async function preparePs51Engine() {
+  const fullPath = process.env.PATH || '';
+  const wherePython = await runCaptured(WHERE_EXE, ['python'], { env: { ...process.env, PATH: fullPath } });
+  const pythonExe = wherePython.stdout.toString('utf8').split(/\r?\n/).map((v) => v.trim()).filter(Boolean)[0] || '';
+  if (wherePython.code !== 0 || !pythonExe) {
+    throw new Error(`where python failed under the full PATH (exit ${wherePython.code})`);
+  }
+  const pathValue = [...SYSTEM_PATH, dirname(pythonExe)].filter((entry) => !/pwsh/i.test(entry)).join(';');
+  const env = { ...process.env, PATH: pathValue };
+  const wherePwsh = await runCaptured(WHERE_EXE, ['pwsh'], { env });
+  if (wherePwsh.code === 0) throw new Error('pwsh is still discoverable under the ps51 child PATH');
+  const wherePowerShell = await runCaptured(WHERE_EXE, ['powershell'], { env });
+  const version = await runCaptured(WINPS, ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'], { env });
+  const versionText = version.stdout.toString('utf8').trim();
+  if (!versionText.startsWith('5.1')) throw new Error(`powershell at WINPS is not 5.1: ${versionText}`);
+  return {
+    exe: WINPS,
+    env,
+    pathValue,
+    pythonExe,
+    probes: {
+      wherePwsh: { code: wherePwsh.code, stdout: wherePwsh.stdout.toString('utf8').trim(), stderr: wherePwsh.stderr.toString('utf8').trim() },
+      wherePowerShell: { code: wherePowerShell.code, stdout: wherePowerShell.stdout.toString('utf8').trim() },
+      version: versionText,
+    },
+  };
+}
+
+function engineEvidenceLines(engine, extra = []) {
+  return [
+    `launcherEngine=${LAUNCHER_ENGINE}`,
+    ...(engine ? [
+      `powershellExe=${engine.exe}`,
+      `psVersion=${engine.probes.version}`,
+      `pythonExe=${engine.pythonExe}`,
+      `childPath=${engine.pathValue}`,
+      `where pwsh under child PATH: exit=${engine.probes.wherePwsh.code} stdout=${JSON.stringify(engine.probes.wherePwsh.stdout)} stderr=${JSON.stringify(engine.probes.wherePwsh.stderr)}`,
+      `where powershell under child PATH: exit=${engine.probes.wherePowerShell.code} stdout=${JSON.stringify(engine.probes.wherePowerShell.stdout)}`,
+    ] : ['engine=pwsh (historical mode)']),
+    ...extra,
+  ];
+}
+
+function watchLines(buffer, prefix) {
+  return buffer.split(/\r?\n/).filter((line) => line.startsWith(prefix));
+}
+
+// Live CIM capture of the launcher's actual powershell.exe process. The
+// watcher itself is a powershell.exe whose command line mentions launch.ps1,
+// so it excludes any command line that carries Get-CimInstance.
+function startLauncherWatcher(durationSeconds = 25) {
+  const script = [
+    `$deadline = (Get-Date).AddSeconds(${durationSeconds})`,
+    '$seen = @{}',
+    'while ((Get-Date) -lt $deadline) {',
+    "  $procs = Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" -ErrorAction SilentlyContinue",
+    '  foreach ($p in $procs) {',
+    '    $cmd = $p.CommandLine',
+    "    if ($cmd -and $cmd -like '*launch.ps1*' -and $cmd -notlike '*Get-CimInstance*' -and -not $seen.ContainsKey($p.ProcessId)) {",
+    '      $seen[$p.ProcessId] = 1',
+    "      'WATCH|' + $p.ProcessId + '|' + $p.ExecutablePath + '|' + $p.CreationDate.ToString('o') + '|' + $cmd",
+    '    }',
+    '  }',
+    '  Start-Sleep -Milliseconds 120',
+    '}',
+  ].join('\n');
+  const child = spawn(WINPS, ['-NoProfile', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let buffer = '';
+  child.stdout.on('data', (chunk) => { buffer += chunk.toString('utf8'); });
+  const stop = () => new Promise((resolveStop) => {
+    let done = false;
+    const finish = () => { if (done) return; done = true; resolveStop(watchLines(buffer, 'WATCH|')); };
+    child.once('exit', finish);
+    child.kill();
+    setTimeout(finish, 3000);
+  });
+  return { stop };
+}
+
+// Live capture of the browser the launcher opens (default launch form).
+function startBrowserWatcher(port, durationSeconds = 25) {
+  const token = `127.0.0.1:${port}`;
+  const script = [
+    `$deadline = (Get-Date).AddSeconds(${durationSeconds})`,
+    '$seen = @{}',
+    'while ((Get-Date) -lt $deadline) {',
+    "  $procs = Get-CimInstance Win32_Process -Filter \"Name='msedge.exe'\" -ErrorAction SilentlyContinue",
+    '  foreach ($p in $procs) {',
+    `    if ($p.CommandLine -and $p.CommandLine -like '*${token}*' -and -not $seen.ContainsKey($p.ProcessId)) {`,
+    '      $seen[$p.ProcessId] = 1',
+    "      'PROC|' + $p.ProcessId + '|' + $p.CreationDate.ToString('o') + '|' + $p.CommandLine",
+    '    }',
+    '  }',
+    '  Start-Sleep -Milliseconds 120',
+    '}',
+  ].join('\n');
+  const child = spawn(WINPS, ['-NoProfile', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let buffer = '';
+  child.stdout.on('data', (chunk) => { buffer += chunk.toString('utf8'); });
+  const stop = () => new Promise((resolveStop) => {
+    let done = false;
+    const finish = () => { if (done) return; done = true; resolveStop(watchLines(buffer, 'PROC|')); };
+    child.once('exit', finish);
+    child.kill();
+    setTimeout(finish, 3000);
+  });
+  return { stop };
+}
+
+// One-shot window probe: an msedge window whose title carries the product name.
+async function probeBrowserWindows() {
+  const script = [
+    "$wins = Get-Process msedge -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and ($_.MainWindowTitle -like '*Cimbar*' -or $_.MainWindowTitle -like '*桌面接收器*') }",
+    "foreach ($w in $wins) { 'WIN|' + $w.Id + '|' + $w.MainWindowTitle }",
+  ].join('\n');
+  const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', script], {});
+  return watchLines(probe.stdout.toString('utf8'), 'WIN|');
+}
+
 // fs.cpSync takes a C++ fast path (fsBinding.cpSyncCopyDir) whenever no
 // filter is supplied. On this host (Node v22.23.1, Windows, ACP/OEM 936)
 // that path writes a non-ASCII destination as a GBK-mojibake twin directory
@@ -1552,18 +1698,58 @@ const ENV_PROBE = [
 ].join('; ');
 
 // launch.ps1 starts the packaged server as a detached child and exits; the
-// journey owns that process, so stop it when the journey ends. The command
-// line is checked first, so a recycled pid is never killed.
+// journey owns that process, so stop it when the journey ends. Round-16: the
+// recorded pid is stopped only when its command line PROVES it is this
+// package's server (exact normalized server.py and --directory arguments) -
+// a recycled or foreign pid is left alone, and the port is never used as an
+// identity.
+function splitCommandLine(line) {
+  const tokens = [];
+  let current = '';
+  let inQuotes = false;
+  let started = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '\\' && line[i + 1] === '"') { current += '"'; i += 1; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else if (ch === '"') {
+      inQuotes = true;
+      started = true;
+    } else if (/\s/.test(ch)) {
+      if (started || current.length > 0) { tokens.push(current); current = ''; started = false; }
+    } else {
+      current += ch;
+    }
+  }
+  if (started || current.length > 0) tokens.push(current);
+  return tokens;
+}
+
+const normalizePath = (value) => resolve(String(value)).replace(/[\\/]+/g, '\\').toLowerCase();
+
 async function stopPackagedServer(pid, dest) {
-  if (!pid || !dest) return;
-  const escaped = dest.replace(/'/g, "''");
-  const script = '$p = Get-CimInstance Win32_Process -Filter "ProcessId=' + pid + '" -ErrorAction SilentlyContinue; '
-    + `if ($p -and $p.CommandLine -like '*${escaped}*') { Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue; 'stopped' } else { 'not-ours' }`;
-  await new Promise((resolveStop) => {
-    const ps = spawn('powershell', ['-NoProfile', '-Command', script], { stdio: 'ignore' });
-    ps.on('exit', resolveStop);
-    ps.on('error', resolveStop);
-  });
+  if (!pid || !dest) return 'no-pid';
+  const probeScript = [
+    `$p = Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue`,
+    "if (-not $p) { 'found=0'; exit 0 }",
+    "'found=1'",
+    "'cmd=' + $p.CommandLine",
+  ].join('; ');
+  const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', probeScript]);
+  const probeText = probe.stdout.toString('utf8');
+  if (!/^found=1$/m.test(probeText)) return 'not-running';
+  const cmd = (/^cmd=(.*)$/m.exec(probeText) || [])[1] || '';
+  const tokens = splitCommandLine(cmd);
+  const wantServer = normalizePath(join(dest, 'server.py'));
+  const wantDir = normalizePath(dest);
+  const serverOk = tokens.some((value) => normalizePath(value) === wantServer);
+  const dirIdx = tokens.indexOf('--directory');
+  const dirOk = dirIdx >= 0 && dirIdx + 1 < tokens.length && normalizePath(tokens[dirIdx + 1]) === wantDir;
+  if (!serverOk || !dirOk) return 'not-ours';
+  await runCaptured(WINPS, ['-NoProfile', '-Command', `Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue`]);
+  return 'stopped';
 }
 
 const SCENARIOS = {
@@ -1605,10 +1791,21 @@ const SCENARIOS = {
       mkdirSync(launchDir, { recursive: true });
       auditDestination(dest, audit);
 
+      // Round-16 A16-01: ps51 mode hides pwsh from the child PATH, records the
+      // real Windows PowerShell 5.1 engine and uses the default launch form.
+      const engine = LAUNCHER_ENGINE === 'ps51' ? await preparePs51Engine() : null;
+      const engineExe = engine ? engine.exe : 'pwsh';
+      const engineBaseArgs = (rest) => (engine ? ['-NoProfile', '-ExecutionPolicy', 'Bypass', ...rest] : ['-NoProfile', ...rest]);
+      const engineEnv = engine ? { env: engine.env } : {};
+      audit.push(...engineEvidenceLines(engine));
+
       // Environment facts: locale, console codepages, chcp's own answer.
-      const envProbe = await runCaptured('pwsh', ['-NoProfile', '-Command', ENV_PROBE], { cwd: launchDir });
-      audit.push(`env pwsh -Command exit=${envProbe.code}`);
-      audit.push(`env pwsh text:\n${decodeBoth(envProbe.stdout).utf8.trim()}`);
+      const envProbeCommand = engine
+        ? '[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); ' + ENV_PROBE
+        : ENV_PROBE;
+      const envProbe = await runCaptured(engineExe, engineBaseArgs(['-Command', envProbeCommand]), { cwd: launchDir, ...engineEnv });
+      audit.push(`env ${engine ? 'powershell 5.1' : 'pwsh'} -Command exit=${envProbe.code}`);
+      audit.push(`env probe text:\n${decodeBoth(envProbe.stdout).utf8.trim()}`);
       const chcp = await runCaptured('cmd.exe', ['/d', '/s', '/c', 'chcp'], { cwd: launchDir });
       const chcpText = decodeBoth(chcp.stdout);
       audit.push(`env chcp exit=${chcp.code} utf8=${JSON.stringify(chcpText.utf8.trim())} ` +
@@ -1619,6 +1816,7 @@ const SCENARIOS = {
       // both sides of the CreateProcessW boundary.
       const probePath = join(dest, 'encoding-probe.ps1');
       writeFileSync(probePath, [
+        '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)',
         '$p = $PSCommandPath',
         "$codes = ($p.ToCharArray() | ForEach-Object { 'U+{0:X4}' -f [int]$_ }) -join ' '",
         "$hex = -join ([Text.Encoding]::UTF8.GetBytes($p) | ForEach-Object { $_.ToString('X2') })",
@@ -1627,10 +1825,10 @@ const SCENARIOS = {
         'Write-Output "probe utf8hex=$hex"',
         'Write-Output "probe PSScriptRoot=$PSScriptRoot"',
       ].join('\r\n'), 'ascii');
-      const probeArgs = ['-NoProfile', '-File', probePath];
+      const probeArgs = engineBaseArgs(['-File', probePath]);
       audit.push(`boundary 3 (spawn argv) ${JSON.stringify(probeArgs)}`);
       probeArgs.forEach((value, index) => audit.push(`  argv[${index}] ${describeBoundary('arg', value)}`));
-      const probe = await runCaptured('pwsh', probeArgs, { cwd: launchDir });
+      const probe = await runCaptured(engineExe, probeArgs, { cwd: launchDir, ...engineEnv });
       const probeText = decodeBoth(probe.stdout).utf8;
       audit.push(`boundary 3 (pwsh echo) exit=${probe.code} stdout hex=${bytesHex(probe.stdout)}`);
       audit.push(`boundary 3 (pwsh echo) text:\n${probeText.trim()}`);
@@ -1645,10 +1843,10 @@ const SCENARIOS = {
       // Boundary 3b: the exact form that failed in 8c59864 (absolute -File
       // from a different cwd). -Help loads and parses the launcher, then
       // exits 0 without binding the port.
-      const helpArgs = ['-NoProfile', '-File', join(dest, 'launch.ps1'), '-Help'];
+      const helpArgs = engineBaseArgs(['-File', join(dest, 'launch.ps1'), '-Help']);
       audit.push(`boundary 3b (spawn argv) ${JSON.stringify(helpArgs)}`);
       helpArgs.forEach((value, index) => audit.push(`  argv[${index}] ${describeBoundary('arg', value)}`));
-      const help = await runCaptured('pwsh', helpArgs, { cwd: launchDir });
+      const help = await runCaptured(engineExe, helpArgs, { cwd: launchDir, ...engineEnv });
       const helpText = decodeBoth(help.stdout).utf8;
       audit.push(`boundary 3b (absolute -File) exit=${help.code} ` +
         `stdout hex=${bytesHex(help.stdout)} stderr hex=${bytesHex(help.stderr)}`);
@@ -1663,11 +1861,18 @@ const SCENARIOS = {
       // command is wrapped in an extra pair; without it cmd splits at the
       // first space (verified in isolation on this host).
       const cmdPath = join(dest, 'launch.cmd');
-      const commandLine = `""${cmdPath}" -Port ${PORT1} -NoBrowser"`;
+      // Round-16 A16-01: the ps51 first launch uses the user's default form
+      // (no -NoBrowser), so the launcher itself must open the page.
+      const defaultOpen = engine !== null;
+      const commandLine = defaultOpen
+        ? `""${cmdPath}" -Port ${PORT1}"`
+        : `""${cmdPath}" -Port ${PORT1} -NoBrowser"`;
       audit.push(`boundary 4 (documented form) cmd.exe /d /s /c ${commandLine} cwd=${launchDir}`);
       audit.push(describeBoundary('boundary 4 launch.cmd', cmdPath));
+      const launcherWatcher = engine ? startLauncherWatcher(25) : null;
+      const browserWatcher = engine ? startBrowserWatcher(PORT1, 25) : null;
       const launcher = spawn('cmd.exe', ['/d', '/s', '/c', commandLine],
-        { cwd: launchDir, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true });
+        { cwd: launchDir, env: engine ? engine.env : process.env, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true });
       const launchOut = []; const launchErr = [];
       launcher.stdout.on('data', (chunk) => launchOut.push(chunk));
       launcher.stderr.on('data', (chunk) => launchErr.push(chunk));
@@ -1676,6 +1881,8 @@ const SCENARIOS = {
         out: Buffer.concat(launchOut),
         err: Buffer.concat(launchErr),
       };
+      const launcherWatchLines = launcherWatcher ? await launcherWatcher.stop() : [];
+      const browserProcLines = browserWatcher ? await browserWatcher.stop() : [];
       const launchText = decodeBoth(Buffer.concat([launchLog.out, launchLog.err]));
       audit.push(`boundary 4 exit=${launchLog.code}`);
       audit.push(`boundary 4 stdout hex=${bytesHex(launchLog.out)}`);
@@ -1686,12 +1893,45 @@ const SCENARIOS = {
         throw new Error(`launch.cmd exited ${launchLog.code}: ` +
           `${launchText.utf8.trim() || (launchText.gbk || '').trim()}`);
       }
+      if (engine) {
+        if (!launchText.utf8.includes(`serving ${dest}`)) {
+          throw new Error('launch.cmd stdout did not print the exact CJK+space package path');
+        }
+        if (!launchText.utf8.includes(`open http://127.0.0.1:${PORT1}/`)) {
+          throw new Error('launch.cmd stdout did not announce the browser URL');
+        }
+        audit.push(`ps51 launcher process evidence: ${JSON.stringify(launcherWatchLines)}`);
+        audit.push(`ps51 browser process evidence: ${JSON.stringify(browserProcLines)}`);
+      }
       const pidMatch = /server pid (\d+)/.exec(launchText.utf8);
       if (pidMatch) serverPid = Number(pidMatch[1]);
       await waitHttp(`http://127.0.0.1:${PORT1}/`);
       const served = await (await fetch(`http://127.0.0.1:${PORT1}/config/asset-set.json`)).json();
       audit.push(`boundary 4 served assetSetId=${served.assetSetId} ` +
         `wasmSha256=${String(served.wasmSha256).slice(0, 16)}...`);
+
+      // Round-16 A16-01: the default launch must really open a page; the
+      // user's browser is left open (never killed by name).
+      let browserWindows = [];
+      if (engine) {
+        for (let i = 0; i < 15; i += 1) {
+          browserWindows = await probeBrowserWindows();
+          if (browserProcLines.length > 0 || browserWindows.length > 0) break;
+          await sleep(1000);
+        }
+        const pageOpenOk = browserProcLines.length > 0 || browserWindows.length > 0;
+        audit.push(`ps51 page-open windows: ${JSON.stringify(browserWindows)}`);
+        if (!pageOpenOk) {
+          throw new Error('the default launch opened no browser page (no msedge process carrying the URL and no matching window)');
+        }
+      }
+      writeProof(RUN, 'E2E-1', 'engine-env.txt', engineEvidenceLines(engine, [
+        `launch command: cmd.exe /d /s /c ${commandLine}`,
+        `launch stdout text: ${JSON.stringify(launchText.utf8)}`,
+        `launcher process evidence: ${JSON.stringify(launcherWatchLines)}`,
+        `browser process evidence: ${JSON.stringify(browserProcLines)}`,
+        `browser windows: ${JSON.stringify(browserWindows)}`,
+      ]).join('\n'));
 
       sender = await startSenderOnly();
       receiver = await launchReceiver(PORT1);
@@ -1718,6 +1958,16 @@ const SCENARIOS = {
       const liveSha = sha256File(livePath);
       const recordedSha = sha256File(recordedPath);
       const originalSha = sha256File(fixture);
+      // Round-16 A16-01: external (certutil) hashes for original/live/recorded.
+      const externalOriginal = externalSha256(fixture);
+      const externalLive = externalSha256(livePath);
+      const externalRecorded = externalSha256(recordedPath);
+      const externalOk = externalOriginal === originalSha && externalLive === liveSha && externalRecorded === recordedSha;
+      writeProof(RUN, 'E2E-1', 'external-sha.txt', [
+        `certutil original=${externalOriginal} equal=${externalOriginal === originalSha}`,
+        `certutil live=${externalLive} equal=${externalLive === liveSha}`,
+        `certutil recorded=${externalRecorded} equal=${externalRecorded === recordedSha}`,
+      ].join('\n'));
       writeProof(RUN, 'E2E-1', 'launch-log.txt', [
         `E2E-1 re-verification (${new Date().toISOString()})`,
         'Retraction: the 8c59864 FAIL ("pwsh cannot load from CJK+space") was a corrupted',
@@ -1729,8 +1979,9 @@ const SCENARIOS = {
         `original sha256=${originalSha}`,
         `live      sha256=${liveSha} equal=${liveEqual}`,
         `recorded  sha256=${recordedSha} equal=${recordedEqual}`,
+        `external  original=${externalOriginal} live=${externalLive} recorded=${externalRecorded} ok=${externalOk}`,
       ].join('\n'));
-      const pass = liveEqual && recordedEqual;
+      const pass = liveEqual && recordedEqual && externalOk;
       const record = roundtripRecord({
         caseId: 'E2E-1', originalPath: fixture, receivedPath: recordedPath, runDir: RUN,
         notes: 'filled by the caller below',
@@ -1741,7 +1992,9 @@ const SCENARIOS = {
         notes: `packaged first launch from a codepoint-built CJK+space dir (${dest}); ` +
           `README-documented launch.cmd exit=${launchLog.code}; pwsh -File absolute preflight ` +
           `exit=${help.code}; live equal=${liveEqual} (${liveSha.slice(0, 12)}), V-GOOD-C recorded ` +
-          `import equal=${recordedEqual} (${recordedSha.slice(0, 12)}); RETRACTION: the 8c59864 FAIL ` +
+          `import equal=${recordedEqual} (${recordedSha.slice(0, 12)}); external certutil ok=${externalOk}; ` +
+          `launcherEngine=${LAUNCHER_ENGINE}${engine ? ` (PS ${engine.probes.version}, where pwsh exit ${engine.probes.wherePwsh.code}, default-open evidence ${browserProcLines.length + browserWindows.length})` : ''}; ` +
+          `engine evidence proof/E2E-1/engine-env.txt; RETRACTION: the 8c59864 FAIL ` +
           'blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test ' +
           'invocation chain (package copied under a GBK-mojibake twin name); original evidence ' +
           'preserved at proof/E2E-1/first-run-fail/',
@@ -1793,32 +2046,52 @@ const SCENARIOS = {
     let cleanServerPid = 0;
     try {
       const PORT2 = 8766;
+      // Round-16 A16-01: ps51 mode relaunches through the README launch.cmd
+      // fallback with pwsh hidden; both failure and recovery record the engine.
+      const engine = LAUNCHER_ENGINE === 'ps51' ? await preparePs51Engine() : null;
       const launchArgs = ['-NoProfile', '-File', join(STAGING, 'receiver', 'launch.ps1'),
         '-Port', String(PORT2), '-NoBrowser'];
+      const launchCmdLine = `""${join(STAGING, 'receiver', 'launch.cmd')}" -Port ${PORT2} -NoBrowser"`;
+      const launchVia = async () => {
+        const watcher = engine ? startLauncherWatcher(20) : null;
+        const child = engine
+          ? spawn('cmd.exe', ['/d', '/s', '/c', launchCmdLine],
+            { cwd: tmpdir(), env: engine.env, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true })
+          : spawn('pwsh', launchArgs, { cwd: tmpdir(), stdio: ['ignore', 'pipe', 'pipe'] });
+        let logText = '';
+        child.stdout.on('data', (c) => { logText += c; });
+        child.stderr.on('data', (c) => { logText += c; });
+        const code = await new Promise((r) => child.on('exit', r));
+        const watcherLines = watcher ? await watcher.stop() : [];
+        return { code, logText, watcherLines };
+      };
       const occupier = spawn('powershell', ['-NoProfile', '-Command',
         `$l=[System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback,${PORT2}); $l.Start(); Start-Sleep -Seconds 90; $l.Stop()`],
         { stdio: 'ignore' });
       await sleep(1500);
-      let busyLog = ''; let busyCode = null;
-      const busyLauncher = spawn('pwsh', launchArgs, { cwd: tmpdir(), stdio: ['ignore', 'pipe', 'pipe'] });
-      busyLauncher.stdout.on('data', (c) => { busyLog += c; });
-      busyLauncher.stderr.on('data', (c) => { busyLog += c; });
-      busyCode = await new Promise((r) => busyLauncher.on('exit', r));
+      const busy = await launchVia();
+      const busyCode = busy.code;
+      const busyLog = busy.logText;
       writeProof(RUN, 'E2E-2', 'launch-busy.log.txt', `exit=${busyCode}\n${busyLog}`);
       if (busyCode === 0) throw new Error('launch.ps1 succeeded while the port was occupied');
       const busyReason = /already in use|端口/i.test(busyLog);
       if (!busyReason) throw new Error(`non-zero launch had no readable port reason: ${busyLog}`);
       occupier.kill();
       await sleep(1000);
-      let okLog = ''; let okCode = null;
-      const okLauncher = spawn('pwsh', launchArgs, { cwd: tmpdir(), stdio: ['ignore', 'pipe', 'pipe'] });
-      okLauncher.stdout.on('data', (c) => { okLog += c; });
-      okLauncher.stderr.on('data', (c) => { okLog += c; });
-      okCode = await new Promise((r) => okLauncher.on('exit', r));
+      const ok = await launchVia();
+      const okCode = ok.code;
+      const okLog = ok.logText;
       if (okCode !== 0) throw new Error(`clean relaunch failed (${okCode}): ${okLog}`);
       const pidMatch = /server pid (\d+)/.exec(okLog);
       if (pidMatch) cleanServerPid = Number(pidMatch[1]);
       await waitHttp(`http://127.0.0.1:${PORT2}/`);
+      writeProof(RUN, 'E2E-2', 'engine-env.txt', engineEvidenceLines(engine, [
+        `launch command: ${engine ? `cmd.exe /d /s /c ${launchCmdLine}` : `pwsh ${launchArgs.join(' ')}`}`,
+        `busy launch exit=${busyCode} watcher=${JSON.stringify(busy.watcherLines)}`,
+        `clean launch exit=${okCode} watcher=${JSON.stringify(ok.watcherLines)}`,
+        `busy stdout=${JSON.stringify(busyLog.trim().slice(0, 400))}`,
+        `clean stdout=${JSON.stringify(okLog.trim().slice(0, 400))}`,
+      ]).join('\n'));
       const sender = await startSenderOnly();
       const receiver = await launchReceiver(PORT2);
       try {
@@ -1832,6 +2105,10 @@ const SCENARIOS = {
         mkdirSync(dirname(livePath), { recursive: true });
         await saveArtifact(receiver.page, livePath, receiver.pid);
         const liveEqual = sha256File(fixture) === sha256File(livePath);
+        const liveExternal = externalSha256(livePath);
+        const externalOk = liveExternal === sha256File(livePath);
+        writeProof(RUN, 'E2E-2', 'external-sha.txt',
+          `certutil live=${liveExternal} equal=${externalOk}\n`);
         writeProof(RUN, 'E2E-2', 'launch-ok.log.txt', `exit=${okCode}\n${okLog}`);
         await screenshot(receiver.page, 'E2E-2', 'recovered-receiver.png');
         const record = roundtripRecord({
@@ -1840,11 +2117,14 @@ const SCENARIOS = {
         });
         upsertResult(RUN, {
           ...record,
-          result: liveEqual ? 'PASS' : 'FAIL',
+          result: liveEqual && externalOk ? 'PASS' : 'FAIL',
           notes: `occupied-port launch exited ${busyCode} with a readable reason=${busyReason}; ` +
-            `clean relaunch exit=${okCode}; recovery live roundtrip equal=${liveEqual}`,
+            `clean relaunch exit=${okCode}; recovery live roundtrip equal=${liveEqual}; ` +
+            `external certutil ok=${externalOk}; launcherEngine=${LAUNCHER_ENGINE}` +
+            `${engine ? ` (PS ${engine.probes.version}, where pwsh exit ${engine.probes.wherePwsh.code})` : ''}; ` +
+            'engine evidence proof/E2E-2/engine-env.txt',
         });
-        return busyReason && liveEqual;
+        return busyReason && liveEqual && externalOk;
       } finally {
         await closeReceiver(receiver);
         await sender.close();
@@ -1862,8 +2142,9 @@ const SCENARIOS = {
       return false;
     } finally {
       // This journey owns the clean relaunch's detached server; stopping it
-      // here prevents the run-02-style day-long port leak.
-      await stopPackagedServer(cleanServerPid, STAGING).catch(() => {});
+      // here prevents the run-02-style day-long port leak. Round-16: the stop
+      // matches the exact server.py/--directory arguments of this staging root.
+      await stopPackagedServer(cleanServerPid, join(STAGING, 'receiver')).catch(() => {});
     }
   },
   // UX-IAT: all eight receiver-ux-v2 browser integration groups. Group 01-07

@@ -1,0 +1,23 @@
+unknown argument: --launcher-engine
+usage: node tools/desktop-recv/e2e/run-e2e.mjs --context <run-context.json> --case <id|group> [options]
+
+  --context <json>   REQUIRED. Validated run context that owns every output
+                     root; there is no fallback to the historical run-03 root.
+  --case <id|group>  one scenario id, or one of the UX entry points
+                     (UX-SLICE/UX-IAT/UX-MEDIA-SAVE/UX-UI/UX-ALL), which
+                     expand to concrete scenario ids.
+  --source window|screen        capture source for live journeys (default window)
+  --video <file> --stopms <ms>  E2E-19 options
+  --legs <a,b>                  E2E-18 leg selection
+  --validate-only    parse + validate the context and print its identity JSON;
+                     no file is written, no browser or server is started.
+  --repo-root <dir>  resolve repo-relative context paths against <dir>
+                     (development/fixture use; default: this checkout).
+  --resume           explicitly resume the named run identity; runId, phase,
+                     product manifest and attempt must all match.
+
+  Exit: 0 PASS, 1 FAIL, 2 bad/missing arguments, 3 invalid context or refused
+        build, 4 registered-but-not-implemented UX case, 5 run-root guard.
+  Historical diagnostics (SMOKE, probe-*, smoke-live) predate receiver-ux-v2
+  and are never v2 acceptance entry points.
+EXIT=2
