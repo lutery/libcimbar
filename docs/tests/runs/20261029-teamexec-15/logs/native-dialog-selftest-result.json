@@ -1,0 +1,66 @@
+{
+  "tool": "native-dialog dialog-selftest",
+  "version": 1,
+  "cases": [
+    {
+      "id": "n1-foreign-nested-save-refused",
+      "action": "save",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Security confirmation': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n2-foreign-nested-share-refused",
+      "action": "share",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Choose what to share': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n3-foreign-save-refused-even-with-target-window-present",
+      "action": "save",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Security confirmation': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n4-unowned-msedge-named-refused",
+      "action": "share",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 444 'Choose what to share': owner chain never reaches a target pid"
+    },
+    {
+      "id": "p1-target-utility-child-accepted",
+      "action": "share",
+      "expect": 333,
+      "got": 333,
+      "via": "pass2",
+      "pass": true,
+      "facts": "chain=333:msedge.exe > 111:msedge.exe image=msedge.exe ownedBy=111"
+    },
+    {
+      "id": "p2-target-direct-dialog-accepted",
+      "action": "share",
+      "expect": 111,
+      "got": 111,
+      "via": "pass1",
+      "pass": true,
+      "facts": ""
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0
+  },
+  "verdict": "PASS"
+}

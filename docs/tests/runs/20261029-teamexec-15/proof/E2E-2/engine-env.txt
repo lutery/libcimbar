@@ -1,0 +1,12 @@
+launcherEngine=ps51
+powershellExe=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+psVersion=5.1.22621.6133
+pythonExe=D:\ProgramData\anaconda3\python.exe
+childPath=C:\WINDOWS\system32;C:\WINDOWS;C:\Windows\System32\WindowsPowerShell\v1.0;D:\ProgramData\anaconda3
+where pwsh under child PATH: exit=1 stdout="" stderr="INFO: Could not find files for the given pattern(s)."
+where powershell under child PATH: exit=0 stdout="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+launch command: cmd.exe /d /s /c ""E:\Project\OpenSource\c++\libcimbar\build-desktop-recv\runs\20261029-teamexec-15\receiver\launch.cmd" -Port 8766 -NoBrowser"
+busy launch exit=3 watcher=[]
+clean launch exit=0 watcher=[]
+busy stdout="port 8766 is already in use; stop the other process or pass -Port <other>"
+clean stdout="serving E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-15\\receiver\r\nopen http://127.0.0.1:8766/\r\nserver pid 24040"
