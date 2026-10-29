@@ -333,6 +333,9 @@ function Find-OpenDialogHwnd {
 # the journey only when the pid is a target itself or its parent chain reaches
 # a target pid, and the process image is a browser (msedge).
 function Get-OwnerChain([int]$ChildPid, [int]$MaxDepth = 8) {
+  # Round-18 B18-01: the wrapper selftest injects the CIM boundary here; the
+  # production path never sets the override.
+  if ($script:OwnerChainOverride) { return @(& $script:OwnerChainOverride $ChildPid) }
   $chain = @()
   $seen = @{}
   $current = $ChildPid
@@ -413,7 +416,9 @@ function Select-DialogRecords($Records, [int[]]$TargetPids, [string]$ForAction, 
 function Find-Dialog([string[]]$Pids) {
   $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
     $AE::ControlTypeProperty, $CT::Window)
-  $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
+  # Round-18 B18-01: the wrapper selftest injects the UI tree here; production
+  # enumerates the real desktop.
+  $tops = if ($script:DialogTreeOverride) { $script:DialogTreeOverride } else { $AE::RootElement.FindAll($TS::Children, $windowCondition) }
   $records = @()
   $elements = @()
   foreach ($top in $tops) {
@@ -425,7 +430,7 @@ function Find-Dialog([string[]]$Pids) {
       $elements += $candidate
     }
   }
-  $selection = Select-DialogRecords -Records $records -TargetPids @($Pids) -ForAction $Action -ChainResolver { param($dialogPid) Get-OwnerChain -ChildPid $dialogPid }
+  $selection = Select-DialogRecords -Records $records -TargetPids @($Pids) -ForAction $(if ($script:ActionOverride) { $script:ActionOverride } else { $Action }) -ChainResolver { param($dialogPid) Get-OwnerChain -ChildPid $dialogPid }
   if ($null -eq $selection.record) {
     if ($selection.refused.Count -gt 0) {
       [Console]::Error.WriteLine("refused candidate dialog(s) without ownership proof: " + ($selection.refused -join ' | '))
@@ -434,7 +439,10 @@ function Find-Dialog([string[]]$Pids) {
   }
   if ($selection.via -eq 'pass2') {
     $facts = $selection.facts
-    Write-Output ("ownership: dialog pid=" + $facts.dialogPid + " name='" + $selection.record.name +
+    # Round-18 B18-01: diagnostics must NOT join the success return stream.
+    # Find-Dialog returns exactly one UI element; a Write-Output here made the
+    # caller receive [String, AutomationElement] and broke FindAll downstream.
+    [Console]::Out.WriteLine("ownership: dialog pid=" + $facts.dialogPid + " name='" + $selection.record.name +
       "' image=" + $facts.image + " chain=" + ($facts.chain -join ' > ') +
       " ownedBy=" + $(if ($null -eq $facts.ownedBy) { 'none' } else { $facts.ownedBy }) + " ok=" + $facts.ok)
   }
@@ -464,6 +472,27 @@ function New-RecordResolver($Processes) {
   }.GetNewClosure()
 }
 
+# Round-18 B18-01: a fake UIA node for the wrapper selftest. Only the UI
+# boundary is replaced; Find-Dialog/Find-ByName run unchanged.
+class DialogSelftestNode {
+  [object]$Current
+  [object[]]$Children = @()
+  [object[]] FindAll([object]$scope, [object]$condition) { return @($this.Children) }
+}
+
+function New-DialogSelftestNode($Record) {
+  $node = [DialogSelftestNode]::new()
+  $node.Current = [pscustomobject]@{
+    Name = "$($Record.name)"; ClassName = "$($Record.class)"; ProcessId = [int]$Record.pid; NativeWindowHandle = 300001
+  }
+  $children = @()
+  if ($Record.PSObject.Properties.Name -contains 'children' -and $Record.children) {
+    foreach ($child in @($Record.children)) { $children += New-DialogSelftestNode $child }
+  }
+  $node.Children = $children
+  return $node
+}
+
 function Invoke-DialogSelftest([string]$File) {
   if (-not $File -or -not (Test-Path -LiteralPath $File)) {
     [Console]::Error.WriteLine("dialog-selftest needs -SelftestFile <json> pointing at an existing file")
@@ -472,36 +501,75 @@ function Invoke-DialogSelftest([string]$File) {
   $doc = Get-Content -Raw -LiteralPath $File | ConvertFrom-Json
   $results = @()
   foreach ($case in $doc.cases) {
-    $records = @()
-    foreach ($w in $case.windows) {
-      $records += [pscustomobject]@{ pid = [int]$w.pid; name = "$($w.name)"; class = "$($w.class)"; index = $records.Count }
-      $children = @()
-      if ($w.PSObject.Properties.Name -contains 'children' -and $w.children) { $children = @($w.children) }
-      foreach ($c in $children) {
-        $records += [pscustomobject]@{ pid = [int]$c.pid; name = "$($c.name)"; class = "$($c.class)"; index = $records.Count }
+    $kind = if ($case.PSObject.Properties.Name -contains 'kind') { "$($case.kind)" } else { 'select' }
+    $ok = $false
+    $row = $null
+    if ($kind -eq 'wrapper') {
+      # Drive the REAL Find-Dialog -> Find-ByName wrapper over the fake tree.
+      # The only replacements are the UI root and the CIM chain.
+      $fakeTops = @()
+      foreach ($w in $case.windows) { $fakeTops += New-DialogSelftestNode $w }
+      $script:DialogTreeOverride = $fakeTops
+      $script:OwnerChainOverride = New-RecordResolver $case.processes
+      $script:ActionOverride = "$($case.action)"
+      try {
+        $selection = Find-Dialog @($case.targets)
+        $items = @(@($selection) | Where-Object { $null -ne $_ })
+        $count = $items.Count
+        $types = @($items | ForEach-Object {
+            if ($null -eq $_) { 'null' } elseif ($_ -is [string]) { 'String' } else { $_.GetType().Name }
+          }) -join ','
+        $downstream = ''
+        $downstreamOk = $true
+        if ($case.PSObject.Properties.Name -contains 'findByName' -and $case.findByName) {
+          $found = Find-ByName $selection "$($case.findByName.pattern)" $CT::Button
+          if ($found -and "$($found.Current.Name)" -eq "$($case.findByName.expect)") {
+            $downstream = "Find-ByName OK name='$($found.Current.Name)'"
+          } else {
+            $downstreamOk = $false
+            $downstream = 'Find-ByName MISMATCH got=' + $(if ($found) { "$($found.Current.Name)" } else { 'null' })
+          }
+        }
+        $expectCount = [int]$case.expectCount
+        $ok = ($count -eq $expectCount) -and ($types -notmatch 'String') -and $downstreamOk
+        $row = [pscustomobject]@{
+          id = $case.id; kind = $kind; action = "$($case.action)"; expectCount = $expectCount
+          count = $count; types = $types; downstream = $downstream; pass = $ok
+        }
+        Write-Output ("  " + $(if ($ok) { 'ok  ' } else { 'FAIL' }) + " " + $case.id + " expectCount=$expectCount count=$count types=[$types] $downstream")
+      } finally {
+        $script:DialogTreeOverride = $null
+        $script:OwnerChainOverride = $null
+        $script:ActionOverride = $null
       }
+    } else {
+      $records = @()
+      foreach ($w in $case.windows) {
+        $records += [pscustomobject]@{ pid = [int]$w.pid; name = "$($w.name)"; class = "$($w.class)"; index = $records.Count }
+        $children = @()
+        if ($w.PSObject.Properties.Name -contains 'children' -and $w.children) { $children = @($w.children) }
+        foreach ($c in $children) {
+          $records += [pscustomobject]@{ pid = [int]$c.pid; name = "$($c.name)"; class = "$($c.class)"; index = $records.Count }
+        }
+      }
+      $resolver = New-RecordResolver $case.processes
+      $selection = Select-DialogRecords -Records $records -TargetPids @($case.targets) -ForAction "$($case.action)" -ChainResolver $resolver
+      $got = if ($null -eq $selection.record) { $null } else { $selection.record.pid }
+      $ok = ("$got" -eq "$($case.expect)")
+      $factsText = ''
+      if ($selection.facts) {
+        $factsText = "chain=" + ($selection.facts.chain -join ' > ') + " image=" + $selection.facts.image +
+          " ownedBy=" + $(if ($null -eq $selection.facts.ownedBy) { 'none' } else { $selection.facts.ownedBy })
+      }
+      if ($selection.refused.Count -gt 0) { $factsText += " refused=" + ($selection.refused -join ' | ') }
+      $row = [pscustomobject]@{
+        id = $case.id; kind = $kind; action = "$($case.action)"; expect = $case.expect
+        got = $got; via = $selection.via; pass = $ok; facts = $factsText
+      }
+      Write-Output ("  " + $(if ($ok) { 'ok  ' } else { 'FAIL' }) + " " + $case.id + " expect=" + $case.expect + " got=" + $(if ($null -eq $got) { 'null' } else { $got }) +
+        " via=" + $selection.via + $(if ($factsText) { " " + $factsText } else { '' }))
     }
-    $resolver = New-RecordResolver $case.processes
-    $selection = Select-DialogRecords -Records $records -TargetPids @($case.targets) -ForAction "$($case.action)" -ChainResolver $resolver
-    $got = if ($null -eq $selection.record) { $null } else { $selection.record.pid }
-    $ok = ("$got" -eq "$($case.expect)")
-    $factsText = ''
-    if ($selection.facts) {
-      $factsText = "chain=" + ($selection.facts.chain -join ' > ') + " image=" + $selection.facts.image +
-        " ownedBy=" + $(if ($null -eq $selection.facts.ownedBy) { 'none' } else { $selection.facts.ownedBy })
-    }
-    if ($selection.refused.Count -gt 0) { $factsText += " refused=" + ($selection.refused -join ' | ') }
-    $results += [pscustomobject]@{
-      id = $case.id
-      action = "$($case.action)"
-      expect = $case.expect
-      got = $got
-      via = $selection.via
-      pass = $ok
-      facts = $factsText
-    }
-    Write-Output ("  " + $(if ($ok) { 'ok  ' } else { 'FAIL' }) + " " + $case.id + " expect=" + $case.expect + " got=" + $(if ($null -eq $got) { 'null' } else { $got }) +
-      " via=" + $selection.via + $(if ($factsText) { " " + $factsText } else { '' }))
+    $results += $row
   }
   $failed = @($results | Where-Object { -not $_.pass })
   $report = [pscustomobject]@{
@@ -517,10 +585,6 @@ function Invoke-DialogSelftest([string]$File) {
   Write-Output ("NATIVE-DIALOG SELFTEST " + $report.verdict + " (" + $report.summary.passed + "/" + $report.summary.total + ")")
   Write-Output ("wrote " + $jsonPath)
   exit $(if ($failed.Count -eq 0) { 0 } else { 1 })
-}
-
-if ($Action -eq 'dialog-selftest') {
-  Invoke-DialogSelftest $SelftestFile
 }
 
 function Find-ByName($Dialog, [string]$Pattern, $ControlType) {
@@ -775,6 +839,10 @@ if ($Action -in @('share-cancel', 'save-cancel', 'stop-share', 'open-cancel')) {
     }
   }
   exit 1
+}
+
+if ($Action -eq 'dialog-selftest') {
+  Invoke-DialogSelftest $SelftestFile
 }
 
 $deadline = (Get-Date).AddSeconds($TimeoutSec)

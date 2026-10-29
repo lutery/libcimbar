@@ -32,7 +32,7 @@ import { runIatSuite } from './iat-suite.mjs';
 import { createMediaJourneys } from './media-journeys.mjs';
 import { createUiJourneys } from './ui-journeys.mjs';
 import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
-import { judgeDefaultPageOpen } from './page-open-check.mjs';
+import { judgeDefaultPageOpen, parseSnapshotLines } from './page-open-check.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
   evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
@@ -1739,6 +1739,9 @@ async function snapshotBrowserWindows() {
     '  $editCond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)',
     '  $edits=$t.FindAll($TS::Descendants,$editCond)',
     "  'SNAPW|' + $t.Current.ProcessId + '|' + $h + '|' + $name + '|' + $edits.Count",
+    '  $tabCond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::TabItem)',
+    '  $tabs=$t.FindAll($TS::Descendants,$tabCond)',
+    "  foreach($tab in $tabs){ 'SNAPT|' + $t.Current.ProcessId + '|' + $h + '|' + $tab.Current.Name }",
     '  foreach($e in $edits){',
     '    try {',
     '      $vp=$null',
@@ -1751,24 +1754,66 @@ async function snapshotBrowserWindows() {
     '}',
   ].join('\n');
   const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', script], {});
-  const lines = probe.stdout.toString('utf8').split(/\r?\n/).filter(Boolean);
-  const windows = new Map();
-  const ensure = (pid, handle, title) => {
-    const key = `${pid}|${handle}`;
-    if (!windows.has(key)) windows.set(key, { pid: Number(pid), handle: Number(handle), title: title || '', urlValues: [] });
-    return windows.get(key);
-  };
-  for (const line of lines) {
-    const parts = line.split('|');
-    if (parts[0] === 'SNAPW' && parts.length >= 5) {
-      ensure(parts[1], parts[2], parts[3]);
-    } else if (parts[0] === 'SNAP' && parts.length >= 6) {
-      // the title may itself contain '|'-free text; URL is the last field
-      const url = parts.slice(5).join('|');
-      ensure(parts[1], parts[2], parts[3]).urlValues.push(url);
+  // Round-18 A18-01: one parser, shared with the selftest (which feeds raw
+  // protocol lines through it). The round-17 inline parser expected six fields
+  // and dropped every normal five-field address-bar record.
+  return parseSnapshotLines(probe.stdout.toString('utf8'));
+}
+
+// Round-18 A18-01: the tab THIS launch added, found by diffing the pre/post
+// tab-name lists per window handle. Never chosen by title alone across the
+// whole browser; if several tabs are new, prefer the product-title one and
+// record the choice.
+function findNewTab(preSnapshot, postSnapshot) {
+  const productTitle = (name) => /Cimbar|桌面接收器/.test(String(name || ''));
+  const candidates = [];
+  for (const window of Array.isArray(postSnapshot) ? postSnapshot : []) {
+    const before = (Array.isArray(preSnapshot) ? preSnapshot : [])
+      .find((entry) => entry.handle === window.handle) || { tabs: [] };
+    const counts = new Map();
+    for (const name of before.tabs || []) counts.set(name, (counts.get(name) || 0) + 1);
+    for (const name of window.tabs || []) {
+      const left = counts.get(name) || 0;
+      if (left > 0) { counts.set(name, left - 1); continue; }
+      candidates.push({ handle: window.handle, pid: window.pid, name });
     }
   }
-  return [...windows.values()];
+  if (candidates.length === 0) return null;
+  const product = candidates.filter((entry) => productTitle(entry.name));
+  const chosen = product.length > 0 ? product[product.length - 1] : candidates[candidates.length - 1];
+  return { ...chosen, candidates: candidates.map((entry) => entry.name), pickedProductTitle: productTitle(chosen.name) };
+}
+
+// Activate one Edge tab by window handle + exact tab name (UIA
+// SelectionItemPattern). This is the tab the launcher just opened; activating
+// it makes the window's real address bar show its URL.
+async function activateEdgeTab(handle, tabName) {
+  const script = [
+    'Add-Type -AssemblyName UIAutomationClient; Add-Type -AssemblyName UIAutomationTypes',
+    '$AE=[System.Windows.Automation.AutomationElement]',
+    '$TS=[System.Windows.Automation.TreeScope]',
+    '$CT=[System.Windows.Automation.ControlType]',
+    `$win=$AE::FromHandle([IntPtr]${Number(handle)})`,
+    "if (-not $win) { 'WINDOW-NOT-FOUND'; exit 3 }",
+    '$tabCond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,$CT::TabItem)',
+    '$tabs=$win.FindAll($TS::Descendants,$tabCond)',
+    '$wanted=$env:E2E_TAB_NAME',
+    '$target=$null',
+    'foreach($tab in $tabs){ if ("$($tab.Current.Name)" -eq $wanted) { $target=$tab } }',
+    "if (-not $target) { 'TAB-NOT-FOUND'; exit 1 }",
+    '$sel=$null',
+    'if ($target.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern,[ref]$sel)) { $sel.Select(); Start-Sleep -Milliseconds 300; "SELECTED|" + $target.Current.Name; exit 0 }',
+    "'NO-SELECTION-PATTERN'; exit 2",
+  ].join('\n');
+  const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', script],
+    { env: { ...process.env, E2E_TAB_NAME: tabName } });
+  return {
+    code: probe.code,
+    out: probe.stdout.toString('utf8').trim(),
+    err: probe.stderr.toString('utf8').trim(),
+    tabName,
+    handle,
+  };
 }
 
 // fs.cpSync takes a C++ fast path (fsBinding.cpSyncCopyDir) whenever no
@@ -2072,8 +2117,9 @@ const SCENARIOS = {
       let browserWindows = [];
       let postSnapshot = [];
       let connectionRows = [];
+      let tabActivation = null;
       if (engine) {
-        const deadline = Date.now() + 30000;
+        const deadline = Date.now() + 20000;
         for (;;) {
           postSnapshot = await snapshotBrowserWindows();
           pageOpenVerdict = judgeDefaultPageOpen({ targetUrl, pre: preSnapshot, post: postSnapshot });
@@ -2081,15 +2127,27 @@ const SCENARIOS = {
           if (Date.now() >= deadline) break;
           await sleep(1000);
         }
-        connectionRows = connectionWatcher ? await connectionWatcher.stop() : [];
         if (!pageOpenVerdict.pass) {
-          pageOpenVerdict = judgeDefaultPageOpen({
-            targetUrl, pre: preSnapshot, post: postSnapshot, connections: connectionRows,
-          });
+          // Round-18 A18-01: the launcher's tab may be a background tab where
+          // no address bar shows it. Activate exactly the tab THIS launch
+          // added (per-window tab-name diff), then read the real address bar.
+          const newTab = findNewTab(preSnapshot, postSnapshot);
+          audit.push(`ps51 page-open new tab: ${JSON.stringify(newTab)}`);
+          if (newTab) {
+            tabActivation = await activateEdgeTab(newTab.handle, newTab.name);
+            audit.push(`ps51 tab activation: ${JSON.stringify(tabActivation)}`);
+            await sleep(800);
+            postSnapshot = await snapshotBrowserWindows();
+            pageOpenVerdict = judgeDefaultPageOpen({ targetUrl, pre: preSnapshot, post: postSnapshot });
+          }
         }
+        connectionRows = connectionWatcher ? await connectionWatcher.stop() : [];
+        pageOpenVerdict = judgeDefaultPageOpen({
+          targetUrl, pre: preSnapshot, post: postSnapshot, connections: connectionRows,
+        });
         browserWindows = await probeBrowserWindows();
         audit.push(`ps51 page-open verdict: ${JSON.stringify(pageOpenVerdict)}`);
-        audit.push(`ps51 page-open connections: ${JSON.stringify(connectionRows)}`);
+        audit.push(`ps51 page-open connections (auxiliary only): ${JSON.stringify(connectionRows)}`);
         audit.push(`ps51 page-open windows (diagnostic titles only): ${JSON.stringify(browserWindows)}`);
       } else if (connectionWatcher) {
         await connectionWatcher.stop();
@@ -2101,14 +2159,15 @@ const SCENARIOS = {
         `pre-launch browser windows: ${JSON.stringify(preWindows)}`,
         `pre-launch address-bar snapshot: ${JSON.stringify(preSnapshot)}`,
         `post-launch address-bar snapshot: ${JSON.stringify(postSnapshot)}`,
-        `browser connections to ${targetUrl} (owner-resolved netstat): ${JSON.stringify(connectionRows)}`,
+        `tab activation (this launch's new tab): ${JSON.stringify(tabActivation)}`,
+        `browser connections to ${targetUrl} (auxiliary only): ${JSON.stringify(connectionRows)}`,
         `page-open verdict: ${JSON.stringify(pageOpenVerdict)}`,
         `browser process evidence (supporting only): ${JSON.stringify(browserProcLines)}`,
         `browser window titles (diagnostic only): ${JSON.stringify(browserWindows)}`,
       ]).join('\n'));
       writeProof(RUN, 'E2E-1', 'page-open.json', `${JSON.stringify({
         targetUrl, openPort: OPEN_PORT, pre: preSnapshot, post: postSnapshot,
-        connections: connectionRows, verdict: pageOpenVerdict,
+        tabActivation, connections: connectionRows, verdict: pageOpenVerdict,
       }, null, 2)}\n`);
       if (engine && !pageOpenVerdict.pass) {
         throw new Error(`the default launch did not open the target page ${targetUrl}: ` +

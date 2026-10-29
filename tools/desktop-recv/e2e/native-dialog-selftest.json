@@ -96,6 +96,49 @@
         { "pid": 111, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1" }
       ],
       "expect": 111
+    },
+    {
+      "id": "p3-wrapper-utility-positive",
+      "kind": "wrapper",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 111, "name": "msedge.exe", "parent": 0 },
+        { "pid": 333, "name": "msedge.exe", "parent": 111 }
+      ],
+      "windows": [
+        {
+          "pid": 111, "name": "Cimbar 桌面接收器", "class": "Chrome_WidgetWin_1",
+          "children": [
+            {
+              "pid": 333, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1",
+              "children": [
+                { "pid": 333, "name": "共享", "class": "Button" }
+              ]
+            }
+          ]
+        }
+      ],
+      "expectCount": 1,
+      "findByName": { "pattern": "^共享$", "expect": "共享" }
+    },
+    {
+      "id": "n5-wrapper-foreign-refused",
+      "kind": "wrapper",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 222, "name": "editor.exe", "parent": 0 }
+      ],
+      "windows": [
+        {
+          "pid": 222, "name": "Unrelated editor", "class": "",
+          "children": [
+            { "pid": 222, "name": "Choose what to share", "class": "" }
+          ]
+        }
+      ],
+      "expectCount": 0
     }
   ]
 }
