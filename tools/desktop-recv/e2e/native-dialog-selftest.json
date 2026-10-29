@@ -1,0 +1,101 @@
+{
+  "comment": "Round-17 B17-01 selftest data. The selection rule under test is the production Select-DialogRecords (name/class match + ownership), driven with synthetic process/window records; no UI and no process action. 'expect' is the pid that must be selected, or null when the dialog must be refused.",
+  "cases": [
+    {
+      "id": "n1-foreign-nested-save-refused",
+      "action": "save",
+      "targets": [111],
+      "processes": [
+        { "pid": 222, "name": "editor.exe", "parent": 0 }
+      ],
+      "windows": [
+        {
+          "pid": 222, "name": "Unrelated editor", "class": "",
+          "children": [
+            { "pid": 222, "name": "Security confirmation", "class": "#32770" }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "id": "n2-foreign-nested-share-refused",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 222, "name": "editor.exe", "parent": 0 }
+      ],
+      "windows": [
+        {
+          "pid": 222, "name": "Unrelated editor", "class": "",
+          "children": [
+            { "pid": 222, "name": "Choose what to share", "class": "" }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "id": "n3-foreign-save-refused-even-with-target-window-present",
+      "action": "save",
+      "targets": [111],
+      "processes": [
+        { "pid": 111, "name": "msedge.exe", "parent": 0 },
+        { "pid": 222, "name": "editor.exe", "parent": 0 }
+      ],
+      "windows": [
+        { "pid": 111, "name": "Cimbar 桌面接收器", "class": "Chrome_WidgetWin_1" },
+        {
+          "pid": 222, "name": "Unrelated editor", "class": "",
+          "children": [
+            { "pid": 222, "name": "Security confirmation", "class": "#32770" }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "id": "n4-unowned-msedge-named-refused",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 111, "name": "msedge.exe", "parent": 0 },
+        { "pid": 444, "name": "msedge.exe", "parent": 0 }
+      ],
+      "windows": [
+        { "pid": 444, "name": "Choose what to share", "class": "Chrome_WidgetWin_1" }
+      ],
+      "expect": null
+    },
+    {
+      "id": "p1-target-utility-child-accepted",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 111, "name": "msedge.exe", "parent": 0 },
+        { "pid": 333, "name": "msedge.exe", "parent": 111 }
+      ],
+      "windows": [
+        {
+          "pid": 111, "name": "Cimbar 桌面接收器", "class": "Chrome_WidgetWin_1",
+          "children": [
+            { "pid": 333, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1" }
+          ]
+        }
+      ],
+      "expect": 333
+    },
+    {
+      "id": "p2-target-direct-dialog-accepted",
+      "action": "share",
+      "targets": [111],
+      "processes": [
+        { "pid": 111, "name": "msedge.exe", "parent": 0 }
+      ],
+      "windows": [
+        { "pid": 111, "name": "选择要与 http://127.0.0.1:8767/ 共享的内容", "class": "Chrome_WidgetWin_1" }
+      ],
+      "expect": 111
+    }
+  ]
+}

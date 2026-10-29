@@ -16,6 +16,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import net from 'node:net';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -31,6 +32,7 @@ import { runIatSuite } from './iat-suite.mjs';
 import { createMediaJourneys } from './media-journeys.mjs';
 import { createUiJourneys } from './ui-journeys.mjs';
 import { assertPortsFree, cleanupRecordedProcesses, recordProcesses } from './process-guard.mjs';
+import { judgeDefaultPageOpen } from './page-open-check.mjs';
 import {
   END_SEGMENT_TOLERANCE_SEC, WITHOUT_EOF_TOLERANCE_SEC, evaluateBudgetLeg, evaluateLastFramePair,
   evaluateRecoveryLeg, evaluateVideoFailureLeg, expectedCodesForBadInput, rejectionPointForCode,
@@ -183,6 +185,24 @@ async function waitHttp(url, timeoutMs = 15000) {
     await sleep(200);
   }
   throw new Error(`endpoint did not come up: ${url}`);
+}
+
+// Round-17 A17-01: the default-open leg needs a URL that provably belongs to
+// THIS launch. Ask the OS for a free port starting at the README's example and
+// keep it only when a bind probe succeeds, so no earlier page can have shown it.
+function bindProbe(port) {
+  return new Promise((resolveProbe) => {
+    const server = net.createServer();
+    server.once('error', () => resolveProbe(false));
+    server.listen(port, '127.0.0.1', () => { server.close(() => resolveProbe(true)); });
+  });
+}
+
+async function pickFreePort(startPort, attempts = 20) {
+  for (let port = startPort; port < startPort + attempts; port += 1) {
+    if (await bindProbe(port)) return port;
+  }
+  throw new Error(`no free port in ${startPort}..${startPort + attempts - 1} for the default-open leg`);
 }
 
 function runHelper(helperArgs, pid = 0) {
@@ -1635,13 +1655,65 @@ function startBrowserWatcher(port, durationSeconds = 25) {
 }
 
 // One-shot window probe: an msedge window whose title carries the product name.
-async function probeBrowserWindows() {
-  const script = [
+async function probeBrowserWindows() {  const script = [
     "$wins = Get-Process msedge -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and ($_.MainWindowTitle -like '*Cimbar*' -or $_.MainWindowTitle -like '*桌面接收器*') }",
     "foreach ($w in $wins) { 'WIN|' + $w.Id + '|' + $w.MainWindowTitle }",
   ].join('\n');
   const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', script], {});
   return watchLines(probe.stdout.toString('utf8'), 'WIN|');
+}
+
+// Round-17 A17-01: a window snapshot that carries the ADDRESS BAR value, so
+// the page-open verdict can require the exact target URL instead of trusting
+// a title. UIA only (read-only): Edge's top-level windows, then every Edit
+// descendant whose ValuePattern yields an http(s) URL. Output lines:
+//   SNAP|<pid>|<handle>|<title>|<url>            (one per address-bar value)
+//   SNAPW|<pid>|<handle>|<title>|<editCount>     (window summary, no URL)
+async function snapshotBrowserWindows() {
+  const script = [
+    'Add-Type -AssemblyName UIAutomationClient; Add-Type -AssemblyName UIAutomationTypes',
+    '$AE=[System.Windows.Automation.AutomationElement]',
+    '$TS=[System.Windows.Automation.TreeScope]',
+    '$cond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::Window)',
+    '$tops=$AE::RootElement.FindAll($TS::Children,$cond)',
+    'foreach($t in $tops){',
+    "  try { if ($t.Current.ClassName -notmatch 'Chrome_WidgetWin') { continue } } catch { continue }",
+    "  if ($t.Current.ProcessId -le 0) { continue }",
+    '  $h=$t.Current.NativeWindowHandle',
+    '  $name=$t.Current.Name',
+    '  $editCond=New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)',
+    '  $edits=$t.FindAll($TS::Descendants,$editCond)',
+    "  'SNAPW|' + $t.Current.ProcessId + '|' + $h + '|' + $name + '|' + $edits.Count",
+    '  foreach($e in $edits){',
+    '    try {',
+    '      $vp=$null',
+    '      if ($e.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern,[ref]$vp)) {',
+    '        $v=$vp.Current.Value',
+    "        if ($v -and ($v -match '^(https?://|127\\.0\\.0\\.1|localhost)')) { 'SNAP|' + $t.Current.ProcessId + '|' + $h + '|' + $name + '|' + $v }",
+    '      }',
+    '    } catch { }',
+    '  }',
+    '}',
+  ].join('\n');
+  const probe = await runCaptured(WINPS, ['-NoProfile', '-Command', script], {});
+  const lines = probe.stdout.toString('utf8').split(/\r?\n/).filter(Boolean);
+  const windows = new Map();
+  const ensure = (pid, handle, title) => {
+    const key = `${pid}|${handle}`;
+    if (!windows.has(key)) windows.set(key, { pid: Number(pid), handle: Number(handle), title: title || '', urlValues: [] });
+    return windows.get(key);
+  };
+  for (const line of lines) {
+    const parts = line.split('|');
+    if (parts[0] === 'SNAPW' && parts.length >= 5) {
+      ensure(parts[1], parts[2], parts[3]);
+    } else if (parts[0] === 'SNAP' && parts.length >= 6) {
+      // the title may itself contain '|'-free text; URL is the last field
+      const url = parts.slice(5).join('|');
+      ensure(parts[1], parts[2], parts[3]).urlValues.push(url);
+    }
+  }
+  return [...windows.values()];
 }
 
 // fs.cpSync takes a C++ fast path (fsBinding.cpSyncCopyDir) whenever no
@@ -1868,16 +1940,26 @@ const SCENARIOS = {
       const cmdPath = join(dest, 'launch.cmd');
       // Round-16 A16-01: the ps51 first launch uses the user's default form
       // (no -NoBrowser), so the launcher itself must open the page.
+      // Round-17 A17-01: the page-open verdict needs the exact target URL and
+      // a launch association, so the first launch takes a port that was
+      // verified FREE at run time - a URL nobody displayed before this launch.
       const defaultOpen = engine !== null;
+      const OPEN_PORT = defaultOpen ? await pickFreePort(PORT1) : PORT1;
+      const targetUrl = `http://127.0.0.1:${OPEN_PORT}/`;
       const commandLine = defaultOpen
-        ? `""${cmdPath}" -Port ${PORT1}"`
+        ? `""${cmdPath}" -Port ${OPEN_PORT}"`
         : `""${cmdPath}" -Port ${PORT1} -NoBrowser"`;
       audit.push(`boundary 4 (documented form) cmd.exe /d /s /c ${commandLine} cwd=${launchDir}`);
+      if (defaultOpen) audit.push(`ps51 page-open target URL ${targetUrl} (port ${OPEN_PORT} verified free at run time)`);
       audit.push(describeBoundary('boundary 4 launch.cmd', cmdPath));
       const launcherWatcher = engine ? startLauncherWatcher(25) : null;
-      const browserWatcher = engine ? startBrowserWatcher(PORT1, 25) : null;
+      const browserWatcher = engine ? startBrowserWatcher(OPEN_PORT, 25) : null;
       const preWindows = engine ? await probeBrowserWindows() : [];
-      if (engine) audit.push(`ps51 pre-launch browser windows: ${JSON.stringify(preWindows)}`);
+      const preSnapshot = engine ? await snapshotBrowserWindows() : [];
+      if (engine) {
+        audit.push(`ps51 pre-launch browser windows: ${JSON.stringify(preWindows)}`);
+        audit.push(`ps51 pre-launch address-bar snapshot: ${JSON.stringify(preSnapshot)}`);
+      }
       const launcher = spawn('cmd.exe', ['/d', '/s', '/c', commandLine],
         { cwd: launchDir, env: engine ? engine.env : process.env, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true });
       const launchOut = []; const launchErr = [];
@@ -1904,36 +1986,42 @@ const SCENARIOS = {
         if (!launchText.utf8.includes(`serving ${dest}`)) {
           throw new Error('launch.cmd stdout did not print the exact CJK+space package path');
         }
-        if (!launchText.utf8.includes(`open http://127.0.0.1:${PORT1}/`)) {
-          throw new Error('launch.cmd stdout did not announce the browser URL');
+        if (!launchText.utf8.includes(`open ${targetUrl}`)) {
+          throw new Error('launch.cmd stdout did not announce the target browser URL');
         }
         audit.push(`ps51 launcher process evidence: ${JSON.stringify(launcherWatchLines)}`);
         audit.push(`ps51 browser process evidence: ${JSON.stringify(browserProcLines)}`);
       }
       const pidMatch = /server pid (\d+)/.exec(launchText.utf8);
       if (pidMatch) serverPid = Number(pidMatch[1]);
-      await waitHttp(`http://127.0.0.1:${PORT1}/`);
-      const served = await (await fetch(`http://127.0.0.1:${PORT1}/config/asset-set.json`)).json();
+      await waitHttp(targetUrl);
+      const served = await (await fetch(`http://127.0.0.1:${OPEN_PORT}/config/asset-set.json`)).json();
       audit.push(`boundary 4 served assetSetId=${served.assetSetId} ` +
         `wasmSha256=${String(served.wasmSha256).slice(0, 16)}...`);
 
-      // Round-16 A16-01: the default launch must really open a page; the
-      // user's browser is left open (never killed by name).
+      // Round-17 A17-01: the default launch must really open THE TARGET PAGE.
+      // The verdict requires the exact target URL in an address bar after the
+      // launch AND absent before it (launch association). Titles are recorded
+      // for diagnostics only and can never make the verdict pass. The user's
+      // browser is left open (never killed by name).
+      let pageOpenVerdict = null;
       let browserWindows = [];
+      let postSnapshot = [];
       if (engine) {
-        for (let i = 0; i < 15; i += 1) {
-          browserWindows = await probeBrowserWindows();
-          if (browserProcLines.length > 0 || browserWindows.length > 0) break;
+        const deadline = Date.now() + 30000;
+        for (;;) {
+          postSnapshot = await snapshotBrowserWindows();
+          pageOpenVerdict = judgeDefaultPageOpen({ targetUrl, pre: preSnapshot, post: postSnapshot });
+          if (pageOpenVerdict.pass) break;
+          if (Date.now() >= deadline) break;
           await sleep(1000);
         }
-        // Only a window that was NOT already open before this launch counts;
-        // a stale product window from an earlier attempt cannot vouch for it.
-        const preSet = new Set(preWindows);
-        const newWindows = browserWindows.filter((w) => !preSet.has(w));
-        const pageOpenOk = browserProcLines.length > 0 || newWindows.length > 0;
-        audit.push(`ps51 page-open windows: post=${JSON.stringify(browserWindows)} new=${JSON.stringify(newWindows)}`);
-        if (!pageOpenOk) {
-          throw new Error('the default launch opened no browser page (no new msedge process carrying the URL and no new matching window)');
+        browserWindows = await probeBrowserWindows();
+        audit.push(`ps51 page-open verdict: ${JSON.stringify(pageOpenVerdict)}`);
+        audit.push(`ps51 page-open windows (diagnostic titles only): ${JSON.stringify(browserWindows)}`);
+        if (!pageOpenVerdict.pass) {
+          throw new Error(`the default launch did not open the target page ${targetUrl}: ` +
+            `${pageOpenVerdict.reasons.join('; ')}`);
         }
       }
       writeProof(RUN, 'E2E-1', 'engine-env.txt', engineEvidenceLines(engine, [
@@ -1941,9 +2029,15 @@ const SCENARIOS = {
         `launch stdout text: ${JSON.stringify(launchText.utf8)}`,
         `launcher process evidence: ${JSON.stringify(launcherWatchLines)}`,
         `pre-launch browser windows: ${JSON.stringify(preWindows)}`,
-        `browser process evidence: ${JSON.stringify(browserProcLines)}`,
-        `browser windows: ${JSON.stringify(browserWindows)}`,
+        `pre-launch address-bar snapshot: ${JSON.stringify(preSnapshot)}`,
+        `post-launch address-bar snapshot: ${JSON.stringify(postSnapshot)}`,
+        `page-open verdict: ${JSON.stringify(pageOpenVerdict)}`,
+        `browser process evidence (supporting only): ${JSON.stringify(browserProcLines)}`,
+        `browser window titles (diagnostic only): ${JSON.stringify(browserWindows)}`,
       ]).join('\n'));
+      writeProof(RUN, 'E2E-1', 'page-open.json', `${JSON.stringify({
+        targetUrl, openPort: OPEN_PORT, pre: preSnapshot, post: postSnapshot, verdict: pageOpenVerdict,
+      }, null, 2)}\n`);
 
       sender = await startSenderOnly();
       receiver = await launchReceiver(PORT1);

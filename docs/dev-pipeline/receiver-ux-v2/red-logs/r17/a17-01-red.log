@@ -1,0 +1,6 @@
+A17-01 RED (old predicate, verbatim from run-e2e.mjs:1929-1935)
+case 1  same pid, title 8->9 pages, no URL evidence  -> pageOpenOk=true
+case 2  same pid, identical title                    -> pageOpenOk=false
+case 3  different title, no URL evidence             -> pageOpenOk=true
+case 1 newWindows: ["WIN|28652|Cimbar 桌面接收器 和另外 9 个页面 - 个人 - Microsoft Edge"]
+defect reproduced: true

@@ -34,7 +34,7 @@
 #>
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory)][ValidateSet('save', 'share', 'share-cancel', 'save-cancel', 'stop-share', 'open', 'open-cancel')][string]$Action,
+  [Parameter(Mandatory)][ValidateSet('save', 'share', 'share-cancel', 'save-cancel', 'stop-share', 'open', 'open-cancel', 'dialog-selftest')][string]$Action,
   [string]$Path,
   [string]$RenameTo,
   [ValidateSet('', 'refuse', 'confirm')][string]$OnOverwrite,
@@ -42,7 +42,8 @@ param(
   [ValidateSet('window', 'screen', 'tab')][string]$Tab = 'window',
   [string]$ProcessName = 'msedge',
   [int]$ProcessId = 0,
-  [int]$TimeoutSec = 30
+  [int]$TimeoutSec = 30,
+  [string]$SelftestFile
 )
 
 Set-StrictMode -Version 3.0
@@ -290,24 +291,13 @@ function Get-TargetPids {
   @(Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
 }
 
-function Test-DialogName([string]$Name) {
-  if ($Action -eq 'save') {
-    return $Name -match '(?i)save as|另存为|^save$'
-  }
-  if ($Action -eq 'open' -or $Action -eq 'open-cancel') {
-    # The hidden <input type=file> shows the classic file-OPEN dialog. Its
-    # title is 打开 / Open on this host; the same #32770+edit1001 structure
-    # also matches the save template, so a structural fallback is allowed
-    # only when no title match exists (only one file dialog is ever open in
-    # these journeys).
-    return $Name -match '(?i)打开|^open$'
-  }
-  # The share picker's real titles are "选择要与 <url> 共享的内容" and "Choose
-  # what to share". A bare 'share' also matches unrelated window titles (a
-  # browser tab on a URL containing "share" was picked as the dialog in the
-  # round-16 E2E-1 ps51 run), so only the real title shapes match.
+function Test-DialogNameForAction([string]$ForAction, [string]$Name) {
+  if ($ForAction -eq 'save') { return $Name -match '(?i)save as|另存为|^save$' }
+  if ($ForAction -eq 'open' -or $ForAction -eq 'open-cancel') { return $Name -match '(?i)打开|^open$' }
   return $Name -match '(?i)选择.*共享|choose what to share|^共享$|^share$'
 }
+
+# Cancel-style actions target different windows than the main save/share
 
 # The open dialog is the classic Win32 file dialog. The edit-id 1001 +
 # IDOK structure is VERIFIED for the save template on this host but NOT yet
@@ -337,41 +327,200 @@ function Find-OpenDialogHwnd {
 # The media picker is a nested views window inside the browser window, while
 # the save dialog can be either nested or a top-level common dialog. Search
 # the browser's whole UIA subtree, not only the root's direct children.
+# Round-17 B17-01: ownership proof for dialogs found outside the target
+# processes. Chromium may host the media picker / FSA dialog in a utility
+# process, but "some other process" is NOT ownership. A dialog pid is owned by
+# the journey only when the pid is a target itself or its parent chain reaches
+# a target pid, and the process image is a browser (msedge).
+function Get-OwnerChain([int]$ChildPid, [int]$MaxDepth = 8) {
+  $chain = @()
+  $seen = @{}
+  $current = $ChildPid
+  for ($i = 0; $i -lt $MaxDepth -and $current -gt 0 -and -not $seen.ContainsKey($current); $i += 1) {
+    $seen[$current] = 1
+    $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$current" -ErrorAction SilentlyContinue
+    if (-not $proc) { break }
+    $chain += [pscustomobject]@{ pid = [int]$proc.ProcessId; name = $proc.Name; parent = [int]$proc.ParentProcessId }
+    $current = [int]$proc.ParentProcessId
+    if ($current -le 4) { break }
+  }
+  return $chain
+}
+
+# The pure ownership decision, over already-collected chain records:
+#   chain = [{pid,name,parent}, ...] from the dialog process upward.
+# Kept separate from the CIM lookup so the selftest can drive the REAL rule
+# with synthetic chains (round-17 B17-01).
+function Test-OwnershipFacts($Chain, [int[]]$TargetPids, [int]$DialogPid) {
+  $facts = [pscustomobject]@{
+    dialogPid = $DialogPid
+    targets = @($TargetPids)
+    chain = @($Chain | ForEach-Object { "$($_.pid):$($_.name)" })
+    image = if ($Chain.Count -gt 0) { $Chain[0].name } else { $null }
+    ownedBy = $null
+    reason = $null
+    ok = $false
+  }
+  if ($Chain.Count -eq 0) {
+    $facts.reason = 'process not found'
+    return $facts
+  }
+  $isBrowser = ($facts.image -eq 'msedge.exe')
+  $targetHit = $null
+  foreach ($link in $Chain) {
+    if ($TargetPids -contains $link.pid) { $targetHit = $link.pid; break }
+  }
+  $facts.ownedBy = $targetHit
+  if (-not $isBrowser) { $facts.reason = "process image is $($facts.image), not msedge.exe" }
+  elseif ($null -eq $targetHit) { $facts.reason = 'owner chain never reaches a target pid' }
+  $facts.ok = ($null -ne $targetHit -and $isBrowser)
+  return $facts
+}
+
+function Test-OwnedByTarget([int]$DialogPid, [int[]]$TargetPids) {
+  $chain = @(Get-OwnerChain -ChildPid $DialogPid)
+  return Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid $DialogPid
+}
+
+# Round-17 B17-01: one pure selection rule shared by the live finder and the
+# selftest. Records are plain {pid,name,class} rows in UIA order (each top
+# window followed by its descendants). Pass 1 accepts only target-owned rows;
+# pass 2 accepts a name/class row ONLY when the chain resolver proves the
+# process belongs to a target (image msedge.exe and a target pid in its owner
+# chain). A foreign nested dialog can never be returned.
+function Select-DialogRecords($Records, [int[]]$TargetPids, [string]$ForAction, [scriptblock]$ChainResolver) {
+  foreach ($record in $Records) {
+    if (-not ($TargetPids -and ($TargetPids -contains $record.pid))) { continue }
+    if ((Test-DialogNameForAction $ForAction $record.name) -or
+        ($ForAction -eq 'save' -and $record.class -eq '#32770')) {
+      return [pscustomobject]@{ record = $record; via = 'pass1'; facts = $null; refused = @() }
+    }
+  }
+  $refused = @()
+  foreach ($record in $Records) {
+    if ($TargetPids -and ($TargetPids -contains $record.pid)) { continue }
+    $nameMatch = Test-DialogNameForAction $ForAction $record.name
+    $classMatch = ($ForAction -eq 'save' -and $record.class -eq '#32770')
+    if (-not ($nameMatch -or $classMatch)) { continue }
+    $chain = @(& $ChainResolver $record.pid)
+    $facts = Test-OwnershipFacts -Chain $chain -TargetPids $TargetPids -DialogPid ([int]$record.pid)
+    if ($facts.ok) { return [pscustomobject]@{ record = $record; via = 'pass2'; facts = $facts; refused = @() } }
+    $refused += ("pid " + $facts.dialogPid + " '" + $record.name + "': " + $facts.reason)
+  }
+  return [pscustomobject]@{ record = $null; via = $null; facts = $null; refused = $refused }
+}
+
 function Find-Dialog([string[]]$Pids) {
   $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
     $AE::ControlTypeProperty, $CT::Window)
   $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
-  # Pass 1: a dialog owned by one of the target processes. A name match here
-  # is trustworthy because the pid proves the window belongs to this journey.
-  if ($Pids) {
-    foreach ($top in $tops) {
-      if ($Pids -notcontains $top.Current.ProcessId) { continue }
-      if (Test-DialogName "$($top.Current.Name)") { return $top }
-      $nested = $top.FindAll($TS::Descendants, $windowCondition)
-      foreach ($candidate in $nested) {
-        if (Test-DialogName "$($candidate.Current.Name)") { return $candidate }
-        # The FSA save picker is the classic #32770 file dialog; its title can
-        # be a security warning instead of "Save As", so recognize the class.
-        if ($Action -eq 'save' -and "$($candidate.Current.ClassName)" -eq '#32770') {
-          return $candidate
-        }
-      }
-    }
-  }
-  # Pass 2: Chromium may host the media picker / FSA dialog in a utility
-  # process, so the browser pid filter alone would skip it. Accept a name
-  # match from any process only after no target-owned dialog exists.
+  $records = @()
+  $elements = @()
   foreach ($top in $tops) {
-    if (Test-DialogName "$($top.Current.Name)") { return $top }
+    $records += [pscustomobject]@{ pid = [int]$top.Current.ProcessId; name = "$($top.Current.Name)"; class = "$($top.Current.ClassName)"; index = $records.Count }
+    $elements += $top
     $nested = $top.FindAll($TS::Descendants, $windowCondition)
     foreach ($candidate in $nested) {
-      if (Test-DialogName "$($candidate.Current.Name)") { return $candidate }
-      if ($Action -eq 'save' -and "$($candidate.Current.ClassName)" -eq '#32770') {
-        return $candidate
-      }
+      $records += [pscustomobject]@{ pid = [int]$candidate.Current.ProcessId; name = "$($candidate.Current.Name)"; class = "$($candidate.Current.ClassName)"; index = $records.Count }
+      $elements += $candidate
     }
   }
-  return $null
+  $selection = Select-DialogRecords -Records $records -TargetPids @($Pids) -ForAction $Action -ChainResolver { param($dialogPid) Get-OwnerChain -ChildPid $dialogPid }
+  if ($null -eq $selection.record) {
+    if ($selection.refused.Count -gt 0) {
+      [Console]::Error.WriteLine("refused candidate dialog(s) without ownership proof: " + ($selection.refused -join ' | '))
+    }
+    return $null
+  }
+  if ($selection.via -eq 'pass2') {
+    $facts = $selection.facts
+    Write-Output ("ownership: dialog pid=" + $facts.dialogPid + " name='" + $selection.record.name +
+      "' image=" + $facts.image + " chain=" + ($facts.chain -join ' > ') +
+      " ownedBy=" + $(if ($null -eq $facts.ownedBy) { 'none' } else { $facts.ownedBy }) + " ok=" + $facts.ok)
+  }
+  return $elements[$selection.record.index]
+}
+
+# Round-17 B17-01 selftest: runs the REAL selection rule (Select-DialogRecords +
+# Test-OwnershipFacts) over synthetic window/process records from a JSON file.
+# No UIA, no process action. JSON shape:
+# { "cases": [ { "id", "action", "targets": [111], "expect": null|333,
+#                "processes": [{pid,name,parent}],
+#                "windows": [{pid,name,class,children:[{pid,name,class}]}] } ] }
+function New-RecordResolver($Processes) {
+  $table = @{}
+  foreach ($p in $Processes) { $table[[int]$p.pid] = $p }
+  return {
+    param($dialogPid)
+    $chain = @(); $seen = @{}; $cur = [int]$dialogPid
+    for ($i = 0; $i -lt 8 -and $cur -gt 0 -and -not $seen.ContainsKey($cur); $i += 1) {
+      $seen[$cur] = 1
+      if (-not $table.ContainsKey($cur)) { break }
+      $entry = $table[$cur]
+      $chain += [pscustomobject]@{ pid = [int]$entry.pid; name = $entry.name; parent = [int]$entry.parent }
+      $cur = [int]$entry.parent
+    }
+    return $chain
+  }.GetNewClosure()
+}
+
+function Invoke-DialogSelftest([string]$File) {
+  if (-not $File -or -not (Test-Path -LiteralPath $File)) {
+    [Console]::Error.WriteLine("dialog-selftest needs -SelftestFile <json> pointing at an existing file")
+    exit 2
+  }
+  $doc = Get-Content -Raw -LiteralPath $File | ConvertFrom-Json
+  $results = @()
+  foreach ($case in $doc.cases) {
+    $records = @()
+    foreach ($w in $case.windows) {
+      $records += [pscustomobject]@{ pid = [int]$w.pid; name = "$($w.name)"; class = "$($w.class)"; index = $records.Count }
+      $children = @()
+      if ($w.PSObject.Properties.Name -contains 'children' -and $w.children) { $children = @($w.children) }
+      foreach ($c in $children) {
+        $records += [pscustomobject]@{ pid = [int]$c.pid; name = "$($c.name)"; class = "$($c.class)"; index = $records.Count }
+      }
+    }
+    $resolver = New-RecordResolver $case.processes
+    $selection = Select-DialogRecords -Records $records -TargetPids @($case.targets) -ForAction "$($case.action)" -ChainResolver $resolver
+    $got = if ($null -eq $selection.record) { $null } else { $selection.record.pid }
+    $ok = ("$got" -eq "$($case.expect)")
+    $factsText = ''
+    if ($selection.facts) {
+      $factsText = "chain=" + ($selection.facts.chain -join ' > ') + " image=" + $selection.facts.image +
+        " ownedBy=" + $(if ($null -eq $selection.facts.ownedBy) { 'none' } else { $selection.facts.ownedBy })
+    }
+    if ($selection.refused.Count -gt 0) { $factsText += " refused=" + ($selection.refused -join ' | ') }
+    $results += [pscustomobject]@{
+      id = $case.id
+      action = "$($case.action)"
+      expect = $case.expect
+      got = $got
+      via = $selection.via
+      pass = $ok
+      facts = $factsText
+    }
+    Write-Output ("  " + $(if ($ok) { 'ok  ' } else { 'FAIL' }) + " " + $case.id + " expect=" + $case.expect + " got=" + $(if ($null -eq $got) { 'null' } else { $got }) +
+      " via=" + $selection.via + $(if ($factsText) { " " + $factsText } else { '' }))
+  }
+  $failed = @($results | Where-Object { -not $_.pass })
+  $report = [pscustomobject]@{
+    tool = 'native-dialog dialog-selftest'
+    version = 1
+    cases = $results
+    summary = [pscustomobject]@{ total = $results.Count; passed = $results.Count - $failed.Count; failed = $failed.Count }
+    verdict = if ($failed.Count -eq 0) { 'PASS' } else { 'FAIL' }
+  }
+  $dir = Split-Path -Parent $PSCommandPath
+  $jsonPath = Join-Path $dir 'native-dialog-selftest-result.json'
+  $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $jsonPath -Encoding UTF8
+  Write-Output ("NATIVE-DIALOG SELFTEST " + $report.verdict + " (" + $report.summary.passed + "/" + $report.summary.total + ")")
+  Write-Output ("wrote " + $jsonPath)
+  exit $(if ($failed.Count -eq 0) { 0 } else { 1 })
+}
+
+if ($Action -eq 'dialog-selftest') {
+  Invoke-DialogSelftest $SelftestFile
 }
 
 function Find-ByName($Dialog, [string]$Pattern, $ControlType) {
