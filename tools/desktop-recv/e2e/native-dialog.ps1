@@ -302,7 +302,11 @@ function Test-DialogName([string]$Name) {
     # these journeys).
     return $Name -match '(?i)打开|^open$'
   }
-  return $Name -match '(?i)share|共享|choose what to share|选择.*共享'
+  # The share picker's real titles are "选择要与 <url> 共享的内容" and "Choose
+  # what to share". A bare 'share' also matches unrelated window titles (a
+  # browser tab on a URL containing "share" was picked as the dialog in the
+  # round-16 E2E-1 ps51 run), so only the real title shapes match.
+  return $Name -match '(?i)选择.*共享|choose what to share|^共享$|^share$'
 }
 
 # The open dialog is the classic Win32 file dialog. The edit-id 1001 +
@@ -337,17 +341,31 @@ function Find-Dialog([string[]]$Pids) {
   $windowCondition = New-Object System.Windows.Automation.PropertyCondition(
     $AE::ControlTypeProperty, $CT::Window)
   $tops = $AE::RootElement.FindAll($TS::Children, $windowCondition)
+  # Pass 1: a dialog owned by one of the target processes. A name match here
+  # is trustworthy because the pid proves the window belongs to this journey.
+  if ($Pids) {
+    foreach ($top in $tops) {
+      if ($Pids -notcontains $top.Current.ProcessId) { continue }
+      if (Test-DialogName "$($top.Current.Name)") { return $top }
+      $nested = $top.FindAll($TS::Descendants, $windowCondition)
+      foreach ($candidate in $nested) {
+        if (Test-DialogName "$($candidate.Current.Name)") { return $candidate }
+        # The FSA save picker is the classic #32770 file dialog; its title can
+        # be a security warning instead of "Save As", so recognize the class.
+        if ($Action -eq 'save' -and "$($candidate.Current.ClassName)" -eq '#32770') {
+          return $candidate
+        }
+      }
+    }
+  }
+  # Pass 2: Chromium may host the media picker / FSA dialog in a utility
+  # process, so the browser pid filter alone would skip it. Accept a name
+  # match from any process only after no target-owned dialog exists.
   foreach ($top in $tops) {
-    # A dialog can be its own top-level window (Chromium may host the media
-    # picker / FSA dialog in a utility process, so the browser pid filter
-    # would skip it). A name match is specific enough.
     if (Test-DialogName "$($top.Current.Name)") { return $top }
-    if ($Pids -and ($Pids -notcontains $top.Current.ProcessId)) { continue }
     $nested = $top.FindAll($TS::Descendants, $windowCondition)
     foreach ($candidate in $nested) {
       if (Test-DialogName "$($candidate.Current.Name)") { return $candidate }
-      # The FSA save picker is the classic #32770 file dialog; its title can
-      # be a security warning instead of "Save As", so recognize the class.
       if ($Action -eq 'save' -and "$($candidate.Current.ClassName)" -eq '#32770') {
         return $candidate
       }
