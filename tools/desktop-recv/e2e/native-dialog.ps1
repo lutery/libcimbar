@@ -48,6 +48,11 @@ param(
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
+# Round-18 B18-01 test hooks. Initialized so a production run never trips
+# StrictMode by reading an unset script-scoped variable.
+$script:DialogTreeOverride = $null
+$script:OwnerChainOverride = $null
+$script:ActionOverride = $null
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
 Add-Type -AssemblyName System.Windows.Forms
