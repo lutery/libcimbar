@@ -1600,20 +1600,25 @@ function startLauncherWatcher(durationSeconds = 25) {
 }
 
 // Live capture of the browser the launcher opens (default launch form).
+// Chromium's forwarding process can be short-lived, so a fast Get-Process
+// poll starts the clock and only NEW pids are checked for the URL in CIM.
 function startBrowserWatcher(port, durationSeconds = 25) {
   const token = `127.0.0.1:${port}`;
   const script = [
     `$deadline = (Get-Date).AddSeconds(${durationSeconds})`,
-    '$seen = @{}',
+    '$known = @{}',
+    'Get-Process msedge -ErrorAction SilentlyContinue | ForEach-Object { $known[$_.Id] = 1 }',
     'while ((Get-Date) -lt $deadline) {',
-    "  $procs = Get-CimInstance Win32_Process -Filter \"Name='msedge.exe'\" -ErrorAction SilentlyContinue",
+    '  $procs = Get-Process msedge -ErrorAction SilentlyContinue',
     '  foreach ($p in $procs) {',
-    `    if ($p.CommandLine -and $p.CommandLine -like '*${token}*' -and -not $seen.ContainsKey($p.ProcessId)) {`,
-    '      $seen[$p.ProcessId] = 1',
-    "      'PROC|' + $p.ProcessId + '|' + $p.CreationDate.ToString('o') + '|' + $p.CommandLine",
+    '    if ($known.ContainsKey($p.Id)) { continue }',
+    '    $known[$p.Id] = 1',
+    '    $w = Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)" -ErrorAction SilentlyContinue',
+    `    if ($w -and $w.CommandLine -and $w.CommandLine -like '*${token}*') {`,
+    "      'PROC|' + $p.Id + '|' + $w.CreationDate.ToString('o') + '|' + $w.CommandLine",
     '    }',
     '  }',
-    '  Start-Sleep -Milliseconds 120',
+    '  Start-Sleep -Milliseconds 20',
     '}',
   ].join('\n');
   const child = spawn(WINPS, ['-NoProfile', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -1871,6 +1876,8 @@ const SCENARIOS = {
       audit.push(describeBoundary('boundary 4 launch.cmd', cmdPath));
       const launcherWatcher = engine ? startLauncherWatcher(25) : null;
       const browserWatcher = engine ? startBrowserWatcher(PORT1, 25) : null;
+      const preWindows = engine ? await probeBrowserWindows() : [];
+      if (engine) audit.push(`ps51 pre-launch browser windows: ${JSON.stringify(preWindows)}`);
       const launcher = spawn('cmd.exe', ['/d', '/s', '/c', commandLine],
         { cwd: launchDir, env: engine ? engine.env : process.env, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: true });
       const launchOut = []; const launchErr = [];
@@ -1919,16 +1926,21 @@ const SCENARIOS = {
           if (browserProcLines.length > 0 || browserWindows.length > 0) break;
           await sleep(1000);
         }
-        const pageOpenOk = browserProcLines.length > 0 || browserWindows.length > 0;
-        audit.push(`ps51 page-open windows: ${JSON.stringify(browserWindows)}`);
+        // Only a window that was NOT already open before this launch counts;
+        // a stale product window from an earlier attempt cannot vouch for it.
+        const preSet = new Set(preWindows);
+        const newWindows = browserWindows.filter((w) => !preSet.has(w));
+        const pageOpenOk = browserProcLines.length > 0 || newWindows.length > 0;
+        audit.push(`ps51 page-open windows: post=${JSON.stringify(browserWindows)} new=${JSON.stringify(newWindows)}`);
         if (!pageOpenOk) {
-          throw new Error('the default launch opened no browser page (no msedge process carrying the URL and no matching window)');
+          throw new Error('the default launch opened no browser page (no new msedge process carrying the URL and no new matching window)');
         }
       }
       writeProof(RUN, 'E2E-1', 'engine-env.txt', engineEvidenceLines(engine, [
         `launch command: cmd.exe /d /s /c ${commandLine}`,
         `launch stdout text: ${JSON.stringify(launchText.utf8)}`,
         `launcher process evidence: ${JSON.stringify(launcherWatchLines)}`,
+        `pre-launch browser windows: ${JSON.stringify(preWindows)}`,
         `browser process evidence: ${JSON.stringify(browserProcLines)}`,
         `browser windows: ${JSON.stringify(browserWindows)}`,
       ]).join('\n'));
