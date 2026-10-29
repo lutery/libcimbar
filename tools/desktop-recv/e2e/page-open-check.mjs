@@ -15,8 +15,8 @@
 //   node page-open-check.mjs --selftest          # machine-checkable 5-case run
 //   node page-open-check.mjs --verify <json>      # judge a recorded snapshot file
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export function normalizeUrl(value) {
   const text = String(value === undefined || value === null ? '' : value).trim();
@@ -80,6 +80,17 @@ export function judgeDefaultPageOpen({ targetUrl, pre = [], post = [] }) {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TARGET = 'http://127.0.0.1:8767/';
+
+// The CLI must only run when this file is the entry point. run-e2e imports the
+// judge, and an unguarded CLI block would hijack that process (caught by
+// UX-UT-081/082 in the round-18 affected checks).
+function isEntryPoint() {
+  try {
+    return Boolean(process.argv[1]) && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+  } catch (error) {
+    return false;
+  }
+}
 
 const CASES = [
   {
@@ -177,7 +188,9 @@ function selftest() {
 }
 
 const argv = process.argv.slice(2);
-if (argv.includes('--selftest')) {
+if (!isEntryPoint()) {
+  // imported as a module: export the judge, do not parse argv or exit
+} else if (argv.includes('--selftest')) {
   selftest();
 } else if (argv.includes('--verify')) {
   const index = argv.indexOf('--verify');
