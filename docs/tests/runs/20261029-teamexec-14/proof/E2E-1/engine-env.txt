@@ -1,0 +1,13 @@
+launcherEngine=ps51
+powershellExe=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+psVersion=5.1.22621.6133
+pythonExe=D:\ProgramData\anaconda3\python.exe
+childPath=C:\WINDOWS\system32;C:\WINDOWS;C:\Windows\System32\WindowsPowerShell\v1.0;D:\ProgramData\anaconda3
+where pwsh under child PATH: exit=1 stdout="" stderr="INFO: Could not find files for the given pattern(s)."
+where powershell under child PATH: exit=0 stdout="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+launch command: cmd.exe /d /s /c ""C:\Users\admin\AppData\Local\Temp\cimbar-e2e-1\中文 目录 解压\launch.cmd" -Port 8767"
+launch stdout text: "serving C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压\r\nopen http://127.0.0.1:8767/\r\nserver pid 88464\r\n"
+launcher process evidence: ["WATCH|58528|C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe|2026-10-29T15:49:21.5312140+08:00|powershell  -NoProfile -ExecutionPolicy Bypass -File launch.ps1 -Port 8767"]
+pre-launch browser windows: ["WIN|28652|Cimbar 桌面接收器 和另外 8 个页面 - 个人 - Microsoft​ Edge"]
+browser process evidence: []
+browser windows: ["WIN|28652|Cimbar 桌面接收器 和另外 9 个页面 - 个人 - Microsoft​ Edge"]
