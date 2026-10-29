@@ -1,0 +1,17 @@
+{
+  "pythonPid": 91248,
+  "port": 9445,
+  "markerPath": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\dev-pipeline\\receiver-ux-v2\\red-logs\\r19\\cimbar-e2e-demo\\unrelated-server.py",
+  "ready": true,
+  "pythonExitBefore": null,
+  "reclaimResult": {
+    "pid": 91248,
+    "port": 9445
+  },
+  "pythonExitAfter": {
+    "code": 4294967295,
+    "signal": null,
+    "at": "2026-10-29T14:30:21.686Z"
+  },
+  "killedByOldReclaim": true
+}

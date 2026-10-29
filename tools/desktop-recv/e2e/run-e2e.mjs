@@ -211,14 +211,13 @@ async function pickFreePort(startPort, attempts = 20, excludePorts = []) {
   throw new Error(`no free port in ${startPort}..${startPort + attempts - 1} for the default-open leg`);
 }
 
-// Round-18: a crashed journey can leave its automation Edge listening on the
-// fixed CDP port; the next launch would then attach to that stale browser (its
-// profile differs, so dialogs are refused - or worse, the wrong page is
-// driven). Reclaim ONLY a browser whose command line carries the harness
-// profile marker (%TEMP%\cimbar-e2e-...); anything else is refused, never
-// killed by port or name.
-async function reclaimStaleAutomationBrowser(port, label) {
-  if (await bindProbe(port)) return null;
+// Round-19 A19-01: the previous reclaim stopped any process whose command line
+// merely contained the cimbar-e2e- marker (a plain python script path matched).
+// The harness must never stop a process it cannot prove it owns, so the
+// automatic termination branch is gone: a busy CDP port is a hard, read-only
+// refusal that names the occupant and leaves it untouched.
+async function assertCdpPortFree(port, label) {
+  if (await bindProbe(port)) return;
   const netstat = spawnSync('netstat', ['-ano', '-p', 'tcp'], { encoding: 'utf8' });
   let ownerPid = 0;
   for (const line of String(netstat.stdout || '').split(/\r?\n/)) {
@@ -227,23 +226,10 @@ async function reclaimStaleAutomationBrowser(port, label) {
   }
   if (!ownerPid) throw new Error(`${label}: CDP port ${port} is busy but no listening owner was found`);
   const probe = await runCaptured(WINPS, ['-NoProfile', '-Command',
-    `$p=Get-CimInstance Win32_Process -Filter "ProcessId=${ownerPid}" -ErrorAction SilentlyContinue; if($p){$p.CommandLine}`], {});
-  const cmd = probe.stdout.toString('utf8').trim();
-  if (!/cimbar-e2e-/i.test(cmd)) {
-    throw new Error(`${label}: CDP port ${port} is owned by pid ${ownerPid}, which is not a harness ` +
-      `automation browser (no cimbar-e2e- profile marker); refusing to touch it`);
-  }
-  await runCaptured(WINPS, ['-NoProfile', '-Command',
-    `Stop-Process -Id ${ownerPid} -Force -ErrorAction SilentlyContinue`], {});
-  const deadline = Date.now() + 8000;
-  while (Date.now() < deadline) {
-    if (await bindProbe(port)) {
-      console.log(`[${label}] reclaimed stale automation browser pid ${ownerPid} on CDP port ${port} (profile marker verified)`);
-      return { pid: ownerPid, port };
-    }
-    await sleep(250);
-  }
-  throw new Error(`${label}: reclaimed pid ${ownerPid} but CDP port ${port} is still busy`);
+    `$p=Get-CimInstance Win32_Process -Filter "ProcessId=${ownerPid}" -ErrorAction SilentlyContinue; if($p){"$($p.Name)|$($p.CommandLine)"}`], {});
+  const detail = probe.stdout.toString('utf8').trim() || '(command line unreadable)';
+  throw new Error(`${label}: CDP port ${port} is occupied by pid ${ownerPid} (${detail}); ` +
+    'refusing to start and leaving the occupant untouched - verify and stop a stale harness browser yourself');
 }
 
 function runHelper(helperArgs, pid = 0) {
@@ -475,7 +461,7 @@ async function screenshot(page, caseId, name) {
 }
 
 async function launchReceiver(port = RECEIVER_PORT) {
-  await reclaimStaleAutomationBrowser(DEBUG_PORT, 'receiver');
+  await assertCdpPortFree(DEBUG_PORT, 'receiver');
   const profile = mkdtempSync(join(tmpdir(), 'cimbar-e2e-'));
   const child = spawn(EDGE, [
     `--remote-debugging-port=${DEBUG_PORT}`,
@@ -1287,7 +1273,7 @@ async function importVideo(page, videoPath) {
 // before recording and recorded into the leg even when the bound aborts it.
 
 async function launchRecorderPage() {
-  await reclaimStaleAutomationBrowser(RECORDER_DEBUG_PORT, 'recorder');
+  await assertCdpPortFree(RECORDER_DEBUG_PORT, 'recorder');
   const profile = mkdtempSync(join(tmpdir(), 'cimbar-e2e-rec-'));
   const child = spawn(EDGE, [
     `--remote-debugging-port=${RECORDER_DEBUG_PORT}`,
