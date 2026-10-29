@@ -1,0 +1,31 @@
+2026-10-29T12:11:32.658Z process guard: reclaimed 0/4 recorded process(es)
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /index.html?ww=1 HTTP/1.1" 200 -
+127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:12:11] "GET /pwa.json HTTP/1.1" 200 -
+[receiver] reclaimed stale automation browser pid 79176 on CDP port 9445 (profile marker verified)
+[helper] dialog: 选择要与 http://127.0.0.1:8768 共享的内容 pid=101136
+[helper] source: CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge
+[helper] share button: 共享
+[helper] dialog confirmed: share
+2026-10-29T12:12:38.345Z e2e-1: live File ready to save artifact=sample-text-2.bin
+[helper] dismissed the Edge sync bubble
+[helper] ownership: dialog pid=94768 name='警告: 此站点可以看到你所做的编辑' image=msedge.exe chain=94768:msedge.exe > 101136:msedge.exe ownedBy=101136 matchedBy=pid-chain profileMatch=True ok=True
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261029-teamexec-16\proof\E2E-1\live\received.bin
+[helper] ownership: dialog pid=98012 name='警告: 此站点可以看到你所做的编辑' image=msedge.exe chain=98012:msedge.exe > 101136:msedge.exe ownedBy=101136 matchedBy=pid-chain profileMatch=True ok=True
+[helper] False
+[helper] saved: E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261029-teamexec-16\proof\E2E-1\recorded\received.bin
+2026-10-29T12:13:45.749Z CASE E2E-1 PASS (attempt E2E-1-2026-10-29T12-11-32-658Z-2f9999)
+E2E1-EXIT=0
+
+[exited with code 0]

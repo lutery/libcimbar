@@ -1,0 +1,5 @@
+E2E-1 observation (2026-10-29T11:43:42.679Z)
+page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8767/
+Call log:
+[2m  - navigating to "http://127.0.0.1:8767/", waiting until "load"[22m
+

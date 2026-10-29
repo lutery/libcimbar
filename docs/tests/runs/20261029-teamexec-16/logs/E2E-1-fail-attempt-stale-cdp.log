@@ -1,0 +1,87 @@
+2026-10-29T12:04:35.717Z process guard: reclaimed 0/3 recorded process(es)
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:14] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:15] "GET / HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:15] "GET /send.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:15] "GET /main.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:15] "GET /cimbar_js.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /sw.js HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /index.html HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /index.html?ww=1 HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /cimbar_js.wasm HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /favicon.ico HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /icon-192x192.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /icon-512x512.png HTTP/1.1" 200 -
+[sender-http] 127.0.0.1 - - [29/Oct/2026 20:05:16] "GET /pwa.json HTTP/1.1" 200 -
+[helper] dismissed the Edge sync bubble
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] dialog not found for action 'share' within 30 s
+[helper]   window TARGET pid=87004 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 - 用户配置 1 - Microsoft​ Edge'
+[helper]   window        pid=28652 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 和另外 14 个页面 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=58472 class=Chrome_WidgetWin_1 name='CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge'
+[helper]   window        pid=79176 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 和另外 12 个页面 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=40236 class=Chrome_WidgetWin_1 name='Orca'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='Usage · Settings - Google Chrome'
+[helper]   window        pid=74728 class=MozillaWindowClass name='Usage · Settings — Mozilla Firefox'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='TODO.md - tools - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='外部审查建议.md - AStock - Visual Studio Code'
+[helper]   window        pid=46632 class=NarratorHelperWindow name=''
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='supplier_probe.py (Working Tree) (supplier_probe.py) - LiteLLMProxy - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='审查反馈.md - setting-up-shop-today - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='history.jsonl - aiprogram - Visual Studio Code'
+[helper]   window        pid=39424 class=CabinetWClass name='tmp - 文件资源管理器'
+[helper]   window        pid=64728 class=TaskManagerWindow name='任务管理器'
+[helper]   window        pid=39424 class=CabinetWClass name='D - 文件资源管理器'
+[helper]   window        pid=39424 class=CabinetWClass name='product - 文件资源管理器'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='最终幻想16|豪华中文|V1.03Fix5+预购特典+扩充通票+全DLC+修改器-支持手柄|解压即撸|-Switch520 - Google Chrome'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='新しいタブ - Google Chrome'
+[helper]   window        pid=39424 class=CabinetWClass name='AStock - 文件资源管理器'
+[helper]   window        pid=51260 class=Notepad name='*1. 需要用户接入的操作一定要寻求用户，不要自己盲目摸索（比如授权录屏 - Notepad'
+[helper]   window        pid=52960 class=ThunderRT6FormDC name='K:\Projects\python\LiteLLMProxy\doc\多plan负载均衡\log\CodingProxy - XYplorer 25.60.0100 - (Academic)'
+[helper]   window        pid=63340 class=ApplicationFrameWindow name='设置'
+[helper]   window        pid=28616 class=Window name='Citrix Workspace'
+[helper]   window        pid=1580 class=Window name='v2rayN - V7.22.7 - X64 - 以管理员身份运行'
+[helper]   window        pid=29156 class=Chrome_WidgetWin_1 name='飞书'
+[helper]   window        pid=15644 class=QWindowsMsgRecv name='PixPin'
+[capture] attempt 1: picker not found; retrying once
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] refused candidate dialog(s) without ownership proof: pid 79176 '选择要与 http://127.0.0.1:8767 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+[helper] dialog not found for action 'share' within 30 s
+[helper]   window        pid=28652 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 和另外 14 个页面 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=58472 class=Chrome_WidgetWin_1 name='CIMBAR-SENDER-WINDOW - Personal - Microsoft​ Edge'
+[helper]   window        pid=79176 class=Chrome_WidgetWin_1 name='Cimbar 桌面接收器 和另外 12 个页面 - 个人 - Microsoft​ Edge'
+[helper]   window        pid=40236 class=Chrome_WidgetWin_1 name='Orca'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='Usage · Settings - Google Chrome'
+[helper]   window        pid=74728 class=MozillaWindowClass name='Usage · Settings — Mozilla Firefox'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='TODO.md - tools - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='外部审查建议.md - AStock - Visual Studio Code'
+[helper]   window        pid=46632 class=NarratorHelperWindow name=''
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='supplier_probe.py (Working Tree) (supplier_probe.py) - LiteLLMProxy - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='审查反馈.md - setting-up-shop-today - Visual Studio Code'
+[helper]   window        pid=392 class=Chrome_WidgetWin_1 name='history.jsonl - aiprogram - Visual Studio Code'
+[helper]   window        pid=39424 class=CabinetWClass name='tmp - 文件资源管理器'
+[helper]   window        pid=64728 class=TaskManagerWindow name='任务管理器'
+[helper]   window        pid=39424 class=CabinetWClass name='D - 文件资源管理器'
+[helper]   window        pid=39424 class=CabinetWClass name='product - 文件资源管理器'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='最终幻想16|豪华中文|V1.03Fix5+预购特典+扩充通票+全DLC+修改器-支持手柄|解压即撸|-Switch520 - Google Chrome'
+[helper]   window        pid=22124 class=Chrome_WidgetWin_1 name='新しいタブ - Google Chrome'
+[helper]   window        pid=39424 class=CabinetWClass name='AStock - 文件资源管理器'
+[helper]   window        pid=51260 class=Notepad name='*1. 需要用户接入的操作一定要寻求用户，不要自己盲目摸索（比如授权录屏 - Notepad'
+[helper]   window        pid=52960 class=ThunderRT6FormDC name='K:\Projects\python\LiteLLMProxy\doc\多plan负载均衡\log\CodingProxy - XYplorer 25.60.0100 - (Academic)'
+[helper]   window        pid=63340 class=ApplicationFrameWindow name='设置'
+[helper]   window        pid=28616 class=Window name='Citrix Workspace'
+[helper]   window        pid=1580 class=Window name='v2rayN - V7.22.7 - X64 - 以管理员身份运行'
+[helper]   window        pid=29156 class=Chrome_WidgetWin_1 name='飞书'
+[helper]   window        pid=15644 class=QWindowsMsgRecv name='PixPin'
+2026-10-29T12:06:58.402Z CASE E2E-1 FAIL (attempt E2E-1-2026-10-29T12-04-35-718Z-c15b4a)
+E2E1-EXIT=1
+
+[exited with code 1]

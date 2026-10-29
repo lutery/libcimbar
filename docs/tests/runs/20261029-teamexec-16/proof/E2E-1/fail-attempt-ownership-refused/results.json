@@ -1,0 +1,14 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "proofRefs": [
+      "proof/E2E-1/observation.txt"
+    ],
+    "notes": "packaged-launch re-verification did not complete: page.waitForFunction: Timeout 30000ms exceeded.",
+    "attemptId": "E2E-1-2026-10-29T11-54-30-067Z-2e46ae"
+  }
+]

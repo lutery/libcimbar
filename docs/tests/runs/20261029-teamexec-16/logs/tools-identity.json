@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "runId": "20261029-teamexec-16",
+  "harnessRevision": "cd53a207f27d56565153520ed31e053d9f27ccb8",
+  "generatedAt": "2026-10-29T12:17:34.671Z",
+  "note": "content SHA-256 of each harness tool that produced evidence in this root (round-16 S16-02); the run-context harnessRevision covers the harness tree, this file binds the individual tools by content.",
+  "tools": [
+    {
+      "path": "tools/desktop-recv/e2e/ps51-launch-check.mjs",
+      "sha256": "509c671041f6dfa1a1f6dc42583f54daff8b1bd602171e9a42ae42524b4912f0"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/run-e2e.mjs",
+      "sha256": "c73479d84fdcfa36391f7e113d92640cd618d45deb007cc291061cfee7038123"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/run-context.mjs",
+      "sha256": "f3a5c563653153741281124432c17d3bc2c163d90ed0f0906203aae2eb2b59cc"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/evidence.mjs",
+      "sha256": "4e2b7b9e1cc9e99bdd9cc0c7c04557413ec32428da832384abbea8f024b01b14"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/process-guard.mjs",
+      "sha256": "523f11495e94c501e949da0f095b6e0fbd93013364e493510287d40c81854493"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/native-dialog.ps1",
+      "sha256": "33471fd587d62a744cd89f0b0e9a560dcf63458d2a6641e251052398fb641254"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/native-dialog-selftest.json",
+      "sha256": "0b5274db3bf77095252a0f44444d9122240685514def2243b3523734169fb43e"
+    },
+    {
+      "path": "tools/desktop-recv/e2e/page-open-check.mjs",
+      "sha256": "5ad034c9993cc887f517b6a3ad579b3170580d91b61ae84de5593182d6f618f4"
+    }
+  ]
+}

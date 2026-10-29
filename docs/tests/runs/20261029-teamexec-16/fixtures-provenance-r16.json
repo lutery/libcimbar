@@ -1,0 +1,325 @@
+{
+  "version": 1,
+  "runId": "20261029-teamexec-16",
+  "generatedAt": "2026-10-29T11:41:29.415Z",
+  "sources": {
+    "20261027-teamexec-12": "read-only source of the identical fixture trees (itself sourced from 20261025-teamexec-09b and 20261024-teamexec-04; see fixtures-provenance-r12.json in both roots)"
+  },
+  "liveSample": {
+    "path": "docs/tests/runs/20261029-teamexec-16/fixtures/ext-random-4mib.bin",
+    "sha256": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+    "bytes": 4194304,
+    "choiceBasis": "09b bound the 1MiB sample and every live side reached Ready at ~16-18s, impossible for a 30s Receiving window; the 4MiB sample (same frozen seed method, seed 20261018) was locked before execution. Side A resolves by basename into the run-04 root with the identical SHA.",
+    "baselineBinding": "docs/tests/runs/20261024-teamexec-04/fixtures-ext/incompressible/ext-random-4mib.bin (same SHA)"
+  },
+  "copies": [
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/compressible/sample-text-1.bin",
+      "sha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d",
+      "bytes": 4096,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/compressible/sample-text-2.bin",
+      "sha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+      "bytes": 65536,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/compressible/sample-text-3.bin",
+      "sha256": "ecbd8bfd5d2da153cf1b446c94be79c80492976790964e07bdf5103686831208",
+      "bytes": 524288,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/ext-random-1mib.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/ext-random-4mib.bin",
+      "sha256": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+      "bytes": 4194304,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/fixtures-media/V-LAST-with.webm",
+      "sha256": "72a69af0589133d5e266a4f16265ff8ea2a4f288a42b5441e4b20356fac08916",
+      "bytes": 14330428,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/fixtures-media/V-LAST-without.webm",
+      "sha256": "447307f091c57b95b71445722691d0d31efd717df712b7163e929ba8eb44fcc0",
+      "bytes": 9807013,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/fixtures-media/manifest.json",
+      "sha256": "873598ef1ca7a0e4da7180d218252ac6a924716ede28688dbe5d8170c84f56ed",
+      "bytes": 5076,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/fixtures-media/prefix-check.json",
+      "sha256": "d43dfa8b445bbf72405ed69bff28957c0b0af67f50c509bb983dd18244e094e0",
+      "bytes": 2283,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/incompressible/sample-random-1.bin",
+      "sha256": "1e9c1cd9d155bd88a9ef960ae1d0d062a229553c787dfe7a8c118774fa051717",
+      "bytes": 4096,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/incompressible/sample-random-2.bin",
+      "sha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712",
+      "bytes": 65536,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/incompressible/sample-random-3.bin",
+      "sha256": "07e0da834d66a9667586e882c96aaa4bb3487ddbb037bd944a24453ed6296504",
+      "bytes": 524288,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/long-name/provenance.json",
+      "sha256": "1576bee339964bc1009696eedf8cba84b15054006e9298aa0130d6e4d8e81826",
+      "bytes": 835,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/long-name/本轮接收器中文长文件名验证样本 含空格 与数字 20261025 以及足够多字符用于检查换行与滚动行为 最终接收文件名称测试 甲乙丙丁戊己庚辛壬癸 子丑寅卯辰巳午未申酉戌亥 一二三四五六七八九十.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/manifest.json",
+      "sha256": "b960bb488d1587ae1385f568eba620fbc326b4397b7beb1f9dab52a0937fb547",
+      "bytes": 1608,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/name-collision/a.bin",
+      "sha256": "c10e5e7db3dce426eca25e1f85fefcf1a4d764d38735ca2bd210ec2a7cd4d5a0",
+      "bytes": 4096,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/name-collision/b.bin",
+      "sha256": "4ba6d23e4cb972d9e3fcb677722e465dbdd8ab172a35bc6a2d77d52bb1109402",
+      "bytes": 4096,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/primary-input-128k.bin",
+      "sha256": "8f89c58fc9a16feefa31ce6c8e6146d6003f1b749fcd88ffd5e97ca9fc61f146",
+      "bytes": 131072,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures/src01-code-frame.png",
+      "sha256": "ad74f522d0307317f5ccbdf81e94c811374fe578b1a95dae8911cea905056c1b",
+      "bytes": 579946,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/compressible/ext-text-1mib.bin",
+      "sha256": "2f871833958aeaac4b34be41d81b4b27e9f9b1a3fda21b7d16095c71cf0d1af2",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/compressible/ext-text-4mib.bin",
+      "sha256": "aa9738959aaeb3f3c90e3c47ffb79980b14fd43671fa714f6a5d6a0aa7a3c752",
+      "bytes": 4194304,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/incompressible/ext-random-1mib.bin",
+      "sha256": "3cd0bea6db019549ee81b1b151d75797485daba542b770126710846f43ff37f9",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/incompressible/ext-random-4mib.bin",
+      "sha256": "6181826a9f8660745fce4fd5da548e9df70402ab955fd5c0fb3c38215161f44c",
+      "bytes": 4194304,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/manifest.json",
+      "sha256": "24e50d9d285e3ebddcd3d6f85b2daf3aafebb2e3a038d2ab4077a060e46447d3",
+      "bytes": 1965,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-ext/over-budget/ext-text-20mib.bin",
+      "sha256": "e828774cbe25606a10b5adb48e4996f0e809b9df7d06b5ecc91df05b04c914a4",
+      "bytes": 20971520,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-C-4mib.webm",
+      "sha256": "67598d58dbfe4a035364bb39ebcf73f1816840e5f57f039080e40eca54990de5",
+      "bytes": 85284917,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-N-1mib-probe.webm",
+      "sha256": "368260ba93830c77086c1a48384a949b4fc6c338613569c2f82dca36d756766b",
+      "bytes": 214666950,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-N-4mib.webm",
+      "sha256": "b3e3fdb01b034b6a6948b16bda60b11adcb8d44022d21cfcc9345885faa33d44",
+      "bytes": 855596610,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/V-GOOD-C.webm",
+      "sha256": "9956fb11e391bba34e9529ed746ec37b45c04bd640331497995f9a989c8255b3",
+      "bytes": 21464029,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/V-GOOD-N.webm",
+      "sha256": "7ff78b0d396d32845b34ca97e49be21cbd29179f4ce7dd0794a70ee2d3a3582b",
+      "bytes": 26111606,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/V-LAST-with.webm",
+      "sha256": "ee93071c67430ebf5e6cef1bdf59e568ddac3a87457e78801a014d6172fd520d",
+      "bytes": 13594823,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/V-LAST-without.webm",
+      "sha256": "8c13c8213b1819bc729b2d3cd77616c7c903ae35e187035f1b73f9d46b362eef",
+      "bytes": 8705772,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/V-SHORT.webm",
+      "sha256": "7450099f6ce8b53eb26f864f0185690d56187100b87c7d2e6ab1b937f8e5aa5a",
+      "bytes": 1449793,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/bad/corrupt.webm",
+      "sha256": "5fffd2a161000ed216d2a83af22072cc08c3e8dbd95258258cdc4867e160611a",
+      "bytes": 40000,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/bad/empty.webm",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/bad/text.webm",
+      "sha256": "ea6fbfe810c87bab609865812bb387080e5a0859a40820d2473f3cad89cc0b1d",
+      "bytes": 29,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/e2e6-a/e2e6-payload.bin",
+      "sha256": "6db46cf588452da8b3204295143747243352e6afc6e0ce65965584b9fd463895",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/e2e6-b/e2e6-payload.bin",
+      "sha256": "11fba32eb6be77bc9a40ac86b897481d16dad514b06ec27667b0410deb20a675",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/manifest.json",
+      "sha256": "00dfd6cf21aaefa541c44f08727e89300fe9cd355f87b084015e59cebfe2608a",
+      "bytes": 4792,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/payload-128k-random.bin",
+      "sha256": "b59e5ec5d15b5d507870f0d9ee7dbf9bee6c9f296273f0c53ff49949fd204c0c",
+      "bytes": 131072,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/payload-1m-e2e10.bin",
+      "sha256": "6143dff569963f7c76a74b9cceab7867523c0caeb562281a1b0b3e31e13dbf06",
+      "bytes": 1048576,
+      "role": "fixture-copy"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/prefix-check.json",
+      "sha256": "6bd8d45ae8057bc463dd314394f440a6a90d53823395a23852cf2c80ad5d739e",
+      "bytes": 2261,
+      "role": "fixture-copy"
+    }
+  ],
+  "inputManifestSha256": "b3d89d2729a96e4538c4481c5cf5607ec29424edc4e2a29810de437b04c4d54f",
+  "root12ManifestDrift": [
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-C-4mib.webm",
+      "root12ManifestSha256": "9b62e6c4913e7a75b335ad14735034893690924fbc9898c949f9d1425eec7f97",
+      "root12ManifestBytes": 82485538,
+      "diskSha256": "67598d58dbfe4a035364bb39ebcf73f1816840e5f57f039080e40eca54990de5",
+      "diskBytes": 85284917,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-N-1mib-probe.webm",
+      "root12ManifestSha256": "5923cab8e80ea02a183ad218c83ef7137dcc4b2ec2cb9cb0d24d473e84548fb3",
+      "root12ManifestBytes": 205218098,
+      "diskSha256": "368260ba93830c77086c1a48384a949b4fc6c338613569c2f82dca36d756766b",
+      "diskBytes": 214666950,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/E2E18-V-N-4mib.webm",
+      "root12ManifestSha256": "4308d007e063914bfd5dd074eb8f71d77e3de0b4e9230acc955dce20e1f87d9e",
+      "root12ManifestBytes": 843673381,
+      "diskSha256": "b3e3fdb01b034b6a6948b16bda60b11adcb8d44022d21cfcc9345885faa33d44",
+      "diskBytes": 855596610,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/e2e6-a/e2e6-payload.bin",
+      "root12ManifestSha256": "da102ab35c63341c875d042fb1fcca56f27831ed032ea40e74a49abdda0fba9d",
+      "root12ManifestBytes": 1048576,
+      "diskSha256": "6db46cf588452da8b3204295143747243352e6afc6e0ce65965584b9fd463895",
+      "diskBytes": 1048576,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/e2e6-b/e2e6-payload.bin",
+      "root12ManifestSha256": "d1d97da9422f9f823bd852559fe189589bee1f51ee79bf8e32911b21c86eccb7",
+      "root12ManifestBytes": 1048576,
+      "diskSha256": "11fba32eb6be77bc9a40ac86b897481d16dad514b06ec27667b0410deb20a675",
+      "diskBytes": 1048576,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    },
+    {
+      "path": "docs/tests/runs/20261029-teamexec-16/fixtures-media/payload-1m-e2e10.bin",
+      "root12ManifestSha256": "57f1edb4d84c868c04c39f977d276079c4dc040df3d57cd1f5e2c2190827d539",
+      "root12ManifestBytes": 1048576,
+      "diskSha256": "6143dff569963f7c76a74b9cceab7867523c0caeb562281a1b0b3e31e13dbf06",
+      "diskBytes": 1048576,
+      "reason": "the runner generates/overwrites this file in-lane (E2E-6/10/18 write fresh random payloads or record fresh clips), so the copied pre-run SHA is stale by construction; root12 disk and root13 disk are byte-identical (full-inventory verified)"
+    }
+  ],
+  "carriedForward": {
+    "from": "docs/tests/runs/20261029-teamexec-15",
+    "method": "byte-for-byte copy on disk; every files[] SHA re-verified against this root",
+    "reason": "the round-17 remediation touched only tools and evidence; product and fixtures unchanged"
+  }
+}
