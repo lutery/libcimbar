@@ -238,3 +238,11 @@
 - root14（`docs/tests/runs/20261029-teamexec-14`，attempt `candidate-20261029-01`，harness `58dd622`，product manifest 仍 `7a5e5f1a…`）：staging/fixtures 按字节复制并逐项重哈希；矩阵 **12/12 PASS**；E2E-1 ps51 PASS（`…363db1`）、E2E-2 ps51 PASS（`…5d7e6e`）；绿扫 222/69/77/14/3/契约；首败 attempt 原件保留（`proof/E2E-1/fail-attempt-766581/`）。
 - 建议落实：S16-01 状态索引（本行 + §8.4 + pipeline-state）；S16-02 `logs/tools-identity.json` + 矩阵 toolSha256；S16-03 round-17 复跑命令使用真实参数（`--run-id` 独立根）。
 - 台账：`docs/dev-pipeline/receiver-ux-v2/r16-remediation.md`；出口确认门后送 round-17。
+
+## R17 — round-17 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-17 裁决（不通过；A17-01 开页判定仅标题/页数、无精确 URL 与启动关联；B17-01 原生对话框 Pass2 跨进程兜底无归属校验）；裁决归档 `round-17-verdict.md`（`232fb71`）。A16-02/S16-01/02/03 关闭，A16-01 部分关闭。
+- RED（真实入口）：旧开页三行判定对"同 PID、标题 8→9、无 URL 证据"返回 true；旧 Find-Dialog（含 Pass2）对无关顶层 222 的嵌套 save(`#32770`)/share 均返回 222。入档 `red-logs/r17/`。
+- 修复：`8951620` 新模块 `page-open-check.mjs`（URL 精确匹配 + 启动前不存在；标题不参与判定）+ run-e2e 运行期空闲端口/UIA 地址栏快照/判定证据；`native-dialog.ps1` 归属证明（owner chain 达 target 且映像 msedge.exe）+ 统一选择规则 + `-Action dialog-selftest`；`a56e74c` 修新模块 CLI 未加主模块守卫（工具测试 UX-UT-081/082 抓出）；`a38230e` 增连接证据通道（前台锁使 launcher 页签后台打开，地址栏不显示；msedge socket 连运行期新端口为 URL 承载证据）。
+- root15（`docs/tests/runs/20261029-teamexec-15`，attempt `candidate-20261029-02`，harness `a38230e`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS（`…8589dc`，连接通道证明目标 URL；实时/录像/外置 SHA 相等）、E2E-2 PASS（`…5f9ecd`，两原生对话框均 target-owned pass1）；tools 69/69、page-open selftest 8/8、native-dialog selftest 6/6；首败 `…d28bb1` 原件保留。
+- 台账：`r17-remediation.md`；出口确认门后送 round-18。

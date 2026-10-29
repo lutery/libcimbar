@@ -156,3 +156,9 @@ UX 门禁 4 条 = E2E-35（用户授权缺口：本机不可构造真实 visibil
 - round-16 不通过（A16-01 PS5.1 完整 E2E-1/2 缺失；A16-02/B-R16-1 矩阵清理未核对归属）；root14（`20261029-teamexec-14`，attempt `candidate-20261029-01`，harness `58dd622`，product manifest 仍 `7a5e5f1a…`）承载整改证据：矩阵 **12/12**（身份核验清理 + 守卫反例 h1-h4）、E2E-1/2 在真实 PS5.1 下完整旅程 PASS（引擎/开页/外部 SHA），首败原件保留（`fail-attempt-766581`）。
 - 新增教训：①“按端口清理=未核对归属”与 A16-02 同型；native-dialog 的裸 `share` 名称匹配同样误驱动用户窗口——凡对窗口/进程的动作都应先证明归属。②开页证据必须绑定本次启动（前后窗口差集），旧窗口不可作证。③完整矩阵跑批未触发的函数分支，用真实进程的函数级反证补齐 RED（比记录器更强）。
 - E2E-35/37、现场 7 项维持既有 NOT_RUN。
+
+## 8.5 Round-17 整改（2026-10-29）
+
+- round-17 不通过（A17-01 开页无 URL/关联；B17-01 对话框无归属兜底）；root15（`20261029-teamexec-15`，attempt `candidate-20261029-02`，harness `a38230e`，product manifest 仍 `7a5e5f1a…`）承载整改证据：page-open 判定 8/8（URL 精确+启动关联，标题/页数不参与）、native-dialog 归属 6/6（无关嵌套 save/share 拒绝、目标 utility 子进程接受）、E2E-1/E2E-2 PS5.1 PASS（开页由 msedge 连接证据证明；对话框均 target-owned）。
+- 新教训：①**'标题变化'不是开页证据**——URL 才是页面身份；后台页签无地址栏时，connection 证据（唯一新端口的 msedge 连接）同样承载精确 URL。②工具模块被 import 时必须加主模块守卫（新 CLI 模块的一次性缺陷被现有工具测试立即抓住）。③归属证明要区分 pass1（target pid 直证）与 pass2（utility 子进程需 owner chain+映像），不得以"同名标题/同类名"替代。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。
