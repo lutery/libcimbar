@@ -43,3 +43,6 @@ __pycache__/
 # evidence copies live in the run roots, not next to the tools.
 tools/desktop-recv/e2e/page-open-check-selftest.json
 tools/desktop-recv/e2e/native-dialog-selftest-result.json
+
+# Round-18 RED/recheck pairs record pre-fix bytes faithfully.
+docs/dev-pipeline/receiver-ux-v2/red-logs/** -text
