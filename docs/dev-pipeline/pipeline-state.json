@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 接收器体验迭代 v2",
   "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
-  "current_phase": "external-review",
+  "current_phase": "team-exec",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-29T20:40:00+08:00",
+  "updated_at": "2026-10-29T21:00:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -233,7 +233,7 @@
     {
       "name": "team-exec",
       "display": "团队实施与验证",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": "docs/dev-pipeline/receiver-ux-v2/",
       "output_files": [],
       "team_mode": "native",
@@ -243,8 +243,8 @@
       "max_rounds": 10,
       "test_status": "passed",
       "started_at": "2026-10-24T14:37:17+08:00",
-      "completed_at": "2026-10-29T20:40:00+08:00",
-      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。 整改轮收口（2026-10-26 18:45）：round-12 的 5 阻断主题全部以证据关闭（台账 r12-remediation.md 全 CLOSED）。最终候选=root11（docs/tests/runs/20261026-teamexec-11，product manifest 34a9de30…，attempt candidate-20261026-01，sourceRevision 00c5d57，harnessRevision 5381d35）。测试总账：run-unit 12 套 216 例、tools 67 例、自测 65/14/3、契约 PASS；UX-IAT 01-07+A5 GREEN、08 如实 NOT_RUN；legacy E2E-1..20 全 20 PASS（5 次瞬态首败重试过、原件保留）；UX 12 条=10 PASS+35/37 如实 NOT_RUN（35=用户 2026-10-26 授权；37=环境）；录制 A/B 5/5 对 PASS（B 侧 min gap 250.2-250.3ms）；实时 10/10 VALID（窗口 30127-30181ms，4MiB 6181826a…）。双门禁（lead 独立复跑）：legacy local PASS(20) exit0；UX local exit1 恰 4 条（35×2+37×2 授权缺口）；field exit1 设计内。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA 不变；E2E-36 Ready 截图实证收敛。中间失败件：root10（74ca75f8…，A/B -01/-02 失败原件）与实时中止轮 raw（live-failed-run-1/）只读保留。round-13 送审包与模板已就绪（9baefc3/51e0726），等待阶段 5 整改出口确认门。 整改轮 2（2026-10-27 起，round-13 复审整改）：3 阻断——产品 A13-02（观察新增 lastReportState、视图去时间戳推断）+ 工具 A13-01（CLI 传 expected、context 实读身份）与 B-R1（外层要求重算 verdict PASS；judgeRound RTT 从原始起止重算并严格核对）；S1/S2 随包修正。新构建预期新根 20261027-teamexec-12 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r13-remediation.md。 整改轮 3（2026-10-29 起，round-16 外审不通过整改）：阻断 A16-01（PS5.1 下完整 E2E-1/2 缺失）与 A16-02/B-R16-1（启动矩阵按端口误杀无关进程）；建议 S16-01/S16-02/S16-03。新运行根 docs/tests/runs/20261029-teamexec-14；台账 docs/dev-pipeline/receiver-ux-v2/r16-remediation.md。 整改轮 3 收口（2026-10-29）：A16-01 与 A16-02/B-R16-1 按裁决关闭条件全部落实——矩阵身份核验清理+守卫案 12/12（7489ac4）、run-e2e --launcher-engine ps51（ae6f1ae）、share 选择器归属修复（11b449b）、开页证据绑定本次启动（58dd622）；新根 20261029-teamexec-14（attempt candidate-20261029-01，harness 58dd622，product manifest 仍 7a5e5f1a…）承载 E2E-1/2 PS5.1 完整旅程 PASS（…363db1/…5d7e6e，含引擎/开页/外置 SHA 证据）；绿扫 222/69/77/14/3/契约；首败原件保留（fail-attempt-766581）。台账 r16-remediation.md；S16-01/02/03 落实。阶段 5 整改出口确认门待用户选择。 整改轮 4（2026-10-29 起，round-17 复审不通过整改）：阻断 A17-01（默认开页判定仅标题/页数、无精确 URL 与启动关联）与 B17-01（native-dialog Pass2 跨进程兜底无归属校验）；A16-02 与 S16-01/02/03 已关闭；A16-01 部分关闭。新运行根 docs/tests/runs/20261029-teamexec-15；台账 r17-remediation.md。 整改轮 4 收口（2026-10-29）：A17-01/B17-01 按裁决关闭条件落实——page-open-check.mjs（URL 精确+启动前不存在；连接通道承载后台页签 URL；标题不参与判定，selftest 8/8）8951620/a56e74c/a38230e；native-dialog 归属证明（owner chain 达 target 且映像 msedge.exe）+统一选择规则+dialog-selftest 6/6（8951620）；新根 20261029-teamexec-15（attempt candidate-20261029-02，harness a38230e，product manifest 仍 7a5e5f1a…）：E2E-1 PASS …8589dc（开页由 msedge 连接证据证明）、E2E-2 PASS …5f9ecd；tools 69/69；首败 …d28bb1 原件保留。台账 r17-remediation.md。阶段 5 整改出口确认门待用户选择。 整改轮 5（2026-10-29 起，round-18 复审不通过整改）：阻断 A18-01（SNAP 采集 5/6 列错位致地址栏记录丢失；TCP 连接通道被当精确页面证明）与 B18-01（native-dialog Pass2 诊断 Write-Output 污染返回流，Find-Dialog 返回 String+UI 对象致下游 FindAll 失败）。新运行根 docs/tests/runs/20261029-teamexec-16；台账 r18-remediation.md。 整改轮 5 收口（2026-10-29）：A18-01/B18-01 按裁决关闭条件落实——parseSnapshotLines 入模块（5 列协议，标题可含 |）+ URL-only 判定（TCP 仅辅助）+ 原始协议行经真实解析器的 selftest 8/8（f5874d1）；Find-Dialog 诊断移出返回流 + wrapper 自测 10/10（含完整 Find-Dialog→Find-ByName 正例）；归属增 profile 身份（2791cf7）并实测真实 picker 父链断裂；接收腿绑定运行期端口（08adf50）；StrictMode 钩子初始化（82d2fac）；CDP 端口 profile 验证回收（cd53a20，实跑回收 pid 79176）。新根 20261029-teamexec-16（attempt candidate-20261029-03，harness cd53a20，product manifest 仍 7a5e5f1a…）：E2E-1 PASS …2f9999（地址栏精确 URL 8768，启动前仅 8767）、E2E-2 PASS …5cc6c5；4 个失败 attempt 原件保留。§8.5\"连接承载精确URL/前台锁\"表述已按裁决更正。台账 r18-remediation.md。阶段 5 整改出口确认门待用户选择。",
+      "completed_at": null,
+      "notes": "阶段5收口（T36，2026-10-25）：36任务全部实施；6轮内部审查（全局round 15-20，review-tools/slice/metrics/media-save/ui-perf/final）全部收口、0 Blocking残留。测试总账：run-unit 12套202例、tools 61例、selftests 55/14/3、check-contracts PASS、UX-IAT 01-07 PASS+08占位NOT_RUN（实质由真实A/B+实时腿覆盖）、本地E2E 32项=legacy E2E-1..20全PASS+UX 12条(11 PASS+E2E-37如实NOT_RUN)。双门禁实测：verify-evidence --gate local PASS(20)；verify-ux-evidence --gate local FAIL(2)仅E2E-37环境项；field门禁exit 1保留(现场7项NOT_RUN)。冻结方法A/B 5/5对+实时5×30s 10/10侧别VALID。证据根 docs/tests/runs/20261025-teamexec-09b（product manifest 9e2595e6…，attempt candidate-20261025-04）。提交：77a16b4（T35工具+证据）、d939584（T36六项交付+回填）。现场E2E-21..26/39待用户执行。 整改轮（2026-10-26 起，round-12 外审整改）：消费 round-12 verdict 5 阻断主题——产品 A-R1/A-R2 与工具 A-R3/A-R4/B-02（含 S1/S2）TDD 整改；新运行根 20261026-teamexec-10 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r12-remediation.md。 整改轮收口（2026-10-26 18:45）：round-12 的 5 阻断主题全部以证据关闭（台账 r12-remediation.md 全 CLOSED）。最终候选=root11（docs/tests/runs/20261026-teamexec-11，product manifest 34a9de30…，attempt candidate-20261026-01，sourceRevision 00c5d57，harnessRevision 5381d35）。测试总账：run-unit 12 套 216 例、tools 67 例、自测 65/14/3、契约 PASS；UX-IAT 01-07+A5 GREEN、08 如实 NOT_RUN；legacy E2E-1..20 全 20 PASS（5 次瞬态首败重试过、原件保留）；UX 12 条=10 PASS+35/37 如实 NOT_RUN（35=用户 2026-10-26 授权；37=环境）；录制 A/B 5/5 对 PASS（B 侧 min gap 250.2-250.3ms）；实时 10/10 VALID（窗口 30127-30181ms，4MiB 6181826a…）。双门禁（lead 独立复跑）：legacy local PASS(20) exit0；UX local exit1 恰 4 条（35×2+37×2 授权缺口）；field exit1 设计内。冻结方法 diff 0ed2e5b 为空；v1 契约 SHA 不变；E2E-36 Ready 截图实证收敛。中间失败件：root10（74ca75f8…，A/B -01/-02 失败原件）与实时中止轮 raw（live-failed-run-1/）只读保留。round-13 送审包与模板已就绪（9baefc3/51e0726），等待阶段 5 整改出口确认门。 整改轮 2（2026-10-27 起，round-13 复审整改）：3 阻断——产品 A13-02（观察新增 lastReportState、视图去时间戳推断）+ 工具 A13-01（CLI 传 expected、context 实读身份）与 B-R1（外层要求重算 verdict PASS；judgeRound RTT 从原始起止重算并严格核对）；S1/S2 随包修正。新构建预期新根 20261027-teamexec-12 全量复验；台账 docs/dev-pipeline/receiver-ux-v2/r13-remediation.md。 整改轮 3（2026-10-29 起，round-16 外审不通过整改）：阻断 A16-01（PS5.1 下完整 E2E-1/2 缺失）与 A16-02/B-R16-1（启动矩阵按端口误杀无关进程）；建议 S16-01/S16-02/S16-03。新运行根 docs/tests/runs/20261029-teamexec-14；台账 docs/dev-pipeline/receiver-ux-v2/r16-remediation.md。 整改轮 3 收口（2026-10-29）：A16-01 与 A16-02/B-R16-1 按裁决关闭条件全部落实——矩阵身份核验清理+守卫案 12/12（7489ac4）、run-e2e --launcher-engine ps51（ae6f1ae）、share 选择器归属修复（11b449b）、开页证据绑定本次启动（58dd622）；新根 20261029-teamexec-14（attempt candidate-20261029-01，harness 58dd622，product manifest 仍 7a5e5f1a…）承载 E2E-1/2 PS5.1 完整旅程 PASS（…363db1/…5d7e6e，含引擎/开页/外置 SHA 证据）；绿扫 222/69/77/14/3/契约；首败原件保留（fail-attempt-766581）。台账 r16-remediation.md；S16-01/02/03 落实。阶段 5 整改出口确认门待用户选择。 整改轮 4（2026-10-29 起，round-17 复审不通过整改）：阻断 A17-01（默认开页判定仅标题/页数、无精确 URL 与启动关联）与 B17-01（native-dialog Pass2 跨进程兜底无归属校验）；A16-02 与 S16-01/02/03 已关闭；A16-01 部分关闭。新运行根 docs/tests/runs/20261029-teamexec-15；台账 r17-remediation.md。 整改轮 4 收口（2026-10-29）：A17-01/B17-01 按裁决关闭条件落实——page-open-check.mjs（URL 精确+启动前不存在；连接通道承载后台页签 URL；标题不参与判定，selftest 8/8）8951620/a56e74c/a38230e；native-dialog 归属证明（owner chain 达 target 且映像 msedge.exe）+统一选择规则+dialog-selftest 6/6（8951620）；新根 20261029-teamexec-15（attempt candidate-20261029-02，harness a38230e，product manifest 仍 7a5e5f1a…）：E2E-1 PASS …8589dc（开页由 msedge 连接证据证明）、E2E-2 PASS …5f9ecd；tools 69/69；首败 …d28bb1 原件保留。台账 r17-remediation.md。阶段 5 整改出口确认门待用户选择。 整改轮 5（2026-10-29 起，round-18 复审不通过整改）：阻断 A18-01（SNAP 采集 5/6 列错位致地址栏记录丢失；TCP 连接通道被当精确页面证明）与 B18-01（native-dialog Pass2 诊断 Write-Output 污染返回流，Find-Dialog 返回 String+UI 对象致下游 FindAll 失败）。新运行根 docs/tests/runs/20261029-teamexec-16；台账 r18-remediation.md。 整改轮 5 收口（2026-10-29）：A18-01/B18-01 按裁决关闭条件落实——parseSnapshotLines 入模块（5 列协议，标题可含 |）+ URL-only 判定（TCP 仅辅助）+ 原始协议行经真实解析器的 selftest 8/8（f5874d1）；Find-Dialog 诊断移出返回流 + wrapper 自测 10/10（含完整 Find-Dialog→Find-ByName 正例）；归属增 profile 身份（2791cf7）并实测真实 picker 父链断裂；接收腿绑定运行期端口（08adf50）；StrictMode 钩子初始化（82d2fac）；CDP 端口 profile 验证回收（cd53a20，实跑回收 pid 79176）。新根 20261029-teamexec-16（attempt candidate-20261029-03，harness cd53a20，product manifest 仍 7a5e5f1a…）：E2E-1 PASS …2f9999（地址栏精确 URL 8768，启动前仅 8767）、E2E-2 PASS …5cc6c5；4 个失败 attempt 原件保留。§8.5\"连接承载精确URL/前台锁\"表述已按裁决更正。台账 r18-remediation.md。阶段 5 整改出口确认门待用户选择。 整改轮 6（2026-10-29 起，round-19 复审不通过整改）：阻断 A19-01/B19-01（CDP 回收仅凭命令行了 `cimbar-e2e-` 子串即 Stop-Process，普通 Python 进程可命中）。采用裁决允许的最小修复：删除自动终止，端口占用即报错并保留占用者。新运行根 docs/tests/runs/20261029-teamexec-17；台账 r19-remediation.md。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
@@ -282,16 +282,20 @@
         {
           "timestamp": "2026-10-29T19:35:00+08:00",
           "summary": "用户转达 round-18 裁决（不通过：A18-01/B18-01）并指示阶段 6 消费、阶段 5 整改。TCP 仅辅助；URL 必须来自真实页面证据（可安全激活本次新页签后读地址栏）；诊断移出返回流并补完整包装层正例；不重开已关闭主题。"
+        },
+        {
+          "timestamp": "2026-10-29T21:00:00+08:00",
+          "summary": "用户转达 round-19 裁决（不通过：A19-01/B19-01 回收误授权）并指示阶段 6 消费、阶段 5 整改。采用最小修复（删除自动回收、占用即报错），经真实生产入口验证两类拒绝与正常空闲启动；无需重跑已通过的产品核心与开页/接收保存矩阵。"
         }
       ]
     },
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "failed",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [],
-      "ext_rounds": 18,
+      "ext_rounds": 19,
       "verdict_files": [
         "docs/dev-pipeline/ext-review/round-12-verdict.md",
         "docs/dev-pipeline/ext-review/round-13-verdict.md",
@@ -299,7 +303,8 @@
         "docs/dev-pipeline/ext-review/round-15-verdict.md",
         "docs/dev-pipeline/ext-review/round-16-verdict.md",
         "docs/dev-pipeline/ext-review/round-17-verdict.md",
-        "docs/dev-pipeline/ext-review/round-18-verdict.md"
+        "docs/dev-pipeline/ext-review/round-18-verdict.md",
+        "docs/dev-pipeline/ext-review/round-19-verdict.md"
       ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-14-package.md",
@@ -330,11 +335,12 @@
         "docs/dev-pipeline/ext-review/round-19-package.md",
         "docs/dev-pipeline/ext-review/round-19-template.md",
         "docs/dev-pipeline/receiver-ux-v2/r18-remediation.md",
-        "docs/tests/runs/20261029-teamexec-16/reproduction.md"
+        "docs/tests/runs/20261029-teamexec-16/reproduction.md",
+        "docs/dev-pipeline/ext-review/round-19-verdict.md"
       ],
       "started_at": "2026-10-29T20:40:00+08:00",
       "completed_at": null,
-      "notes": "round-14 复审结论：通过（2026-10-27，codex-gpt-6；双轴均 PASS、0 Blocking）。round-13 的 3 阻断 A13-01/A13-02/B-R1 全部 CLOSED（主审独立复跑 222/69/77/14/3、双门禁、带 context 复算及全部负例）。2 条非阻断建议已落实：A-S1 收敛写落点措辞精确化（两探针仅证明写落在其间、确切延迟未精确测定；另一次直接实测 +139ms；88532b 的 root 标注修正为 root12）与 B-S1（reproduction §7.5 改为「无 context 仅统计/一致性复算、不证明身份」）。E2E-35/37/现场 7 项与阶段 8 最终包验收仍分别独立。 round-15（2026-10-28 预览补丁）：通过，0 阻断，建议 S15-01（已修）。round-16（2026-10-29 1.2.0 正式化）：不通过，2 阻断主题 A16-01/A16-02+B-R16-1，建议 S16-01/02/03；已消费并返回阶段 5 整改（root14 20261029-teamexec-14）。 round-16 整改（2026-10-29）：两项阻断主题已按关闭条件落实（root14 证据 + 工具修复），建议 S16-01/02/03 落实；round-17 送审包与模板已就绪，待阶段 5 出口确认后送审。 round-17（2026-10-29 1.2.0 整改复审）：不通过，A17-01（开页证据无 URL/关联）+ B17-01（对话框无归属兜底）；A16-02/S16-01/02/03 关闭，A16-01 部分关闭；已消费并返回阶段 5 整改（root15 20261029-teamexec-15）。 round-17 整改（2026-10-29）：A17-01/B17-01 按关闭条件落实（root15 证据 + 工具修复 + RED）；round-18 送审包与模板就绪，待阶段 5 出口确认后送审。 round-18（2026-10-29 整改复审）：不通过，A18-01（采集列错位+连接通道假阳性）+ B18-01（pass2 诊断污染返回值）；B17-01 部分关闭；已消费并返回阶段 5 整改（root16 20261029-teamexec-16）。 round-18 整改（2026-10-29）：A18-01/B18-01 按关闭条件落实（root16 证据 + 工具修复 + RED/recheck + 4 失败原件）；表述更正已入档；round-19 送审包与模板就绪。",
+      "notes": "round-14 复审结论：通过（2026-10-27，codex-gpt-6；双轴均 PASS、0 Blocking）。round-13 的 3 阻断 A13-01/A13-02/B-R1 全部 CLOSED（主审独立复跑 222/69/77/14/3、双门禁、带 context 复算及全部负例）。2 条非阻断建议已落实：A-S1 收敛写落点措辞精确化（两探针仅证明写落在其间、确切延迟未精确测定；另一次直接实测 +139ms；88532b 的 root 标注修正为 root12）与 B-S1（reproduction §7.5 改为「无 context 仅统计/一致性复算、不证明身份」）。E2E-35/37/现场 7 项与阶段 8 最终包验收仍分别独立。 round-15（2026-10-28 预览补丁）：通过，0 阻断，建议 S15-01（已修）。round-16（2026-10-29 1.2.0 正式化）：不通过，2 阻断主题 A16-01/A16-02+B-R16-1，建议 S16-01/02/03；已消费并返回阶段 5 整改（root14 20261029-teamexec-14）。 round-16 整改（2026-10-29）：两项阻断主题已按关闭条件落实（root14 证据 + 工具修复），建议 S16-01/02/03 落实；round-17 送审包与模板已就绪，待阶段 5 出口确认后送审。 round-17（2026-10-29 1.2.0 整改复审）：不通过，A17-01（开页证据无 URL/关联）+ B17-01（对话框无归属兜底）；A16-02/S16-01/02/03 关闭，A16-01 部分关闭；已消费并返回阶段 5 整改（root15 20261029-teamexec-15）。 round-17 整改（2026-10-29）：A17-01/B17-01 按关闭条件落实（root15 证据 + 工具修复 + RED）；round-18 送审包与模板就绪，待阶段 5 出口确认后送审。 round-18（2026-10-29 整改复审）：不通过，A18-01（采集列错位+连接通道假阳性）+ B18-01（pass2 诊断污染返回值）；B17-01 部分关闭；已消费并返回阶段 5 整改（root16 20261029-teamexec-16）。 round-18 整改（2026-10-29）：A18-01/B18-01 按关闭条件落实（root16 证据 + 工具修复 + RED/recheck + 4 失败原件）；表述更正已入档；round-19 送审包与模板就绪。 round-19（2026-10-29 整改复审）：不通过，唯一新增主题 A19-01/B19-01（CDP 回收子串授权）；A18-01/B18-01/B17-01 保持关闭；已消费并返回阶段 5 整改（root17 20261029-teamexec-17）。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
@@ -372,6 +378,10 @@
         {
           "timestamp": "2026-10-29T20:40:00+08:00",
           "summary": "阶段 5 整改出口确认门：用户选择「进入阶段 6（推荐）」——接受 round-18 整改摘要（A18-01/B18-01 关闭：5 列协议正确解析 + URL-only 开页判定（原始协议行经真实解析器 8/8）；Find-Dialog 诊断移出返回流 + wrapper 正例 10/10；profile 身份归属与 CDP 端口验证回收；root16 双旅程 PASS；§8.5 表述更正入档），同意把 round-19 送审包转外部独立审查并进入等待态。"
+        },
+        {
+          "timestamp": "2026-10-29T21:00:00+08:00",
+          "summary": "用户转达 round-19 裁决（不通过，1 新增阻断）并指示按 dev-pipeline 返回阶段 5 整改后再送审。"
         }
       ]
     },
