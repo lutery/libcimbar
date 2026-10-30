@@ -1,0 +1,33 @@
+{
+  "title": "round-16 A16-02 RED attempt 2: pre-fix matrix stops an unrelated exclusive listener",
+  "repo": "E:\\Project\\OpenSource\\c++\\libcimbar",
+  "oldTool": "E:\\Project\\OpenSource\\c++\\libcimbar\\docs\\dev-pipeline\\receiver-ux-v2\\red-logs\\r16\\ps51-launch-check-old-da40f55.mjs",
+  "oldToolSha256": "048c4f29897e5b15f9ea7cff9d9447b9666faa1050aad2182040d912c38fb4b7",
+  "oldToolSourceCommit": "da40f55 (pre-fix bytes extracted with git show)",
+  "staging": "E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261028-teamexec-13\\receiver",
+  "port": 18771,
+  "occupierPid": 81040,
+  "occupierReady": true,
+  "occupierExited": false,
+  "occupierExit": {
+    "code": null,
+    "signal": "SIGTERM",
+    "at": "2026-10-29T06:44:12.408Z"
+  },
+  "toolExit": 3,
+  "netstatKillLines": [],
+  "stopLines": [],
+  "startedAt": "2026-10-29T06:44:05.330Z",
+  "toolStdoutTail": [
+    "ps51-launch-check: staging E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261028-teamexec-13\\receiver",
+    "ps51-launch-check: run root C:\\Users\\admin\\AppData\\Local\\Temp\\r16-a16-02-red2\\docs\\tests\\runs\\red-r16-a16-02",
+    ""
+  ],
+  "toolStderrTail": [
+    "preflight: where python failed under the full PATH (exit -1)",
+    ""
+  ],
+  "killedByToolOnPort": false,
+  "occupierStoppedByOwner": true,
+  "finishedAt": "2026-10-29T06:44:12.702Z"
+}

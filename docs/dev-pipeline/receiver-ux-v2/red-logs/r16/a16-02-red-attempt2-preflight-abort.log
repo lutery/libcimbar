@@ -1,0 +1,13 @@
+A16-02 RED attempt 2 (2026-10-29T06:44:05.330Z -> 2026-10-29T06:44:12.702Z)
+old tool E:\Project\OpenSource\c++\libcimbar\docs\dev-pipeline\receiver-ux-v2\red-logs\r16\ps51-launch-check-old-da40f55.mjs sha256=048c4f29897e5b15f9ea7cff9d9447b9666faa1050aad2182040d912c38fb4b7
+occupier powershell pid=81040 port=18771 ready=true
+occupier exited=false {"code":null,"signal":"SIGTERM","at":"2026-10-29T06:44:12.408Z"}
+tool exit=3
+netstat kill lines: []
+stop lines: []
+killedByToolOnPort=false
+
+tool stdout tail:
+ps51-launch-check: staging E:\Project\OpenSource\c++\libcimbar\build-desktop-recv\runs\20261028-teamexec-13\receiver
+ps51-launch-check: run root C:\Users\admin\AppData\Local\Temp\r16-a16-02-red2\docs\tests\runs\red-r16-a16-02
+

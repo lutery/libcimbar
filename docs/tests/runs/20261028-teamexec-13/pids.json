@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 70768,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 37204,
+      "kind": "sender-http"
+    }
+  ]
+}

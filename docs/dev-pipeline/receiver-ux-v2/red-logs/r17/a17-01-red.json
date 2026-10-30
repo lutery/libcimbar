@@ -1,0 +1,26 @@
+{
+  "title": "A17-01 RED: title/page-count change alone passes the old page-open predicate",
+  "sourceCommit": "abb650a (run-e2e.mjs:1929-1935)",
+  "counterexamples": {
+    "titleOnly": {
+      "preSetSize": 1,
+      "newWindows": [
+        "WIN|28652|Cimbar 桌面接收器 和另外 9 个页面 - 个人 - Microsoft Edge"
+      ],
+      "pageOpenOk": true
+    },
+    "unchanged": {
+      "preSetSize": 1,
+      "newWindows": [],
+      "pageOpenOk": false
+    },
+    "unrelatedUrlNotReadable": {
+      "preSetSize": 0,
+      "newWindows": [
+        "WIN|28652|Unrelated editor - Personal - Microsoft Edge"
+      ],
+      "pageOpenOk": true
+    }
+  },
+  "defectReproduced": true
+}

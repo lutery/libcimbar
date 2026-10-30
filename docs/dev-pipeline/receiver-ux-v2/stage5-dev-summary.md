@@ -150,3 +150,29 @@ UX 门禁 4 条 = E2E-35（用户授权缺口：本机不可构造真实 visibil
 3. 残留窗口占端口（坑 #4）：按本 run profile 精准清理（pid 60400 先例），不通杀。
 4. root12 的 E2E-36 旧 attempt（88532b，UX-UI 组）ready 截图摄于收敛窗口内显示收敛前数值——非缺陷（设计权衡），取证增强后新截图消除歧义；+139ms 收敛证明对保留。
 5. E2E-35/37/现场 7 项按用户既有决定如实 NOT_RUN；不代用户测试真实云桌面。
+
+## 8.4 Round-16 整改（2026-10-29）
+
+- round-16 不通过（A16-01 PS5.1 完整 E2E-1/2 缺失；A16-02/B-R16-1 矩阵清理未核对归属）；root14（`20261029-teamexec-14`，attempt `candidate-20261029-01`，harness `58dd622`，product manifest 仍 `7a5e5f1a…`）承载整改证据：矩阵 **12/12**（身份核验清理 + 守卫反例 h1-h4）、E2E-1/2 在真实 PS5.1 下完整旅程 PASS（引擎/开页/外部 SHA），首败原件保留（`fail-attempt-766581`）。
+- 新增教训：①“按端口清理=未核对归属”与 A16-02 同型；native-dialog 的裸 `share` 名称匹配同样误驱动用户窗口——凡对窗口/进程的动作都应先证明归属。②开页证据必须绑定本次启动（前后窗口差集），旧窗口不可作证。③完整矩阵跑批未触发的函数分支，用真实进程的函数级反证补齐 RED（比记录器更强）。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。
+
+## 8.5 Round-17 整改（2026-10-29）
+
+- round-17 不通过（A17-01 开页无 URL/关联；B17-01 对话框无归属兜底）；root15（`20261029-teamexec-15`，attempt `candidate-20261029-02`，harness `a38230e`，product manifest 仍 `7a5e5f1a…`）承载整改证据：page-open 判定 8/8（URL 精确+启动关联，标题/页数不参与）、native-dialog 归属 6/6（无关嵌套 save/share 拒绝、目标 utility 子进程接受）、E2E-1/E2E-2 PS5.1 PASS（开页由 msedge 连接证据证明；对话框均 target-owned）。
+- 新教训：①**'标题变化'不是开页证据**——URL 才是页面身份；后台页签无地址栏时，connection 证据（唯一新端口的 msedge 连接）同样承载精确 URL。②工具模块被 import 时必须加主模块守卫（新 CLI 模块的一次性缺陷被现有工具测试立即抓住）。③归属证明要区分 pass1（target pid 直证）与 pass2（utility 子进程需 owner chain+映像），不得以"同名标题/同类名"替代。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。
+
+## 8.6 Round-18 整改（2026-10-29）——并更正 §8.5 的两处表述
+
+- **更正**：§8.5 "开页由 msedge 连接证据证明""空 URL 由前台锁造成"不成立：真实原因是 SNAP 5 列（标题可含 `|`）被按 6 列解析、地址栏记录被丢弃；TCP 记录不能承载精确页面身份。本轮起判定 URL-only（精确目标 URL 在启动后的地址栏且启动前不存在），TCP 仅辅助。
+- root16（`20261029-teamexec-16`，attempt `candidate-20261029-03`，harness `cd53a20`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS（地址栏精确 URL 8768；8767 因旧页签显示被运行期排除）、E2E-2 PASS（权限对话框 pid-chain+profile 双证）；selftest 8/8（原始协议行经真实解析器）与 10/10（含 Find-Dialog→Find-ByName 完整 wrapper 正例）；4 个失败 attempt 原件保留；遗留自动化 Edge 按 profile 标记回收（pid 79176，日志在案）。
+- 新教训：①**协议列数错误是最危险的一类缺陷**——解析器假设错了字段数，所有下游"证据为空"都会被编造解释（前台锁）；自测必须让**原始协议行**流经真实解析器。②PowerShell 值返回函数中任何 Write-Output 都会污染返回值（诊断一律 [Console]::Out/Error）。③浏览器实例身份用 profile（mkdtemp 唯一路径）比父链可靠——launcher pid 会退出。④遗留自动化浏览器必须按 profile 标记回收，固定 CDP 端口先验证归属再动。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。
+
+## 8.7 Round-19 整改（2026-10-29）
+
+- round-19 不通过（唯一新增主题：CDP 回收子串授权）；采用裁决明示的最小修复——**删除自动终止**，`assertCdpPortFree` 只读探测，端口占用即报错并保留占用者；"profile marker verified" 文案随旧函数删除并书面更正（旧文案只描述子串匹配，不是归属证明）。
+- root17（`20261029-teamexec-17`，attempt `candidate-20261029-04`，harness `18b7c22`）：拒绝例 A（自有 python 占 CDP 9445，占用者存活）、拒绝例 B（外部真实 Edge 普通参数占 CDP 9445，占用者存活）、正常腿 E2E-1 PASS（地址栏 URL 8768/启动前 8767）；tools 69/69、page-open 8/8、dialog 10/10。
+- 新教训：①"命令行含某标记"永远不是归属证明——去掉自动终止比继续发明归属判据更安全（裁决允许的最小修复反而消除整类风险）；②测试编排脚本自身也会骗人（Start-Process 拆坏内联 python 程序导致"占用者"未占用端口），编排脚本必须验证占用事实（netstat LISTENING + owner pid）后再断言。
+- E2E-35/37、现场 7 项维持既有 NOT_RUN。

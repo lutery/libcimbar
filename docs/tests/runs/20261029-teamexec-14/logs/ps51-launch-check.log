@@ -1,0 +1,93 @@
+ps51-launch-check: staging E:\Project\OpenSource\c++\libcimbar\build-desktop-recv\runs\20261029-teamexec-14\receiver
+ps51-launch-check: run root E:\Project\OpenSource\c++\libcimbar\docs\tests\runs\20261029-teamexec-14
+env: python dir D:\ProgramData\anaconda3
+env: winpsPath C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\WindowsPowerShell\v1.0;D:\ProgramData\anaconda3
+env: preflight ok (pwsh present in full PATH, absent in stripped PATH, python on winps PATH, PS 5.1)
+[a] 5.1 direct launch (powershell.exe -ExecutionPolicy Bypass)
+  ok   precondition: port free before launch :: port=18771
+  ok   launcher exit code 0 :: exit=0
+  ok   stdout reports "server pid N" :: pid=15700
+  ok   GET / -> 200 :: status=200
+  ok   index.html bytes equal staging (sha256) :: 09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)
+  ok   GET /vendor/cimbar_js.wasm -> 200 :: status=200
+  ok   cimbar_js.wasm bytes equal staging (sha256) :: d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)
+  ok   server identity verified for cleanup :: []
+  ok   port free after verified Stop-Process :: port=18771
+[b] launch.cmd normal branch (pwsh7 on PATH)
+  ok   precondition: where pwsh exit0 under full PATH :: exit=0
+  ok   precondition: port free before launch :: port=18772
+  ok   launcher exit code 0 :: exit=0
+  ok   stdout reports "server pid N" :: pid=79544
+  ok   GET / -> 200 :: status=200
+  ok   index.html bytes equal staging (sha256) :: 09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)
+  ok   GET /vendor/cimbar_js.wasm -> 200 :: status=200
+  ok   cimbar_js.wasm bytes equal staging (sha256) :: d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)
+  ok   server identity verified for cleanup :: []
+  ok   port free after verified Stop-Process :: port=18772
+[c] launch.cmd fallback branch (pwsh stripped from PATH)
+  ok   precondition: where pwsh exit!=0 under noPwshPath (branch takes 5.1) :: exit=1; PATH=C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\WindowsPowerShell\v1.0;D:\ProgramData\anaconda3
+  ok   precondition: port free before launch :: port=18774
+  ok   launcher exit code 0 :: exit=0
+  ok   stdout reports "server pid N" :: pid=70304
+  ok   GET / -> 200 :: status=200
+  ok   index.html bytes equal staging (sha256) :: 09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)
+  ok   GET /vendor/cimbar_js.wasm -> 200 :: status=200
+  ok   cimbar_js.wasm bytes equal staging (sha256) :: d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)
+  ok   server identity verified for cleanup :: []
+  ok   port free after verified Stop-Process :: port=18774
+[d] port occupied -> exit 3
+  ok   precondition: our own node listener holds the port :: port=18773
+  ok   exit code 3 :: exit=3
+  ok   stderr contains "already in use" :: port 18773 is already in use; stop the other process or pass -Port <other>
+  ok   our listener still holds the port after the failed launch :: port=18773
+  ok   port free after our own occupier close :: port=18773
+[e] missing server.py -> exit 4
+  ok   exit code 4 :: exit=4
+  ok   stderr contains "server.py not found" :: server.py not found next to launch.ps1 (C:\Users\admin\AppData\Local\Temp\ps51-e-rsVqaY)
+[f] python absent -> exit 2
+  ok   exit code 2 :: exit=2
+  ok   stderr contains "python is not available" :: python is not available on PATH; install Python 3 or start server.py manually
+[g] server exits immediately (fake server.py sys.exit(23))
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "unknown code" :: expected the 5.1 "exited with an unknown code" branch
+  ok   stderr contains the fake-server marker :: the child stderr must be surfaced
+  ok   stderr contains "diagnostic logs:" :: diagnostic log paths must be printed
+  ok   port free (fake server exited by itself) :: port=18777
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "code 23" :: pwsh 7 keeps the child handle and must report the real code
+  ok   port free (fake server exited by itself) :: port=18778
+[h1] own unrelated listener -> cleanup refused, listener kept
+  ok   precondition: our own node listener holds the port :: port=18781
+  ok   launcher exit code 3 :: exit=3
+  ok   cleanup refused with no-server-pid :: {"attempted":false,"cleaned":false,"facts":null,"refused":"no-server-pid"}
+  ok   unrelated listener still holds the port (not killed) :: port=18781
+  ok   port free after our own occupier close :: port=18781
+[h2] launch failed with no pid (port free) -> cleanup refused
+  ok   launcher exit code 4 :: exit=4
+  ok   port is free before the cleanup decision :: port=18782
+  ok   cleanup refused with no-server-pid :: {"attempted":false,"cleaned":false,"facts":null,"refused":"no-server-pid"}
+[h3] foreign/decoy pid -> identity mismatch -> cleanup refused
+  ok   precondition: decoy process exists :: pid=47864 name=python.exe
+  ok   cleanup refused with identity-mismatch :: ["command line has no exact staging server.py argument (E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\serve
+  ok   decoy still alive after the refused cleanup :: pid=47864
+[h4] real server -> verified cleanup positive
+  ok   launcher exit code 0 :: exit=0
+  ok   stdout reports "server pid N" :: pid=87104
+  ok   identity verified :: []
+  ok   cleanup stopped the server and the port is free :: port=18783
+
+per-case verdicts:
+  PASS  [a] 5.1 direct launch serves index.html and wasm byte-identically
+  PASS  [b] launch.cmd pwsh7 branch serves index.html and wasm byte-identically
+  PASS  [c] launch.cmd 5.1 fallback serves index.html and wasm byte-identically
+  PASS  [d] 5.1 launch on an occupied port exits 3 with "already in use"
+  PASS  [e] launcher in a directory without server.py exits 4
+  PASS  [f] launcher without python on PATH exits 2
+  PASS  [g51] 5.1 launcher reports exit 5 + unknown code + marker + diagnostic logs
+  PASS  [g7] pwsh7 launcher reports exit 5 + the real server code 23
+  PASS  [h1] cleanup refuses when no pid was reported and keeps the unrelated listener
+  PASS  [h2] cleanup refuses when the launch failed without a pid (port free is not entitlement)
+  PASS  [h3] cleanup refuses a pid whose identity is not this launch's server
+  PASS  [h4] verified cleanup stops this launch's real server (positive)
+
+PS51-LAUNCH-CHECK PASS

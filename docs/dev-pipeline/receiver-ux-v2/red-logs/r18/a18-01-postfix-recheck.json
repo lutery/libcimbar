@@ -1,0 +1,24 @@
+{
+  "title": "A18-01 RED: 5-column SNAP lines are dropped; the TCP channel alone passes wrong pages",
+  "parserSource": "run-e2e.mjs snapshotBrowserWindows (round-18 bytes)",
+  "rawLines": [
+    "SNAPW|28652|200402|Cimbar|1",
+    "SNAP|28652|200402|Cimbar|http://127.0.0.1:8767/"
+  ],
+  "parsedWindows": [
+    {
+      "pid": 28652,
+      "handle": 200402,
+      "title": "Cimbar",
+      "urlValues": []
+    }
+  ],
+  "parsedUrlValues": [
+    []
+  ],
+  "judgeSource": "page-open-check.mjs judgeDefaultPageOpen (round-18 bytes)",
+  "wrongPathPass": false,
+  "synSentPass": false,
+  "noConnectionsPass": false,
+  "defectReproduced": false
+}

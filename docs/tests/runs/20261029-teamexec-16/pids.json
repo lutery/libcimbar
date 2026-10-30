@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "pid": 88220,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 73220,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 91412,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 87204,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 38076,
+      "kind": "sender-http"
+    },
+    {
+      "pid": 43188,
+      "kind": "sender-http"
+    }
+  ]
+}

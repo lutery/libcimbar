@@ -1,0 +1,14 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "proofRefs": [
+      "proof/E2E-1/observation.txt"
+    ],
+    "notes": "packaged-launch re-verification did not complete: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8767/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:8767/\", waiting until \"load\"\u001b[22m\n",
+    "attemptId": "E2E-1-2026-10-29T11-43-04-698Z-cc0973"
+  }
+]

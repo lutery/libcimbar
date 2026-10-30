@@ -1,0 +1,53 @@
+{
+  "seed": 20261018,
+  "files": [
+    {
+      "file": "compressible/sample-text-1.bin",
+      "class": "compressible",
+      "size": 4096,
+      "sha256": "083cba73f6c81ceb3985cf09e6e8c7683a206efebf181a6797ef148c63be3f5d"
+    },
+    {
+      "file": "compressible/sample-text-2.bin",
+      "class": "compressible",
+      "size": 65536,
+      "sha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e"
+    },
+    {
+      "file": "compressible/sample-text-3.bin",
+      "class": "compressible",
+      "size": 524288,
+      "sha256": "ecbd8bfd5d2da153cf1b446c94be79c80492976790964e07bdf5103686831208"
+    },
+    {
+      "file": "incompressible/sample-random-1.bin",
+      "class": "incompressible",
+      "size": 4096,
+      "sha256": "1e9c1cd9d155bd88a9ef960ae1d0d062a229553c787dfe7a8c118774fa051717"
+    },
+    {
+      "file": "incompressible/sample-random-2.bin",
+      "class": "incompressible",
+      "size": 65536,
+      "sha256": "e164cb41f35cc401f350a3ef5c194ebc1d6fd2bb872b19d5f4fb81b286f23712"
+    },
+    {
+      "file": "incompressible/sample-random-3.bin",
+      "class": "incompressible",
+      "size": 524288,
+      "sha256": "07e0da834d66a9667586e882c96aaa4bb3487ddbb037bd944a24453ed6296504"
+    },
+    {
+      "file": "name-collision/a.bin",
+      "class": "name_collision",
+      "size": 4096,
+      "sha256": "c10e5e7db3dce426eca25e1f85fefcf1a4d764d38735ca2bd210ec2a7cd4d5a0"
+    },
+    {
+      "file": "name-collision/b.bin",
+      "class": "name_collision",
+      "size": 4096,
+      "sha256": "4ba6d23e4cb972d9e3fcb677722e465dbdd8ab172a35bc6a2d77d52bb1109402"
+    }
+  ]
+}

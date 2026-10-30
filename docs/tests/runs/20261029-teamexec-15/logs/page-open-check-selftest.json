@@ -1,0 +1,87 @@
+{
+  "tool": "page-open-check",
+  "version": 1,
+  "targetUrl": "http://127.0.0.1:8767/",
+  "results": [
+    {
+      "id": "p1-new-target-url",
+      "title": "the target URL appears on a window that did not show it before the launch",
+      "expect": true,
+      "pass": true,
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "p2-schemeless-address-bar",
+      "title": "Chromium omits the scheme in the address bar; the target still matches",
+      "expect": true,
+      "pass": true,
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "p3-connection-evidence",
+      "title": "background tab: no address bar shows it, but an msedge socket dialed the target port",
+      "expect": true,
+      "pass": true,
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "n5-connection-non-browser-refused",
+      "title": "a connection from a non-browser process never proves a page opened",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was found in no address bar and no msedge connection dialed it after the launch"
+      ]
+    },
+    {
+      "id": "n1-title-only",
+      "title": "only the title page count changed; no address bar carries the target URL",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was found in no address bar and no msedge connection dialed it after the launch"
+      ]
+    },
+    {
+      "id": "n2-unrelated-url",
+      "title": "a new window opened, but its URL is not the target",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was found in no address bar and no msedge connection dialed it after the launch"
+      ]
+    },
+    {
+      "id": "n3-pre-existing-target",
+      "title": "the target URL was already open before the launch (association fails)",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was already open before the launch (no launch association)"
+      ]
+    },
+    {
+      "id": "n4-no-url-evidence",
+      "title": "windows exist with titles only and no readable address bar value",
+      "expect": false,
+      "pass": false,
+      "ok": true,
+      "reasons": [
+        "the target URL was found in no address bar and no msedge connection dialed it after the launch"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "verdict": "PASS"
+}

@@ -38,3 +38,8 @@ docs/tests/runs/*/fixtures-ext/*/
 # python build artifacts
 __pycache__/
 *.pyc
+
+# Round-17 tool selftest outputs: regenerated on every run; the committed
+# evidence copies live in the run roots, not next to the tools.
+tools/desktop-recv/e2e/page-open-check-selftest.json
+tools/desktop-recv/e2e/native-dialog-selftest-result.json

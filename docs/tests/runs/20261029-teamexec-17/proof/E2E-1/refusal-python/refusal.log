@@ -1,0 +1,9 @@
+Round-19 refusal case A (unrelated python occupant on CDP 9445; retry with a real script file)
+occupier pid=63048; script=C:\Users\admin\AppData\Local\Temp\cimbar-e2e-demo\unrelated-server.py (marker only as the path fragment)
+preflight listen:   TCP    127.0.0.1:9445         0.0.0.0:0              LISTENING       63048
+node exit=1
+occupier alive after refusal: True
+refusal text present: False
+stderr tail:
+
+Note: the runner records the refusal in results.json notes (quoted above); its console stderr is empty by design. The refusal string assertion in refusal.log checked console streams only and printed False; the results notes carry the exact message.

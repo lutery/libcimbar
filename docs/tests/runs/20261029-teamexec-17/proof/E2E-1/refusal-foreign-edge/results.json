@@ -1,0 +1,14 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "negative_or_lifecycle",
+    "result": "FAIL",
+    "executedBy": "executor",
+    "proofRefs": [
+      "proof/E2E-1/observation.txt"
+    ],
+    "notes": "packaged-launch re-verification did not complete: receiver: CDP port 9445 is occupied by pid 95728 (msedge.exe|\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --user-data-dir=\"C:\\Users\\admin\\AppD",
+    "attemptId": "E2E-1-2026-10-29T14-45-08-194Z-9458d9"
+  }
+]

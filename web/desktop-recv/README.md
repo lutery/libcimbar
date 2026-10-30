@@ -11,6 +11,8 @@
    `launch.cmd -Port 8767 -NoBrowser`。
 
    等价写法：`pwsh -NoProfile -File launch.ps1`（任意路径均可）。
+   若机器没有 PowerShell 7，`launch.cmd` 会自动改用 Windows PowerShell 5.1：
+   `powershell -NoProfile -ExecutionPolicy Bypass -File launch.ps1`。
 
 3. 两种输入方式：
    - **实时抓屏**：点击后选择显示着码流的窗口并允许共享；

@@ -1,0 +1,7 @@
+A18-01 RED (round-18 bytes; captured BEFORE the fix — same script, pre-fix judge)
+raw lines: ["SNAPW|28652|200402|Cimbar|1","SNAP|28652|200402|Cimbar|http://127.0.0.1:8767/"]
+parsed urlValues: [[]]  (expected ["http://127.0.0.1:8767/"] in the SNAP case)
+current judge, same port but an unobserved path/query, stored ESTABLISHED connection -> pass=true
+current judge, connection state SYN_SENT -> pass=true
+current judge, no connections (control) -> pass=false
+defect reproduced: true

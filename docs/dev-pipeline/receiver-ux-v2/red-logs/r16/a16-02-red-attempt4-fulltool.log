@@ -1,0 +1,53 @@
+A16-02 RED attempt 2 (2026-10-29T07:06:51.264Z -> 2026-10-29T07:12:32.317Z)
+old tool E:\Project\OpenSource\c++\libcimbar\docs\dev-pipeline\receiver-ux-v2\red-logs\r16\ps51-launch-check-old-da40f55.mjs sha256=048c4f29897e5b15f9ea7cff9d9447b9666faa1050aad2182040d912c38fb4b7
+occupier powershell pid=82164 port=18771 ready=true
+occupier exited=true {"code":4294967295,"signal":null,"at":"2026-10-29T07:12:10.899Z"}
+port owner before tool=82164 (occupier pid 82164) holds=true
+port owner after tool=0
+port samples: [{"at":"2026-10-29T07:06:58.014Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:03.014Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:08.024Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:13.037Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:18.039Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:23.053Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:28.064Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:33.066Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:38.068Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:43.075Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:48.077Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:53.081Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:07:58.096Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:03.107Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:08.121Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:13.128Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:18.134Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:23.144Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:28.159Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:33.170Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:38.176Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:43.189Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:48.200Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:53.204Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:08:58.204Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:03.209Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:08.215Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:13.223Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:18.230Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:23.245Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:28.253Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:33.257Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:38.260Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:43.270Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:48.278Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:53.282Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:09:58.296Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:03.296Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:08.297Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:13.297Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:18.300Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:23.304Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:28.318Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:33.318Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:38.331Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:43.343Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:48.353Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:53.366Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:10:58.373Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:03.383Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:08.394Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:13.396Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:18.410Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:23.415Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:28.418Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:33.427Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:38.439Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:43.443Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:48.456Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:53.468Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:11:58.482Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:12:03.489Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:12:08.495Z","owner":82164,"occupierAlive":true},{"at":"2026-10-29T07:12:13.494Z","owner":0,"occupierAlive":false},{"at":"2026-10-29T07:12:18.501Z","owner":0,"occupierAlive":false},{"at":"2026-10-29T07:12:23.513Z","owner":0,"occupierAlive":false},{"at":"2026-10-29T07:12:28.524Z","owner":0,"occupierAlive":false}]
+tool exit=1
+netstat kill lines: []
+stop lines: []
+killedByToolOnPort=false
+
+tool stdout tail:
+  ok   GET / -> 200 :: status=200
+  ok   index.html bytes equal staging (sha256) :: 09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)
+  ok   GET /vendor/cimbar_js.wasm -> 200 :: status=200
+  ok   cimbar_js.wasm bytes equal staging (sha256) :: d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)
+  ok   port free after Stop-Process :: port=18774
+[d] port occupied -> exit 3
+  ok   precondition: node listener holds the port :: port=18773
+  ok   exit code 3 :: exit=3
+  ok   stderr contains "already in use" :: port 18773 is already in use; stop the other process or pass -Port <other>
+  ok   port free after occupier close :: port=18773
+[e] missing server.py -> exit 4
+  ok   exit code 4 :: exit=4
+  ok   stderr contains "server.py not found" :: server.py not found next to launch.ps1 (C:\Users\admin\AppData\Local\Temp\ps51-e-DcxHCw)
+[f] python absent -> exit 2
+  ok   exit code 2 :: exit=2
+  ok   stderr contains "python is not available" :: python is not available on PATH; install Python 3 or start server.py manually
+[g] server exits immediately (fake server.py sys.exit(23))
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "unknown code" :: expected the 5.1 "exited with an unknown code" branch
+  ok   stderr contains the fake-server marker :: the child stderr must be surfaced
+  ok   stderr contains "diagnostic logs:" :: diagnostic log paths must be printed
+  ok   port free (fake server exited by itself) :: port=18777
+  ok   exit code 5 :: exit=5
+  ok   stderr contains "code 23" :: pwsh 7 keeps the child handle and must report the real code
+  ok   port free (fake server exited by itself) :: port=18778
+
+per-case verdicts:
+  FAIL  [a] 5.1 direct launch serves index.html and wasm byte-identically
+  PASS  [b] launch.cmd pwsh7 branch serves index.html and wasm byte-identically
+  PASS  [c] launch.cmd 5.1 fallback serves index.html and wasm byte-identically
+  PASS  [d] 5.1 launch on an occupied port exits 3 with "already in use"
+  PASS  [e] launcher in a directory without server.py exits 4
+  PASS  [f] launcher without python on PATH exits 2
+  PASS  [g51] 5.1 launcher reports exit 5 + unknown code + marker + diagnostic logs
+  PASS  [g7] pwsh7 launcher reports exit 5 + the real server code 23
+
+PS51-LAUNCH-CHECK FAIL
+wrote C:\Users\admin\AppData\Local\Temp\r16-a16-02-red2\docs\tests\runs\red-r16-a16-02\logs\ps51-launch-check.json
+wrote C:\Users\admin\AppData\Local\Temp\r16-a16-02-red2\docs\tests\runs\red-r16-a16-02\logs\ps51-launch-check.log
+

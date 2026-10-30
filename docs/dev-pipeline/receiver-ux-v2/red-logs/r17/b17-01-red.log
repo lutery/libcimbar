@@ -1,0 +1,8 @@
+B17-01 RED (old Find-Dialog pass 1+2, verbatim from abb650a)
+targets: [111]; tree: unrelated pid 222 with nested save (#32770 Security confirmation) and share (Choose what to share)
+save action  -> selected pid: 
+222
+share action -> selected pid: 
+222
+defect reproduced: 
+True

@@ -212,3 +212,55 @@
 - **B-R13-3 root12 全量复验**（product 829d7dec…，attempt candidate-20261027-01）：绿扫 222/69/77/14/3 → IAT 01-07+A5 → legacy 20/20（18/19 各两败后经裁定重跑 PASS；19/20 漏跑由 gate 抓到补跑）→ UX 27/28/29（27 经 S04 有界等待修复后 PASS，`3a76095`）→ 30..34 → A/B 5/5（gap≥250ms）→ live 10/10（窗口 30359-32246ms）→ UX-UI 35/37 NOT_RUN、36/38 PASS → 双门禁 legacy PASS(20)/UX 恰 4 条授权缺口/field 设计内。取证增强：E2E-36 终态截图先有界等待一致（新 attempt 474c28 显示「重建完成/21.8s」；旧 attempt 88532b 保留为窗口时序披露对）。
 - **验收**（lead 独立复跑）：双门禁、recompute CLI（ok=true/PASS/5/10、context 三重绑定生效）、语义校验 4 文件全等、E2E-36 新截图目验、冻结方法 diff 空、v1 契约 SHA 不变。
 - **收口**：回填/runtime-map 重绑（root12）、总结第 8 节、r13 台账全 CLOSED（r12 台账 A-R1/B-02 注记 PARTIAL→由本轮关闭）、round-14 包与模板、阶段 5 整改出口确认门。
+## R15 — PS5.1 预览补丁的补充外审（round-15）与 S15-01 修正（2026-10-28）
+
+- 输入：用户转达 round-15 裁决（预览补丁通过，0 阻断，S15-01 非阻断建议），归档 `docs/dev-pipeline/ext-review/round-15-verdict.md`。
+- S15-01 根因（实测确证）：Windows PowerShell 5.1 的 Start-Process + 文件重定向返回的进程对象在退出后句柄不可用（Handle/ExitCode/StartTime 全空；WaitForExit/Refresh 不可恢复；无重定向时正常，pwsh 7 全程正常）。
+- 修正：launch.ps1 失败诊断先尝试取准确退出码，不可取时明确输出 "server process exited with an unknown code"（仍 exit 5，stderr 原文与日志路径保留）。
+- 复验：5.1 受控 exit(23) → 5 + unknown + marker/日志；pwsh 7 → 5 + code 23；5.1 正常启动 → 0 + HTTP 200。
+- 产物：新预览件 `product/libcimbar-desktop-receiver-1.1.0-ps51-preview-20261028-2149`（+zip）；旧预览件 20261028-1447 为 round-15 所审对象，原样保留。分支 ps51-preview；master 不动。
+- 边界：本裁决不把预览件升级为正式版本；转正仍按 1.2.0 流程（含 5.1 下 E2E-1/2 回归）。
+## R16-1 — 1.2.0 转正受影响面复验（r16-run 执行，lead 验收，2026-10-28）
+
+- 计划：release-1.2.0-plan.md（受影响面=启动链；运行时字节按身份复用 root12 证据）。
+- root13（`docs/tests/runs/20261028-teamexec-13`，product manifest `7a5e5f1a…`，attempt candidate-20261028-01，source/harness=7e34289）。
+- 启动矩阵 ps51-launch-check.mjs **8/8 PASS**（5.1 直启/CMD pwsh 分支/CMD 5.1 回退（进程级 PATH 去 pwsh）/端口占用 3/缺文件 4/无 python 2/快退 23→5.1 unknown+5、7 code23+5；HTTP 字节对齐 staging）。
+- E2E-1 PASS（`…-4eb514`：CJK+空格 launch.cmd 链+live equal）；E2E-2 PASS（`…-f75684`：端口占用 exit3+恢复+live equal）。results.json 仅此两案（不冒充 20 案门禁）。
+- 非桌面全绿：222/69/77/14/3/契约。
+- lead 验收：root13 manifest/context 重验；**亲核差异表 root13 vs root12=23 同/4 变**（恰为计划变更面；lead 初查误用 09b 基线得 7 变，已纠正——教训：对照基线必须用相邻候选根）；root12 双门禁复跑一致；units/ux-selftest 复跑全绿。
+- 异常披露（round-16 包全文引用）：① root12 input-manifest 对 6 个运行期生成 fixtures-media 文件的陈旧 SHA（先天不成立，root13 按磁盘真值记录 drift）；② sender 包 autocrlf 漂移（7b91057 同型第四处，lead 已修 `6360cab` 并复验 SENDER-RESTAGE-OK）；③ staging 行尾组装方法（按 round-15 预览件公式保持字节身份：23 运行时文件取 1.1.0 包字节+launch 文件取工作树+package.json 取 HEAD blob+asset-set 重写）。
+- 计划口径修正：release-1.2.0-plan.md 写"22 个运行时文件"，实测 27−4=**23**；以实测差异表为准。
+## R16-2 — round-16 外审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-16 裁决（不通过；A16-01 PS5.1 完整 E2E-1/2 缺失；A16-02/B-R16-1 启动矩阵可能误停无关服务；S16-01/02/03 建议）；裁决归档 `round-16-verdict.md`（`ece38ff`）。
+- RED（真实进程）：da40f55 旧清理函数对 launcher 从未创建的独占 .NET 监听器执行 netstat 兜底 Stop-Process，监听器真实死亡（exit -1）且函数报告端口空闲；全矩阵跑批未触发该分支的两类尝试与函数级诊断均如实入档 `red-logs/r16/`。
+- 修复：`7489ac4` 矩阵身份核验清理（精确 server.py/--directory、python 可执行、创建时刻；删除按端口清理；端口预占用中止并保留外部监听器；h1-h4 守卫案；toolSha256）；`ae6f1ae` run-e2e `--launcher-engine ps51`（去 pwsh PATH、PS5.1 版本与 where 探针、launcher 进程观察器、默认开页验证、外置 certutil SHA、E2E-2 双段走 launch.cmd 回退、stopPackagedServer 精确参数核验）；`11b449b` native-dialog share 选择器收紧（首跑失败真因：裸 `share` 匹配误驱动用户 Chrome "a-share-mcp" 窗）；`58dd622` 开页证据绑定本次启动（20ms 进程快扫 + 前后窗口差集）。
+- root14（`docs/tests/runs/20261029-teamexec-14`，attempt `candidate-20261029-01`，harness `58dd622`，product manifest 仍 `7a5e5f1a…`）：staging/fixtures 按字节复制并逐项重哈希；矩阵 **12/12 PASS**；E2E-1 ps51 PASS（`…363db1`）、E2E-2 ps51 PASS（`…5d7e6e`）；绿扫 222/69/77/14/3/契约；首败 attempt 原件保留（`proof/E2E-1/fail-attempt-766581/`）。
+- 建议落实：S16-01 状态索引（本行 + §8.4 + pipeline-state）；S16-02 `logs/tools-identity.json` + 矩阵 toolSha256；S16-03 round-17 复跑命令使用真实参数（`--run-id` 独立根）。
+- 台账：`docs/dev-pipeline/receiver-ux-v2/r16-remediation.md`；出口确认门后送 round-17。
+
+## R17 — round-17 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-17 裁决（不通过；A17-01 开页判定仅标题/页数、无精确 URL 与启动关联；B17-01 原生对话框 Pass2 跨进程兜底无归属校验）；裁决归档 `round-17-verdict.md`（`232fb71`）。A16-02/S16-01/02/03 关闭，A16-01 部分关闭。
+- RED（真实入口）：旧开页三行判定对"同 PID、标题 8→9、无 URL 证据"返回 true；旧 Find-Dialog（含 Pass2）对无关顶层 222 的嵌套 save(`#32770`)/share 均返回 222。入档 `red-logs/r17/`。
+- 修复：`8951620` 新模块 `page-open-check.mjs`（URL 精确匹配 + 启动前不存在；标题不参与判定）+ run-e2e 运行期空闲端口/UIA 地址栏快照/判定证据；`native-dialog.ps1` 归属证明（owner chain 达 target 且映像 msedge.exe）+ 统一选择规则 + `-Action dialog-selftest`；`a56e74c` 修新模块 CLI 未加主模块守卫（工具测试 UX-UT-081/082 抓出）；`a38230e` 增连接证据通道（前台锁使 launcher 页签后台打开，地址栏不显示；msedge socket 连运行期新端口为 URL 承载证据）。
+- root15（`docs/tests/runs/20261029-teamexec-15`，attempt `candidate-20261029-02`，harness `a38230e`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS（`…8589dc`，连接通道证明目标 URL；实时/录像/外置 SHA 相等）、E2E-2 PASS（`…5f9ecd`，两原生对话框均 target-owned pass1）；tools 69/69、page-open selftest 8/8、native-dialog selftest 6/6；首败 `…d28bb1` 原件保留。
+- 台账：`r17-remediation.md`；出口确认门后送 round-18。
+
+## R18 — round-18 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-18 裁决（不通过；A18-01 SNAP 采集 5/6 列错位 + TCP 通道被当精确页面证明；B18-01 Pass2 诊断 Write-Output 污染返回流致 Find-ByName 失败）；裁决归档 `round-18-verdict.md`（`afbf16a`）。
+- **表述更正**：r17 台账/总结 §8.5 的"连接承载精确 URL""空 URL 由前台锁造成"不成立——真实原因是 SNAP 5 列（标题可含 `|`）被按 6 列解析、地址栏记录整体丢失；TCP 不能承载精确页面身份。判定自本轮起为 URL-only，TCP 仅辅助。
+- RED：`red-logs/r18/`（解析器原始行→urlValues=[]；同端口未观察 path/SYN_SENT→PASS；真 Find-Dialog 返回 String+节点致 Find-ByName 失败）。
+- 修复：`f5874d1` parseSnapshotLines 入模块（SNAP/SNAPW/SNAPT 正确列语义）+ URL-only 判定 + run-e2e 新页签激活（窗口页签差集+SelectionItemPattern）+ native-dialog 诊断改 [Console]::Out 与 wrapper 自测；`a56e74c` 之后的 `08adf50` 接收腿绑定运行期端口；`82d2fac` StrictMode 钩子初始化；`2791cf7` 归属规则增 **profile 身份**（本轮 mkdtemp --user-data-dir）并实测真实 picker 父链断裂场景；`cd53a20` CDP 9445 的 **profile 标记验证回收**（实跑回收 pid 79176）。
+- root16（`docs/tests/runs/20261029-teamexec-16`，attempt `candidate-20261029-03`，harness `cd53a20`，product manifest 仍 `7a5e5f1a…`）：E2E-1 PASS `…2f9999`（地址栏精确 URL 127.0.0.1:8768、启动前仅 8767、TCP 仅辅助）、E2E-2 PASS `…5cc6c5`（权限对话框 pid-chain+profile 双证）；tools 69/69、page-open selftest 8/8（原始行经真实解析器）、dialog selftest 10/10（含完整 wrapper 正例）；4 个失败 attempt 原件+控制台日志保留。
+- 台账：`r18-remediation.md`；出口确认门后送 round-19。
+
+## R19 — round-19 复审不通过与阶段 5 整改（2026-10-29）
+
+- 输入：用户转达 round-19 裁决（不通过；唯一新增主题 A19-01=B19-01：CDP 回收仅凭命令行含 `cimbar-e2e-` 子串即 Stop-Process，普通 Python 进程可命中）；裁决归档 `round-19-verdict.md`（`2d9b1e5`）。A18-01/B18-01/B17-01 及更早关闭项保持关闭。
+- RED：`red-logs/r19/`——逐字复刻旧回收函数，对我方 python 监听器真实执行 Stop-Process（python 真实退出），并记录旧文案 "profile marker verified"。
+- 修复（裁决允许的最小修复，`18b7c22`）：删除 `reclaimStaleAutomationBrowser`；新 `assertCdpPortFree` 只读探测，占用即报错并保留占用者；函数内无 Stop-Process、无 `cimbar-e2e-` 子串测试。其余 Stop-Process 调用点未变（closeReceiver 按本轮精确随机 profile；stopPackagedServer 按已验证 server 身份）。
+- root17（`docs/tests/runs/20261029-teamexec-17`，attempt `candidate-20261029-04`，harness `18b7c22`，product manifest 仍 `7a5e5f1a…`）：拒绝例 A（自有 python 占 9445，`…9235f6`，占用者存活）、拒绝例 B（外部真实 Edge 普通参数占 9445，`…9458d9`，占用者存活）、正常腿 E2E-1 PASS（`…7d9540`，地址栏精确 8768）；tools 69/69、selftests 8/8 与 10/10。
+- 文案更正：旧 "profile marker verified" 随函数删除，台账/总结/复现说明明确更正为"占用即拒绝、不动占用者"。
+- 台账：`r19-remediation.md`；出口确认门后送 round-20。

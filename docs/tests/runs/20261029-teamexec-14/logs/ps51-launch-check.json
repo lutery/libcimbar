@@ -1,0 +1,671 @@
+{
+  "tool": "ps51-launch-check",
+  "version": 2,
+  "toolPath": "E:\\Project\\OpenSource\\c++\\libcimbar\\tools\\desktop-recv\\e2e\\ps51-launch-check.mjs",
+  "toolSha256": "509c671041f6dfa1a1f6dc42583f54daff8b1bd602171e9a42ae42524b4912f0",
+  "runId": "20261029-teamexec-14",
+  "stagingRoot": "E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver",
+  "stagingServerPath": "E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py",
+  "repoRoot": "E:\\Project\\OpenSource\\c++\\libcimbar",
+  "startedAt": "2026-10-29T07:37:59.992Z",
+  "finishedAt": "2026-10-29T07:39:02.335Z",
+  "environment": {
+    "fullPath": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe;C:\\Users\\admin\\AppData\\Local\\Programs\\orca\\resources\\bin;C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe;C:\\Users\\admin\\.volta\\bin;C:\\Users\\admin\\.asdf\\shims;C:\\Users\\admin\\.fnm\\aliases\\default\\bin;C:\\Users\\admin\\.local\\share\\mise\\shims;C:\\Users\\admin\\AppData\\Roaming\\npm;C:\\Users\\admin\\AppData\\Local\\pnpm;C:\\Users\\admin\\AppData\\Local\\Yarn\\bin;F:\\DevelopmentKit\\VulkanSDK\\1.4.341.1\\Bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.8\\bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.8\\libnvvp;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;F:\\DevelopmentKit\\TensorRT-10.9.0.34\\bin;F:\\DevelopmentKit\\TensorRT-10.9.0.34\\lib;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\libnvvp;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Program Files\\Microsoft VS Code\\bin;C:\\Program Files\\Microsoft SQL Server\\150\\Tools\\Binn\\;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;D:\\ProgramData\\anaconda3;D:\\ProgramData\\anaconda3\\Scripts;D:\\ProgramData\\anaconda3\\Library\\bin;D:\\ProgramData\\anaconda3\\condabin;C:\\Program Files\\Microsoft SQL Server\\130\\Tools\\Binn\\;F:\\DevelopmentKit\\KitDll;F:\\Program Files\\Git\\cmd;F:\\Program Files (x86)\\ViClient\\CloudClient extend components;E:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.39.33519\\bin\\Hostx64\\x64;E:\\Apps\\nvm;E:\\Program Files\\nodejs;F:\\Program Files\\Mozilla Firefox;C:\\Users\\admin\\.mujoco\\mujoco210\\bin;C:\\Program Files\\Java\\jdk-17\\bin;F:\\Program Files\\CMake\\bin;C:\\Program Files\\Git\\cmd;E:\\Windows Kits\\10\\Windows Performance Toolkit\\;C:\\Program Files\\GitHub CLI\\;E:\\Program Files\\Sunshine;E:\\Program Files\\Sunshine\\tools;F:\\Download Files\\aliyunpan-v0.3.7-windows-x64;E:\\Apps\\AS_SDK\\platform-tools;C:\\Users\\admin\\.local\\bin;C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2025.1.1\\;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files\\dotnet\\;C:\\Program Files\\Microsoft SQL Server\\170\\Tools\\Binn\\;E:\\Program Files (x86)\\Tencent\\微信web开发者工具;C:\\Program Files\\WSL\\;C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps;E:\\Program Files\\Microsoft VS Code\\bin;C:\\Users\\admin\\.dotnet\\tools;E:\\Apps\\AS_SDK\\emulator;C:\\Users\\admin\\.bun\\bin;E:\\Program Files\\Obsidian;E:\\Program Files\\Microsoft VS Code\\bin\\copilot-shim;C:\\Users\\admin\\AppData\\Local\\claude-mem\\bin;C:\\Users\\admin\\.claude\\plugins\\cache\\omc\\oh-my-claudecode\\5.2.0\\bin",
+    "pythonDir": "D:\\ProgramData\\anaconda3",
+    "pythonExe": "D:\\ProgramData\\anaconda3\\python.exe",
+    "winpsPath": "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;D:\\ProgramData\\anaconda3",
+    "noPwshPath": "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;D:\\ProgramData\\anaconda3",
+    "noPythonPath": "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+    "pwshExe": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe",
+    "preflight": [
+      {
+        "name": "where pwsh exit0 under full PATH (pwsh7 present)",
+        "ok": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "where pwsh exit!=0 under pwsh-stripped PATH",
+        "ok": true,
+        "detail": "exit=1"
+      },
+      {
+        "name": "where python exit0 under winps PATH",
+        "ok": true,
+        "detail": "exit=0 first=D:\\ProgramData\\anaconda3\\python.exe"
+      },
+      {
+        "name": "powershell.exe 5.1 major version = 5",
+        "ok": true,
+        "detail": "major=5 exit=0"
+      }
+    ]
+  },
+  "staging": {
+    "indexHtml": {
+      "sha256": "09a30d254ec5c8df5d5a1cddd56e18af601469b7635972a7260313b1ede20467",
+      "bytes": 1915
+    },
+    "cimbarJsWasm": {
+      "sha256": "d1080cdc600ca842a337b8ea6157bc5cc2c545aaa75fce7b14e8585e9eb4685b",
+      "bytes": 1939173
+    }
+  },
+  "cases": [
+    {
+      "id": "a",
+      "title": "5.1 direct launch serves index.html and wasm byte-identically",
+      "pass": true,
+      "cleanup": {
+        "attempted": true,
+        "cleaned": true,
+        "facts": {
+          "pid": 15700,
+          "found": true,
+          "verified": true,
+          "reasons": [],
+          "cmdLine": "\"D:\\ProgramData\\anaconda3\\python.exe\" E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py --port 18771 --directory E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver ",
+          "exe": "D:\\ProgramData\\anaconda3\\python.exe",
+          "created": "2026-10-29T15:38:04.7237040+08:00"
+        },
+        "refused": null
+      },
+      "checks": [
+        {
+          "name": "precondition: port free before launch",
+          "ok": true,
+          "detail": "port=18771"
+        },
+        {
+          "name": "note: env=winpsPath port=18771 exit=0",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stdout=\"serving E:\\\\Project\\\\OpenSource\\\\c++\\\\libcimbar\\\\build-desktop-recv\\\\runs\\\\20261029-teamexec-14\\\\receiver\\r\\nopen http://127.0.0.1:18771/\\r\\nserver pid 15700\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "launcher exit code 0",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stdout reports \"server pid N\"",
+          "ok": true,
+          "detail": "pid=15700"
+        },
+        {
+          "name": "GET / -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "index.html bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)"
+        },
+        {
+          "name": "GET /vendor/cimbar_js.wasm -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "cimbar_js.wasm bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)"
+        },
+        {
+          "name": "note: stop: verified Stop-Process -Id 15700",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "server identity verified for cleanup",
+          "ok": true,
+          "detail": "[]"
+        },
+        {
+          "name": "port free after verified Stop-Process",
+          "ok": true,
+          "detail": "port=18771"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "title": "launch.cmd pwsh7 branch serves index.html and wasm byte-identically",
+      "pass": true,
+      "cleanup": {
+        "attempted": true,
+        "cleaned": true,
+        "facts": {
+          "pid": 79544,
+          "found": true,
+          "verified": true,
+          "reasons": [],
+          "cmdLine": "\"D:\\ProgramData\\anaconda3\\python.exe\" E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py --port 18772 --directory E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver",
+          "exe": "D:\\ProgramData\\anaconda3\\python.exe",
+          "created": "2026-10-29T15:38:11.9936750+08:00"
+        },
+        "refused": null
+      },
+      "checks": [
+        {
+          "name": "precondition: where pwsh exit0 under full PATH",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "precondition: port free before launch",
+          "ok": true,
+          "detail": "port=18772"
+        },
+        {
+          "name": "note: env=fullPath port=18772 exit=0",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stdout=\"serving E:\\\\Project\\\\OpenSource\\\\c++\\\\libcimbar\\\\build-desktop-recv\\\\runs\\\\20261029-teamexec-14\\\\receiver\\r\\nopen http://127.0.0.1:18772/\\r\\nserver pid 79544\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "launcher exit code 0",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stdout reports \"server pid N\"",
+          "ok": true,
+          "detail": "pid=79544"
+        },
+        {
+          "name": "GET / -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "index.html bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)"
+        },
+        {
+          "name": "GET /vendor/cimbar_js.wasm -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "cimbar_js.wasm bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)"
+        },
+        {
+          "name": "note: stop: verified Stop-Process -Id 79544",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "server identity verified for cleanup",
+          "ok": true,
+          "detail": "[]"
+        },
+        {
+          "name": "port free after verified Stop-Process",
+          "ok": true,
+          "detail": "port=18772"
+        }
+      ]
+    },
+    {
+      "id": "c",
+      "title": "launch.cmd 5.1 fallback serves index.html and wasm byte-identically",
+      "pass": true,
+      "cleanup": {
+        "attempted": true,
+        "cleaned": true,
+        "facts": {
+          "pid": 70304,
+          "found": true,
+          "verified": true,
+          "reasons": [],
+          "cmdLine": "\"D:\\ProgramData\\anaconda3\\python.exe\" E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py --port 18774 --directory E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver ",
+          "exe": "D:\\ProgramData\\anaconda3\\python.exe",
+          "created": "2026-10-29T15:38:20.4241840+08:00"
+        },
+        "refused": null
+      },
+      "checks": [
+        {
+          "name": "precondition: where pwsh exit!=0 under noPwshPath (branch takes 5.1)",
+          "ok": true,
+          "detail": "exit=1; PATH=C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;D:\\ProgramData\\anaconda3"
+        },
+        {
+          "name": "precondition: port free before launch",
+          "ok": true,
+          "detail": "port=18774"
+        },
+        {
+          "name": "note: env=noPwshPath port=18774 exit=0",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stdout=\"serving E:\\\\Project\\\\OpenSource\\\\c++\\\\libcimbar\\\\build-desktop-recv\\\\runs\\\\20261029-teamexec-14\\\\receiver\\r\\nopen http://127.0.0.1:18774/\\r\\nserver pid 70304\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "launcher exit code 0",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stdout reports \"server pid N\"",
+          "ok": true,
+          "detail": "pid=70304"
+        },
+        {
+          "name": "GET / -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "index.html bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "09a30d254ec5 vs 09a30d254ec5 (1915/1915 bytes)"
+        },
+        {
+          "name": "GET /vendor/cimbar_js.wasm -> 200",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "cimbar_js.wasm bytes equal staging (sha256)",
+          "ok": true,
+          "detail": "d1080cdc600c vs d1080cdc600c (1939173/1939173 bytes)"
+        },
+        {
+          "name": "note: stop: verified Stop-Process -Id 70304",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "server identity verified for cleanup",
+          "ok": true,
+          "detail": "[]"
+        },
+        {
+          "name": "port free after verified Stop-Process",
+          "ok": true,
+          "detail": "port=18774"
+        }
+      ]
+    },
+    {
+      "id": "d",
+      "title": "5.1 launch on an occupied port exits 3 with \"already in use\"",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": null,
+        "refused": "no-server-pid",
+        "listenerKept": true
+      },
+      "checks": [
+        {
+          "name": "precondition: our own node listener holds the port",
+          "ok": true,
+          "detail": "port=18773"
+        },
+        {
+          "name": "note: stdout=\"\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "exit code 3",
+          "ok": true,
+          "detail": "exit=3"
+        },
+        {
+          "name": "stderr contains \"already in use\"",
+          "ok": true,
+          "detail": "port 18773 is already in use; stop the other process or pass -Port <other>"
+        },
+        {
+          "name": "our listener still holds the port after the failed launch",
+          "ok": true,
+          "detail": "port=18773"
+        },
+        {
+          "name": "port free after our own occupier close",
+          "ok": true,
+          "detail": "port=18773"
+        }
+      ]
+    },
+    {
+      "id": "e",
+      "title": "launcher in a directory without server.py exits 4",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "note: dir=C:\\Users\\admin\\AppData\\Local\\Temp\\ps51-e-rsVqaY",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "exit code 4",
+          "ok": true,
+          "detail": "exit=4"
+        },
+        {
+          "name": "stderr contains \"server.py not found\"",
+          "ok": true,
+          "detail": "server.py not found next to launch.ps1 (C:\\Users\\admin\\AppData\\Local\\Temp\\ps51-e-rsVqaY)"
+        }
+      ]
+    },
+    {
+      "id": "f",
+      "title": "launcher without python on PATH exits 2",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "note: PATH=C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "exit code 2",
+          "ok": true,
+          "detail": "exit=2"
+        },
+        {
+          "name": "stderr contains \"python is not available\"",
+          "ok": true,
+          "detail": "python is not available on PATH; install Python 3 or start server.py manually"
+        }
+      ]
+    },
+    {
+      "id": "g51",
+      "title": "5.1 launcher reports exit 5 + unknown code + marker + diagnostic logs",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "note: copy=C:\\Users\\admin\\AppData\\Local\\Temp\\ps51-g51-lQcPqr fake server exits 23 after the stderr marker",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stdout=\"serving C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\ps51-g51-lQcPqr\\r\\nopen http://127.0.0.1:18777/\\r\\nserver pid 12768\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stderr=\"the server did not listen on 127.0.0.1:18777\\r\\nserver process exited with an unknown code\\r\\nPS51-QUICK-EXIT-MARKER fake server exiting on purpose\\r\\ndiagnostic logs: C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\cimbar-recv-eb0f03b3a5c149d68cbc23cbc4032b75.out.log ; C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\cimbar-recv-eb0f03b3a5c149d68cbc23cbc4032b75.err.log\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "exit code 5",
+          "ok": true,
+          "detail": "exit=5"
+        },
+        {
+          "name": "stderr contains \"unknown code\"",
+          "ok": true,
+          "detail": "expected the 5.1 \"exited with an unknown code\" branch"
+        },
+        {
+          "name": "stderr contains the fake-server marker",
+          "ok": true,
+          "detail": "the child stderr must be surfaced"
+        },
+        {
+          "name": "stderr contains \"diagnostic logs:\"",
+          "ok": true,
+          "detail": "diagnostic log paths must be printed"
+        },
+        {
+          "name": "port free (fake server exited by itself)",
+          "ok": true,
+          "detail": "port=18777"
+        }
+      ]
+    },
+    {
+      "id": "g7",
+      "title": "pwsh7 launcher reports exit 5 + the real server code 23",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "note: copy=C:\\Users\\admin\\AppData\\Local\\Temp\\ps51-g7-jAJv3b engine=C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.PowerShell_8wekyb3d8bbwe\\pwsh.exe",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stdout=\"serving C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\ps51-g7-jAJv3b\\r\\nopen http://127.0.0.1:18778/\\r\\nserver pid 60056\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "note: stderr=\"the server did not listen on 127.0.0.1:18778\\r\\nserver process exited with code 23\\r\\nPS51-QUICK-EXIT-MARKER fake server exiting on purpose\\r\\ndiagnostic logs: C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\cimbar-recv-ce7c3ec382fb4080b711c02ba004c47e.out.log ; C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\cimbar-recv-ce7c3ec382fb4080b711c02ba004c47e.err.log\"",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "exit code 5",
+          "ok": true,
+          "detail": "exit=5"
+        },
+        {
+          "name": "stderr contains \"code 23\"",
+          "ok": true,
+          "detail": "pwsh 7 keeps the child handle and must report the real code"
+        },
+        {
+          "name": "port free (fake server exited by itself)",
+          "ok": true,
+          "detail": "port=18778"
+        }
+      ]
+    },
+    {
+      "id": "h1",
+      "title": "cleanup refuses when no pid was reported and keeps the unrelated listener",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": false,
+        "facts": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "precondition: our own node listener holds the port",
+          "ok": true,
+          "detail": "port=18781"
+        },
+        {
+          "name": "launcher exit code 3",
+          "ok": true,
+          "detail": "exit=3"
+        },
+        {
+          "name": "note: cleanup refused: no server pid was reported (pid=0); no process is touched",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "cleanup refused with no-server-pid",
+          "ok": true,
+          "detail": "{\"attempted\":false,\"cleaned\":false,\"facts\":null,\"refused\":\"no-server-pid\"}"
+        },
+        {
+          "name": "unrelated listener still holds the port (not killed)",
+          "ok": true,
+          "detail": "port=18781"
+        },
+        {
+          "name": "port free after our own occupier close",
+          "ok": true,
+          "detail": "port=18781"
+        }
+      ]
+    },
+    {
+      "id": "h2",
+      "title": "cleanup refuses when the launch failed without a pid (port free is not entitlement)",
+      "pass": true,
+      "cleanup": {
+        "attempted": false,
+        "cleaned": false,
+        "facts": null,
+        "refused": "no-server-pid"
+      },
+      "checks": [
+        {
+          "name": "launcher exit code 4",
+          "ok": true,
+          "detail": "exit=4"
+        },
+        {
+          "name": "port is free before the cleanup decision",
+          "ok": true,
+          "detail": "port=18782"
+        },
+        {
+          "name": "note: cleanup refused: no server pid was reported (pid=0); no process is touched",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "cleanup refused with no-server-pid",
+          "ok": true,
+          "detail": "{\"attempted\":false,\"cleaned\":false,\"facts\":null,\"refused\":\"no-server-pid\"}"
+        }
+      ]
+    },
+    {
+      "id": "h3",
+      "title": "cleanup refuses a pid whose identity is not this launch's server",
+      "pass": true,
+      "cleanup": {
+        "attempted": true,
+        "cleaned": false,
+        "facts": {
+          "pid": 47864,
+          "found": true,
+          "verified": false,
+          "reasons": [
+            "command line has no exact staging server.py argument (E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py)",
+            "command line has no --directory argument"
+          ],
+          "cmdLine": "D:\\ProgramData\\anaconda3\\python.exe -c \"import time; time.sleep(30)\"",
+          "exe": "D:\\ProgramData\\anaconda3\\python.exe",
+          "created": "2026-10-29T15:38:42.7696280+08:00"
+        },
+        "refused": "identity-mismatch"
+      },
+      "checks": [
+        {
+          "name": "precondition: decoy process exists",
+          "ok": true,
+          "detail": "pid=47864 name=python.exe"
+        },
+        {
+          "name": "note: cleanup refused (pid 47864): command line has no exact staging server.py argument (E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py); command line has no --directory argument",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "cleanup refused with identity-mismatch",
+          "ok": true,
+          "detail": "[\"command line has no exact staging server.py argument (E:\\\\Project\\\\OpenSource\\\\c++\\\\libcimbar\\\\build-desktop-recv\\\\runs\\\\20261029-teamexec-14\\\\receiver\\\\server.py)\",\"command line has no --directory argument\"]"
+        },
+        {
+          "name": "decoy still alive after the refused cleanup",
+          "ok": true,
+          "detail": "pid=47864"
+        }
+      ]
+    },
+    {
+      "id": "h4",
+      "title": "verified cleanup stops this launch's real server (positive)",
+      "pass": true,
+      "cleanup": {
+        "attempted": true,
+        "cleaned": true,
+        "facts": {
+          "pid": 87104,
+          "found": true,
+          "verified": true,
+          "reasons": [],
+          "cmdLine": "\"D:\\ProgramData\\anaconda3\\python.exe\" E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver\\server.py --port 18783 --directory E:\\Project\\OpenSource\\c++\\libcimbar\\build-desktop-recv\\runs\\20261029-teamexec-14\\receiver ",
+          "exe": "D:\\ProgramData\\anaconda3\\python.exe",
+          "created": "2026-10-29T15:38:55.7788590+08:00"
+        },
+        "refused": null
+      },
+      "checks": [
+        {
+          "name": "launcher exit code 0",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stdout reports \"server pid N\"",
+          "ok": true,
+          "detail": "pid=87104"
+        },
+        {
+          "name": "note: stop: verified Stop-Process -Id 87104",
+          "ok": null,
+          "detail": null
+        },
+        {
+          "name": "identity verified",
+          "ok": true,
+          "detail": "[]"
+        },
+        {
+          "name": "cleanup stopped the server and the port is free",
+          "ok": true,
+          "detail": "port=18783"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "verdict": "PASS"
+}

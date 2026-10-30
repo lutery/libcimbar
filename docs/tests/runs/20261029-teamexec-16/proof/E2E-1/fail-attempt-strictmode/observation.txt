@@ -1,0 +1,2 @@
+E2E-1 observation (2026-10-29T11:49:09.099Z)
+page.waitForFunction: Timeout 30000ms exceeded.

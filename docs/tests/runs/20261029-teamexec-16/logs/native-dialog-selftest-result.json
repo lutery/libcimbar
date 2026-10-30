@@ -1,0 +1,112 @@
+{
+  "tool": "native-dialog dialog-selftest",
+  "version": 1,
+  "cases": [
+    {
+      "id": "n1-foreign-nested-save-refused",
+      "kind": "select",
+      "action": "save",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Security confirmation': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n2-foreign-nested-share-refused",
+      "kind": "select",
+      "action": "share",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Choose what to share': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n3-foreign-save-refused-even-with-target-window-present",
+      "kind": "select",
+      "action": "save",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 222 'Security confirmation': process image is editor.exe, not msedge.exe"
+    },
+    {
+      "id": "n4-unowned-msedge-named-refused",
+      "kind": "select",
+      "action": "share",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 444 'Choose what to share': owner chain never reaches a target pid and the process does not carry this journey's profile"
+    },
+    {
+      "id": "p1-target-utility-child-accepted",
+      "kind": "select",
+      "action": "share",
+      "expect": 333,
+      "got": 333,
+      "via": "pass2",
+      "pass": true,
+      "facts": "chain=333:msedge.exe > 111:msedge.exe image=msedge.exe ownedBy=111"
+    },
+    {
+      "id": "p2-target-direct-dialog-accepted",
+      "kind": "select",
+      "action": "share",
+      "expect": 111,
+      "got": 111,
+      "via": "pass1",
+      "pass": true,
+      "facts": ""
+    },
+    {
+      "id": "p3-wrapper-utility-positive",
+      "kind": "wrapper",
+      "action": "share",
+      "expectCount": 1,
+      "count": 1,
+      "types": "DialogSelftestNode",
+      "downstream": "Find-ByName OK name='共享'",
+      "pass": true
+    },
+    {
+      "id": "n5-wrapper-foreign-refused",
+      "kind": "wrapper",
+      "action": "share",
+      "expectCount": 0,
+      "count": 0,
+      "types": "",
+      "downstream": "",
+      "pass": true
+    },
+    {
+      "id": "p4-profile-owned",
+      "kind": "select",
+      "action": "share",
+      "expect": 333,
+      "got": 333,
+      "via": "pass2",
+      "pass": true,
+      "facts": "chain=333:msedge.exe image=msedge.exe ownedBy=none"
+    },
+    {
+      "id": "n6-profile-mismatch-refused",
+      "kind": "select",
+      "action": "share",
+      "expect": null,
+      "got": null,
+      "via": null,
+      "pass": true,
+      "facts": " refused=pid 333 '选择要与 http://127.0.0.1:8767/ 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0
+  },
+  "verdict": "PASS"
+}

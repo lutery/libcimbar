@@ -1,0 +1,2 @@
+E2E-1 observation (2026-10-29T14:45:47.632Z)
+receiver: CDP port 9445 is occupied by pid 95728 (msedge.exe|"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --user-data-dir="C:\Users\admin\AppData\Local\Temp\cimbar-e2e-foreign-8e8ed5f765564b8987ed1b1e9102b7f4" --remote-debugging-port=9445 --no-first-run --no-default-browser-check --edge-skip-compat-layer-relaunch --do-not-de-elevate); refusing to start and leaving the occupant untouched - verify and stop a stale harness browser yourself

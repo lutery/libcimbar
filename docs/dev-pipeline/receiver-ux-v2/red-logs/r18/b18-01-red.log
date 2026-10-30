@@ -1,0 +1,11 @@
+B18-01 RED (round-18 bytes; real Find-Dialog/Find-ByName, fake UI tree, stubbed owner chain)
+target pid=111; legal utility child pid=333 (parent 111, msedge.exe) carries the share picker
+Find-Dialog returned Count=
+2
+ types=[
+String,FakeNode
+]
+downstream: 
+Find-ByName ERROR: 方法调用失败，因为 [System.String] 不包含名为 'FindAll' 的方法。
+defect reproduced: 
+True

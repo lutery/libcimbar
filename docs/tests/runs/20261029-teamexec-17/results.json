@@ -1,0 +1,17 @@
+[
+  {
+    "caseId": "E2E-1",
+    "scope": "local_simulated",
+    "caseType": "file_roundtrip",
+    "result": "PASS",
+    "executedBy": "executor",
+    "referenceSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "receivedSha256": "2f5a22f95c019d18cfbdd4f64da9c2e1d9ff3b0d83a7e0bc52c6d46b202f046e",
+    "proofRefs": [
+      "proof/E2E-1/original.bin",
+      "proof/E2E-1/received.bin"
+    ],
+    "notes": "packaged first launch from a codepoint-built CJK+space dir (C:\\Users\\admin\\AppData\\Local\\Temp\\cimbar-e2e-1\\中文 目录 解压); README-documented launch.cmd exit=0; pwsh -File absolute preflight exit=0; live equal=true (2f5a22f95c01), V-GOOD-C recorded import equal=true (2f5a22f95c01); external certutil ok=true; launcherEngine=ps51 (PS 5.1.22621.6133, where pwsh exit 1, default-open evidence 1); engine evidence proof/E2E-1/engine-env.txt; RETRACTION: the 8c59864 FAIL blamed a pwsh CJK+space platform defect, but the cause was a corrupted path in the test invocation chain (package copied under a GBK-mojibake twin name); original evidence preserved at proof/E2E-1/first-run-fail/",
+    "attemptId": "E2E-1-2026-10-29T14-48-12-018Z-7d9540"
+  }
+]

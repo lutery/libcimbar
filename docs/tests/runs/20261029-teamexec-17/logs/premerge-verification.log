@@ -1,0 +1,51 @@
+pre-merge verification 2026-10-30 2026-10-30T09:19:47.2871388+08:00 HEAD=a26fe1a4c6656c17909685aa42dee966b33c3564
+=== run-unit EXIT=0
+ui: 13 tests, 0 failed, 0 todo, 0 skipped
+evidence: 36 tests, 0 failed, 0 todo, 0 skipped
+ux-telemetry: 27 tests, 0 failed, 0 todo, 0 skipped
+ux-view: 24 tests, 0 failed, 0 todo, 0 skipped
+ux-display: 15 tests, 0 failed, 0 todo, 0 skipped
+UNIT SUITES PASS (12 suite(s))
+=== tools-3suites EXIT=0
+# pass 69
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18597.7178
+=== ux-selftest EXIT=0
+ok   B-R1(b) self-consistent rttMs=0 (raw timestamps unchanged) is refused
+ok   B-R1(b) settledAtMs < t0Ms is refused by the real CLI
+ok   B-R1(a) consistent FAIL is refused by the real validate_ux_record
+ok   B-R1(a) root11 real E2E-38 record + measurement has zero violations
+ok   junction inside the run root cannot redirect proof reads
+SELFTEST PASS (77 cases)
+=== verify-selftest EXIT=0
+ok   measurement with frozen threshold: exit=0 expected=0
+ok   field gate over NOT_RUN: exit=1 expected=1
+ok   duplicate case id: exit=1 expected=1
+ok   relabelled caseType cannot pass: exit=1 expected=1
+ok   plan without a caseType is refused: exit=1 expected=1
+SELFTEST PASS (14 cases)
+=== video-prefix EXIT=0
+[selftest] same-prefix positive: PASS - head=True (0.0 vs threshold 10.0, offset 0); tail=True; verdict=PASS
+[selftest] head-shifted negative: PASS - head=False (23.99367307027181 vs threshold 10.0, offset -2); tail=True; verdict=FAIL
+[selftest] tail-truncated negative: PASS - head=True (0.0 vs threshold 10.0, offset 0); tail=False; verdict=FAIL
+SELFTEST PASS (3/3 cases: positive, head-shifted negative, tail-truncated negative)
+=== contracts EXIT=0
+{"result": "DESIGN_CONTRACT_SHAPES_PASS", "definitions": 20, "examples": 27, "shapeVectors": 44, "interfaces": 6, "diagnostics": 15, "acTracked": 10, "v1Isolation": "1 positive, 3 negative shape checks; semantic fingerprints unchanged; CRLF-safe", "implementationCases": "12 NOT_RUN", "productAcceptance": "NOT_RUN"}
+=== page-open-selftest EXIT=0
+  ok   n3-pre-existing-target expect=false got=false
+  ok   n4-title-only expect=false got=false
+  ok   n5-unrelated-url expect=false got=false
+  ok   n6-no-url-evidence expect=false got=false
+PAGE-OPEN-CHECK SELFTEST PASS (8/8)
+wrote E:\Project\OpenSource\c++\libcimbar\tools\desktop-recv\e2e\page-open-check-selftest.json
+=== dialog-selftest EXIT=0
+refused candidate dialog(s) without ownership proof: pid 222 'Choose what to share': process image is editor.exe, not msedge.exe
+  ok   n5-wrapper-foreign-refused expectCount=0 count=0 types=[] 
+  ok   p4-profile-owned expect=333 got=333 via=pass2 chain=333:msedge.exe image=msedge.exe ownedBy=none
+  ok   n6-profile-mismatch-refused expect= got=null via=  refused=pid 333 '选择要与 http://127.0.0.1:8767/ 共享的内容': owner chain never reaches a target pid and the process does not carry this journey's profile
+NATIVE-DIALOG SELFTEST PASS (10/10)
+wrote E:\Project\OpenSource\c++\libcimbar\tools\desktop-recv\e2e\native-dialog-selftest-result.json
+PREMERGE PASS (run-unit 222 / tools 69 / ux 77 / verify 14 / video-prefix 3 / contracts PASS / page-open 8 / dialog 10)
