@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 接收器体验迭代 v2",
   "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
-  "current_phase": "external-review",
+  "current_phase": "finishing-a-development-branch",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-29T22:05:00+08:00",
+  "updated_at": "2026-10-30T09:00:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -292,10 +292,10 @@
     {
       "name": "external-review",
       "display": "独立外部审查",
-      "status": "waiting_external",
+      "status": "passed",
       "output_dir": "docs/dev-pipeline/ext-review/",
       "output_files": [],
-      "ext_rounds": 19,
+      "ext_rounds": 20,
       "verdict_files": [
         "docs/dev-pipeline/ext-review/round-12-verdict.md",
         "docs/dev-pipeline/ext-review/round-13-verdict.md",
@@ -304,7 +304,8 @@
         "docs/dev-pipeline/ext-review/round-16-verdict.md",
         "docs/dev-pipeline/ext-review/round-17-verdict.md",
         "docs/dev-pipeline/ext-review/round-18-verdict.md",
-        "docs/dev-pipeline/ext-review/round-19-verdict.md"
+        "docs/dev-pipeline/ext-review/round-19-verdict.md",
+        "docs/dev-pipeline/ext-review/round-20-verdict.md"
       ],
       "materials": [
         "docs/dev-pipeline/ext-review/round-14-package.md",
@@ -340,11 +341,12 @@
         "docs/dev-pipeline/ext-review/round-20-package.md",
         "docs/dev-pipeline/ext-review/round-20-template.md",
         "docs/dev-pipeline/receiver-ux-v2/r19-remediation.md",
-        "docs/tests/runs/20261029-teamexec-17/reproduction.md"
+        "docs/tests/runs/20261029-teamexec-17/reproduction.md",
+        "docs/dev-pipeline/ext-review/round-20-verdict.md"
       ],
       "started_at": "2026-10-29T22:05:00+08:00",
-      "completed_at": null,
-      "notes": "round-14 复审结论：通过（2026-10-27，codex-gpt-6；双轴均 PASS、0 Blocking）。round-13 的 3 阻断 A13-01/A13-02/B-R1 全部 CLOSED（主审独立复跑 222/69/77/14/3、双门禁、带 context 复算及全部负例）。2 条非阻断建议已落实：A-S1 收敛写落点措辞精确化（两探针仅证明写落在其间、确切延迟未精确测定；另一次直接实测 +139ms；88532b 的 root 标注修正为 root12）与 B-S1（reproduction §7.5 改为「无 context 仅统计/一致性复算、不证明身份」）。E2E-35/37/现场 7 项与阶段 8 最终包验收仍分别独立。 round-15（2026-10-28 预览补丁）：通过，0 阻断，建议 S15-01（已修）。round-16（2026-10-29 1.2.0 正式化）：不通过，2 阻断主题 A16-01/A16-02+B-R16-1，建议 S16-01/02/03；已消费并返回阶段 5 整改（root14 20261029-teamexec-14）。 round-16 整改（2026-10-29）：两项阻断主题已按关闭条件落实（root14 证据 + 工具修复），建议 S16-01/02/03 落实；round-17 送审包与模板已就绪，待阶段 5 出口确认后送审。 round-17（2026-10-29 1.2.0 整改复审）：不通过，A17-01（开页证据无 URL/关联）+ B17-01（对话框无归属兜底）；A16-02/S16-01/02/03 关闭，A16-01 部分关闭；已消费并返回阶段 5 整改（root15 20261029-teamexec-15）。 round-17 整改（2026-10-29）：A17-01/B17-01 按关闭条件落实（root15 证据 + 工具修复 + RED）；round-18 送审包与模板就绪，待阶段 5 出口确认后送审。 round-18（2026-10-29 整改复审）：不通过，A18-01（采集列错位+连接通道假阳性）+ B18-01（pass2 诊断污染返回值）；B17-01 部分关闭；已消费并返回阶段 5 整改（root16 20261029-teamexec-16）。 round-18 整改（2026-10-29）：A18-01/B18-01 按关闭条件落实（root16 证据 + 工具修复 + RED/recheck + 4 失败原件）；表述更正已入档；round-19 送审包与模板就绪。 round-19（2026-10-29 整改复审）：不通过，唯一新增主题 A19-01/B19-01（CDP 回收子串授权）；A18-01/B18-01/B17-01 保持关闭；已消费并返回阶段 5 整改（root17 20261029-teamexec-17）。 round-19 整改（2026-10-29）：唯一新增主题按最小修复关闭（删除自动终止、只读拒绝），root17 三腿证据；round-20 送审包与模板就绪。",
+      "completed_at": "2026-10-30T09:00:00+08:00",
+      "notes": "round-14 复审结论：通过（2026-10-27，codex-gpt-6；双轴均 PASS、0 Blocking）。round-13 的 3 阻断 A13-01/A13-02/B-R1 全部 CLOSED（主审独立复跑 222/69/77/14/3、双门禁、带 context 复算及全部负例）。2 条非阻断建议已落实：A-S1 收敛写落点措辞精确化（两探针仅证明写落在其间、确切延迟未精确测定；另一次直接实测 +139ms；88532b 的 root 标注修正为 root12）与 B-S1（reproduction §7.5 改为「无 context 仅统计/一致性复算、不证明身份」）。E2E-35/37/现场 7 项与阶段 8 最终包验收仍分别独立。 round-15（2026-10-28 预览补丁）：通过，0 阻断，建议 S15-01（已修）。round-16（2026-10-29 1.2.0 正式化）：不通过，2 阻断主题 A16-01/A16-02+B-R16-1，建议 S16-01/02/03；已消费并返回阶段 5 整改（root14 20261029-teamexec-14）。 round-16 整改（2026-10-29）：两项阻断主题已按关闭条件落实（root14 证据 + 工具修复），建议 S16-01/02/03 落实；round-17 送审包与模板已就绪，待阶段 5 出口确认后送审。 round-17（2026-10-29 1.2.0 整改复审）：不通过，A17-01（开页证据无 URL/关联）+ B17-01（对话框无归属兜底）；A16-02/S16-01/02/03 关闭，A16-01 部分关闭；已消费并返回阶段 5 整改（root15 20261029-teamexec-15）。 round-17 整改（2026-10-29）：A17-01/B17-01 按关闭条件落实（root15 证据 + 工具修复 + RED）；round-18 送审包与模板就绪，待阶段 5 出口确认后送审。 round-18（2026-10-29 整改复审）：不通过，A18-01（采集列错位+连接通道假阳性）+ B18-01（pass2 诊断污染返回值）；B17-01 部分关闭；已消费并返回阶段 5 整改（root16 20261029-teamexec-16）。 round-18 整改（2026-10-29）：A18-01/B18-01 按关闭条件落实（root16 证据 + 工具修复 + RED/recheck + 4 失败原件）；表述更正已入档；round-19 送审包与模板就绪。 round-19（2026-10-29 整改复审）：不通过，唯一新增主题 A19-01/B19-01（CDP 回收子串授权）；A18-01/B18-01/B17-01 保持关闭；已消费并返回阶段 5 整改（root17 20261029-teamexec-17）。 round-19 整改（2026-10-29）：唯一新增主题按最小修复关闭（删除自动终止、只读拒绝），root17 三腿证据；round-20 送审包与模板就绪。 round-20（2026-10-30）：**通过**，0 Blocking、0 新增建议；A19-01/B19-01 关闭（只读拒绝、保留占用者）；A18-01/B18-01/B17-01 与更早关闭项保持通过；主审独立验证真实监听器拒绝/空闲两态与全部实物身份。可进入组包/合并/交付，最终包验收与现场项单列。",
       "_managed_by": "claude-dev-pipeline",
       "user_instructions": [
         {
@@ -390,16 +392,20 @@
         {
           "timestamp": "2026-10-29T22:05:00+08:00",
           "summary": "阶段 5 整改出口确认门：用户选择「进入阶段 6（推荐）」——接受 round-19 整改摘要（A19-01/B19-01 按最小修复关闭：删除自动终止、占用即只读拒绝并保留占用者；两拒绝腿占用者存活 + 正常腿 PASS；旧文案已更正），同意把 round-20 送审包转外部独立审查并进入等待态。"
+        },
+        {
+          "timestamp": "2026-10-30T09:00:00+08:00",
+          "summary": "用户转达 round-20 裁决（通过，0 阻断 0 建议）并指示：消费后从 root17 staging 进入 1.2.0 组包、合并与交付流程；最终包验收和现场项仍按既定流程。"
         }
       ]
     },
     {
       "name": "finishing-a-development-branch",
       "display": "分支合并交付",
-      "status": "completed",
+      "status": "in_progress",
       "output_dir": null,
       "output_files": [],
-      "started_at": "2026-10-27T05:32:00+08:00",
+      "started_at": "2026-10-30T09:00:00+08:00",
       "completed_at": "2026-10-27T05:55:00+08:00",
       "notes": "阶段 7 完成（2026-10-27）：用户选择「本地合并到 master」——git merge --no-ff receiver-ux-v2（merge commit c803ad5，未 pull/未 push）；合并结果上复跑测试发现并修复字节身份回归（.gitattributes 钉住 docs/tests/runs/** 与 docs/plans/、docs/tests/receiver-ux-v2/、docs/design-catalog/receiver-ux-v2/ 全部 -text，commit f1cb83e；修复后 selftest 77/77、双门禁与分支结果一致）。feature 分支已删除（曾达 e1749e6）。",
       "_managed_by": "claude-dev-pipeline",
