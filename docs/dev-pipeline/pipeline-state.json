@@ -1,10 +1,10 @@
 {
   "project_name": "libcimbar 接收器体验迭代 v2",
   "requirement_source": "docs/requirements/receiver-ux-v2/user-feedback.md",
-  "current_phase": "finishing-a-development-branch",
+  "current_phase": "release-packaging",
   "tdd_mode": true,
   "created_at": "2026-10-23T21:48:09+08:00",
-  "updated_at": "2026-10-30T09:00:00+08:00",
+  "updated_at": "2026-10-30T09:40:00+08:00",
   "phases": [
     {
       "name": "requirements-analysis",
@@ -402,14 +402,19 @@
     {
       "name": "finishing-a-development-branch",
       "display": "分支合并交付",
-      "status": "in_progress",
+      "status": "completed",
       "output_dir": null,
       "output_files": [],
       "started_at": "2026-10-30T09:00:00+08:00",
-      "completed_at": "2026-10-27T05:55:00+08:00",
-      "notes": "阶段 7 完成（2026-10-27）：用户选择「本地合并到 master」——git merge --no-ff receiver-ux-v2（merge commit c803ad5，未 pull/未 push）；合并结果上复跑测试发现并修复字节身份回归（.gitattributes 钉住 docs/tests/runs/** 与 docs/plans/、docs/tests/receiver-ux-v2/、docs/design-catalog/receiver-ux-v2/ 全部 -text，commit f1cb83e；修复后 selftest 77/77、双门禁与分支结果一致）。feature 分支已删除（曾达 e1749e6）。",
+      "completed_at": "2026-10-30T09:35:00+08:00",
+      "notes": "阶段 7 完成（2026-10-30）：合并前全部套件绿（unit 222 / tools 69 / ux 77 / verify 14 / video-prefix 3 / contracts PASS / page-open 8 / dialog 10；docs/tests/runs/20261029-teamexec-17/logs/premerge-verification.log）；git merge --no-ff ps51-preview → master（合并提交 cd32de3，未 pull/未 push）；合并结果上复跑 selftests/套件全绿，product manifest 与 context 字节与提交 blob 逐字节一致。分支 ps51-preview 保留。",
       "_managed_by": "claude-dev-pipeline",
-      "user_instructions": []
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-30T09:20:00+08:00",
+          "summary": "round-20 通过后用户指示进入组包/合并/交付流程；采用本地合并（不 push，origin=sz3/libcimbar 上游）。"
+        }
+      ]
     },
     {
       "name": "release-packaging",
@@ -417,18 +422,23 @@
       "status": "completed",
       "output_dir": "product/",
       "output_files": [],
-      "delivery_name": "libcimbar-desktop-receiver-1.1.0",
-      "product_dir": "product/libcimbar-desktop-receiver-1.1.0-20261027-0942",
+      "delivery_name": "libcimbar-desktop-receiver-1.2.0",
+      "product_dir": "product/libcimbar-desktop-receiver-1.2.0-20261030-0930",
       "artifacts": [
-        "product/libcimbar-desktop-receiver-1.1.0-20261027-0942",
-        "product/libcimbar-desktop-receiver-1.1.0-20261027-0942.zip"
+        "product/libcimbar-desktop-receiver-1.2.0-20261030-0930",
+        "product/libcimbar-desktop-receiver-1.2.0-20261030-0930.zip"
       ],
-      "release_notes": "",
-      "started_at": "2026-10-27T05:55:00+08:00",
-      "completed_at": "2026-10-27T10:00:00+08:00",
-      "notes": "阶段 8 完成（2026-10-27）：从 root12 终态 staging 组装 1.1.0 包（27 产品文件逐一与 product manifest 829d7dec… 字节一致）+ tests/ + CHANGELOG/RELEASE-NOTES/DELIVERY-MANIFEST（51 文件）+ zip（0.93MB）。冒烟：CJK+空格路径解压 52 文件、launch 表面与四控件齐、静态服务 index/wasm HTTP 200 且字节与清单一致。运行时表面（双输入/保存重试/中文长名）由 root12 E2E 在同字节上覆盖；现场 7 项与 35/37 缺口仍用户侧。",
+      "release_notes": "product/libcimbar-desktop-receiver-1.2.0-20261030-0930/RELEASE-NOTES.md",
+      "started_at": "2026-10-30T09:35:00+08:00",
+      "completed_at": "2026-10-30T09:40:00+08:00",
+      "notes": "阶段 8 完成（2026-10-30）：从 root17 候选 staging（attempt candidate-20261029-04，harness 18b7c22）组装 1.2.0 包——27 产品文件与已审清单 7a5e5f1a… 逐字节一致 + tests/ + CHANGELOG/RELEASE-NOTES/DELIVERY-MANIFEST（50 文件，zip 979332 字节，sha256 f4eb7236…）。冒烟：CJK+空格路径解压 51 文件、清单 50/50 校验、Windows PowerShell 5.1（launch.ps1 -Port 18795）启动成功、index/wasm HTTP 200 且字节与清单相等、冒烟服务按已验证命令行停止。现场 7 项/E2E-37/E2E-35 与最终包验收仍用户侧。",
       "_managed_by": "claude-dev-pipeline",
-      "user_instructions": []
+      "user_instructions": [
+        {
+          "timestamp": "2026-10-30T09:38:00+08:00",
+          "summary": "无外部打包指令；按默认流程组装（目录+zip+RELEASE-NOTES/CHANGELOG/DELIVERY-MANIFEST），交付名 libcimbar-desktop-receiver-1.2.0。"
+        }
+      ]
     }
   ],
   "team_mode": "auto",
@@ -437,7 +447,7 @@
   "iteration_id": "receiver-ux-v2",
   "baseline_commit": "9e4fbc46965de42b9b0097ad80c607d71c7303f0",
   "previous_pipeline_state": "docs/dev-pipeline/history/desktop-receiver-v1/pipeline-state.json",
-  "pipeline_state": "in_progress",
+  "pipeline_state": "completed",
   "active_requirements": "docs/requirements/receiver-ux-v2/requirements-spec.md",
   "_handoff_mode": "standard",
   "active_design": "docs/design-catalog/receiver-ux-v2/README.md",
